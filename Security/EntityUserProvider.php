@@ -2,7 +2,6 @@
 
 namespace Symfony\Bundle\DoctrineBundle\Security;
 
-use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Security\User\UserProviderInterface;
 use Symfony\Component\Security\Exception\UsernameNotFoundException;
 
