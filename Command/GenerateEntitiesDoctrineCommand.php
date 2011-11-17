@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Doctrine\ORM\Tools\EntityRepositoryGenerator;
-use Symfony\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
+use Doctrine\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
 
 /**
  * Generate entity classes from mapping information

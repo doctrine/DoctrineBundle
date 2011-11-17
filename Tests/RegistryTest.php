@@ -14,7 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
-use Symfony\Bundle\DoctrineBundle\Registry;
+use Doctrine\Bundle\DoctrineBundle\Registry;
 
 class RegistryTest extends TestCase
 {

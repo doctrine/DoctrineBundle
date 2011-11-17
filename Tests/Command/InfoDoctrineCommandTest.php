@@ -14,8 +14,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
-use Symfony\Bundle\DoctrineBundle\Tests\TestCase;
-use Symfony\Bundle\DoctrineBundle\Command\InfoDoctrineCommand;
+use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
+use Doctrine\Bundle\DoctrineBundle\Command\InfoDoctrineCommand;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\StringInput;
 
