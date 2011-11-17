@@ -10,10 +10,10 @@
         <parameter key="doctrine.dbal.configuration.class">Doctrine\DBAL\Configuration</parameter>
         <parameter key="doctrine.data_collector.class">Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector</parameter>
         <parameter key="doctrine.dbal.connection.event_manager.class">Doctrine\Common\EventManager</parameter>
-        <parameter key="doctrine.dbal.connection_factory.class">Symfony\Bundle\DoctrineBundle\ConnectionFactory</parameter>
+        <parameter key="doctrine.dbal.connection_factory.class">Doctrine\Bundle\DoctrineBundle\ConnectionFactory</parameter>
         <parameter key="doctrine.dbal.events.mysql_session_init.class">Doctrine\DBAL\Event\Listeners\MysqlSessionInit</parameter>
         <parameter key="doctrine.dbal.events.oracle_session_init.class">Doctrine\DBAL\Event\Listeners\OracleSessionInit</parameter>
-        <parameter key="doctrine.class">Symfony\Bundle\DoctrineBundle\Registry</parameter>
+        <parameter key="doctrine.class">Doctrine\Bundle\DoctrineBundle\Registry</parameter>
         <parameter key="doctrine.entity_managers" type="collection"></parameter>
         <parameter key="doctrine.default_entity_manager"></parameter>
     </parameters>
