@@ -31,10 +31,10 @@ schema management and PDO abstraction.
 
 Add the following snippets to "deps" files:
 
-    [doctrine-mongodb]
+    [doctrine-dbal]
         git=http://github.com/doctrine/dbal.git
 
-    [doctrine-mongodb-odm]
+    [doctrine-orm]
         git=http://github.com/doctrine/doctrine2.git
 
     [DoctrineBundle]
