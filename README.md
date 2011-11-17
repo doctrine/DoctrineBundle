@@ -1,5 +1,7 @@
 # Doctrine Bundle
 
+WORK IN PROGRESS: The movement of this bundle from Symfony to Doctrine orgainisation is not yet finished!
+
 Doctrine DBAL & ORM Bundle for the Symfony Framework.
 
 Because Symfony 2 does not want to force or suggest a specific persistence solutions on the users
