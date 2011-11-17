@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         syntaxCheck="false"
+         bootstrap="Tests/bootstrap.php"
+>
+    <testsuites>
+        <testsuite name="DoctrineBundle for the Symfony Framework">
+            <directory>./Tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <groups>
+        <exclude>
+            <group>benchmark</group>
+        </exclude>
+    </groups>
+
+    <filter>
+        <whitelist>
+            <directory>.</directory>
+            <exclude>
+                <directory>./Resources</directory>
+                <directory>./Tests</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>
