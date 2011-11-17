@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DoctrineBundle\Command;
+namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\ORM\Mapping\MappingException;
 use Symfony\Component\Console\Input\InputOption;

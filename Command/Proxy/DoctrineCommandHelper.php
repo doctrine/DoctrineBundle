@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DoctrineBundle\Command\Proxy;
+namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
 use Symfony\Component\Console\Application;
 use Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper;

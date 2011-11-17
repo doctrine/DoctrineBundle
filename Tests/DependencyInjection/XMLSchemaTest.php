@@ -9,7 +9,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection;
+namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 class XMLSchemaTest extends \PHPUnit_Framework_TestCase
 {

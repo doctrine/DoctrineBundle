@@ -9,7 +9,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Symfony\Bundle\DoctrineBundle\Tests\Command;
+namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Symfony\Bundle\DoctrineBundle\Tests\TestCase;
 use Symfony\Bundle\DoctrineBundle\Command\InfoDoctrineCommand;

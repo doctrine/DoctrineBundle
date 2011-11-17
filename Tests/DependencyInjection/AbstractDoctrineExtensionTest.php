@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection;
+namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Symfony\Bundle\DoctrineBundle\Tests\TestCase;
 use Symfony\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;

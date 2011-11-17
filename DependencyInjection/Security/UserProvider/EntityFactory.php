@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DoctrineBundle\DependencyInjection\Security\UserProvider;
+namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Security\UserProvider;
 
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 

@@ -9,7 +9,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Symfony\Bundle\DoctrineBundle;
+namespace Doctrine\Bundle\DoctrineBundle;
 
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
