@@ -19,6 +19,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterEventLis
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Security\UserProvider\EntityFactory;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 
 /**
  * Bundle.
@@ -36,6 +37,8 @@ class DoctrineBundle extends Bundle
         if ($container->hasExtension('security')) {
             $container->getExtension('security')->addUserProviderFactory(new EntityFactory());
         }
+        
+        $container->addCompilerPass(new DoctrineValidationPass('orm'));
     }
 
     public function boot()
