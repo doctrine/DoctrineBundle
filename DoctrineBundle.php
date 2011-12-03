@@ -34,10 +34,10 @@ class DoctrineBundle extends Bundle
         parent::build($container);
 
         $container->addCompilerPass(new RegisterEventListenersAndSubscribersPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION);
+
         if ($container->hasExtension('security')) {
             $container->getExtension('security')->addUserProviderFactory(new EntityFactory());
         }
-        
         $container->addCompilerPass(new DoctrineValidationPass('orm'));
     }
 

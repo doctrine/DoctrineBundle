@@ -27,6 +27,7 @@
     "recommend": {
         "doctrine/dbal": ">=2.1",
         "doctrine/orm": ">=2.1"
+        "symfony/doctrine-bridge": "self.version"
     },
     "autoload": {
         "psr-0": { "Doctrine\\Bundle\\DoctrineBundle": "" }
