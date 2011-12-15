@@ -31,7 +31,6 @@ class XMLSchemaTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider dataValidateSchemaFiles
-     * @param string $file
      */
     public function testValidateSchema($file)
     {
