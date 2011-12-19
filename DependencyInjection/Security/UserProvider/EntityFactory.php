@@ -34,6 +34,7 @@ class EntityFactory implements UserProviderFactoryInterface
             ->setDefinition($id, new DefinitionDecorator('doctrine.orm.security.user.provider'))
             ->addArgument($config['class'])
             ->addArgument($config['property'])
+            ->addArgument($config['manager_name'])
         ;
     }
 
@@ -48,6 +49,7 @@ class EntityFactory implements UserProviderFactoryInterface
             ->children()
                 ->scalarNode('class')->isRequired()->cannotBeEmpty()->end()
                 ->scalarNode('property')->defaultNull()->end()
+                ->scalarNode('manager_name')->defaultNull()->end()
             ->end()
         ;
     }
