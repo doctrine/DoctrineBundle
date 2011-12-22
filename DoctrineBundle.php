@@ -16,10 +16,10 @@ namespace Doctrine\Bundle\DoctrineBundle;
 
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterEventListenersAndSubscribersPass;
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Security\UserProvider\EntityFactory;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
+use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFactory;
 
 /**
  * Bundle.
@@ -36,7 +36,7 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new RegisterEventListenersAndSubscribersPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION);
 
         if ($container->hasExtension('security')) {
-            $container->getExtension('security')->addUserProviderFactory(new EntityFactory());
+            $container->getExtension('security')->addUserProviderFactory(new EntityFactory('entity', 'doctrine.orm.security.user.provider'));
         }
         $container->addCompilerPass(new DoctrineValidationPass('orm'));
     }
