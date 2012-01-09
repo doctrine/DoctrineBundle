@@ -53,6 +53,15 @@ class ConnectionFactory
             $this->initialized = true;
         }
 
+        // Move options from the driverOptions array into the params array
+        $driverOptions = isset($params['driverOptions']) ?
+                $params['driverOptions'] : array();
+                
+        foreach($driverOptions as $key => $value)
+        {
+            $params[$key] = $value;
+        }
+
         $connection = DriverManager::getConnection($params, $config, $eventManager);
 
         if (!empty($mappingTypes)) {
