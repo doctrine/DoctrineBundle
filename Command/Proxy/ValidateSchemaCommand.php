@@ -34,7 +34,7 @@ class ValidateSchemaCommand extends DoctrineValidateSchemaCommand
 
         $this
             ->setName('doctrine:schema:validate')
-            ->setDescription('Validate the doctrine mapping files')
+            ->setDescription('Validates the doctrine mapping files')
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
             ->setHelp(<<<EOT
 The <info>doctrine:schema:validate</info> checks the current mappings
