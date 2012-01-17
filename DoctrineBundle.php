@@ -56,7 +56,7 @@ class DoctrineBundle extends Bundle
 
             spl_autoload_register(function($class) use ($namespace, $dir, $container) {
                 if (0 === strpos($class, $namespace)) {
-                    $className = substr($class, strlen($namespace) +1);
+                    $className = str_replace('\\', '', substr($class, strlen($namespace) +1));
                     $file = $dir.DIRECTORY_SEPARATOR.$className.'.php';
 
                     if (!is_file($file) && $container->getParameter('kernel.debug')) {
