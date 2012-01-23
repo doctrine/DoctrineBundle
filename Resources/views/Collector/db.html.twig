@@ -22,6 +22,19 @@
 {% endblock %}
 
 {% block panel %}
+    {% if app.request.query.has('connection') and app.request.query.has('query') %}
+        {% render 'DoctrineBundle:Profiler:explain' with {
+            'token': token,
+            'panel': 'db',
+            'connectionName': app.request.query.get('connection'),
+            'query': app.request.query.get('query')
+        } %}
+    {% else %}
+        {{ block('queries') }}
+    {% endif %}
+{% endblock %}
+
+{% block queries %}
     <h2>Queries</h2>
 
     {% for connection, queries in collector.queries %}
@@ -41,6 +54,9 @@
                             <strong>Parameters</strong>: {{ query.params|yaml_encode }}<br />
                             <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
                         </small>
+                        {% if query.explainable %}
+                        <a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'connection': connection, 'query': i}) }}">Explain the query</a>
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ul>
