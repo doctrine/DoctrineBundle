@@ -52,8 +52,12 @@ class ProfilerController extends ContainerAware
 
         /** @var $connection \Doctrine\DBAL\Connection */
         $connection = $this->container->get('doctrine')->getConnection($connectionName);
-        $results = $connection->executeQuery('EXPLAIN '.$query['sql'], $query['params'], $query['types'])
-            ->fetchAll(\PDO::FETCH_ASSOC);
+        try {
+            $results = $connection->executeQuery('EXPLAIN '.$query['sql'], $query['params'], $query['types'])
+                ->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            return new Response('This query cannot be explained.');
+        }
 
 
         return $this->container->get('templating')->renderResponse('DoctrineBundle:Collector:explain.html.twig', array(
