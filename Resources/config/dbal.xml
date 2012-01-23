@@ -20,16 +20,13 @@
     </parameters>
 
     <services>
-        <service id="doctrine.dbal.logger.chain" class="%doctrine.dbal.logger.chain.class%" public="false">
+        <service id="doctrine.dbal.logger.chain" class="%doctrine.dbal.logger.chain.class%" public="false" abstract="true">
             <call method="addLogger">
                 <argument type="service" id="doctrine.dbal.logger" />
             </call>
-            <call method="addLogger">
-                <argument type="service" id="doctrine.dbal.logger.profiling" />
-            </call>
         </service>
 
-        <service id="doctrine.dbal.logger.profiling" class="%doctrine.dbal.logger.profiling.class%" public="false" />
+        <service id="doctrine.dbal.logger.profiling" class="%doctrine.dbal.logger.profiling.class%" public="false" abstract="true" />
 
         <service id="doctrine.dbal.logger" class="%doctrine.dbal.logger.class%" public="false">
             <tag name="monolog.logger" channel="doctrine" />
