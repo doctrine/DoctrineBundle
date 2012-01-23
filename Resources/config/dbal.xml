@@ -20,16 +20,13 @@
     </parameters>
 
     <services>
-        <service id="doctrine.dbal.logger.chain" class="%doctrine.dbal.logger.chain.class%" public="false">
+        <service id="doctrine.dbal.logger.chain" class="%doctrine.dbal.logger.chain.class%" public="false" abstract="true">
             <call method="addLogger">
                 <argument type="service" id="doctrine.dbal.logger" />
             </call>
-            <call method="addLogger">
-                <argument type="service" id="doctrine.dbal.logger.profiling" />
-            </call>
         </service>
 
-        <service id="doctrine.dbal.logger.profiling" class="%doctrine.dbal.logger.profiling.class%" public="false" />
+        <service id="doctrine.dbal.logger.profiling" class="%doctrine.dbal.logger.profiling.class%" public="false" abstract="true" />
 
         <service id="doctrine.dbal.logger" class="%doctrine.dbal.logger.class%" public="false">
             <tag name="monolog.logger" channel="doctrine" />
@@ -40,7 +37,6 @@
         <service id="data_collector.doctrine" class="%doctrine.data_collector.class%" public="false">
             <tag name="data_collector" template="DoctrineBundle:Collector:db" id="db" />
             <argument type="service" id="doctrine" />
-            <argument type="service" id="doctrine.dbal.logger.profiling" />
         </service>
 
         <service id="doctrine.dbal.connection_factory" class="%doctrine.dbal.connection_factory.class%">
