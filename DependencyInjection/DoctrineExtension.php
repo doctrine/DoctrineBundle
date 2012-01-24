@@ -426,6 +426,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
             
             if (in_array('env',$cacheDriver['namespaceComposition'])) {
+		if (!isset($pathAndEnv)) {
+			$pathAndEnv = '';
+		}
                 $pathAndEnv .= $container->getParameter('kernel.environment');
             }
 
