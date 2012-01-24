@@ -282,6 +282,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('type')->defaultValue('array')->isRequired()->end()
                 ->scalarNode('host')->end()
                 ->scalarNode('port')->end()
+                ->arrayNode('namespaceComposition')->prototype('scalar')->end()->end()
                 ->scalarNode('instance_class')->end()
                 ->scalarNode('class')->end()
             ->end()
