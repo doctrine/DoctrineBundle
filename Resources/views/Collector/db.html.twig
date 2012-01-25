@@ -22,27 +22,46 @@
 {% endblock %}
 
 {% block panel %}
+    {% if app.request.query.has('connection') and app.request.query.has('query') %}
+        {% render 'DoctrineBundle:Profiler:explain' with {
+            'token': token,
+            'panel': 'db',
+            'connectionName': app.request.query.get('connection'),
+            'query': app.request.query.get('query')
+        } %}
+    {% else %}
+        {{ block('queries') }}
+    {% endif %}
+{% endblock %}
+
+{% block queries %}
     <h2>Queries</h2>
 
-    {% if not collector.querycount %}
-        <p>
-            <em>No queries.</em>
-        </p>
-    {% else %}
-        <ul class="alt">
-            {% for i, query in collector.queries %}
-                <li class="{{ i is odd ? 'odd' : 'even' }}">
-                    <div>
-                        <code>{{ query.sql }}</code>
-                    </div>
-                    <small>
-                        <strong>Parameters</strong>: {{ query.params|yaml_encode }}<br />
-                        <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
-                    </small>
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    {% for connection, queries in collector.queries %}
+        <h3>Connection <em>{{ connection }}</em></h3>
+        {% if queries is empty %}
+            <p>
+                <em>No queries.</em>
+            </p>
+        {% else %}
+            <ul class="alt">
+                {% for i, query in queries %}
+                    <li class="{{ i is odd ? 'odd' : 'even' }}">
+                        <div>
+                            <code>{{ query.sql }}</code>
+                        </div>
+                        <small>
+                            <strong>Parameters</strong>: {{ query.params|yaml_encode }}<br />
+                            <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
+                        </small>
+                        {% if query.explainable %}
+                        <br /><a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'connection': connection, 'query': i}) }}">Explain the query</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endfor %}
 
     <h2>Database Connections</h2>
 
@@ -61,7 +80,7 @@
         </table>
     {% else %}
         <p>
-            <em>No entity managers.</em>
+            <em>No connections.</em>
         </p>
     {% endif %}
 
