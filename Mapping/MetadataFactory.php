@@ -107,7 +107,7 @@ class MetadataFactory
 
         $all = $metadata->getMetadata();
         if (class_exists($all[0]->name)) {
-            $r = \new ReflectionClass($all[0]->name]);
+            $r = new \ReflectionClass($all[0]->name]);
             $path = $this->getBasePathForClass($namespace, $r->getNamespacename(), dirname($r->getFilename()));
         } elseif (!$path) {
             throw new \RuntimeException(sprintf('Unable to determine where to save the "%s" class (use the --path option).', $all[0]->name));
