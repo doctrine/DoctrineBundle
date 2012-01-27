@@ -1,26 +1,20 @@
-<h2>Original query</h2>
-
-<div>
-    <code>{{ query.sql }}</code>
-</div>
-<small>
-    <strong>Parameters</strong>: {{ query.params|yaml_encode }}<br />
-    <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
-</small>
-
-<h2>Explanation</h2>
+<h3>Explanation</h3>
 
 <table>
-    <tr>
-        {% for label in data[0]|keys %}
-            <th>{{ label }}</th>
+    <thead>
+        <tr>
+            {% for label in data[0]|keys %}
+                <th>{{ label }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            {% for item in row %}
+                <td>{{ item }}</td>
+            {% endfor %}
+        </tr>
         {% endfor %}
-    </tr>
-    {% for row in data %}
-    <tr>
-        {% for item in row %}
-            <td>{{ item }}</td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
+    </tbody>
 </table>

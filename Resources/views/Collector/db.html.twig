@@ -1,4 +1,5 @@
-{% extends 'WebProfilerBundle:Profiler:layout.html.twig' %}
+{% set explainQuery = app.request.query.has('connection') and app.request.query.has('query') %}
+{% extends explainQuery ? 'DoctrineBundle:Collector:ajax_layout.html.twig' : 'WebProfilerBundle:Profiler:layout.html.twig' %}
 
 {% block toolbar %}
     {% set icon %}
@@ -22,7 +23,7 @@
 {% endblock %}
 
 {% block panel %}
-    {% if app.request.query.has('connection') and app.request.query.has('query') %}
+    {% if explainQuery %}
         {% render 'DoctrineBundle:Profiler:explain' with {
             'token': token,
             'panel': 'db',
@@ -46,8 +47,14 @@
         {% else %}
             <ul class="alt">
                 {% for i, query in queries %}
-                    <li class="{{ i is odd ? 'odd' : 'even' }}">
+                    <li class="{{ cycle(['odd', 'even'], i) }}">
                         <div>
+                            {% if query.explainable %}
+                            <a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'connection': connection, 'query': i}) }}" onclick="return explain(this);" style="text-decoration: none;" data-loaded="0" data-target="explain-{{ i }}" >
+                                <img alt="+" src="{{ asset('bundles/framework/images/blue_picto_more.gif') }}" style="display: inline;" />
+                                <img alt="-" src="{{ asset('bundles/framework/images/blue_picto_less.gif') }}" style="display: none;" />
+                            </a>
+                            {% endif %}
                             <code>{{ query.sql }}</code>
                         </div>
                         <small>
@@ -55,7 +62,7 @@
                             <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
                         </small>
                         {% if query.explainable %}
-                        <br /><a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'connection': connection, 'query': i}) }}">Explain the query</a>
+                        <div id="explain-{{ i }}" style="display: none;">Loading details...</div>
                         {% endif %}
                     </li>
                 {% endfor %}
@@ -67,16 +74,20 @@
 
     {% if collector.connections %}
         <table>
-            <tr>
-                <th>Name</th>
-                <th>Service</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Service</th>
+                </tr>
+            </thead>
+            <tbody>
             {% for name, service in collector.connections %}
                 <tr>
                     <th>{{ name }}</th>
                     <td>{{ service }}</td>
                 </tr>
             {% endfor %}
+            </tbody>
         </table>
     {% else %}
         <p>
@@ -88,20 +99,61 @@
 
     {% if collector.managers %}
         <table>
-            <tr>
-                <th>Name</th>
-                <th>Service</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Service</th>
+                </tr>
+            </thead>
+            <tbody>
             {% for name, service in collector.managers %}
                 <tr>
                     <th>{{ name }}</th>
                     <td>{{ service }}</td>
                 </tr>
             {% endfor %}
+            </tbody>
         </table>
     {% else %}
         <p>
             <em>No entity managers.</em>
         </p>
     {% endif %}
+
+    <script type="text/javascript">//<![CDATA[
+        function explain(link) {
+            "use strict";
+            var xhr,
+                tmp,
+                imgs = link.children,
+                target = document.getElementById(link.dataset.target);
+
+            tmp = imgs[0].style.display;
+            imgs[0].style.display = imgs[1].style.display;
+            imgs[1].style.display = tmp;
+
+            target.style.display = 'none' === tmp ? 'none' : 'block';
+
+            if ("0" === link.dataset.loaded) {
+                link.dataset.loaded = true;
+                if (window.XMLHttpRequest) {
+                    xhr = new XMLHttpRequest();
+                } else {
+                    xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                xhr.open('GET', link.href, true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.onreadystatechange = function(state) {
+                    if (4 === xhr.readyState && 200 === xhr.status) {
+                        target.innerHTML = xhr.responseText;
+                    } else if (4 === xhr.readyState && xhr.status != 200) {
+                        target.innetHTML = 'An error occurred while loading the details';
+                    }
+                };
+                xhr.send();
+            }
+
+            return false;
+        }
+    //]]></script>
 {% endblock %}
