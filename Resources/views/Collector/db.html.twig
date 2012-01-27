@@ -50,7 +50,7 @@
                     <li class="{{ cycle(['odd', 'even'], i) }}">
                         <div>
                             {% if query.explainable %}
-                            <a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'connection': connection, 'query': i}) }}" onclick="return explain(this);" style="text-decoration: none;" data-loaded="0" data-target="explain-{{ i }}" >
+                            <a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'connection': connection, 'query': i}) }}" onclick="return explain(this);" style="text-decoration: none;" title="Explains" data-loaded="0" data-target="explain-{{ i }}" >
                                 <img alt="+" src="{{ asset('bundles/framework/images/blue_picto_more.gif') }}" style="display: inline;" />
                                 <img alt="-" src="{{ asset('bundles/framework/images/blue_picto_less.gif') }}" style="display: none;" />
                             </a>
@@ -62,7 +62,7 @@
                             <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
                         </small>
                         {% if query.explainable %}
-                        <div id="explain-{{ i }}" style="display: none;">Loading details...</div>
+                        <div id="explain-{{ i }}" class="explain-content" style="display: none;"></div>
                         {% endif %}
                     </li>
                 {% endfor %}
@@ -155,5 +155,14 @@
 
             return false;
         }
+
+        (function() {
+            "use strict";
+            var i,
+                els = document.getElementsByClassName('explain-content');
+            for(i = els.length - 1; i >= 0; --i) {
+                els[i].innerHTML = '<img style="display: block; margin: 0 auto;" src="data:image/gif;base64,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" />';
+            }
+        })();
     //]]></script>
 {% endblock %}
