@@ -1,5 +1,5 @@
 {% set explainQuery = app.request.query.has('connection') and app.request.query.has('query') %}
-{% extends explainQuery ? 'DoctrineBundle:Collector:ajax_layout.html.twig' : 'WebProfilerBundle:Profiler:layout.html.twig' %}
+{% extends explainQuery and app.request.isXmlHttpRequest ? 'DoctrineBundle:Collector:ajax_layout.html.twig' : 'WebProfilerBundle:Profiler:layout.html.twig' %}
 
 {% block toolbar %}
     {% set icon %}
