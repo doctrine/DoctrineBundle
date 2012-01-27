@@ -50,7 +50,7 @@
                     <li class="{{ cycle(['odd', 'even'], i) }}">
                         <div>
                             {% if query.explainable %}
-                            <a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'connection': connection, 'query': i}) }}" onclick="return explain(this);" style="text-decoration: none;" title="Explains" data-loaded="0" data-target="explain-{{ i }}" >
+                            <a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'connection': connection, 'query': i}) }}" onclick="return explain(this);" style="text-decoration: none;" title="Explains" data-loaded="0" data-target="explain-{{ i }}-{{ loop.parent.loop.index }}" >
                                 <img alt="+" src="{{ asset('bundles/framework/images/blue_picto_more.gif') }}" style="display: inline;" />
                                 <img alt="-" src="{{ asset('bundles/framework/images/blue_picto_less.gif') }}" style="display: none;" />
                             </a>
@@ -62,7 +62,7 @@
                             <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
                         </small>
                         {% if query.explainable %}
-                        <div id="explain-{{ i }}" class="explain-content" style="display: none;"></div>
+                        <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="explain-content" style="display: none;"></div>
                         {% endif %}
                     </li>
                 {% endfor %}
