@@ -352,7 +352,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger')));
 
         $definition = $container->getDefinition('doctrine.dbal.profile_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.profiling.profile')));
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.profile')));
 
         $definition = $container->getDefinition('doctrine.dbal.both_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.both')));
@@ -717,7 +717,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             'kernel.bundles'     => $map,
             'kernel.cache_dir'   => sys_get_temp_dir(),
             'kernel.environment' => 'test',
-            'kernel.root_dir'    => __DIR__.'/../../../../../' // src dir
+            'kernel.root_dir'    => __DIR__.'/../../' // src dir
         )));
     }
 

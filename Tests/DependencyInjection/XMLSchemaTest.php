@@ -21,7 +21,7 @@ class XMLSchemaTest extends \PHPUnit_Framework_TestCase
         $schemaFiles = array();
         $di = new \DirectoryIterator(__DIR__."/Fixtures/config/xml");
         foreach ($di as $element) {
-            if ($element->isFile() && strpos($element->getFilename(), ".xml") !== false) {
+            if ($element->isFile() && substr($element->getFilename(), -4) === ".xml") {
                 $schemaFiles[] = array($element->getPathname());
             }
         }
