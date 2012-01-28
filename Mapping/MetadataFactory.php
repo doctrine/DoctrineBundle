@@ -76,16 +76,7 @@ class MetadataFactory
             throw MappingException::classIsNotAValidEntityOrMappedSuperClass($class);
         }
 
-        $all = $metadata->getMetadata();
-        if (class_exists($class)) {
-            $r = new \ReflectionClass($all[0]->name);
-            $path = $this->getBasePathForClass($class, $r->getNamespacename(), dirname($r->getFilename()));
-        } elseif (!$path) {
-            throw new \RuntimeException(sprintf('Unable to determine where to save the "%s" class (use the --path option).', $class));
-        }
-
-        $metadata->setPath($path);
-        $metadata->setNamespace($r->getNamespacename());
+        $this->findNamespaceAndPathForMetadata($metadata);
 
         return $metadata;
     }
@@ -105,18 +96,30 @@ class MetadataFactory
             throw new \RuntimeException(sprintf('Namespace "%s" does not contain any mapped entities.', $namespace));
         }
 
+        $this->findNamespaceAndPathForMetadata($metadata);
+
+        return $metadata;
+    }
+
+    /**
+     * Find and configure path and namespace for the metadata collection.
+     *
+     * @param ClassMetadataCollection $metadata
+     * @param string|null $path
+     * @return void
+     */
+    public function findNamespaceAndPathForMetadata(ClassMetadataCollection $metadata, $path = null)
+    {
         $all = $metadata->getMetadata();
         if (class_exists($all[0]->name)) {
             $r = new \ReflectionClass($all[0]->name);
-            $path = $this->getBasePathForClass($namespace, $r->getNamespacename(), dirname($r->getFilename()));
+            $path = $this->getBasePathForClass($r->getName(), $r->getNamespaceName(), dirname($r->getFilename()));
         } elseif (!$path) {
             throw new \RuntimeException(sprintf('Unable to determine where to save the "%s" class (use the --path option).', $all[0]->name));
         }
 
         $metadata->setPath($path);
         $metadata->setNamespace($namespace);
-
-        return $metadata;
     }
 
     private function getBasePathForClass($name, $namespace, $path)
