@@ -119,7 +119,7 @@ class MetadataFactory
         }
 
         $metadata->setPath($path);
-        $metadata->setNamespace($namespace);
+        $metadata->setNamespace($r->getNamespaceName());
     }
 
     private function getBasePathForClass($name, $namespace, $path)
