@@ -72,22 +72,7 @@
     <h2>Database Connections</h2>
 
     {% if collector.connections %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Service</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for name, service in collector.connections %}
-                <tr>
-                    <th>{{ name }}</th>
-                    <td>{{ service }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.connections} only %}
     {% else %}
         <p>
             <em>No connections.</em>
@@ -97,22 +82,7 @@
     <h2>Entity Managers</h2>
 
     {% if collector.managers %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Service</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for name, service in collector.managers %}
-                <tr>
-                    <th>{{ name }}</th>
-                    <td>{{ service }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.managers} only %}
     {% else %}
         <p>
             <em>No entity managers.</em>
