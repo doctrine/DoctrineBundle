@@ -23,7 +23,7 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 use Symfony\Component\Config\FileLocator;
 
-abstract class AbstractDoctrineExtensionTest extends TestCase
+abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 {
     abstract protected function loadFromFile(ContainerBuilder $container, $file);
 
