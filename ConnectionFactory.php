@@ -25,6 +25,7 @@ use Doctrine\DBAL\Types\Type;
 class ConnectionFactory
 {
     private $typesConfig = array();
+    private $commentedTypes = array();
     private $initialized = false;
 
     /**
@@ -44,7 +45,7 @@ class ConnectionFactory
      * @param Configuration $config
      * @param EventManager  $eventManager
      *
-     * @return Doctrine\DBAL\Connection
+     * @return \Doctrine\DBAL\Connection
      */
     public function createConnection(array $params, Configuration $config = null, EventManager $eventManager = null, array $mappingTypes = array())
     {
@@ -60,6 +61,9 @@ class ConnectionFactory
             foreach ($mappingTypes as $dbType => $doctrineType) {
                 $platform->registerDoctrineTypeMapping($dbType, $doctrineType);
             }
+            foreach ($this->commentedTypes as $type) {
+                $platform->markDoctrineTypeCommented(Type::getType($type));
+            }
         }
 
         return $connection;
@@ -67,11 +71,14 @@ class ConnectionFactory
 
     private function initializeTypes()
     {
-        foreach ($this->typesConfig as $type => $className) {
+        foreach ($this->typesConfig as $type => $typeConfig) {
             if (Type::hasType($type)) {
-                Type::overrideType($type, $className);
+                Type::overrideType($type, $typeConfig['class']);
             } else {
-                Type::addType($type, $className);
+                Type::addType($type, $typeConfig['class']);
+            }
+            if ($typeConfig['commented']) {
+                $this->commentedTypes[] = $type;
             }
         }
     }
