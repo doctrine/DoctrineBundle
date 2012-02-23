@@ -48,9 +48,11 @@ class DoctrineBundle extends Bundle
         if ($this->container->hasParameter('doctrine.orm.proxy_namespace')) {
             $namespace = $this->container->getParameter('doctrine.orm.proxy_namespace');
             $dir = $this->container->getParameter('doctrine.orm.proxy_dir');
-            $container = $this->container;
+            // See https://github.com/symfony/symfony/pull/3419 for usage of
+            // references
+            $container =& $this->container;
 
-            spl_autoload_register(function($class) use ($namespace, $dir, $container) {
+            spl_autoload_register(function($class) use ($namespace, $dir, &$container) {
                 if (0 === strpos($class, $namespace)) {
                     $className = str_replace('\\', '', substr($class, strlen($namespace) +1));
                     $file = $dir.DIRECTORY_SEPARATOR.$className.'.php';
