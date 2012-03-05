@@ -401,6 +401,19 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $container->setDefinition(sprintf('doctrine.orm.%s_memcache_instance', $entityManager['name']), $memcacheInstance);
                 $cacheDef->addMethodCall('setMemcache', array(new Reference(sprintf('doctrine.orm.%s_memcache_instance', $entityManager['name']))));
                 break;
+            case 'memcached':
+                $memcachedClass = !empty($cacheDriver['class']) ? $cacheDriver['class'] : '%doctrine.orm.cache.memcached.class%';
+                $memcachedInstanceClass = !empty($cacheDriver['instance_class']) ? $cacheDriver['instance_class'] : '%doctrine.orm.cache.memcached_instance.class%';
+                $memcachedHost = !empty($cacheDriver['host']) ? $cacheDriver['host'] : '%doctrine.orm.cache.memcached_host%';
+                $memcachedPort = !empty($cacheDriver['port']) ? $cacheDriver['port'] : '%doctrine.orm.cache.memcached_port%';
+                $cacheDef = new Definition($memcachedClass);
+                $memcachedInstance = new Definition($memcachedInstanceClass);
+                $memcachedInstance->addMethodCall('addServer', array(
+                    $memcachedHost, $memcachedPort
+                ));
+                $container->setDefinition(sprintf('doctrine.orm.%s_memcached_instance', $entityManager['name']), $memcachedInstance);
+                $cacheDef->addMethodCall('setMemcached', array(new Reference(sprintf('doctrine.orm.%s_memcached_instance', $entityManager['name']))));
+                break;
             case 'apc':
             case 'array':
             case 'xcache':
