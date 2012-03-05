@@ -15,6 +15,10 @@
         <parameter key="doctrine.orm.cache.memcache_host">localhost</parameter>
         <parameter key="doctrine.orm.cache.memcache_port">11211</parameter>
         <parameter key="doctrine.orm.cache.memcache_instance.class">Memcache</parameter>
+        <parameter key="doctrine.orm.cache.memcached.class">Doctrine\Common\Cache\MemcachedCache</parameter>
+        <parameter key="doctrine.orm.cache.memcached_host">localhost</parameter>
+        <parameter key="doctrine.orm.cache.memcached_port">11211</parameter>
+        <parameter key="doctrine.orm.cache.memcached_instance.class">Memcached</parameter>
         <parameter key="doctrine.orm.cache.xcache.class">Doctrine\Common\Cache\XcacheCache</parameter>
 
         <!-- metadata -->
