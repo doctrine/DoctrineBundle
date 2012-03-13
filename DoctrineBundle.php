@@ -29,6 +29,8 @@ use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFact
  */
 class DoctrineBundle extends Bundle
 {
+    private $autoloader;
+
     public function build(ContainerBuilder $container)
     {
         parent::build($container);
@@ -52,7 +54,7 @@ class DoctrineBundle extends Bundle
             // references
             $container =& $this->container;
 
-            spl_autoload_register(function($class) use ($namespace, $dir, &$container) {
+            $this->autoloader = function($class) use ($namespace, $dir, &$container) {
                 if (0 === strpos($class, $namespace)) {
                     $className = str_replace('\\', '', substr($class, strlen($namespace) +1));
                     $file = $dir.DIRECTORY_SEPARATOR.$className.'.php';
@@ -62,7 +64,7 @@ class DoctrineBundle extends Bundle
                         $registry = $container->get('doctrine');
 
                         // Tries to auto-generate the proxy file
-                        foreach ($registry->getEntityManagers() as $em) {
+                        foreach ($registry->getManagers() as $em) {
 
                             if ($em->getConfiguration()->getAutoGenerateProxyClasses()) {
                                 $classes = $em->getMetadataFactory()->getAllMetadata();
@@ -86,7 +88,16 @@ class DoctrineBundle extends Bundle
 
                     require $file;
                 }
-            });
+            };
+            spl_autoload_register($this->autoloader);
+        }
+    }
+
+    public function shutdown()
+    {
+        if (null !== $this->autoloader) {
+            spl_autoload_unregister($this->autoloader);
+            $this->autoloader = null;
         }
     }
 }
