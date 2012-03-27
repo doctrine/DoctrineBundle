@@ -96,7 +96,7 @@ class MetadataFactory
             throw new \RuntimeException(sprintf('Namespace "%s" does not contain any mapped entities.', $namespace));
         }
 
-        $this->findNamespaceAndPathForMetadata($metadata);
+        $this->findNamespaceAndPathForMetadata($metadata, $path);
 
         return $metadata;
     }
@@ -119,7 +119,7 @@ class MetadataFactory
         }
 
         $metadata->setPath($path);
-        $metadata->setNamespace($r->getNamespaceName());
+        $metadata->setNamespace(isset($r) ? $r->getNamespaceName() : $all[0]->name);
     }
 
     private function getBasePathForClass($name, $namespace, $path)
