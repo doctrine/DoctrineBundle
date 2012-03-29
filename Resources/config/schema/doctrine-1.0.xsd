@@ -98,6 +98,8 @@
         <xsd:attribute name="default-entity-manager" type="xsd:string" />
         <xsd:attribute name="default-connection" type="xsd:string" />
 
+        <xsd:attribute name="proxy-dir" type="xsd:string" />
+        <xsd:attribute name="proxy-namespace" type="xsd:string" />
         <xsd:attribute name="auto-generate-proxy-classes" type="xsd:string" default="false" />
         <xsd:attribute name="result-cache-driver" type="xsd:string" />
         <xsd:attribute name="metadata-cache-driver" type="xsd:string" />
