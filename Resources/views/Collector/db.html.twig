@@ -59,6 +59,9 @@
                         <small>
                             <strong>Parameters</strong>: {{ query.params|yaml_encode }}<br />
                             <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
+                            {% if query.connectionName is defined %}
+                            <strong>Connection</strong>: {{ query.connectionName }}
+                            {% endif %}
                         </small>
                         {% if query.explainable %}
                         <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="loading"></div>
