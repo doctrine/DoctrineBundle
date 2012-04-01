@@ -64,39 +64,15 @@ class Configuration implements ConfigurationInterface
                 ->beforeNormalization()
                     ->ifTrue(function ($v) { return is_array($v) && !array_key_exists('connections', $v) && !array_key_exists('connection', $v); })
                     ->then(function ($v) {
+                        // Key that should not be rewritten to the connection config
+                        $excludedKeys = array('default_connection' => true, 'types' => true, 'type' => true);
                         $connection = array();
-                        foreach (array(
-                            'dbname',
-                            'host',
-                            'port',
-                            'user',
-                            'password',
-                            'driver',
-                            'driver_class',
-                            'options',
-                            'path',
-                            'memory',
-                            'unix_socket',
-                            'persistent',
-                            'service',
-                            'protocol',
-                            'session_mode',
-                            'wrapper_class',
-                            'platform_service',
-                            'charset',
-                            'logging',
-                            'profiling',
-                            'mapping_types',
-                            'slaves',
-                            // XML variants
-                            'slave',
-                            'option',
-                            'mapping_type'
-                        ) as $key) {
-                            if (array_key_exists($key, $v)) {
-                                $connection[$key] = $v[$key];
-                                unset($v[$key]);
+                        foreach ($v as $key => $value) {
+                            if (isset($excludedKeys[$key])) {
+                                continue;
                             }
+                            $connection[$key] = $v[$key];
+                            unset($v[$key]);
                         }
                         $v['default_connection'] = isset($v['default_connection']) ? (string) $v['default_connection'] : 'default';
                         $v['connections'] = array($v['default_connection'] => $connection);
@@ -235,19 +211,18 @@ class Configuration implements ConfigurationInterface
                         ->ifTrue(function ($v) { return null === $v || (is_array($v) && !array_key_exists('entity_managers', $v) && !array_key_exists('entity_manager', $v)); })
                         ->then(function ($v) {
                             $v = (array) $v;
+                            // Key that should not be rewritten to the connection config
+                            $excludedKeys = array(
+                                'default_entity_manager' => true, 'auto_generate_proxy_classes' => true,
+                                'proxy_dir' => true, 'proxy_namespace' => true,
+                            );
                             $entityManager = array();
-                            foreach (array(
-                                'result_cache_driver', 'result-cache-driver',
-                                'metadata_cache_driver', 'metadata-cache-driver',
-                                'query_cache_driver', 'query-cache-driver',
-                                'auto_mapping', 'auto-mapping',
-                                'mappings', 'mapping',
-                                'connection', 'dql'
-                            ) as $key) {
-                                if (array_key_exists($key, $v)) {
-                                    $entityManager[$key] = $v[$key];
-                                    unset($v[$key]);
+                            foreach ($v as $key => $value) {
+                                if (isset($excludedKeys[$key])) {
+                                    continue;
                                 }
+                                $entityManager[$key] = $v[$key];
+                                unset($v[$key]);
                             }
                             $v['default_entity_manager'] = isset($v['default_entity_manager']) ? (string) $v['default_entity_manager'] : 'default';
                             $v['entity_managers'] = array($v['default_entity_manager'] => $entityManager);
