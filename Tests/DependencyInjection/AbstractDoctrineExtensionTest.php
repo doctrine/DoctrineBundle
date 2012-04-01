@@ -99,6 +99,33 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('/path/to/mysqld.sock', $config['unix_socket']);
     }
 
+    public function testDbalLoadSingleMasterSlaveConnection()
+    {
+        $container = $this->getContainer();
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'dbal_service_single_master_slave_connection');
+
+        $this->compileContainer($container);
+
+        // doctrine.dbal.mysql_connection
+        $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+
+        $this->assertEquals('Doctrine\\DBAL\\Connections\\MasterSlaveConnection', $param['wrapperClass']);
+        $this->assertEquals(
+            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t', 'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost', 'unix_socket' => '/path/to/mysqld.sock'),
+            $param['master']
+        );
+        $this->assertEquals(
+            array(
+                'user' => 'slave_user', 'password' => 'slave_s3cr3t', 'port' => null, 'dbname' => 'slave_db',
+                'host' => 'localhost', 'unix_socket' => '/path/to/mysqld_slave.sock'
+            ),
+            $param['slaves']['slave1']
+        );
+    }
+
     public function testDependencyInjectionConfigurationDefaults()
     {
         $container = $this->getContainer();
