@@ -30,6 +30,8 @@ class Configuration implements ConfigurationInterface
 {
     private $debug;
 
+    private $defaultMasterSlaveClass = 'Doctrine\\DBAL\\Connections\\MasterSlaveConnection';
+
     /**
      * Constructor
      *
@@ -65,30 +67,27 @@ class Configuration implements ConfigurationInterface
                     ->ifTrue(function ($v) { return is_array($v) && !array_key_exists('connections', $v) && !array_key_exists('connection', $v); })
                     ->then(function ($v) {
                         $connection = array();
-                        foreach (array(
-                            'dbname',
-                            'host',
-                            'port',
-                            'user',
-                            'password',
-                            'driver',
-                            'driver_class',
-                            'options',
-                            'path',
-                            'memory',
-                            'unix_socket',
-                            'wrapper_class',
-                            'platform_service',
-                            'charset',
-                            'logging',
-                            'profiling',
-                            'mapping_types',
-                        ) as $key) {
+                        $possibleKeys = array('driver', 'driver_class', 'options', 'path', 'memory', 'unix_socket', 'wrapper_class',
+                                            'platform_service', 'charset', 'logging', 'profiling', 'mapping_types', 'master', 'slaves',
+                        );
+
+                        foreach ($possibleKeys as $key) {
                             if (array_key_exists($key, $v)) {
                                 $connection[$key] = $v[$key];
                                 unset($v[$key]);
                             }
                         }
+
+                        $possibleKeys = array('dbname', 'host', 'port', 'user', 'password');
+
+                        foreach ($possibleKeys as $key) {
+                            if (array_key_exists($key, $v)) {
+                                $connection['master'][$key] = $v[$key];
+                                $connection['slaves']['slave1'][$key] = $v[$key];
+                                unset($v[$key]);
+                            }
+                        }
+
                         $v['default_connection'] = isset($v['default_connection']) ? (string) $v['default_connection'] : 'default';
                         $v['connections'] = array($v['default_connection'] => $connection);
 
@@ -129,13 +128,51 @@ class Configuration implements ConfigurationInterface
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
             ->prototype('array')
+                ->beforeNormalization()
+                    ->ifTrue(function($v) {
+                        return is_array($v) && !(array_key_exists('master', $v) || array_key_exists('slave', $v));
+                    })
+                    ->then(function($v) {
+                        $connection = array();
+                        $possibleKeys = array('dbname', 'host', 'port', 'user', 'password');
+
+                        foreach ($possibleKeys as $key) {
+                            if (array_key_exists($key, $v)) {
+                                $connection[$key] = $v[$key];
+                                unset($v[$key]);
+                            }
+                        }
+
+                        $v['master'] = $connection;
+                        $v['slaves'] = array('slave1' => $connection);
+
+                        return $v;
+                    })
+                ->end()
                 ->fixXmlConfig('mapping_type')
                 ->children()
-                    ->scalarNode('dbname')->end()
-                    ->scalarNode('host')->defaultValue('localhost')->end()
-                    ->scalarNode('port')->defaultNull()->end()
-                    ->scalarNode('user')->defaultValue('root')->end()
-                    ->scalarNode('password')->defaultNull()->end()
+                    ->arrayNode('master')
+                        ->children()
+                            ->scalarNode('dbname')->end()
+                            ->scalarNode('host')->defaultValue('localhost')->end()
+                            ->scalarNode('port')->defaultNull()->end()
+                            ->scalarNode('user')->defaultValue('root')->end()
+                            ->scalarNode('password')->defaultNull()->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('slaves')
+                        ->requiresAtLeastOneElement()
+                        ->useAttributeAsKey('name')
+                        ->prototype('array')
+                            ->children()
+                                ->scalarNode('dbname')->end()
+                                ->scalarNode('host')->defaultValue('localhost')->end()
+                                ->scalarNode('port')->defaultNull()->end()
+                                ->scalarNode('user')->defaultValue('root')->end()
+                                ->scalarNode('password')->defaultNull()->end()
+                            ->end()
+                        ->end()
+                    ->end()
                     ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
                     ->scalarNode('path')->end()
                     ->booleanNode('memory')->end()
@@ -145,7 +182,7 @@ class Configuration implements ConfigurationInterface
                     ->booleanNode('logging')->defaultValue($this->debug)->end()
                     ->booleanNode('profiling')->defaultValue($this->debug)->end()
                     ->scalarNode('driver_class')->end()
-                    ->scalarNode('wrapper_class')->end()
+                    ->scalarNode('wrapper_class')->defaultValue($this->defaultMasterSlaveClass)->end()
                     ->arrayNode('options')
                         ->useAttributeAsKey('key')
                         ->prototype('scalar')->end()
