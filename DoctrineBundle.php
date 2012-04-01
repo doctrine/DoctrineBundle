@@ -14,6 +14,10 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
+use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
+use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
+use Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand;
+use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -99,5 +103,21 @@ class DoctrineBundle extends Bundle
             spl_autoload_unregister($this->autoloader);
             $this->autoloader = null;
         }
+    }
+
+    public function registerCommands(Application $application)
+    {
+        // Use the default logic when the ORM is available.
+        // This avoids listing all ORM commands by hand.
+        if (class_exists('Doctrine\\ORM\\Version')) {
+            parent::registerCommands($application);
+
+            return;
+        }
+
+        // Register only the DBAL commands if the ORM is not available.
+        $application->add(new CreateDatabaseDoctrineCommand());
+        $application->add(new DropDatabaseDoctrineCommand());
+        $application->add(new RunSqlDoctrineCommand());
     }
 }
