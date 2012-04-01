@@ -724,6 +724,27 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomHydrationMode', array('test_hydrator', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator'));
     }
 
+    public function testAddFilter()
+    {
+        $container = $this->getContainer(array('YamlBundle'));
+
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $this->loadFromFile($container, 'orm_filters');
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addFilter', array('soft_delete', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'));
+
+        $definition = $container->getDefinition('doctrine.orm.default_manager_configurator');
+        $this->assertDICConstructorArguments($definition, array(array('soft_delete')));
+
+        // Let's create the instance to check the configurator work.
+        /** @var $entityManager \Doctrine\ORM\EntityManager */
+        $entityManager = $container->get('doctrine.orm.entity_manager');
+        $this->assertCount(1, $entityManager->getFilters()->getEnabledFilters());
+    }
+
     protected function getContainer($bundles = 'YamlBundle', $vendor = null)
     {
         $bundles = (array) $bundles;

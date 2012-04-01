@@ -109,6 +109,7 @@
             <xsd:element name="mapping" type="mapping" />
             <xsd:element name="metadata-cache-driver" type="metadata_cache_driver" minOccurs="0" maxOccurs="1" />
             <xsd:element name="dql" type="dql" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="filter" type="filter" minOccurs="0" maxOccurs="unbounded" />
         </xsd:choice>
 
         <xsd:attribute name="auto-mapping" type="xsd:string" />
@@ -140,6 +141,7 @@
             <xsd:element name="metadata-cache-driver" type="metadata_cache_driver" minOccurs="0" maxOccurs="1" />
             <xsd:element name="dql" type="dql" minOccurs="0" maxOccurs="1" />
             <xsd:element name="hydrator" type="type" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="filter" type="filter" minOccurs="0" maxOccurs="unbounded" />
         </xsd:choice>
 
         <xsd:attribute name="auto-mapping" type="xsd:string" />
@@ -148,6 +150,15 @@
         <xsd:attribute name="result-cache-driver" type="xsd:string" />
         <xsd:attribute name="metadata-cache-driver" type="xsd:string" />
         <xsd:attribute name="query-cache-driver" type="xsd:string" />
+    </xsd:complexType>
+
+    <xsd:complexType name="filter">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name" type="xsd:string" use="required" />
+                <xsd:attribute name="enabled" type="xsd:boolean" />
+            </xsd:extension>
+        </xsd:simpleContent>
     </xsd:complexType>
 
     <xsd:complexType name="dql">
