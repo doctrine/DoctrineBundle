@@ -18,6 +18,15 @@ use Doctrine\ORM\Mapping\ClassMetadataInfo;
 
 class MetadataFactoryTest extends TestCase
 {
+    protected function setUp()
+    {
+        parent::setUp();
+
+        if (!class_exists('Doctrine\\ORM\\Version')) {
+            $this->markTestSkipped('Doctrine ORM is not available.');
+        }
+    }
+
     public function testFindNamespaceAndPathForMetadata()
     {
         $class = new ClassMetadataInfo(__CLASS__);

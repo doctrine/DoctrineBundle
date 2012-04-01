@@ -18,6 +18,15 @@ use Doctrine\DBAL\Types\Type;
 
 class ContainerTest extends TestCase
 {
+    protected function setUp()
+    {
+        parent::setUp();
+
+        if (!class_exists('Doctrine\\ORM\\Version')) {
+            $this->markTestSkipped('Doctrine ORM is not available.');
+        }
+    }
+
     public function testContainer()
     {
         $container = $this->createYamlBundleTestContainer();

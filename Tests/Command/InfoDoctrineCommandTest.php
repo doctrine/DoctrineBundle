@@ -23,6 +23,15 @@ require_once __DIR__.'/../DependencyInjection/Fixtures/Bundles/YamlBundle/Entity
 
 class InfoDoctrineCommandTest extends TestCase
 {
+    protected function setUp()
+    {
+        parent::setUp();
+
+        if (!class_exists('Doctrine\\ORM\\Version')) {
+            $this->markTestSkipped('Doctrine ORM is not available.');
+        }
+    }
+
     public function testAnnotationsBundle()
     {
         $input = new StringInput('doctrine:mapping:info');

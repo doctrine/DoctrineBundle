@@ -59,9 +59,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $loader = new DoctrineExtension();
         $container->registerExtension($loader);
 
-        $loadXml = new XmlFileLoader($container, new FileLocator(__DIR__.'/Fixtures/config/xml'));
-        $loadXml->load('dbal_service_multiple_connections.xml');
-        $loader->load(array(array()), $container);
+        $this->loadFromFile($container, 'dbal_service_multiple_connections');
 
         $this->compileContainer($container);
 
@@ -88,9 +86,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $loader = new DoctrineExtension();
         $container->registerExtension($loader);
 
-        $loadXml = new XmlFileLoader($container, new FileLocator(__DIR__.'/Fixtures/config/xml'));
-        $loadXml->load('dbal_service_single_connection.xml');
-        $loader->load(array(array()), $container);
+        $this->loadFromFile($container, 'dbal_service_single_connection');
 
         $this->compileContainer($container);
 
