@@ -49,8 +49,8 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $config = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
-        $this->assertEquals('foo', $config['password']);
-        $this->assertEquals('root', $config['user']);
+        $this->assertEquals('foo', $config['master']['password']);
+        $this->assertEquals('root', $config['master']['user']);
     }
 
     public function testDbalLoadFromXmlMultipleConnections()
@@ -66,9 +66,9 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         // doctrine.dbal.mysql_connection
         $config = $container->getDefinition('doctrine.dbal.mysql_connection')->getArgument(0);
 
-        $this->assertEquals('mysql_s3cr3t', $config['password']);
-        $this->assertEquals('mysql_user', $config['user']);
-        $this->assertEquals('mysql_db', $config['dbname']);
+        $this->assertEquals('mysql_s3cr3t', $config['master']['password']);
+        $this->assertEquals('mysql_user', $config['master']['user']);
+        $this->assertEquals('mysql_db', $config['master']['dbname']);
         $this->assertEquals('/path/to/mysqld.sock', $config['unix_socket']);
 
         // doctrine.dbal.sqlite_connection
@@ -93,9 +93,9 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         // doctrine.dbal.mysql_connection
         $config = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
-        $this->assertEquals('mysql_s3cr3t', $config['password']);
-        $this->assertEquals('mysql_user', $config['user']);
-        $this->assertEquals('mysql_db', $config['dbname']);
+        $this->assertEquals('mysql_s3cr3t', $config['master']['password']);
+        $this->assertEquals('mysql_user', $config['master']['user']);
+        $this->assertEquals('mysql_db', $config['master']['dbname']);
         $this->assertEquals('/path/to/mysqld.sock', $config['unix_socket']);
     }
 
@@ -141,8 +141,8 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $args = $definition->getArguments();
         $this->assertEquals('pdo_mysql', $args[0]['driver']);
-        $this->assertEquals('localhost', $args[0]['host']);
-        $this->assertEquals('root', $args[0]['user']);
+        $this->assertEquals('localhost', $args[0]['master']['host']);
+        $this->assertEquals('root', $args[0]['master']['user']);
         $this->assertEquals('doctrine.dbal.default_connection.configuration', (string) $args[1]);
         $this->assertEquals('doctrine.dbal.default_connection.event_manager', (string) $args[2]);
 
@@ -211,13 +211,25 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertDICConstructorArguments($definition, array(
             array(
-                'dbname' => 'db',
-                'host' => 'localhost',
-                'port' => null,
-                'user' => 'root',
-                'password' => null,
+                'master' => array(
+                    'dbname' => 'db',
+                    'host' => 'localhost',
+                    'port' => null,
+                    'user' => 'root',
+                    'password' => null,
+                ),
+                'slaves' => array(
+                    'slave1' => array(
+                        'dbname' => 'db',
+                        'host' => 'localhost',
+                        'port' => null,
+                        'user' => 'root',
+                        'password' => null,
+                    ),
+                ),
                 'driver' => 'pdo_mysql',
                 'driverOptions' => array(),
+                'wrapperClass' => 'Doctrine\\DBAL\\Connections\\MasterSlaveConnection'
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -248,14 +260,26 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertDICConstructorArguments($definition, array(
             array(
-                'host' => 'localhost',
+                'master' => array(
+                    'host' => 'localhost',
+                    'user' => 'sqlite_user',
+                    'port' => null,
+                    'password' => 'sqlite_s3cr3t',
+                    'dbname' => 'sqlite_db',
+                ),
+                'slaves' => array(
+                    'slave1' => array(
+                        'host' => 'localhost',
+                        'user' => 'sqlite_user',
+                        'port' => null,
+                        'password' => 'sqlite_s3cr3t',
+                        'dbname' => 'sqlite_db',
+                    ),
+                ),
                 'driver' => 'pdo_sqlite',
                 'driverOptions' => array(),
-                'user' => 'sqlite_user',
-                'port' => null,
-                'password' => 'sqlite_s3cr3t',
-                'dbname' => 'sqlite_db',
                 'memory' => true,
+                'wrapperClass' => 'Doctrine\\DBAL\\Connections\\MasterSlaveConnection'
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -286,8 +310,8 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $args = $definition->getArguments();
         $this->assertEquals('pdo_sqlite', $args[0]['driver']);
-        $this->assertEquals('localhost', $args[0]['host']);
-        $this->assertEquals('sqlite_user', $args[0]['user']);
+        $this->assertEquals('localhost', $args[0]['master']['host']);
+        $this->assertEquals('sqlite_user', $args[0]['master']['user']);
         $this->assertEquals('doctrine.dbal.conn1_connection.configuration', (string) $args[1]);
         $this->assertEquals('doctrine.dbal.conn1_connection.event_manager', (string) $args[2]);
 
@@ -308,8 +332,8 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $args = $definition->getArguments();
         $this->assertEquals('pdo_sqlite', $args[0]['driver']);
-        $this->assertEquals('localhost', $args[0]['host']);
-        $this->assertEquals('sqlite_user', $args[0]['user']);
+        $this->assertEquals('localhost', $args[0]['master']['host']);
+        $this->assertEquals('sqlite_user', $args[0]['master']['user']);
         $this->assertEquals('doctrine.dbal.conn2_connection.configuration', (string) $args[1]);
         $this->assertEquals('doctrine.dbal.conn2_connection.event_manager', (string) $args[2]);
 
