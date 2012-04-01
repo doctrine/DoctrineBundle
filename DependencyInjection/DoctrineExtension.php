@@ -175,6 +175,28 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         }
 
+        if (!empty($options['slaves'])) {
+            $nonRewrittenKeys = array(
+                'driver' => true, 'driverOptions' => true, 'driverClass' => true, 'wrapperClass' => true,
+                'platform' => true, 'slaves' => true, 'master' => true,
+                // included by safety but should have been unset already
+                'logging' => true, 'profiling' => true, 'mapping_types' => true, 'platform_service' => true,
+            );
+            foreach ($options as $key => $value) {
+                if (isset($nonRewrittenKeys[$key])) {
+                    continue;
+                }
+                $options['master'][$key] = $value;
+                unset($options[$key]);
+            }
+            if (empty($options['wrapperClass'])) {
+                // Change the wrapper class only if the user does not already forced using a custom one.
+                $options['wrapperClass'] = 'Doctrine\\DBAL\\Connections\\MasterSlaveConnection';
+            }
+        } else {
+            unset($options['slaves']);
+        }
+
         return $options;
     }
 
