@@ -15,21 +15,31 @@
     </xsd:element>
 
     <xsd:attributeGroup name="connection-config">
+        <xsd:attribute name="driver" type="xsd:string" />
+        <xsd:attribute name="driver-class" type="xsd:string" />
+        <xsd:attribute name="wrapper-class" type="xsd:string" />
+        <xsd:attribute name="platform-service" type="xsd:string" />
+        <xsd:attribute name="logging" type="xsd:string" default="false" />
+        <xsd:attribute name="profiling" type="xsd:string" default="false" />
+        <xsd:attributeGroup ref="driver-config" />
+    </xsd:attributeGroup>
+
+    <xsd:attributeGroup name="driver-config">
         <xsd:attribute name="dbname" type="xsd:string" />
         <xsd:attribute name="host" type="xsd:string" />
         <xsd:attribute name="port" type="xsd:integer" />
         <xsd:attribute name="user" type="xsd:string" />
         <xsd:attribute name="password" type="xsd:string" />
-        <xsd:attribute name="driver" type="xsd:string" />
-        <xsd:attribute name="driver-class" type="xsd:string" />
         <xsd:attribute name="path" type="xsd:string" />
         <xsd:attribute name="unix-socket" type="xsd:string" />
         <xsd:attribute name="memory" type="xsd:boolean" />
         <xsd:attribute name="charset" type="xsd:string" />
-        <xsd:attribute name="wrapper-class" type="xsd:string" />
-        <xsd:attribute name="platform-service" type="xsd:string" />
-        <xsd:attribute name="logging" type="xsd:string" default="false" />
-        <xsd:attribute name="profiling" type="xsd:string" default="false" />
+        <xsd:attribute name="persistent" type="xsd:boolean" />
+        <xsd:attribute name="protocol" type="xsd:string" />
+        <xsd:attribute name="service" type="xsd:boolean" />
+        <xsd:attribute name="session-mode" type="xsd:string" />
+        <xsd:attribute name="pooled" type="xsd:boolean" />
+        <xsd:attribute name="multiple-active-result-sets" type="xsd:boolean" />
     </xsd:attributeGroup>
 
     <xsd:complexType name="dbal">
@@ -38,6 +48,7 @@
             <xsd:element name="type" type="type" />
             <xsd:element name="option" type="option" />
             <xsd:element name="mapping-type" type="mapping-type" />
+            <xsd:element name="slave" type="slave" />
         </xsd:choice>
 
         <xsd:attribute name="default-connection" type="xsd:string" />
@@ -72,9 +83,15 @@
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="option" type="option" />
             <xsd:element name="mapping-type" type="mapping-type" />
+            <xsd:element name="slave" type="slave" />
         </xsd:choice>
         <xsd:attribute name="name" type="xsd:string" use="required" />
         <xsd:attributeGroup ref="connection-config" />
+    </xsd:complexType>
+
+    <xsd:complexType name="slave">
+        <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attributeGroup ref="driver-config" />
     </xsd:complexType>
 
     <xsd:complexType name="mapping">

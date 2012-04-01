@@ -77,12 +77,21 @@ class Configuration implements ConfigurationInterface
                             'path',
                             'memory',
                             'unix_socket',
+                            'persistent',
+                            'service',
+                            'protocol',
+                            'session_mode',
                             'wrapper_class',
                             'platform_service',
                             'charset',
                             'logging',
                             'profiling',
                             'mapping_types',
+                            'slaves',
+                            // XML variants
+                            'slave',
+                            'option',
+                            'mapping_type'
                         ) as $key) {
                             if (array_key_exists($key, $v)) {
                                 $connection[$key] = $v[$key];
@@ -125,40 +134,96 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $node = $treeBuilder->root('connections');
 
-        $node
+        /** @var $connectionNode ArrayNodeDefinition */
+        $connectionNode = $node
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
             ->prototype('array')
-                ->fixXmlConfig('mapping_type')
-                ->children()
-                    ->scalarNode('dbname')->end()
-                    ->scalarNode('host')->defaultValue('localhost')->end()
-                    ->scalarNode('port')->defaultNull()->end()
-                    ->scalarNode('user')->defaultValue('root')->end()
-                    ->scalarNode('password')->defaultNull()->end()
-                    ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
-                    ->scalarNode('path')->end()
-                    ->booleanNode('memory')->end()
-                    ->scalarNode('unix_socket')->end()
-                    ->scalarNode('platform_service')->end()
-                    ->scalarNode('charset')->end()
-                    ->booleanNode('logging')->defaultValue($this->debug)->end()
-                    ->booleanNode('profiling')->defaultValue($this->debug)->end()
-                    ->scalarNode('driver_class')->end()
-                    ->scalarNode('wrapper_class')->end()
-                    ->arrayNode('options')
-                        ->useAttributeAsKey('key')
-                        ->prototype('scalar')->end()
-                    ->end()
-                    ->arrayNode('mapping_types')
-                        ->useAttributeAsKey('name')
-                        ->prototype('scalar')->end()
-                    ->end()
+        ;
+
+        $this->configureDbalDriverNode($connectionNode);
+
+        $connectionNode
+            ->fixXmlConfig('option')
+            ->fixXmlConfig('mapping_type')
+            ->fixXmlConfig('slave')
+            ->children()
+                ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
+                ->scalarNode('platform_service')->end()
+                ->booleanNode('logging')->defaultValue($this->debug)->end()
+                ->booleanNode('profiling')->defaultValue($this->debug)->end()
+                ->scalarNode('driver_class')->end()
+                ->scalarNode('wrapper_class')->end()
+                ->arrayNode('options')
+                    ->useAttributeAsKey('key')
+                    ->prototype('scalar')->end()
+                ->end()
+                ->arrayNode('mapping_types')
+                    ->useAttributeAsKey('name')
+                    ->prototype('scalar')->end()
                 ->end()
             ->end()
         ;
 
+        $slaveNode = $connectionNode
+            ->children()
+                ->arrayNode('slaves')
+                    ->useAttributeAsKey('name')
+                    ->prototype('array')
+        ;
+        $this->configureDbalDriverNode($slaveNode);
+
         return $node;
+    }
+
+    /**
+     * Adds config keys related to params processed by the DBAL drivers
+     *
+     * These keys are available for slave configurations too.
+     *
+     * @param \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition $node
+     */
+    private function configureDbalDriverNode(ArrayNodeDefinition $node)
+    {
+        $node
+            ->children()
+                ->scalarNode('dbname')->end()
+                ->scalarNode('host')->defaultValue('localhost')->end()
+                ->scalarNode('port')->defaultNull()->end()
+                ->scalarNode('user')->defaultValue('root')->end()
+                ->scalarNode('password')->defaultNull()->end()
+                ->scalarNode('charset')->end()
+                ->scalarNode('path')->end()
+                ->booleanNode('memory')->end()
+                ->scalarNode('unix_socket')->setInfo('The unix socket to use for MySQL')->end()
+                ->booleanNode('persistent')->setInfo('True to use as persistent connection for the ibm_db2 driver')->end()
+                ->scalarNode('protocol')->setInfo('The protocol to use for the ibm_db2 driver (default to TCPIP if ommited)')->end()
+                ->booleanNode('service')->setInfo('True to use dbname as service name instead of SID for Oracle')->end()
+                ->scalarNode('sessionMode')
+                    ->setInfo('The session mode to use for the oci8 driver')
+                ->end()
+                ->booleanNode('pooled')->setInfo('True to use a pooled server with the oci8 driver')->end()
+                ->booleanNode('MultipleActiveResultSets')->setInfo('Configuring MultipleActiveResultSets for the pdo_sqlsrv driver')->end()
+            ->end()
+            ->beforeNormalization()
+                ->ifTrue(function($v) {return !isset($v['sessionMode']) && isset($v['session_mode']);})
+                ->then(function($v) {
+                    $v['sessionMode'] = $v['session_mode'];
+                    unset($v['session_mode']);
+
+                    return $v;
+                })
+            ->end()
+            ->beforeNormalization()
+                ->ifTrue(function($v) {return !isset($v['MultipleActiveResultSets']) && isset($v['multiple_active_result_sets']);})
+                ->then(function($v) {
+                    $v['MultipleActiveResultSets'] = $v['multiple_active_result_sets'];
+                    unset($v['multiple_active_result_sets']);
+
+                    return $v;
+                })
+            ->end()
+        ;
     }
 
     private function addOrmSection(ArrayNodeDefinition $node)
