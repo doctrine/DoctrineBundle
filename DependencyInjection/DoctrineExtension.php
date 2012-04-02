@@ -288,6 +288,20 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         }
 
+        $enabledFilters = array();
+        foreach ($entityManager['filters'] as $name => $filter) {
+            $ormConfigDef->addMethodCall('addFilter', array($name, $filter['class']));
+            if ($filter['enabled']) {
+                $enabledFilters[] = $name;
+            }
+        }
+
+        $managerConfiguratorName = sprintf('doctrine.orm.%s_manager_configurator', $entityManager['name']);
+        $managerConfiguratorDef = $container
+            ->setDefinition($managerConfiguratorName, new DefinitionDecorator('doctrine.orm.manager_configurator.abstract'))
+            ->replaceArgument(0, $enabledFilters)
+        ;
+
         if (!isset($entityManager['connection'])) {
             $entityManager['connection'] = $this->defaultConnection;
         }
@@ -298,6 +312,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 new Reference(sprintf('doctrine.dbal.%s_connection', $entityManager['connection'])),
                 new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager['name']))
             ))
+            ->setConfigurator(array(new Reference($managerConfiguratorName), 'configure'))
         ;
 
         $container->setAlias(
