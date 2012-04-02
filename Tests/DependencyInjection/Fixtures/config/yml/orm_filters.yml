@@ -1,0 +1,12 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        filters:
+            soft_delete:
+                class: Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter
+                enabled: true

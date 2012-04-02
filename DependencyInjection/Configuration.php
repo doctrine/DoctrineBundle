@@ -311,6 +311,33 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
+                ->fixXmlConfig('filter')
+                ->children()
+                    ->arrayNode('filters')
+                        ->setInfo('Register SQL Filters in the entity manager')
+                        ->useAttributeAsKey('name')
+                        ->prototype('array')
+                            ->beforeNormalization()
+                                ->ifString()
+                                ->then(function($v) { return array('class' => $v); })
+                            ->end()
+                            ->beforeNormalization()
+                                // The content of the XML node is returned as the "value" key so we need to rename it
+                                ->ifTrue(function($v) {return is_array($v) && isset($v['value']); })
+                                ->then(function($v) {
+                                    $v['class'] = $v['value'];
+                                    unset($v['value']);
+
+                                    return $v;
+                                })
+                            ->end()
+                            ->children()
+                                ->scalarNode('class')->isRequired()->end()
+                                ->booleanNode('enabled')->defaultFalse()->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
             ->end()
         ;
 

@@ -7,6 +7,7 @@
     <parameters>
         <parameter key="doctrine.orm.configuration.class">Doctrine\ORM\Configuration</parameter>
         <parameter key="doctrine.orm.entity_manager.class">Doctrine\ORM\EntityManager</parameter>
+        <parameter key="doctrine.orm.manager_configurator.class">Doctrine\Bundle\DoctrineBundle\ManagerConfigurator</parameter>
 
         <!-- cache -->
         <parameter key="doctrine.orm.cache.array.class">Doctrine\Common\Cache\ArrayCache</parameter>
@@ -65,6 +66,10 @@
         <service id="doctrine.orm.configuration" class="%doctrine.orm.configuration.class%" abstract="true" public="false" />
 
         <service id="doctrine.orm.entity_manager.abstract" class="%doctrine.orm.entity_manager.class%" factory-class="%doctrine.orm.entity_manager.class%" factory-method="create" abstract="true" />
+
+        <service id="doctrine.orm.manager_configurator.abstract" class="%doctrine.orm.manager_configurator.class%" abstract="true" public="false">
+            <argument type="collection" />
+        </service>
 
         <!-- validator -->
         <service id="doctrine.orm.validator.unique" class="%doctrine.orm.validator.unique.class%">
