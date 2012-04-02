@@ -67,7 +67,8 @@
 
         <service id="doctrine.orm.entity_manager.abstract" class="%doctrine.orm.entity_manager.class%" factory-class="%doctrine.orm.entity_manager.class%" factory-method="create" abstract="true" />
 
-        <service id="doctrine.orm.manager_configurator.abstract" class="%doctrine.orm.manager_configurator.class%" abstract="true" public="false">
+        <!-- The configurator cannot be a private service -->
+        <service id="doctrine.orm.manager_configurator.abstract" class="%doctrine.orm.manager_configurator.class%" abstract="true">
             <argument type="collection" />
         </service>
 
