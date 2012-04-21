@@ -411,8 +411,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $cacheDriverService = sprintf('doctrine.orm.%s_%s', $entityManager['name'], $cacheName);
 
         $driver = $cacheName."_driver";
-        $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $entityManager[$driver], $container);
-        $container->setDefinition($cacheDriverService, $cacheDef);
+        $cacheDriver = $entityManager[$driver];
+
+        if ('service' === $cacheDriver['type']) {
+            $container->setAlias($cacheDriverService, $cacheDriver['id']);
+        } else {
+            $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
+            $container->setDefinition($cacheDriverService, $cacheDef);
+        }
     }
 
     /**
