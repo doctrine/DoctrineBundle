@@ -7,11 +7,11 @@
     {% endset %}
     {% set text %}
         <div class="sf-toolbar-info-piece">
-            <b>DB Requests</b>
+            <b>DB Queries</b>
             <span>{{ collector.querycount }}</span>
         </div>
         <div class="sf-toolbar-info-piece">
-            <b>Request time</b>
+            <b>Query time</b>
             <span>{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
         </div>
     {% endset %}
