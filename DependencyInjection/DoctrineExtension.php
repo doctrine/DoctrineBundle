@@ -414,7 +414,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $cacheDriver = $entityManager[$driver];
 
         if ('service' === $cacheDriver['type']) {
-            $container->setAlias($cacheDriverService, $cacheDriver['id']);
+            $container->setAlias($cacheDriverService, new Alias($cacheDriver['id'], false));
         } else {
             $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
             $container->setDefinition($cacheDriverService, $cacheDef);
