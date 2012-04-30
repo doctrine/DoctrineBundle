@@ -443,7 +443,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $memcacheInstance->addMethodCall('connect', array(
                     $memcacheHost, $memcachePort
                 ));
-                $container->setDefinition(sprintf('doctrine.orm.%s%_%s_memcache_instance', $entityManager['name'], $cacheDriverType), $memcacheInstance);
+                $container->setDefinition(sprintf('doctrine.orm.%s_%s_memcache_instance', $entityManager['name'], $cacheDriverType), $memcacheInstance);
                 $cacheDef->addMethodCall('setMemcache', array(new Reference(sprintf('doctrine.orm.%s_%s_memcache_instance', $entityManager['name'], $cacheDriverType))));
                 break;
             case 'memcached':

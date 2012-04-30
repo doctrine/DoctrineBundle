@@ -535,10 +535,10 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $definition = $container->getDefinition('doctrine.orm.default_metadata_cache');
         $this->assertDICDefinitionClass($definition, 'Doctrine\Common\Cache\MemcacheCache');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setMemcache',
-            array(new Reference('doctrine.orm.default_memcache_instance'))
+            array(new Reference('doctrine.orm.default_metadata_memcache_instance'))
         );
 
-        $definition = $container->getDefinition('doctrine.orm.default_memcache_instance');
+        $definition = $container->getDefinition('doctrine.orm.default_metadata_memcache_instance');
         $this->assertDICDefinitionClass($definition, 'Memcache');
         $this->assertDICDefinitionMethodCallOnce($definition, 'connect', array(
             'localhost', '11211'
