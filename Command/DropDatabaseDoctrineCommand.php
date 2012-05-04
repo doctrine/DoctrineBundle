@@ -66,7 +66,7 @@ EOT
 
         if ($input->getOption('force')) {
             try {
-                $connection->getSchemaManager()->dropDatabase($name);
+                $connection->getSchemaManager()->dropDatabase($connection->getDatabasePlatform()->quoteSingleIdentifier($name));
                 $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
             } catch (\Exception $e) {
                 $output->writeln(sprintf('<error>Could not drop database for connection named <comment>%s</comment></error>', $name));

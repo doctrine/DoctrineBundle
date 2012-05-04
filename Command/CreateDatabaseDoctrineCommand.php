@@ -59,7 +59,7 @@ EOT
         $tmpConnection = DriverManager::getConnection($params);
 
         try {
-            $tmpConnection->getSchemaManager()->createDatabase($name);
+            $tmpConnection->getSchemaManager()->createDatabase($tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name));
             $output->writeln(sprintf('<info>Created database for connection named <comment>%s</comment></info>', $name));
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Could not create database for connection named <comment>%s</comment></error>', $name));
