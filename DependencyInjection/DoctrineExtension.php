@@ -416,7 +416,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if ('service' === $cacheDriver['type']) {
             $container->setAlias($cacheDriverService, new Alias($cacheDriver['id'], false));
         } else {
-            $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
+            $cacheDriverType = str_replace('_cache', '', $cacheName);
+            $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriverType, $entityManager[$driver], $container);
             $container->setDefinition($cacheDriverService, $cacheDef);
         }
     }
@@ -429,7 +430,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * @param ContainerBuilder $container
      * @return Definition $cacheDef
      */
-    protected function getEntityManagerCacheDefinition(array $entityManager, $cacheDriver, ContainerBuilder $container)
+    protected function getEntityManagerCacheDefinition(array $entityManager, $cacheDriverType, $cacheDriver, ContainerBuilder $container)
     {
         switch ($cacheDriver['type']) {
             case 'memcache':
@@ -442,8 +443,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $memcacheInstance->addMethodCall('connect', array(
                     $memcacheHost, $memcachePort
                 ));
-                $container->setDefinition(sprintf('doctrine.orm.%s_memcache_instance', $entityManager['name']), $memcacheInstance);
-                $cacheDef->addMethodCall('setMemcache', array(new Reference(sprintf('doctrine.orm.%s_memcache_instance', $entityManager['name']))));
+                $container->setDefinition(sprintf('doctrine.orm.%s_%s_memcache_instance', $entityManager['name'], $cacheDriverType), $memcacheInstance);
+                $cacheDef->addMethodCall('setMemcache', array(new Reference(sprintf('doctrine.orm.%s_%s_memcache_instance', $entityManager['name'], $cacheDriverType))));
                 break;
             case 'memcached':
                 $memcachedClass = !empty($cacheDriver['class']) ? $cacheDriver['class'] : '%doctrine.orm.cache.memcached.class%';
@@ -455,8 +456,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $memcachedInstance->addMethodCall('addServer', array(
                     $memcachedHost, $memcachedPort
                 ));
-                $container->setDefinition(sprintf('doctrine.orm.%s_memcached_instance', $entityManager['name']), $memcachedInstance);
-                $cacheDef->addMethodCall('setMemcached', array(new Reference(sprintf('doctrine.orm.%s_memcached_instance', $entityManager['name']))));
+                $container->setDefinition(sprintf('doctrine.orm.%s_%s_memcached_instance', $entityManager['name'], $cacheDriverType), $memcachedInstance);
+                $cacheDef->addMethodCall('setMemcached', array(new Reference(sprintf('doctrine.orm.%s_%s_memcached_instance', $entityManager['name'], $cacheDriverType))));
                 break;
             case 'apc':
             case 'array':
@@ -469,7 +470,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $cacheDef->setPublic(false);
         // generate a unique namespace for the given application
-        $namespace = 'sf2orm_'.$entityManager['name'].'_'.md5($container->getParameter('kernel.root_dir').$container->getParameter('kernel.environment'));
+        $namespace = 'sf2orm_'.$entityManager['name'].'_'.$cacheDriverType.'_'.md5($container->getParameter('kernel.root_dir').$container->getParameter('kernel.environment'));
         $cacheDef->addMethodCall('setNamespace', array($namespace));
 
         return $cacheDef;
