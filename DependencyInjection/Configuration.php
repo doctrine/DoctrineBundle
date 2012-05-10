@@ -356,7 +356,7 @@ class Configuration implements ConfigurationInterface
                 ->then(function($v) { return array('type' => $v); })
             ->end()
             ->children()
-                ->scalarNode('type')->defaultValue('array')->isRequired()->end()
+                ->scalarNode('type')->defaultValue('array')->end()
                 ->scalarNode('host')->end()
                 ->scalarNode('port')->end()
                 ->scalarNode('instance_class')->end()
