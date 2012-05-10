@@ -394,85 +394,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function loadOrmCacheDrivers(array $entityManager, ContainerBuilder $container)
     {
-        $this->loadOrmEntityManagerCacheDriver($entityManager, $container, 'metadata_cache');
-        $this->loadOrmEntityManagerCacheDriver($entityManager, $container, 'result_cache');
-        $this->loadOrmEntityManagerCacheDriver($entityManager, $container, 'query_cache');
-    }
-
-    /**
-     * Loads a configured entity managers metadata, query or result cache driver.
-     *
-     * @param array            $entityManager A configured ORM entity manager.
-     * @param ContainerBuilder $container A ContainerBuilder instance
-     * @param string           $cacheName
-     */
-    protected function loadOrmEntityManagerCacheDriver(array $entityManager, ContainerBuilder $container, $cacheName)
-    {
-        $cacheDriverService = sprintf('doctrine.orm.%s_%s', $entityManager['name'], $cacheName);
-
-        $driver = $cacheName."_driver";
-        $cacheDriver = $entityManager[$driver];
-
-        if ('service' === $cacheDriver['type']) {
-            $container->setAlias($cacheDriverService, new Alias($cacheDriver['id'], false));
-        } else {
-            $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
-            $container->setDefinition($cacheDriverService, $cacheDef);
-        }
-    }
-
-    /**
-     * Gets an entity manager cache driver definition for metadata, query and result caches.
-     *
-     * @param array            $entityManager The array configuring an entity manager.
-     * @param array            $cacheDriver The cache driver configuration.
-     * @param ContainerBuilder $container
-     * @return Definition $cacheDef
-     */
-    protected function getEntityManagerCacheDefinition(array $entityManager, $cacheDriver, ContainerBuilder $container)
-    {
-        switch ($cacheDriver['type']) {
-            case 'memcache':
-                $memcacheClass = !empty($cacheDriver['class']) ? $cacheDriver['class'] : '%doctrine.orm.cache.memcache.class%';
-                $memcacheInstanceClass = !empty($cacheDriver['instance_class']) ? $cacheDriver['instance_class'] : '%doctrine.orm.cache.memcache_instance.class%';
-                $memcacheHost = !empty($cacheDriver['host']) ? $cacheDriver['host'] : '%doctrine.orm.cache.memcache_host%';
-                $memcachePort = !empty($cacheDriver['port']) ? $cacheDriver['port'] : '%doctrine.orm.cache.memcache_port%';
-                $cacheDef = new Definition($memcacheClass);
-                $memcacheInstance = new Definition($memcacheInstanceClass);
-                $memcacheInstance->addMethodCall('connect', array(
-                    $memcacheHost, $memcachePort
-                ));
-                $container->setDefinition(sprintf('doctrine.orm.%s_memcache_instance', $entityManager['name']), $memcacheInstance);
-                $cacheDef->addMethodCall('setMemcache', array(new Reference(sprintf('doctrine.orm.%s_memcache_instance', $entityManager['name']))));
-                break;
-            case 'memcached':
-                $memcachedClass = !empty($cacheDriver['class']) ? $cacheDriver['class'] : '%doctrine.orm.cache.memcached.class%';
-                $memcachedInstanceClass = !empty($cacheDriver['instance_class']) ? $cacheDriver['instance_class'] : '%doctrine.orm.cache.memcached_instance.class%';
-                $memcachedHost = !empty($cacheDriver['host']) ? $cacheDriver['host'] : '%doctrine.orm.cache.memcached_host%';
-                $memcachedPort = !empty($cacheDriver['port']) ? $cacheDriver['port'] : '%doctrine.orm.cache.memcached_port%';
-                $cacheDef = new Definition($memcachedClass);
-                $memcachedInstance = new Definition($memcachedInstanceClass);
-                $memcachedInstance->addMethodCall('addServer', array(
-                    $memcachedHost, $memcachedPort
-                ));
-                $container->setDefinition(sprintf('doctrine.orm.%s_memcached_instance', $entityManager['name']), $memcachedInstance);
-                $cacheDef->addMethodCall('setMemcached', array(new Reference(sprintf('doctrine.orm.%s_memcached_instance', $entityManager['name']))));
-                break;
-            case 'apc':
-            case 'array':
-            case 'xcache':
-                $cacheDef = new Definition('%'.sprintf('doctrine.orm.cache.%s.class', $cacheDriver['type']).'%');
-                break;
-            default:
-                throw new \InvalidArgumentException(sprintf('"%s" is an unrecognized Doctrine cache driver.', $cacheDriver['type']));
-        }
-
-        $cacheDef->setPublic(false);
-        // generate a unique namespace for the given application
-        $namespace = 'sf2orm_'.$entityManager['name'].'_'.md5($container->getParameter('kernel.root_dir').$container->getParameter('kernel.environment'));
-        $cacheDef->addMethodCall('setNamespace', array($namespace));
-
-        return $cacheDef;
+        $this->loadObjectManagerCacheDriver($entityManager, $container, 'metadata_cache');
+        $this->loadObjectManagerCacheDriver($entityManager, $container, 'result_cache');
+        $this->loadObjectManagerCacheDriver($entityManager, $container, 'query_cache');
     }
 
     /**
