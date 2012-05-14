@@ -42,6 +42,9 @@
 
         <!-- security -->
         <parameter key="doctrine.orm.security.user.provider.class">Symfony\Bridge\Doctrine\Security\User\EntityUserProvider</parameter>
+
+        <!-- listeners -->
+        <parameter key="doctrine.orm.listeners.resolve_target_entity.class">Doctrine\ORM\Tools\ResolveTargetEntityListener</parameter>
     </parameters>
 
     <services>
@@ -87,5 +90,8 @@
         <service id="doctrine.orm.security.user.provider" class="%doctrine.orm.security.user.provider.class%" abstract="true" public="false">
             <argument type="service" id="doctrine" />
         </service>
+
+        <!-- listeners -->
+        <service id="doctrine.orm.listeners.resolve_target_entity" class="%doctrine.orm.listeners.resolve_target_entity.class%" public="false" />
     </services>
 </container>

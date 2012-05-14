@@ -214,7 +214,8 @@ class Configuration implements ConfigurationInterface
                             // Key that should not be rewritten to the connection config
                             $excludedKeys = array(
                                 'default_entity_manager' => true, 'auto_generate_proxy_classes' => true,
-                                'proxy_dir' => true, 'proxy_namespace' => true,
+                                'proxy_dir' => true, 'proxy_namespace' => true, 'resolve_target_entities' => true,
+                                'resolve_target_entity' => true,
                             );
                             $entityManager = array();
                             foreach ($v as $key => $value) {
@@ -238,9 +239,25 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->fixXmlConfig('entity_manager')
                     ->append($this->getOrmEntityManagersNode())
+                    ->fixXmlConfig('resolve_target_entity', 'resolve_target_entities')
+                    ->append($this->getOrmTargetEntityResolverNode())
                 ->end()
             ->end()
         ;
+    }
+
+    private function getOrmTargetEntityResolverNode()
+    {
+        $treeBuilder = new TreeBuilder();
+        $node = $treeBuilder->root('resolve_target_entities');
+
+        $node
+            ->useAttributeAsKey('interface')
+            ->prototype('scalar')
+            ->end()
+        ;
+
+        return $node;
     }
 
     private function getOrmEntityManagersNode()
