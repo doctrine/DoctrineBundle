@@ -1,0 +1,10 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        resolve_target_entities:
+            Symfony\Component\Security\Core\User\UserInterface: MyUserClass

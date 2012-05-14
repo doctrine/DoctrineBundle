@@ -30,6 +30,7 @@ class ContainerTest extends TestCase
     public function testContainer()
     {
         $container = $this->createYamlBundleTestContainer();
+
         $this->assertInstanceOf('Symfony\Bridge\Doctrine\Logger\DbalLogger', $container->get('doctrine.dbal.logger'));
         $this->assertInstanceOf('Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector', $container->get('data_collector.doctrine'));
         $this->assertInstanceOf('Doctrine\DBAL\Configuration', $container->get('doctrine.dbal.default_connection.configuration'));
