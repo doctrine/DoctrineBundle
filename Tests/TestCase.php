@@ -15,10 +15,12 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
+use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 
 class TestCase extends \PHPUnit_Framework_TestCase
 {
@@ -63,8 +65,11 @@ class TestCase extends \PHPUnit_Framework_TestCase
                         'dir' => __DIR__.'/DependencyInjection/Fixtures/Bundles/YamlBundle/Resources/config/doctrine',
                         'prefix' => 'Fixtures\Bundles\YamlBundle\Entity',
                     )
-                )
-            )))
+                ))),
+                'resolve_target_entities' => array(
+                    'Symfony\Component\Security\Core\User\UserInterface' => 'stdClass',
+                ),
+            )
         )), $container);
 
         $container->setDefinition('my.platform', new \Symfony\Component\DependencyInjection\Definition('Doctrine\DBAL\Platforms\MySqlPlatform'));

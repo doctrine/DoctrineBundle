@@ -733,6 +733,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $loader = new DoctrineExtension();
         $container->registerExtension($loader);
+
         $this->loadFromFile($container, 'orm_filters');
         $this->compileContainer($container);
 
@@ -746,6 +747,21 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         /** @var $entityManager \Doctrine\ORM\EntityManager */
         $entityManager = $container->get('doctrine.orm.entity_manager');
         $this->assertCount(1, $entityManager->getFilters()->getEnabledFilters());
+    }
+
+    public function testResolveTargetEntity()
+    {
+        $container = $this->getContainer(array('YamlBundle'));
+
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'orm_resolve_target_entity');
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.orm.listeners.resolve_target_entity');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addResolveTargetEntity', array('Symfony\Component\Security\Core\User\UserInterface', 'MyUserClass', array()));
+        $this->assertEquals(array('doctrine.event_listener' => array( array('event' => 'loadClassMetadata') ) ), $definition->getTags());
     }
 
     protected function getContainer($bundles = 'YamlBundle', $vendor = null)
