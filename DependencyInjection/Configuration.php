@@ -254,6 +254,7 @@ class Configuration implements ConfigurationInterface
         $node
             ->useAttributeAsKey('interface')
             ->prototype('scalar')
+                ->cannotBeEmpty()
             ->end()
         ;
 

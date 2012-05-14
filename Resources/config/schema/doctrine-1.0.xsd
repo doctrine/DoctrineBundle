@@ -129,7 +129,7 @@
     <xsd:complexType name="resolve_target_entity">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
-                <xsd:attribute name="interface" type="xsd:string" />
+                <xsd:attribute name="interface" type="xsd:string" use="required" />
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
