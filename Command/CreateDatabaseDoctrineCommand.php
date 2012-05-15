@@ -52,7 +52,7 @@ EOT
         $connection = $this->getDoctrineConnection($input->getOption('connection'));
 
         $params = $connection->getParams();
-        $name = isset($params['path']) ? $params['path'] : $params['dbname']; 
+        $name = isset($params['path']) ? $params['path'] : $params['dbname'];
 
         unset($params['dbname']);
 
