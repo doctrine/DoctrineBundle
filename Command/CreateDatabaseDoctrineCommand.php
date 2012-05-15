@@ -52,14 +52,19 @@ EOT
         $connection = $this->getDoctrineConnection($input->getOption('connection'));
 
         $params = $connection->getParams();
-        $name = isset($params['path']) ? $params['path'] : $params['dbname'];
+        $name = isset($params['path']) ? $params['path'] : $params['dbname']; 
+        $nameForDb = $name;
+
+        // Only quote if we don't have a path
+        if(!isset($params['path']))
+            $nameForDb = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
 
         unset($params['dbname']);
 
         $tmpConnection = DriverManager::getConnection($params);
 
         try {
-            $tmpConnection->getSchemaManager()->createDatabase($tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name));
+            $tmpConnection->getSchemaManager()->createDatabase($nameForDb);
             $output->writeln(sprintf('<info>Created database for connection named <comment>%s</comment></info>', $name));
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Could not create database for connection named <comment>%s</comment></error>', $name));

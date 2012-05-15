@@ -65,8 +65,14 @@ EOT
         }
 
         if ($input->getOption('force')) {
+            $nameForDb = $name;
+
+            // Only quote if we don't have a path
+            if(!isset($params['path']))
+                $nameForDb = $connection->getDatabasePlatform()->quoteSingleIdentifier($name);
+
             try {
-                $connection->getSchemaManager()->dropDatabase($connection->getDatabasePlatform()->quoteSingleIdentifier($name));
+                $connection->getSchemaManager()->dropDatabase($nameForDb);
                 $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
             } catch (\Exception $e) {
                 $output->writeln(sprintf('<error>Could not drop database for connection named <comment>%s</comment></error>', $name));
