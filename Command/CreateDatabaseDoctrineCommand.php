@@ -55,13 +55,14 @@ EOT
         $name = isset($params['path']) ? $params['path'] : $params['dbname']; 
         $nameForDb = $name;
 
-        // Only quote if we don't have a path
-        if(!isset($params['path']))
-            $nameForDb = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
-
         unset($params['dbname']);
 
         $tmpConnection = DriverManager::getConnection($params);
+
+        // Only quote if we don't have a path
+        if (!isset($params['path'])) {
+            $nameForDb = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
+        }
 
         try {
             $tmpConnection->getSchemaManager()->createDatabase($nameForDb);

@@ -68,8 +68,9 @@ EOT
             $nameForDb = $name;
 
             // Only quote if we don't have a path
-            if(!isset($params['path']))
+            if (!isset($params['path'])) {
                 $nameForDb = $connection->getDatabasePlatform()->quoteSingleIdentifier($name);
+            }
 
             try {
                 $connection->getSchemaManager()->dropDatabase($nameForDb);
