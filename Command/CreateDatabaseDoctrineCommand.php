@@ -53,7 +53,6 @@ EOT
 
         $params = $connection->getParams();
         $name = isset($params['path']) ? $params['path'] : $params['dbname']; 
-        $nameForDb = $name;
 
         unset($params['dbname']);
 
@@ -61,11 +60,11 @@ EOT
 
         // Only quote if we don't have a path
         if (!isset($params['path'])) {
-            $nameForDb = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
+            $name = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
         }
 
         try {
-            $tmpConnection->getSchemaManager()->createDatabase($nameForDb);
+            $tmpConnection->getSchemaManager()->createDatabase($name);
             $output->writeln(sprintf('<info>Created database for connection named <comment>%s</comment></info>', $name));
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Could not create database for connection named <comment>%s</comment></error>', $name));
