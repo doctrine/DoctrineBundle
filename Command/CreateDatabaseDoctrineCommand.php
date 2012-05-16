@@ -58,8 +58,13 @@ EOT
 
         $tmpConnection = DriverManager::getConnection($params);
 
+        // Only quote if we don't have a path
+        if (!isset($params['path'])) {
+            $name = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
+        }
+
         try {
-            $tmpConnection->getSchemaManager()->createDatabase($tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name));
+            $tmpConnection->getSchemaManager()->createDatabase($name);
             $output->writeln(sprintf('<info>Created database for connection named <comment>%s</comment></info>', $name));
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Could not create database for connection named <comment>%s</comment></error>', $name));
