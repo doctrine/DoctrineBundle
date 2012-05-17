@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
+use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand;
@@ -60,11 +61,11 @@ class DoctrineBundle extends Bundle
 
             $this->autoloader = function($class) use ($namespace, $dir, &$container) {
                 if (0 === strpos($class, $namespace)) {
-                    $className = str_replace('\\', '', substr($class, strlen($namespace) +1));
-                    $file = $dir.DIRECTORY_SEPARATOR.$className.'.php';
+                    $fileName = str_replace('\\', '', substr($class, strlen($namespace) +1));
+                    $file = $dir.DIRECTORY_SEPARATOR.$fileName.'.php';
 
                     if (!is_file($file) && $container->getParameter('kernel.debug')) {
-                        $originalClassName = substr($className, 0, -5);
+                        $originalClassName = ClassUtils::getRealClass($class);
                         $registry = $container->get('doctrine');
 
                         // Tries to auto-generate the proxy file
@@ -73,10 +74,8 @@ class DoctrineBundle extends Bundle
                             if ($em->getConfiguration()->getAutoGenerateProxyClasses()) {
                                 $classes = $em->getMetadataFactory()->getAllMetadata();
 
-                                foreach ($classes as $class) {
-                                    $name = str_replace('\\', '', $class->name);
-
-                                    if ($name == $originalClassName) {
+                                foreach ($classes as $classMetadata) {
+                                    if ($classMetadata->name == $originalClassName) {
                                         $em->getProxyFactory()->generateProxyClasses(array($class));
                                     }
                                 }
