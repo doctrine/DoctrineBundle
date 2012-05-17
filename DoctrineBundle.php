@@ -76,7 +76,7 @@ class DoctrineBundle extends Bundle
 
                                 foreach ($classes as $classMetadata) {
                                     if ($classMetadata->name == $originalClassName) {
-                                        $em->getProxyFactory()->generateProxyClasses(array($class));
+                                        $em->getProxyFactory()->generateProxyClasses(array($classMetadata));
                                     }
                                 }
                             }
