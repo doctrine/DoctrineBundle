@@ -26,7 +26,8 @@
         "doctrine/dbal": ">=2.2,<2.4-dev"
     },
     "require-dev": {
-        "doctrine/orm": ">=2.2,<2.4-dev"
+        "doctrine/orm": ">=2.2,<2.4-dev",
+        "symfony/validator": "2.1.*"
     },
     "suggest": {
         "doctrine/orm": "The Doctrine ORM integration is optional in the bundle."
