@@ -27,6 +27,7 @@
     },
     "require-dev": {
         "doctrine/orm": ">=2.2,<2.4-dev",
+        "symfony/yaml": "2.1.*",
         "symfony/validator": "2.1.*"
     },
     "suggest": {
