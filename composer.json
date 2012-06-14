@@ -36,5 +36,10 @@
     "autoload": {
         "psr-0": { "Doctrine\\Bundle\\DoctrineBundle": "" }
     },
-    "target-dir": "Doctrine/Bundle/DoctrineBundle"
+    "target-dir": "Doctrine/Bundle/DoctrineBundle",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
 }
