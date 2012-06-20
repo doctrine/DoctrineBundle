@@ -36,6 +36,7 @@ class GenerateEntitiesDoctrineCommand extends DoctrineCommand
             ->setAliases(array('generate:doctrine:entities'))
             ->setDescription('Generates entity classes and method stubs from your mapping information')
             ->addArgument('name', InputArgument::REQUIRED, 'A bundle name, a namespace, or a class name')
+            ->addOption('num-spaces', null, InputOption::VALUE_REQUIRED, 'Number of spaces to use for indentation. Default: 4')
             ->addOption('path', null, InputOption::VALUE_REQUIRED, 'The path where to generate entities when it cannot be guessed')
             ->addOption('no-backup', null, InputOption::VALUE_NONE, 'Do not backup existing entities files.')
             ->setHelp(<<<EOT
@@ -105,6 +106,12 @@ EOT
         }
 
         $generator = $this->getEntityGenerator();
+
+        if ($input->getOption('num-spaces')) {
+            // Minimum 1
+            $num_spaces = max((int) $input->getOption('num-spaces'), 1);
+            $generator->setNumSpaces($num_spaces);
+        }
 
         $backupExisting = !$input->getOption('no-backup');
         $generator->setBackupExisting($backupExisting);
