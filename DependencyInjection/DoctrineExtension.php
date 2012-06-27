@@ -239,16 +239,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->loadOrmEntityManager($entityManager, $container);
         }
 
-        if ($config['resolve_target_entities']) {
-            $def = $container->findDefinition('doctrine.orm.listeners.resolve_target_entity');
-            foreach ($config['resolve_target_entities'] as $name => $implementation) {
-                $def->addMethodCall('addResolveTargetEntity', array(
-                    $name, $implementation, array()
-                ));
-            }
-
-            $def->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
+        $def = $container->findDefinition('doctrine.orm.listeners.resolve_target_entity');
+        foreach ($config['resolve_target_entities'] as $name => $implementation) {
+            $def->addMethodCall('addResolveTargetEntity', array(
+                $name, $implementation, array()
+            ));
         }
+
+        $def->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
     }
 
     /**
