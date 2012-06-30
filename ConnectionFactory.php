@@ -24,8 +24,19 @@ use Doctrine\DBAL\Types\Type;
  */
 class ConnectionFactory
 {
+    /**
+     * @var array
+     */
     private $typesConfig = array();
+
+    /**
+     * @var array
+     */
     private $commentedTypes = array();
+
+    /**
+     * @var bool
+     */
     private $initialized = false;
 
     /**
@@ -69,6 +80,9 @@ class ConnectionFactory
         return $connection;
     }
 
+    /**
+     * initialize the types
+     */
     private function initializeTypes()
     {
         foreach ($this->typesConfig as $type => $typeConfig) {

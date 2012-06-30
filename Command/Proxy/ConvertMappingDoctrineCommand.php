@@ -31,6 +31,9 @@ use Doctrine\ORM\Tools\Export\Driver\YamlExporter;
  */
 class ConvertMappingDoctrineCommand extends ConvertMappingCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         parent::configure();
@@ -46,6 +49,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
@@ -53,9 +59,15 @@ EOT
         return parent::execute($input, $output);
     }
 
-
+    /**
+     * @param string $toType
+     * @param string $destPath
+     *
+     * @return \Doctrine\ORM\Tools\Export\Driver\AbstractExporter
+     */
     protected function getExporter($toType, $destPath)
     {
+        /** @var $exporter \Doctrine\ORM\Tools\Export\Driver\AbstractExporter */
         $exporter = parent::getExporter($toType, $destPath);
         if ($exporter instanceof XmlExporter) {
             $exporter->setExtension('.orm.xml');

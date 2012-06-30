@@ -34,8 +34,14 @@ use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFact
  */
 class DoctrineBundle extends Bundle
 {
+    /**
+     * @var Closure
+     */
     private $autoloader;
 
+    /**
+     * {@inheritDoc}
+     */
     public function build(ContainerBuilder $container)
     {
         parent::build($container);
@@ -48,10 +54,12 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new DoctrineValidationPass('orm'));
     }
 
+    /**
+     * Register an autoloader for proxies to avoid issues when unserializing them
+     * when the ORM is used.
+     */
     public function boot()
     {
-        // Register an autoloader for proxies to avoid issues when unserializing them
-        // when the ORM is used.
         if ($this->container->hasParameter('doctrine.orm.proxy_namespace')) {
             $namespace = $this->container->getParameter('doctrine.orm.proxy_namespace');
             $dir = $this->container->getParameter('doctrine.orm.proxy_dir');
@@ -66,9 +74,11 @@ class DoctrineBundle extends Bundle
 
                     if (!is_file($file) && $container->getParameter('kernel.debug')) {
                         $originalClassName = ClassUtils::getRealClass($class);
+                        /** @var $registry Registry */
                         $registry = $container->get('doctrine');
 
                         // Tries to auto-generate the proxy file
+                        /** @var $em \Doctrine\ORM\EntityManager */
                         foreach ($registry->getManagers() as $em) {
 
                             if ($em->getConfiguration()->getAutoGenerateProxyClasses()) {
@@ -94,6 +104,9 @@ class DoctrineBundle extends Bundle
         }
     }
 
+    /**
+     * unregister the autoloader
+     */
     public function shutdown()
     {
         if (null !== $this->autoloader) {
@@ -102,17 +115,23 @@ class DoctrineBundle extends Bundle
         }
     }
 
+    /**
+     * Register the default logic when the ORM is available.
+     * This avoids listing all ORM commands by hand.
+     * If ORM is not available register only the DBAL commands if the ORM is not available.
+     *
+     * @param Application $application
+     *
+     * @return null
+     */
     public function registerCommands(Application $application)
     {
-        // Use the default logic when the ORM is available.
-        // This avoids listing all ORM commands by hand.
         if (class_exists('Doctrine\\ORM\\Version')) {
             parent::registerCommands($application);
 
             return;
         }
 
-        // Register only the DBAL commands if the ORM is not available.
         $application->add(new CreateDatabaseDoctrineCommand());
         $application->add(new DropDatabaseDoctrineCommand());
         $application->add(new RunSqlDoctrineCommand());

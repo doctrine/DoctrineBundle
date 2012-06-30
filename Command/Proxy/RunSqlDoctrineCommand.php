@@ -28,6 +28,9 @@ use Doctrine\DBAL\Tools\Console\Command\RunSqlCommand;
  */
 class RunSqlDoctrineCommand extends RunSqlCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         parent::configure();
@@ -44,6 +47,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         DoctrineCommandHelper::setApplicationConnection($this->getApplication(), $input->getOption('connection'));

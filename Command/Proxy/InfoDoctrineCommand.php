@@ -27,6 +27,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class InfoDoctrineCommand extends InfoCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         $this
@@ -48,6 +51,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));

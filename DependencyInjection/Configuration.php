@@ -41,9 +41,7 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * Generates the configuration tree builder.
-     *
-     * @return \Symfony\Component\Config\Definition\Builder\TreeBuilder The tree builder
+     * {@inheritDoc}
      */
     public function getConfigTreeBuilder()
     {
@@ -56,6 +54,11 @@ class Configuration implements ConfigurationInterface
         return $treeBuilder;
     }
 
+    /**
+     * Add DBAL section to configuration tree
+     *
+     * @param ArrayNodeDefinition $node
+     */
     private function addDbalSection(ArrayNodeDefinition $node)
     {
         $node
@@ -105,6 +108,11 @@ class Configuration implements ConfigurationInterface
         ;
     }
 
+    /**
+     * Return the dbal connections node
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition
+     */
     private function getDbalConnectionsNode()
     {
         $treeBuilder = new TreeBuilder();
@@ -202,6 +210,11 @@ class Configuration implements ConfigurationInterface
         ;
     }
 
+    /**
+     * Add the ORM section to configuration tree
+     *
+     * @param ArrayNodeDefinition $node
+     */
     private function addOrmSection(ArrayNodeDefinition $node)
     {
         $node
@@ -246,6 +259,11 @@ class Configuration implements ConfigurationInterface
         ;
     }
 
+    /**
+     * Return ORM target entity resolver node
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\NodeDefinition
+     */
     private function getOrmTargetEntityResolverNode()
     {
         $treeBuilder = new TreeBuilder();
@@ -261,6 +279,11 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
+    /**
+     * Return ORM entity manager node
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition
+     */
     private function getOrmEntityManagersNode()
     {
         $treeBuilder = new TreeBuilder();
@@ -362,6 +385,13 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
+    /**
+     * Return a ORM cache driver node for an given entity manager
+     *
+     * @param string $name
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition
+     */
     private function getOrmCacheDriverNode($name)
     {
         $treeBuilder = new TreeBuilder();

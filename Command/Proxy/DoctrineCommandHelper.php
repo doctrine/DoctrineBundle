@@ -13,7 +13,7 @@
  */
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
-use Symfony\Component\Console\Application;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper;
 use Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper;
 
@@ -33,12 +33,19 @@ abstract class DoctrineCommandHelper
      */
     static public function setApplicationEntityManager(Application $application, $emName)
     {
+        /** @var $em \Doctrine\ORM\EntityManager */
         $em = $application->getKernel()->getContainer()->get('doctrine')->getManager($emName);
         $helperSet = $application->getHelperSet();
         $helperSet->set(new ConnectionHelper($em->getConnection()), 'db');
         $helperSet->set(new EntityManagerHelper($em), 'em');
     }
 
+    /**
+     * Convenience method to push the helper sets of a given connection into the application.
+     *
+     * @param Application $application
+     * @param string      $connName
+     */
     static public function setApplicationConnection(Application $application, $connName)
     {
         $connection = $application->getKernel()->getContainer()->get('doctrine')->getConnection($connName);
