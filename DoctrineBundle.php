@@ -36,6 +36,9 @@ class DoctrineBundle extends Bundle
 {
     private $autoloader;
 
+    /**
+     * {@inheritDoc}
+     */
     public function build(ContainerBuilder $container)
     {
         parent::build($container);
@@ -48,6 +51,9 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new DoctrineValidationPass('orm'));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function boot()
     {
         // Register an autoloader for proxies to avoid issues when unserializing them
@@ -66,9 +72,11 @@ class DoctrineBundle extends Bundle
 
                     if (!is_file($file) && $container->getParameter('kernel.debug')) {
                         $originalClassName = ClassUtils::getRealClass($class);
+                        /** @var $registry Registry */
                         $registry = $container->get('doctrine');
 
                         // Tries to auto-generate the proxy file
+                        /** @var $em \Doctrine\ORM\EntityManager */
                         foreach ($registry->getManagers() as $em) {
 
                             if ($em->getConfiguration()->getAutoGenerateProxyClasses()) {
@@ -94,6 +102,9 @@ class DoctrineBundle extends Bundle
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function shutdown()
     {
         if (null !== $this->autoloader) {
@@ -102,6 +113,9 @@ class DoctrineBundle extends Bundle
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function registerCommands(Application $application)
     {
         // Use the default logic when the ORM is available.

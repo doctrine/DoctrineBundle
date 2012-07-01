@@ -31,6 +31,9 @@ use Doctrine\ORM\Tools\Console\MetadataFilter;
  */
 class ImportMappingDoctrineCommand extends DoctrineCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         $this
@@ -65,6 +68,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $bundle = $this->getApplication()->getKernel()->getBundle($input->getArgument('bundle'));

@@ -69,6 +69,9 @@ class ConnectionFactory
         return $connection;
     }
 
+    /**
+     * initialize the types
+     */
     private function initializeTypes()
     {
         foreach ($this->typesConfig as $type => $typeConfig) {

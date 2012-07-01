@@ -27,6 +27,9 @@ use Doctrine\ORM\Tools\Console\Command\ClearCache\ResultCommand;
  */
 class ClearResultCacheDoctrineCommand extends ResultCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         parent::configure();
@@ -64,6 +67,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));

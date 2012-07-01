@@ -24,6 +24,11 @@ use Doctrine\ORM\Tools\EntityGenerator;
  */
 abstract class DoctrineCommand extends ContainerAwareCommand
 {
+    /**
+     * get a doctrine entity generator
+     *
+     * @return EntityGenerator
+     */
     protected function getEntityGenerator()
     {
         $entityGenerator = new EntityGenerator();
@@ -37,6 +42,12 @@ abstract class DoctrineCommand extends ContainerAwareCommand
         return $entityGenerator;
     }
 
+    /**
+     * Get a doctrine entity manager by symfony name.
+     *
+     * @param string $name
+     * @return \Doctrine\ORM\EntityManager
+     */
     protected function getEntityManager($name)
     {
         return $this->getContainer()->get('doctrine')->getManager($name);
@@ -46,7 +57,7 @@ abstract class DoctrineCommand extends ContainerAwareCommand
      * Get a doctrine dbal connection by symfony name.
      *
      * @param string $name
-     * @return Doctrine\DBAL\Connection
+     * @return \Doctrine\DBAL\Connection
      */
     protected function getDoctrineConnection($name)
     {

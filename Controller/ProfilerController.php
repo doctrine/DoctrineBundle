@@ -35,6 +35,7 @@ class ProfilerController extends ContainerAware
      */
     public function explainAction($token, $connectionName, $query)
     {
+        /** @var $profiler \Symfony\Component\HttpKernel\Profiler\Profiler */
         $profiler = $this->container->get('profiler');
         $profiler->disable();
 

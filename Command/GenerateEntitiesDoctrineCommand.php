@@ -29,6 +29,9 @@ use Doctrine\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
  */
 class GenerateEntitiesDoctrineCommand extends DoctrineCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         $this
@@ -79,6 +82,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $manager = new DisconnectedMetadataFactory($this->getContainer()->get('doctrine'));
