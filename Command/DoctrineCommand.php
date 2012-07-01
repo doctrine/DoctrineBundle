@@ -27,7 +27,7 @@ abstract class DoctrineCommand extends ContainerAwareCommand
     /**
      * get a doctrine entity generator
      *
-     * @return \Doctrine\ORM\Tools\EntityGenerator
+     * @return EntityGenerator
      */
     protected function getEntityGenerator()
     {

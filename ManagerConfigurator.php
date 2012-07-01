@@ -23,9 +23,6 @@ use Doctrine\ORM\EntityManager;
  */
 class ManagerConfigurator
 {
-    /**
-     * @var array
-     */
     private $enabledFilters = array();
 
     /**

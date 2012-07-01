@@ -111,7 +111,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Return the dbal connections node
      *
-     * @return \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition
+     * @return ArrayNodeDefinition
      */
     private function getDbalConnectionsNode()
     {
@@ -165,7 +165,7 @@ class Configuration implements ConfigurationInterface
      *
      * These keys are available for slave configurations too.
      *
-     * @param \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition $node
+     * @param ArrayNodeDefinition $node
      */
     private function configureDbalDriverNode(ArrayNodeDefinition $node)
     {
@@ -282,7 +282,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Return ORM entity manager node
      *
-     * @return \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition
+     * @return ArrayNodeDefinition
      */
     private function getOrmEntityManagersNode()
     {
@@ -390,7 +390,7 @@ class Configuration implements ConfigurationInterface
      *
      * @param string $name
      *
-     * @return \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition
+     * @return ArrayNodeDefinition
      */
     private function getOrmCacheDriverNode($name)
     {

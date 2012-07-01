@@ -26,9 +26,6 @@ use Doctrine\ORM\Mapping\MappingException;
  */
 class MetadataFactory
 {
-    /**
-     * @var \Doctrine\Common\Persistence\ManagerRegistry
-     */
     private $registry;
 
     /**

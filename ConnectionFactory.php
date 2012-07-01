@@ -24,19 +24,8 @@ use Doctrine\DBAL\Types\Type;
  */
 class ConnectionFactory
 {
-    /**
-     * @var array
-     */
     private $typesConfig = array();
-
-    /**
-     * @var array
-     */
     private $commentedTypes = array();
-
-    /**
-     * @var bool
-     */
     private $initialized = false;
 
     /**

@@ -19,19 +19,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Mapping;
  */
 class ClassMetadataCollection
 {
-    /**
-     * @var string
-     */
     private $path;
-
-    /**
-     * @var string
-     */
     private $namespace;
-
-    /**
-     * @var array
-     */
     private $metadata;
 
     /**

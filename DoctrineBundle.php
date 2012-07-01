@@ -34,9 +34,6 @@ use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFact
  */
 class DoctrineBundle extends Bundle
 {
-    /**
-     * @var Closure
-     */
     private $autoloader;
 
     /**
@@ -55,11 +52,12 @@ class DoctrineBundle extends Bundle
     }
 
     /**
-     * Register an autoloader for proxies to avoid issues when unserializing them
-     * when the ORM is used.
+     * {@inheritDoc}
      */
     public function boot()
     {
+        // Register an autoloader for proxies to avoid issues when unserializing them
+        // when the ORM is used.
         if ($this->container->hasParameter('doctrine.orm.proxy_namespace')) {
             $namespace = $this->container->getParameter('doctrine.orm.proxy_namespace');
             $dir = $this->container->getParameter('doctrine.orm.proxy_dir');
@@ -105,7 +103,7 @@ class DoctrineBundle extends Bundle
     }
 
     /**
-     * unregister the autoloader
+     * {@inheritDoc}
      */
     public function shutdown()
     {
@@ -116,22 +114,19 @@ class DoctrineBundle extends Bundle
     }
 
     /**
-     * Register the default logic when the ORM is available.
-     * This avoids listing all ORM commands by hand.
-     * If ORM is not available register only the DBAL commands if the ORM is not available.
-     *
-     * @param Application $application
-     *
-     * @return null
+     * {@inheritDoc}
      */
     public function registerCommands(Application $application)
     {
+        // Use the default logic when the ORM is available.
+        // This avoids listing all ORM commands by hand.
         if (class_exists('Doctrine\\ORM\\Version')) {
             parent::registerCommands($application);
 
             return;
         }
 
+        // Register only the DBAL commands if the ORM is not available.
         $application->add(new CreateDatabaseDoctrineCommand());
         $application->add(new DropDatabaseDoctrineCommand());
         $application->add(new RunSqlDoctrineCommand());
