@@ -45,6 +45,13 @@ class ManagerConfigurator
         $this->enableFilters($entityManager);
     }
 
+    /**
+     * Enable filters for an given entity manager
+     *
+     * @param EntityManager $entityManager
+     *
+     * @return null
+     */
     private function enableFilters(EntityManager $entityManager)
     {
         if (empty($this->enabledFilters)) {

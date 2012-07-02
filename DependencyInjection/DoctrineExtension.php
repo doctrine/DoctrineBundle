@@ -32,6 +32,9 @@ use Symfony\Component\Config\FileLocator;
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {
+    /**
+     * {@inheritDoc}
+     */
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = $this->getConfiguration($configs, $container);
@@ -377,6 +380,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $ormConfigDef->addMethodCall('setEntityNamespaces', array($this->aliasMap));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function getObjectManagerElementName($name)
     {
         return 'doctrine.orm.'.$name;
@@ -387,11 +393,17 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return 'Entity';
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function getMappingResourceConfigDirectory()
     {
         return 'Resources/config/doctrine';
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function getMappingResourceExtension()
     {
         return 'orm';
@@ -411,9 +423,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     }
 
     /**
-     * Returns the base path for the XSD files.
-     *
-     * @return string The XSD base path
+     * {@inheritDoc}
      */
     public function getXsdValidationBasePath()
     {
@@ -421,15 +431,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
     }
 
     /**
-     * Returns the namespace to be used for this extension (XML namespace).
-     *
-     * @return string The XML namespace
+     * {@inheritDoc}
      */
     public function getNamespace()
     {
         return 'http://symfony.com/schema/dic/doctrine';
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getConfiguration(array $config, ContainerBuilder $container)
     {
         return new Configuration($container->getParameter('kernel.debug'));

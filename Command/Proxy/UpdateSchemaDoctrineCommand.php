@@ -29,6 +29,9 @@ use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
  */
 class UpdateSchemaDoctrineCommand extends UpdateCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         parent::configure();
@@ -58,6 +61,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));

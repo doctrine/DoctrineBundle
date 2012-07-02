@@ -27,6 +27,9 @@ use Doctrine\ORM\Tools\Console\Command\ClearCache\MetadataCommand;
  */
 class ClearMetadataCacheDoctrineCommand extends MetadataCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         parent::configure();
@@ -49,6 +52,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));

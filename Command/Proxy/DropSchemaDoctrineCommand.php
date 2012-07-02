@@ -28,6 +28,9 @@ use Doctrine\ORM\Tools\Console\Command\SchemaTool\DropCommand;
  */
 class DropSchemaDoctrineCommand extends DropCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         parent::configure();
@@ -54,6 +57,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));

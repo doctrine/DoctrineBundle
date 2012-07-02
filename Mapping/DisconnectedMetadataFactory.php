@@ -19,6 +19,9 @@ namespace Doctrine\Bundle\DoctrineBundle\Mapping;
  */
 class DisconnectedMetadataFactory extends MetadataFactory
 {
+    /**
+     * @return string
+     */
     protected function getClassMetadataFactoryClass()
     {
         return 'Doctrine\\ORM\\Tools\\DisconnectedClassMetadataFactory';

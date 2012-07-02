@@ -44,6 +44,7 @@ class MetadataFactory
      * @param BundleInterface $bundle A BundleInterface instance
      *
      * @return ClassMetadataCollection A ClassMetadataCollection instance
+     * @throws \RuntimeException When bundle does not contain mapped entities
      */
     public function getBundleMetadata(BundleInterface $bundle)
     {
@@ -68,6 +69,7 @@ class MetadataFactory
      * @param string $path  The path where the class is stored (if known)
      *
      * @return ClassMetadataCollection A ClassMetadataCollection instance
+     * @throws MappingException When class is not valid entity or mapped superclass
      */
     public function getClassMetadata($class, $path = null)
     {
@@ -88,6 +90,7 @@ class MetadataFactory
      * @param string $path      The path where the class is stored (if known)
      *
      * @return ClassMetadataCollection A ClassMetadataCollection instance
+     * @throws \RuntimeException When namespace not contain mapped entities
      */
     public function getNamespaceMetadata($namespace, $path = null)
     {
@@ -105,8 +108,9 @@ class MetadataFactory
      * Find and configure path and namespace for the metadata collection.
      *
      * @param ClassMetadataCollection $metadata
-     * @param string|null $path
-     * @return void
+     * @param string|null             $path
+     *
+     * @throws \RuntimeException When unable to determine the path
      */
     public function findNamespaceAndPathForMetadata(ClassMetadataCollection $metadata, $path = null)
     {
@@ -122,11 +126,21 @@ class MetadataFactory
         $metadata->setNamespace(isset($r) ? $r->getNamespaceName() : $all[0]->name);
     }
 
+    /**
+     * Get a base path for a class
+     *
+     * @param string $name      class name
+     * @param string $namespace class namespace
+     * @param string $path      class path
+     *
+     * @return string
+     * @throws \RuntimeException When base path not found
+     */
     private function getBasePathForClass($name, $namespace, $path)
     {
         $namespace = str_replace('\\', '/', $namespace);
         $search = str_replace('\\', '/', $path);
-        $destination = str_replace('/'.$namespace, '', $search, $c);
+        $destination = str_replace('/' . $namespace, '', $search, $c);
 
         if ($c != 1) {
             throw new \RuntimeException(sprintf('Can\'t find base path for "%s" (path: "%s", destination: "%s").', $name, $path, $destination));
@@ -135,6 +149,11 @@ class MetadataFactory
         return $destination;
     }
 
+    /**
+     * @param string $namespace
+     *
+     * @return ClassMetadataCollection
+     */
     private function getMetadataForNamespace($namespace)
     {
         $metadata = array();
@@ -147,6 +166,11 @@ class MetadataFactory
         return new ClassMetadataCollection($metadata);
     }
 
+    /**
+     * @param string $entity
+     *
+     * @return ClassMetadataCollection
+     */
     private function getMetadataForClass($entity)
     {
         foreach ($this->getAllMetadata() as $metadata) {
@@ -158,11 +182,15 @@ class MetadataFactory
         return new ClassMetadataCollection(array());
     }
 
+    /**
+     * @return array
+     */
     private function getAllMetadata()
     {
         $metadata = array();
         foreach ($this->registry->getManagers() as $em) {
             $class = $this->getClassMetadataFactoryClass();
+            /** @var $cmf \Doctrine\ORM\Mapping\ClassMetadataFactory */
             $cmf = new $class();
             $cmf->setEntityManager($em);
             foreach ($cmf->getAllMetadata() as $m) {
@@ -173,6 +201,9 @@ class MetadataFactory
         return $metadata;
     }
 
+    /**
+     * @return string
+     */
     protected function getClassMetadataFactoryClass()
     {
         return 'Doctrine\\ORM\\Mapping\\ClassMetadataFactory';

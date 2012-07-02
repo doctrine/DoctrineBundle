@@ -26,6 +26,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DropDatabaseDoctrineCommand extends DoctrineCommand
 {
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         $this
@@ -52,6 +55,9 @@ EOT
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $connection = $this->getDoctrineConnection($input->getOption('connection'));
