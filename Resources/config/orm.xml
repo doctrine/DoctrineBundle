@@ -46,9 +46,9 @@
         <!-- listeners -->
         <parameter key="doctrine.orm.listeners.resolve_target_entity.class">Doctrine\ORM\Tools\ResolveTargetEntityListener</parameter>
 
-        <!-- naming strategies -->
-        <parameter key="doctrine.orm.naming_strategies.default.class">Doctrine\ORM\Mapping\DefaultNamingStrategy</parameter>
-        <parameter key="doctrine.orm.naming_strategies.underscore.class">Doctrine\ORM\Mapping\UnderscoreNamingStrategy</parameter>
+        <!-- naming strategy -->
+        <parameter key="doctrine.orm.naming_strategy.default.class">Doctrine\ORM\Mapping\DefaultNamingStrategy</parameter>
+        <parameter key="doctrine.orm.naming_strategy.underscore.class">Doctrine\ORM\Mapping\UnderscoreNamingStrategy</parameter>
     </parameters>
 
     <services>
@@ -98,8 +98,8 @@
         <!-- listeners -->
         <service id="doctrine.orm.listeners.resolve_target_entity" class="%doctrine.orm.listeners.resolve_target_entity.class%" public="false" />
 
-        <!-- naming strategies -->
-        <service id="doctrine.orm.naming_strategies.default" class="%doctrine.orm.naming_strategies.default.class%" public="false" />
-        <service id="doctrine.orm.naming_strategies.underscore" class="%doctrine.orm.naming_strategies.underscore.class%" public="false" />
+        <!-- naming strategy -->
+        <service id="doctrine.orm.naming_strategy.default" class="%doctrine.orm.naming_strategy.default.class%" public="false" />
+        <service id="doctrine.orm.naming_strategy.underscore" class="%doctrine.orm.naming_strategy.underscore.class%" public="false" />
     </services>
 </container>

@@ -64,7 +64,7 @@ Configuration Reference
                                 test_numeric: Acme\HelloBundle\DQL\NumericFunction
                             datetime_functions:
                                 test_datetime: Acme\HelloBundle\DQL\DatetimeFunction
-                        naming_strategy:    doctrine.orm.naming_strategies.default # Service Reference
+                        naming_strategy:    doctrine.orm.naming_strategy.default # Service Reference
                     em2:
                         # ...
 
@@ -103,7 +103,7 @@ Configuration Reference
                 </doctrine:dbal>
 
                 <doctrine:orm default-entity-manager="default" auto-generate-proxy-classes="false" proxy-namespace="Proxies" proxy-dir="%kernel.cache_dir%/doctrine/orm/Proxies">
-                    <doctrine:entity-manager name="default" query-cache-driver="array" result-cache-driver="array" connection="conn1" class-metadata-factory-name="Doctrine\ORM\Mapping\ClassMetadataFactory">
+                    <doctrine:entity-manager name="default" query-cache-driver="array" result-cache-driver="array" connection="conn1" class-metadata-factory-name="Doctrine\ORM\Mapping\ClassMetadataFactory" naming-strategy="doctrine.orm.naming_strategy.default">
                         <doctrine:metadata-cache-driver type="memcache" host="localhost" port="11211" instance-class="Memcache" class="Doctrine\Common\Cache\MemcacheCache" />
                         <doctrine:mapping name="AcmeHelloBundle" />
                         <doctrine:dql>
@@ -111,7 +111,6 @@ Configuration Reference
                             <doctrine:numeric-function name="test_numeric>Acme\HelloBundle\DQL\NumericFunction</doctrine:numeric-function>
                             <doctrine:datetime-function name="test_datetime>Acme\HelloBundle\DQL\DatetimeFunction</doctrine:datetime-function>
                         </doctrine:dql>
-                        <doctrine:naming-strategy name="doctrine.orm.naming_strategies.default" />
                     </doctrine:entity-manager>
                     <doctrine:entity-manager name="em2" connection="conn2" metadata-cache-driver="apc">
                         <doctrine:mapping
