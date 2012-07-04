@@ -64,6 +64,7 @@ Configuration Reference
                                 test_numeric: Acme\HelloBundle\DQL\NumericFunction
                             datetime_functions:
                                 test_datetime: Acme\HelloBundle\DQL\DatetimeFunction
+                        naming_strategy:    doctrine.orm.naming_strategies.default # Service Reference
                     em2:
                         # ...
 
@@ -110,6 +111,7 @@ Configuration Reference
                             <doctrine:numeric-function name="test_numeric>Acme\HelloBundle\DQL\NumericFunction</doctrine:numeric-function>
                             <doctrine:datetime-function name="test_datetime>Acme\HelloBundle\DQL\DatetimeFunction</doctrine:datetime-function>
                         </doctrine:dql>
+                        <doctrine:naming-strategy name="doctrine.orm.naming_strategies.default" />
                     </doctrine:entity-manager>
                     <doctrine:entity-manager name="em2" connection="conn2" metadata-cache-driver="apc">
                         <doctrine:mapping
