@@ -10,6 +10,7 @@
             <xsd:all>
                 <xsd:element name="dbal" type="dbal" minOccurs="0" maxOccurs="1" />
                 <xsd:element name="orm" type="orm" minOccurs="0" maxOccurs="1" />
+                <xsd:element name="prng" type="prng" minOccurs="0" maxOccurs="1" />
             </xsd:all>
         </xsd:complexType>
     </xsd:element>
@@ -186,5 +187,10 @@
                 <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:extension>
         </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="prng">
+        <xsd:attribute name="connection" type="xsd:string" />
+        <xsd:attribute name="table_name" type="xsd:string" />
     </xsd:complexType>
 </xsd:schema>
