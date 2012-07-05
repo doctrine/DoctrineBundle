@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="doctrine.security.seed_provider.class">Symfony\Bridge\Doctrine\Security\DoctrineSeedProvider</parameter>
+        <parameter key="doctrine.security.prng_schema.class">Symfony\Bridge\Doctrine\Security\PrngSchema</parameter>
+        <parameter key="doctrine.security.prng_schema_listener.class">Symfony\Bridge\Doctrine\Security\EventListener\PrngSchemaListener</parameter>
+    </parameters>
+
+    <services>
+        <service id="doctrine.security.seed_provider" class="%doctrine.security.seed_provider.class%">
+            <argument></argument><!-- Connection -->
+            <argument></argument><!-- Table Name -->
+        </service>
+        <service id="doctrine.security.prng_schema" class="%doctrine.security.prng_schema.class%" public="false">
+            <argument></argument><!-- Table Name -->
+        </service>
+        <service id="doctrine.security.prng_schema_listener" class="%doctrine.security.prng_schema_listener.class%">
+            <argument type="service" id="doctrine.security.prng_schema" />
+        </service>
+    </services>
+</container>

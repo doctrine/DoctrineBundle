@@ -51,6 +51,17 @@ class Configuration implements ConfigurationInterface
         $this->addDbalSection($rootNode);
         $this->addOrmSection($rootNode);
 
+        $rootNode
+            ->children()
+                ->arrayNode('prng')
+                    ->children()
+                        ->scalarNode('connection')->cannotBeEmpty()->isRequired()->end()
+                        ->scalarNode('table_name')->defaultValue('seed_table')->cannotBeEmpty()->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+
         return $treeBuilder;
     }
 
