@@ -47,6 +47,32 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (!empty($config['orm'])) {
             $this->ormLoad($config['orm'], $container);
         }
+
+        if (!empty($config['prng'])) {
+            $this->secureRandomLoad($config['prng'], $container);
+        }
+    }
+
+    protected function secureRandomLoad(array $config, ContainerBuilder $container)
+    {
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('prng.xml');
+
+        $container
+            ->getDefinition('doctrine.security.seed_provider')
+            ->replaceArgument(0, new Reference('doctrine.dbal.'.$config['connection'].'_connection'))
+            ->replaceArgument(1, $config['table_name'])
+        ;
+        $container->setAlias('security.prng_seed_provider', 'doctrine.security.seed_provider');
+
+        $container
+            ->getDefinition('doctrine.security.prng_schema_listener')
+            ->addTag('doctrine.event_listener', array('connection' => $config['connection'], 'event' => 'postGenerateSchema', 'lazy' => true))
+        ;
+        $container
+            ->getDefinition('doctrine.security.prng_schema')
+            ->replaceArgument(0, $config['table_name'])
+        ;
     }
 
     /**
