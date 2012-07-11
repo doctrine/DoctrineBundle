@@ -38,23 +38,28 @@ class XMLSchemaTest extends \PHPUnit_Framework_TestCase
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->load($file);
 
+        $xmlns = "http://symfony.com/schema/dic/doctrine";
 
-        $dbalElements = $dom->getElementsByTagNameNS("http://symfony.com/schema/dic/doctrine", "config");
+        $dbalElements = $dom->getElementsByTagNameNS($xmlns, 'dbal');
         if ($dbalElements->length) {
             $dbalDom = new \DOMDocument('1.0', 'UTF-8');
             $dbalNode = $dbalDom->importNode($dbalElements->item(0));
-            $dbalDom->appendChild($dbalNode);
+            $configNode = $dbalDom->createElementNS($xmlns, 'config');
+            $configNode->appendChild($dbalNode);
+            $dbalDom->appendChild($configNode);
 
             $ret = $dbalDom->schemaValidate(__DIR__."/../../Resources/config/schema/doctrine-1.0.xsd");
             $this->assertTrue($ret, "DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.");
             $found = true;
         }
 
-        $ormElements = $dom->getElementsByTagNameNS("http://symfony.com/schema/dic/doctrine", "config");
+        $ormElements = $dom->getElementsByTagNameNS($xmlns, 'orm');
         if ($ormElements->length) {
             $ormDom = new \DOMDocument('1.0', 'UTF-8');
             $ormNode = $ormDom->importNode($ormElements->item(0));
-            $ormDom->appendChild($ormNode);
+            $configNode = $ormDom->createElementNS($xmlns, 'config');
+            $configNode->appendChild($ormNode);
+            $ormDom->appendChild($configNode);
 
             $ret = $ormDom->schemaValidate(__DIR__."/../../Resources/config/schema/doctrine-1.0.xsd");
             $this->assertTrue($ret, "DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.");
