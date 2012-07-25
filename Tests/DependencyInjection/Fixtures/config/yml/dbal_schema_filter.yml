@@ -1,0 +1,3 @@
+doctrine:
+    dbal:
+        schema_filter: ^sf2_

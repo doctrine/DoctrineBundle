@@ -30,6 +30,7 @@ Configuration Reference
                         charset:              UTF8
                         logging:              %kernel.debug%
                         platform_service:     MyOwnDatabasePlatformService
+                        schema_filter:        ^sf2_
                         mapping_types:
                             enum: string
                     conn1:
@@ -94,6 +95,7 @@ Configuration Reference
                         charset="UTF8"
                         logging="%kernel.debug%"
                         platform-service="MyOwnDatabasePlatformService"
+                        schema-filter="^sf2_"
                     >
                         <doctrine:option key="foo">bar</doctrine:option>
                         <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
@@ -242,6 +244,7 @@ can configure. The following block shows all possible configuration keys:
                 charset:              UTF8
                 logging:              %kernel.debug%
                 platform_service:     MyOwnDatabasePlatformService
+                schema_filter:        ^sf2_
                 mapping_types:
                     enum: string
                 types:
@@ -269,6 +272,7 @@ can configure. The following block shows all possible configuration keys:
                 charset="UTF8"
                 logging="%kernel.debug%"
                 platform-service="MyOwnDatabasePlatformService"
+                schema-filter="^sf2_"
             >
                 <doctrine:option key="foo">bar</doctrine:option>
                 <doctrine:mapping-type name="enum">string</doctrine:mapping-type>

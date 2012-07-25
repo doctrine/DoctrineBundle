@@ -119,6 +119,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         }
         unset($connection['profiling']);
+        
+        if (isset($connection['schema_filter']) && $connection['schema_filter']) {
+            $configuration->addMethodCall('setFilterSchemaAssetsExpression', array($connection['schema_filter']));
+        }
+        
+        unset($connection['schema_filter']);
 
         if ($logger) {
             $configuration->addMethodCall('setSQLLogger', array($logger));
