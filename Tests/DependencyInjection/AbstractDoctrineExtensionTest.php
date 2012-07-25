@@ -763,6 +763,20 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addResolveTargetEntity', array('Symfony\Component\Security\Core\User\UserInterface', 'MyUserClass', array()));
         $this->assertEquals(array('doctrine.event_listener' => array( array('event' => 'loadClassMetadata') ) ), $definition->getTags());
     }
+    
+    public function testDbalSchemaFilter()
+    {
+        $container = $this->getContainer();
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+    
+        $this->loadFromFile($container, 'dbal_schema_filter');
+    
+        $this->compileContainer($container);
+        
+        $definition = $container->getDefinition('doctrine.dbal.default_connection.configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setFilterSchemaAssetsExpression', array('^sf2_'));
+    }
 
     protected function getContainer($bundles = 'YamlBundle', $vendor = null)
     {
