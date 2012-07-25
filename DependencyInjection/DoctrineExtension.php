@@ -287,8 +287,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setAutoGenerateProxyClasses' => '%doctrine.orm.auto_generate_proxy_classes%',
             'setClassMetadataFactoryName' => $entityManager['class_metadata_factory_name'],
             'setDefaultRepositoryClassName' => $entityManager['default_repository_class'],
-            'setNamingStrategy'           => new Reference($entityManager['naming_strategy']),
         );
+        // check for version to keep BC
+        if (version_compare(\Doctrine\ORM\Version::VERSION, "2.3.0-DEV") >= 0) {
+            $methods = array_merge($methods, array(
+                'setNamingStrategy'       => new Reference($entityManager['naming_strategy']),
+            ));
+        }
         foreach ($methods as $method => $arg) {
             $ormConfigDef->addMethodCall($method, array($arg));
         }
