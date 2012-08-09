@@ -108,7 +108,9 @@
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="entity-manager" type="entity_manager" />
             <xsd:element name="mapping" type="mapping" />
-            <xsd:element name="metadata-cache-driver" type="metadata_cache_driver" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="metadata-cache-driver" type="cache_driver" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="result-cache-driver" type="cache_driver" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="query-cache-driver" type="cache_driver" minOccurs="0" maxOccurs="1" />
             <xsd:element name="dql" type="dql" minOccurs="0" maxOccurs="1" />
             <xsd:element name="filter" type="filter" minOccurs="0" maxOccurs="unbounded" />
             <xsd:element name="resolve-target-entity" type="resolve_target_entity" minOccurs="0" maxOccurs="unbounded" />
@@ -135,7 +137,7 @@
         </xsd:simpleContent>
     </xsd:complexType>
 
-    <xsd:complexType name="metadata_cache_driver">
+    <xsd:complexType name="cache_driver">
         <xsd:all>
             <xsd:element name="class" type="xsd:string" minOccurs="0" maxOccurs="1" />
             <xsd:element name="host" type="xsd:string" minOccurs="0" maxOccurs="1" />
