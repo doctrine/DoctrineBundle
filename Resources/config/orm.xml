@@ -20,7 +20,13 @@
         <parameter key="doctrine.orm.cache.memcached_host">localhost</parameter>
         <parameter key="doctrine.orm.cache.memcached_port">11211</parameter>
         <parameter key="doctrine.orm.cache.memcached_instance.class">Memcached</parameter>
+        <parameter key="doctrine.orm.cache.redis.class">Doctrine\Common\Cache\RedisCache</parameter>
+        <parameter key="doctrine.orm.cache.redis_host">localhost</parameter>
+        <parameter key="doctrine.orm.cache.redis_port">6379</parameter>
+        <parameter key="doctrine.orm.cache.redis_instance.class">Redis</parameter>
         <parameter key="doctrine.orm.cache.xcache.class">Doctrine\Common\Cache\XcacheCache</parameter>
+        <parameter key="doctrine.orm.cache.wincache.class">Doctrine\Common\Cache\WinCacheCache</parameter>
+        <parameter key="doctrine.orm.cache.zenddata.class">Doctrine\Common\Cache\ZendDataCache</parameter>
 
         <!-- metadata -->
         <parameter key="doctrine.orm.metadata.driver_chain.class">Doctrine\ORM\Mapping\Driver\DriverChain</parameter>
