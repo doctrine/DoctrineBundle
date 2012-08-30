@@ -113,6 +113,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
         $this->assertEquals('Doctrine\\DBAL\\Connections\\MasterSlaveConnection', $param['wrapperClass']);
+        $this->assertTrue($param['keepSlave']);
         $this->assertEquals(
             array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t', 'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost', 'unix_socket' => '/path/to/mysqld.sock'),
             $param['master']

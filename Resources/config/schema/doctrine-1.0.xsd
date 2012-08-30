@@ -18,6 +18,7 @@
         <xsd:attribute name="driver" type="xsd:string" />
         <xsd:attribute name="driver-class" type="xsd:string" />
         <xsd:attribute name="wrapper-class" type="xsd:string" />
+        <xsd:attribute name="keep-slave" type="xsd:string" />
         <xsd:attribute name="platform-service" type="xsd:string" />
         <xsd:attribute name="schema-filter" type="xsd:string" />
         <xsd:attribute name="logging" type="xsd:string" default="false" />
