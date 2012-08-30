@@ -174,9 +174,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         unset($options['mapping_types']);
 
         foreach (array(
-            'options' => 'driverOptions',
-            'driver_class' => 'driverClass',
+            'options'       => 'driverOptions',
+            'driver_class'  => 'driverClass',
             'wrapper_class' => 'wrapperClass',
+            'keep_slave'    => 'keepSlave',
         ) as $old => $new) {
             if (isset($options[$old])) {
                 $options[$new] = $options[$old];
@@ -186,7 +187,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (!empty($options['slaves'])) {
             $nonRewrittenKeys = array(
-                'driver' => true, 'driverOptions' => true, 'driverClass' => true, 'wrapperClass' => true,
+                'driver' => true, 'driverOptions' => true, 'driverClass' => true,
+                'wrapperClass' => true, 'keepSlave' => true,
                 'platform' => true, 'slaves' => true, 'master' => true,
                 // included by safety but should have been unset already
                 'logging' => true, 'profiling' => true, 'mapping_types' => true, 'platform_service' => true,
