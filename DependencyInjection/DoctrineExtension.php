@@ -32,6 +32,9 @@ use Symfony\Component\Config\FileLocator;
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {
+    private $defaultConnection;
+    private $entityManagers;
+
     /**
      * {@inheritDoc}
      */
@@ -119,11 +122,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         }
         unset($connection['profiling']);
-        
+
         if (isset($connection['schema_filter']) && $connection['schema_filter']) {
             $configuration->addMethodCall('setFilterSchemaAssetsExpression', array($connection['schema_filter']));
         }
-        
+
         unset($connection['schema_filter']);
 
         if ($logger) {
@@ -134,7 +137,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $def = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), new DefinitionDecorator('doctrine.dbal.connection.event_manager'));
 
         // connection
-        if (isset($connection['charset'])) {
+        // PDO ignores the charset property before 5.3.6 so the init listener has to be used instead.
+        if (isset($connection['charset']) && version_compare(PHP_VERSION, '5.3.6', '<')) {
             if ((isset($connection['driver']) && stripos($connection['driver'], 'mysql') !== false) ||
                  (isset($connection['driver_class']) && stripos($connection['driver_class'], 'mysql') !== false)) {
                 $mysqlSessionInit = new Definition('%doctrine.dbal.events.mysql_session_init.class%');
@@ -265,8 +269,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * Loads a configured ORM entity manager.
      *
-     * @param array $entityManager A configured ORM entity manager.
-     * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param array            $entityManager A configured ORM entity manager.
+     * @param ContainerBuilder $container     A ContainerBuilder instance
      */
     protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container)
     {
