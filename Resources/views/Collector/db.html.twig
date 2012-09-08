@@ -15,6 +15,10 @@
             <b>Query time</b>
             <span>{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
         </div>
+        <div class="sf-toolbar-info-piece">
+            <b>Invalid entities</b>
+            <span>{{ collector.invalidEntityCount }}</span>
+        </div>
     {% endset %}
     {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url } %}
 {% endblock %}
@@ -97,6 +101,42 @@
             <em>No entity managers.</em>
         </p>
     {% endif %}
+
+    <h2>Mapping</h2>
+
+    {% for manager, classes in collector.entities %}
+        <h3>Manager <em>{{ manager }}</em></h3>
+        {% if classes is empty %}
+            <p><em>No loaded entities.</em></p>
+        {% else %}
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">Class</th>
+                    <th scope="col">Mapping errors</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for class in classes %}
+                    <tr>
+                        <td>{{ class }}</td>
+                        <td>
+                            {% if collector.mappingErrors[manager][class] is defined %}
+                                <ul>
+                                    {% for error in collector.mappingErrors[manager][class] %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                Valid
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endfor %}
 
     <script type="text/javascript">//<![CDATA[
         function explain(link) {
