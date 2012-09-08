@@ -15,9 +15,10 @@
             <b>Query time</b>
             <span>{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
         </div>
+        {% set invalid_entity_count = collector.invalidEntityCount %}
         <div class="sf-toolbar-info-piece">
             <b>Invalid entities</b>
-            <span>{{ collector.invalidEntityCount }}</span>
+            <span class="sf-toolbar-status sf-toolbar-status-{{ invalid_entity_count > 0 ? 'red' : 'green' }}">{{ invalid_entity_count }}</span>
         </div>
     {% endset %}
     {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url } %}
