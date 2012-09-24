@@ -128,6 +128,7 @@
         <xsd:attribute name="result-cache-driver" type="xsd:string" />
         <xsd:attribute name="metadata-cache-driver" type="xsd:string" />
         <xsd:attribute name="query-cache-driver" type="xsd:string" />
+        <xsd:attribute name="naming-strategy" type="xsd:string" />
     </xsd:complexType>
 
     <xsd:complexType name="resolve_target_entity">
