@@ -69,14 +69,18 @@ EOT
             $name = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
         }
 
+        $error = false;
         try {
             $tmpConnection->getSchemaManager()->createDatabase($name);
             $output->writeln(sprintf('<info>Created database for connection named <comment>%s</comment></info>', $name));
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Could not create database for connection named <comment>%s</comment></error>', $name));
             $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
+            $error = true;
         }
 
         $tmpConnection->close();
+
+        return $error ? 1 : 0;
     }
 }
