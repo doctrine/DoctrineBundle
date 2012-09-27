@@ -36,7 +36,7 @@ class ClearQueryCacheDoctrineCommand extends QueryCommand
 
         $this
             ->setName('doctrine:cache:clear-query')
-            ->setDescription('Clears all query cache for a entity manager')
+            ->setDescription('Clears all query cache for an entity manager')
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
             ->setHelp(<<<EOT
 The <info>doctrine:cache:clear-query</info> command clears all query cache for
