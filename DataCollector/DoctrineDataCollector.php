@@ -28,6 +28,7 @@ use Symfony\Component\HttpFoundation\Response;
 class DoctrineDataCollector extends BaseCollector
 {
     private $registry;
+    private $invalidEntityCount;
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -79,6 +80,10 @@ class DoctrineDataCollector extends BaseCollector
 
     public function getInvalidEntityCount()
     {
-        return array_sum(array_map('count', $this->data['errors']));
+        if (null === $this->invalidEntityCount) {
+            $this->invalidEntityCount = array_sum(array_map('count', $this->data['errors']));
+        }
+
+        return $this->invalidEntityCount;
     }
 }
