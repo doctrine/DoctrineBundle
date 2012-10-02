@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * DoctrineDataCollector.
  *
- * @author Fabien Potencier <fabien@symfony.com>
+ * @author Christophe Coevoet <stof@notk.org>
  */
 class DoctrineDataCollector extends BaseCollector
 {
@@ -32,6 +32,7 @@ class DoctrineDataCollector extends BaseCollector
     public function __construct(ManagerRegistry $registry)
     {
         $this->registry = $registry;
+
         parent::__construct($registry);
     }
 
@@ -44,6 +45,7 @@ class DoctrineDataCollector extends BaseCollector
 
         $errors = array();
         $entities = array();
+
         foreach ($this->registry->getManagers() as $name => $em) {
             $entities[$name] = array();
             /** @var $factory \Doctrine\ORM\Mapping\ClassMetadataFactory */
@@ -54,6 +56,7 @@ class DoctrineDataCollector extends BaseCollector
             foreach ($factory->getLoadedMetadata() as $class) {
                 $entities[$name][] = $class->getName();
                 $classErrors = $validator->validateClass($class);
+
                 if (!empty($classErrors)) {
                     $errors[$name][$class->getName()] = $classErrors;
                 }
