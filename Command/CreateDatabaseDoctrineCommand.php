@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
+use Doctrine\Bundle\DoctrineBundle\Command\Proxy\DoctrineCommandHelper;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -27,6 +28,22 @@ use Doctrine\DBAL\DriverManager;
  */
 class CreateDatabaseDoctrineCommand extends DoctrineCommand
 {
+    /**
+     * {@inheritDoc}
+     */
+    public function getHelp()
+    {
+        return DoctrineCommandHelper::processCommandHelp(parent::getHelp(), 'connection', $this->getApplication());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getNativeDefinition()
+    {
+        return DoctrineCommandHelper::processInputDefinition(parent::getNativeDefinition(), $this->getApplication());
+    }
+
     /**
      * {@inheritDoc}
      */

@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
+use Doctrine\Bundle\DoctrineBundle\Command\Proxy\DoctrineCommandHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
@@ -31,6 +32,22 @@ use Doctrine\ORM\Tools\Console\MetadataFilter;
  */
 class ImportMappingDoctrineCommand extends DoctrineCommand
 {
+    /**
+     * {@inheritDoc}
+     */
+    public function getHelp()
+    {
+        return DoctrineCommandHelper::processCommandHelp(parent::getHelp(), 'em', $this->getApplication());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getNativeDefinition()
+    {
+        return DoctrineCommandHelper::processInputDefinition(parent::getNativeDefinition(), $this->getApplication());
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -95,13 +112,11 @@ EOT
             $exporter->setEntityGenerator($entityGenerator);
         }
 
-        $em = $this->getEntityManager($input->getOption('em'));
+        $emName = $input->getOption('em');
+        $em = $this->getEntityManager($emName);
 
         $databaseDriver = new DatabaseDriver($em->getConnection()->getSchemaManager());
         $em->getConfiguration()->setMetadataDriverImpl($databaseDriver);
-
-        $emName = $input->getOption('em');
-        $emName = $emName ? $emName : 'default';
 
         $cmf = new DisconnectedClassMetadataFactory();
         $cmf->setEntityManager($em);
