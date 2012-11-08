@@ -90,7 +90,7 @@ class DoctrineBundle extends Bundle
                             }
                         }
 
-                        clearstatcache($file);
+                        clearstatcache(true, $file);
                     }
 
                     if (file_exists($file)) {
