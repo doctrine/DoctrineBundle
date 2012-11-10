@@ -2,7 +2,7 @@
 
 {% block toolbar %}
     {% set icon %}
-        <img width="20" height="28" alt="Database" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAcCAYAAABh2p9gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQRJREFUeNpi/P//PwM1ARMDlcGogZQDlpMnT7pxc3NbA9nhQKxOpL5rQLwJiPeBsI6Ozl+YBOOOHTv+AOllQNwtLS39F2owKYZ/gRq8G4i3ggxEToggWzvc3d2Pk+1lNL4fFAs6ODi8JzdS7mMRVyDVoAMHDsANdAPiOCC+jCQvQKqBQB/BDbwBxK5AHA3E/kB8nKJkA8TMQBwLxaBIKQbi70AvTADSBiSadwFXpCikpKQU8PDwkGTaly9fHFigkaKIJid4584dkiMFFI6jkTJII0WVmpHCAixZQEXWYhDeuXMnyLsVlEQKI45qFBQZ8eRECi4DBaAlDqle/8A48ip6gAADANdQY88Uc0oGAAAAAElFTkSuQmCC"/>
+        <img width="20" height="28" alt="Database" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAcCAYAAABh2p9gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQRJREFUeNpi/P//PwM1ARMDlcGogZQDlpMnT7pxc3NbA9nhQKxOpL5rQLwJiPeBsI6Ozl+YBOOOHTv+AOllQNwtLS39F2owKYZ/gRq8G4i3ggxEToggWzvc3d2Pk+1lNL4fFAs6ODi8JzdS7mMRVyDVoAMHDsANdAPiOCC+jCQvQKqBQB/BDbwBxK5AHA3E/kB8nKJkA8TMQBwLxaBIKQbi70AvTADSBiSadwFXpCikpKQU8PDwkGTaly9fHFigkaKIJid4584dkiMFFI6jkTJII0WVmpHCAixZQEXWYhDeuXMnyLsVlEQKI45qFBQZ8eRECi4DBaAlDqle/8A48ip6gAADANdQY88Uc0oGAAAAAElFTkSuQmCC" />
         <span class="sf-toolbar-status{% if 50 < collector.querycount %} sf-toolbar-status-yellow{% endif %}">{{ collector.querycount }}</span>
         {% if collector.querycount > 0 %}
             <span class="sf-toolbar-info-piece-additional-detail">in {{ '%0.2f'|format(collector.time * 1000) }} ms</span>
@@ -62,22 +62,39 @@
                 <em>No queries.</em>
             </p>
         {% else %}
-            <ul class="alt">
+            <ul class="alt" id="queriesPlaceholder-{{ loop.index }}">
                 {% for i, query in queries %}
-                    <li class="{{ cycle(['odd', 'even'], i) }}">
-                        <div>
-                            {% if query.explainable %}
-                            <a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'page': 'explain', 'connection': connection, 'query': i}) }}" onclick="return explain(this);" style="text-decoration: none;" title="Explains" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}" >
+                    <li class="{{ cycle(['odd', 'even'], i) }}" data-extra-info="{{ '%0.2f'|format(query.executionMS * 1000) }}" data-target-id="{{ i }}">
+                        <div style="margin-top: 4px" id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
+                            <div onclick="return expandQuery(this);" title="Expand query" data-target-id="code-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">
                                 <img alt="+" src="{{ asset('bundles/framework/images/blue_picto_more.gif') }}" style="display: inline;" />
                                 <img alt="-" src="{{ asset('bundles/framework/images/blue_picto_less.gif') }}" style="display: none;" />
-                            </a>
+                                <span style="display: none">Shrink query</span>
+                                <span id="smallcode-{{ i }}-{{ loop.parent.loop.index }}">
+                                    {{ query.sql|doctrine_minify_query|raw }}
+                                </span>
+                            </div>
+                            <code id="code-{{ i }}-{{ loop.parent.loop.index }}">
+                                {{ query.sql|doctrine_pretty_query(i, loop.parent.loop.index)|raw }}
+                            </code>
+                            <span id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="display: none;">
+                                {{ query.sql|doctrine_replace_query_parameters(query.params)|raw }}
+                            </span>
+                            <small>
+                                <strong>Parameters</strong>: {{ query.params|yaml_encode }} <br />
+                                [<span id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this);" target-data-id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">Display runnable query</span>]<br/>
+                                <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
+                            </small>
+                            {% if query.explainable %}
+                                [<a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'page': 'explain', 'connection': connection, 'query': i}) }}" onclick="return explain(this);" style="text-decoration: none;" title="Explains the query" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}" >
+                                    <img alt="+" src="{{ asset('bundles/framework/images/blue_picto_more.gif') }}" style="display: inline; width: 12px; height: 12px;" />
+                                    <img alt="-" src="{{ asset('bundles/framework/images/blue_picto_less.gif') }}" style="display: none; width: 12px; height: 12px;" />
+                                    <span style="vertical-align:top">Explain query</span>
+                                </a>]
+                            {% else %}
+                                This query cannot be explained
                             {% endif %}
-                            <code>{{ query.sql }}</code>
                         </div>
-                        <small>
-                            <strong>Parameters</strong>: {{ query.params|yaml_encode }}<br />
-                            <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
-                        </small>
                         {% if query.explainable %}
                         <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="loading"></div>
                         {% endif %}
@@ -163,5 +180,77 @@
 
             return false;
         }
+
+        function expandQuery(link) {
+            var sections = link.children,
+                target = link.getAttribute('data-target-id'),
+                targetId = target.replace('code', ''),
+                queriesParameters = document.getElementById('original-query' + targetId);
+
+            if (queriesParameters.style.display != 'none') {
+                queriesParameters.style.display = 'none';
+                document.getElementById('small' + target).style.display = 'inline';
+                document.getElementById('expandParams' + targetId).innerHTML = 'Display runnable query';
+            }
+
+            if (document.getElementById('small' + target).style.display != 'none') {
+                document.getElementById('small' + target).style.display = 'none';
+                document.getElementById(target).style.display = 'inline';
+
+                sections[0].style.display = 'none';
+                sections[1].style.display = 'inline';
+                sections[2].style.display = 'inline';
+            } else {
+                document.getElementById('small' + target).style.display = 'inline';
+                document.getElementById(target).style.display = 'none';
+
+                sections[0].style.display = 'inline';
+                sections[1].style.display = 'none';
+                sections[2].style.display = 'none';
+            }
+
+            return false;
+        }
+
+        function toggleRunnableQuery(target) {
+            var targetId = target.getAttribute('target-data-id').replace('original-query', ''),
+                targetElement = document.getElementById(target.getAttribute('target-data-id')),
+                elem;
+
+            if (targetElement.style.display != 'block') {
+                targetElement.style.display = 'block';
+                target.innerHTML = 'Hide runnable query';
+
+                document.getElementById('smallcode' + targetId).style.display = 'none';
+                document.getElementById('code' + targetId).style.display = 'none';
+
+                elem = document.getElementById('code' + targetId).parentElement.children[0];
+
+                elem.children[0].style.display = 'inline';
+                elem.children[1].style.display = 'none';
+                elem.children[2].style.display = 'none';
+
+            } else {
+                targetElement.style.display = 'none';
+                target.innerHTML = 'Display runnable query';
+
+                document.getElementById('smallcode' + targetId).style.display = 'inline';
+            }
+        }
+
     //]]></script>
+
+    <style>
+        h3 {
+            margin-bottom: 0px;
+        }
+
+        code {
+            display: none;
+        }
+
+        code pre {
+            padding: 5px;
+        }
+    </style>
 {% endblock %}
