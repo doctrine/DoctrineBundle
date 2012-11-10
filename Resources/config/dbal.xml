@@ -46,7 +46,7 @@
         <service id="doctrine.dbal.connection" class="stdClass" factory-service="doctrine.dbal.connection_factory" factory-method="createConnection" abstract="true" />
 
         <service id="doctrine.dbal.connection.event_manager" class="%doctrine.dbal.connection.event_manager.class%" public="false" abstract="true">
-        	<argument type="service" id="service_container" />
+            <argument type="service" id="service_container" />
         </service>
 
         <service id="doctrine.dbal.connection.configuration" class="%doctrine.dbal.configuration.class%" public="false" abstract="true" />
@@ -58,5 +58,10 @@
             <argument>%doctrine.default_connection%</argument>
             <argument>%doctrine.default_entity_manager%</argument>
         </service>
+
+        <service id="doctrine.twig.doctrine_extension" class="Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension" public="false">
+            <tag name="twig.extension" />
+        </service>
+
     </services>
 </container>
