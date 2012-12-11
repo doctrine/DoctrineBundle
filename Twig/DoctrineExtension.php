@@ -290,7 +290,7 @@ class DoctrineExtension extends \Twig_Extension
         $i = 0;
 
         $result = preg_replace_callback(
-            '/\?|(:[a-z0-9]+)/i',
+            '/\?|(:[a-z0-9_]+)/i',
             function ($matches) use ($parameters, &$i) {
                 $key = substr($matches[0], 1);
                 if (!isset($parameters[$i]) && !isset($parameters[$key])) {
