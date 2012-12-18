@@ -306,9 +306,6 @@ class DoctrineExtension extends \Twig_Extension
             $query
         );
 
-        $result = \SqlFormatter::highlight($result);
-        $result = str_replace(array("<pre ", "</pre>"), array("<span ", "</span>"), $result);
-
         return $result;
     }
 
