@@ -50,6 +50,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (!empty($config['orm'])) {
             $this->ormLoad($config['orm'], $container);
         }
+
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('profiler.xml');
     }
 
     /**
