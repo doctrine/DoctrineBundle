@@ -41,3 +41,14 @@ Add the following dependencies to your projects composer.json file:
         # ..
     }
 
+
+3. Profiler routing
+
+Import the DoctrineBundle routing in your "app/config/routing_dev.yml" file:
+
+.. code-block::
+
+    _profiler_doctrine:
+        resource: "@DoctrineBundle/Resources/config/routing/profiler.xml"
+        prefix:   /_doctrine
+
