@@ -41,3 +41,37 @@ Add the following dependencies to your projects composer.json file:
         # ..
     }
 
+### Routing
+
+If you're using the [WebProfilerBundle](https://github.com/symfony/WebProfilerBundle) import the routes into your dev environment:
+
+ .. configuration-block::
+
+    .. code-block:: yaml
+
+        # app/config/routing.yml
+        _profiler_doctrine:
+            resource: "@DoctrineBundle/Resources/config/routing/profiler.xml"
+            prefix:   /_profiler
+
+    .. code-block:: xml
+
+        <!-- app/config/routing.xml -->
+        <?xml version="1.0" encoding="UTF-8" ?>
+
+        <routes xmlns="http://symfony.com/schema/routing"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
+
+            <import resource="@DoctrineBundle/Resources/config/routing/profiler.xml" prefix="/_profiler" />
+        </routes>
+
+    .. code-block:: php
+
+        // app/config/routing.php
+        use Symfony\Component\Routing\RouteCollection;
+
+        $collection = new RouteCollection();
+        $collection->addCollection($loader->import("@DoctrineBundle/Resources/config/routing/profiler.xml"), '/_profiler');
+
+        return $collection;
