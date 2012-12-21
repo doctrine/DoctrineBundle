@@ -46,7 +46,7 @@
             'panel': 'db',
             'connectionName': app.request.query.get('connection'),
             'query': app.request.query.get('query')
-        }) with {} %}
+        }) %}
     {% else %}
         {{ block('queries') }}
     {% endif %}
