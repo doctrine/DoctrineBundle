@@ -41,12 +41,12 @@
 
 {% block panel %}
     {% if 'explain' == page %}
-        {% render 'DoctrineBundle:Profiler:explain' with {
+        {{ render(controller('DoctrineBundle:Profiler:explain', {
             'token': token,
             'panel': 'db',
             'connectionName': app.request.query.get('connection'),
             'query': app.request.query.get('query')
-        } %}
+        })) }}
     {% else %}
         {{ block('queries') }}
     {% endif %}
