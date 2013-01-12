@@ -233,9 +233,6 @@ class DoctrineExtension extends \Twig_Extension
             $result = $this->composeMiniQuery($query, $keywords, $required);
         }
 
-        // Highlight the minified query
-        $result = \SqlFormatter::highlight($result);
-
         // Remove unneeded boilerplate HTML
         $result = str_replace(array("<pre style='background:white;'", "</pre>"), array("<span", "</span>"), $result);
 
