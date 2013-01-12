@@ -1,3 +1,8 @@
+## 1.2.0 (2013-XX-XX)
+
+ * Bumped the requirement to Symfony 2.2
+ * Updated the profiler templates for Symfony 2.2
+
 ## 1.1.0 (2013-01-12)
 
  * Added syntax highlighting for queries in teh profiler
