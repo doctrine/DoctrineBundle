@@ -103,6 +103,8 @@ class Registry extends ManagerRegistry implements RegistryInterface
      * @param string $name The entity manager name (null for the default one)
      *
      * @return EntityManager
+     *
+     * @deprecated
      */
     public function resetEntityManager($name = null)
     {
@@ -119,6 +121,8 @@ class Registry extends ManagerRegistry implements RegistryInterface
      * @param string $alias The alias
      *
      * @return string The full namespace
+     *
+     * @deprecated
      */
     public function getEntityNamespace($alias)
     {
@@ -154,6 +158,8 @@ class Registry extends ManagerRegistry implements RegistryInterface
      * Gets all connection names.
      *
      * @return array An array of connection names
+     *
+     * @deprecated
      */
     public function getEntityManagerNames()
     {
@@ -168,6 +174,8 @@ class Registry extends ManagerRegistry implements RegistryInterface
      * @param string $class A Doctrine Entity class name
      *
      * @return EntityManager|null
+     *
+     * @deprecated
      */
     public function getEntityManagerForClass($class)
     {

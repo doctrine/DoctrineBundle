@@ -44,6 +44,7 @@ class ConnectionFactory
      * @param array         $params
      * @param Configuration $config
      * @param EventManager  $eventManager
+     * @param array         $mappingTypes
      *
      * @return \Doctrine\DBAL\Connection
      */
