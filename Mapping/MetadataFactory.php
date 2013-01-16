@@ -173,10 +173,13 @@ class MetadataFactory
      */
     private function getMetadataForClass($entity)
     {
-        foreach ($this->getAllMetadata() as $metadata) {
-            if ($metadata->name === $entity) {
-                return new ClassMetadataCollection(array($metadata));
-            }
+        foreach ($this->registry->getManagers() as $em) {
+            $class = $this->getClassMetadataFactoryClass();
+            $cmf = new $class();
+            $cmf->setEntityManager($em);
+
+            $metadata = $cmf->getMetadataFor($entity);
+            return new ClassMetadataCollection(array($metadata));
         }
 
         return new ClassMetadataCollection(array());
