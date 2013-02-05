@@ -43,7 +43,7 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
             ->addOption('filter', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'A string pattern used to match entities that should be mapped.')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force to overwrite existing mapping files.')
-            ->addOption('dir', null, InputOption::VALUE_OPTION, 'Extra Namespace option. Sub directory for entities.' )
+            ->addOption('dir', null, InputOption::VALUE_OPTION, 'Extra Namespace option. Sub directory for entities.', '')
             ->setDescription('Imports mapping information from an existing database')
             ->setHelp(<<<EOT
 The <info>doctrine:mapping:import</info> command imports mapping information
@@ -80,7 +80,7 @@ EOT
         $type = $input->getArgument('mapping-type') ? $input->getArgument('mapping-type') : 'xml';
         $dir = $input->getOption( 'dir' ) ? $input->getOption( 'dir' ) : '';
         if ('annotation' === $type) {
-            $destPath .= $dir . '/Entity';
+            $destPath .= $dir.'/Entity';
         } else {
             $destPath .= '/Resources/config/doctrine';
         }
@@ -114,14 +114,14 @@ EOT
             foreach ($metadata as $class) {
                 $className = $class->name;
                 $class->name = $bundle->getNamespace();
-                if( !empty( $dir ) ) {
-                    $class->name .= "\\" . $dir;
+                if(!empty($dir)) {
+                    $class->name .= "\\".$dir;
                 }
                 $class->name .= '\\Entity\\'.$className;
                 if ('annotation' === $type) {
                     $path = $destPath.'/'.$className.'.php';
                 } else {
-                    $className = !empty( $dir ) ? $dir . '.' . $className : $className;
+                    $className = !empty($dir) ? $dir.'.'.$className : $className;
                     $path = $destPath.'/'.$className.'.orm.'.$type;
                 }
                 $output->writeln(sprintf('  > writing <comment>%s</comment>', $path));
