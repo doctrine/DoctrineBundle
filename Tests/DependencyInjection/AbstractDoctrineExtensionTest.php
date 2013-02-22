@@ -765,7 +765,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addFilter', array('soft_delete', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'));
 
         $definition = $container->getDefinition('doctrine.orm.default_manager_configurator');
-        $this->assertDICConstructorArguments($definition, array(array('soft_delete')));
+        $this->assertDICConstructorArguments($definition, array(array('soft_delete'), array()));
 
         // Let's create the instance to check the configurator work.
         /** @var $entityManager \Doctrine\ORM\EntityManager */

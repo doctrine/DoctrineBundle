@@ -24,15 +24,17 @@ use Doctrine\ORM\EntityManager;
 class ManagerConfigurator
 {
     private $enabledFilters = array();
+    private $filtersParameters = array();
 
     /**
      * Construct.
      *
      * @param array $enabledFilters
      */
-    public function __construct(array $enabledFilters)
+    public function __construct(array $enabledFilters, array $filtersParameters)
     {
         $this->enabledFilters = $enabledFilters;
+        $this->filtersParameters = $filtersParameters;
     }
 
     /**
@@ -60,7 +62,28 @@ class ManagerConfigurator
 
         $filterCollection = $entityManager->getFilters();
         foreach ($this->enabledFilters as $filter) {
-            $filterCollection->enable($filter);
+            $oFilter = $filterCollection->enable($filter);
+            if( null !== $oFilter ) {
+                $this->setFilterParameters($filter, $oFilter);
+            }
         }
+    }
+
+    /**
+     * Enable filters for an given entity manager
+     *
+     * @param EntityManager $entityManager
+     *
+     * @return null
+     */
+    private function setFilterParameters($name, $filter)
+    {
+        if( !empty($this->filtersParameters[$name]) ) {
+            $parameters = $this->filtersParameters[$name];
+            foreach( $parameters as $paramName => $paramValue ) {
+                $filter->setParameter($paramName, $paramValue);
+            }
+        }
+        return $this;
     }
 }
