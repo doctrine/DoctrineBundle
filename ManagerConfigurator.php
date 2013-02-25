@@ -15,6 +15,7 @@
 namespace Doctrine\Bundle\DoctrineBundle;
 
 use Doctrine\ORM\EntityManager;
+use  Doctrine\ORM\Query\Filter\SQLFilter;
 
 /**
  * Configurator for an EntityManager
@@ -63,7 +64,7 @@ class ManagerConfigurator
         $filterCollection = $entityManager->getFilters();
         foreach ($this->enabledFilters as $filter) {
             $filterObject = $filterCollection->enable($filter);
-            if( null !== $filterObject ) {
+            if (null !== $filterObject) {
                 $this->setFilterParameters($filter, $filterObject);
             }
         }
@@ -73,11 +74,11 @@ class ManagerConfigurator
      * Set defaults parameters for a given filter
      *
      * @param string $name Filter name
-     * @param object $filter Filter object
+     * @param SQLFilter $filter Filter object
      *
      * @return null
      */
-    private function setFilterParameters($name, $filter)
+    private function setFilterParameters($name, SQLFilter $filter)
     {
         if( !empty($this->filtersParameters[$name]) ) {
             $parameters = $this->filtersParameters[$name];

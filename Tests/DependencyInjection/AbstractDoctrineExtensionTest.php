@@ -882,28 +882,24 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    protected function assertDICDefinitionMethodCallCount($definition, $methodName, array $params = null, $nbCalls=1)
+    protected function assertDICDefinitionMethodCallCount($definition, $methodName, array $params = array(), $nbCalls=1)
     {
         $calls = $definition->getMethodCalls();
         $called = 0;
         foreach ($calls as $call) {
             if ($call[0] == $methodName) {
-                if ($called > $nbCalls) { break; }
-                else {
-                    if ($params[$called] !== null) {
+                if ($called > $nbCalls) {
+                    break;
+                } else {
+                    if (isset($params[$called])) {
                         $this->assertEquals($params[$called], $call[1], "Expected parameters to methods '".$methodName."' do not match the actual parameters.");
                     }
                     $called++;
                 }
             }
         }
-        if($called != $nbCalls) {
-            if ( $called == 0) {
-                $this->fail("Method '".$methodName."' is expected to be called ". $nbCalls ." time, definition does not contain a call though.");
-            } else {
-                $this->fail("Method '".$methodName."' is expected to be called ". $nbCalls ." time, definition contain ". $called ." calls.");
-            }
-        }
+        
+        $this->assertEquals($nbCalls, $called, sprintf('The method "%s" should be called %d times', $methodName, $nbCalls));
     }
 
 
