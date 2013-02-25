@@ -72,8 +72,8 @@ class ManagerConfigurator
     /**
      * Set defaults parameters for a given filter
      *
-     * @param string Filter name
-     * @param object Filter object
+     * @param string $name Filter name
+     * @param object $filter Filter object
      *
      * @return null
      */
