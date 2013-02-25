@@ -62,17 +62,18 @@ class ManagerConfigurator
 
         $filterCollection = $entityManager->getFilters();
         foreach ($this->enabledFilters as $filter) {
-            $oFilter = $filterCollection->enable($filter);
-            if( null !== $oFilter ) {
-                $this->setFilterParameters($filter, $oFilter);
+            $filterObject = $filterCollection->enable($filter);
+            if( null !== $filterObject ) {
+                $this->setFilterParameters($filter, $filterObject);
             }
         }
     }
 
     /**
-     * Enable filters for an given entity manager
+     * Set defaults parameters for a given filter
      *
-     * @param EntityManager $entityManager
+     * @param string Filter name
+     * @param object Filter object
      *
      * @return null
      */
@@ -84,6 +85,5 @@ class ManagerConfigurator
                 $filter->setParameter($paramName, $paramValue);
             }
         }
-        return $this;
     }
 }

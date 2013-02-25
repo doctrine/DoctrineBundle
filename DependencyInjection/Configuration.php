@@ -377,6 +377,7 @@ class Configuration implements ConfigurationInterface
                                     return $v;
                                 })
                             ->end()
+                            ->fixXmlConfig('parameter')
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
                                 ->booleanNode('enabled')->defaultFalse()->end()
