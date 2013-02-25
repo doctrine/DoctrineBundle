@@ -753,31 +753,6 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testAddFilter()
     {
-        $filters = array(
-            array(
-                array(
-                    'soft_delete',
-                    'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'
-                ),
-                array(
-                    'myFilter',
-                    'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'
-                )
-            ),
-            array(
-                array(
-                    array('soft_delete'),
-                    array()
-                ),
-                array(
-                    array('myFilter'),
-                    array(
-                        'myParameter' => 'myValue'
-                    )
-                )
-            ),
-        );
-        
         $container = $this->getContainer(array('YamlBundle'));
 
         $loader = new DoctrineExtension();
@@ -906,7 +881,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             $this->fail("Method '".$methodName."' is expected to be called once, definition does not contain a call though.");
         }
     }
-    
+
     protected function assertDICDefinitionMethodCallCount($definition, $methodName, array $params = null, $nbCalls=1)
     {
         $calls = $definition->getMethodCalls();
