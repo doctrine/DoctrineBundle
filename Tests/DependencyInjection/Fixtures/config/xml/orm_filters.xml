@@ -12,7 +12,12 @@
         </dbal>
 
         <orm>
-            <filter name="soft_delete" enabled="true">Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter</filter>
+            <filter name="soft_delete" enabled="true" >Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter</filter>
+            <filter name="myFilter" enabled="true" class="Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter">
+                <parameters>
+                    <parameter name="myParameter">myValue</parameter>
+                </parameters>
+            </filter>
         </orm>
     </config>
 </srv:container>

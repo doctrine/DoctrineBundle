@@ -753,6 +753,31 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testAddFilter()
     {
+        $filters = array(
+            array(
+                array(
+                    'soft_delete',
+                    'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'
+                ),
+                array(
+                    'myFilter',
+                    'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'
+                )
+            ),
+            array(
+                array(
+                    array('soft_delete'),
+                    array()
+                ),
+                array(
+                    array('myFilter'),
+                    array(
+                        'myParameter' => 'myValue'
+                    )
+                )
+            ),
+        );
+        
         $container = $this->getContainer(array('YamlBundle'));
 
         $loader = new DoctrineExtension();
@@ -762,15 +787,19 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addFilter', array('soft_delete', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'));
+        $args = array(
+            array('soft_delete', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'),
+            array('myFilter', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter')
+        );
+        $this->assertDICDefinitionMethodCallCount($definition, 'addFilter', $args, 2);
 
         $definition = $container->getDefinition('doctrine.orm.default_manager_configurator');
-        $this->assertDICConstructorArguments($definition, array(array('soft_delete'), array()));
+        $this->assertDICConstructorArguments($definition, array(array('soft_delete', 'myFilter'), array('myFilter' => array('myParameter' => 'myValue'))));
 
         // Let's create the instance to check the configurator work.
         /** @var $entityManager \Doctrine\ORM\EntityManager */
         $entityManager = $container->get('doctrine.orm.entity_manager');
-        $this->assertCount(1, $entityManager->getFilters()->getEnabledFilters());
+        $this->assertCount(2, $entityManager->getFilters()->getEnabledFilters());
     }
 
     public function testResolveTargetEntity()
@@ -877,6 +906,31 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             $this->fail("Method '".$methodName."' is expected to be called once, definition does not contain a call though.");
         }
     }
+    
+    protected function assertDICDefinitionMethodCallCount($definition, $methodName, array $params = null, $nbCalls=1)
+    {
+        $calls = $definition->getMethodCalls();
+        $called = 0;
+        foreach ($calls as $call) {
+            if ($call[0] == $methodName) {
+                if ($called > $nbCalls) { break; }
+                else {
+                    if ($params[$called] !== null) {
+                        $this->assertEquals($params[$called], $call[1], "Expected parameters to methods '".$methodName."' do not match the actual parameters.");
+                    }
+                    $called++;
+                }
+            }
+        }
+        if($called != $nbCalls) {
+            if ( $called == 0) {
+                $this->fail("Method '".$methodName."' is expected to be called ". $nbCalls ." time, definition does not contain a call though.");
+            } else {
+                $this->fail("Method '".$methodName."' is expected to be called ". $nbCalls ." time, definition contain ". $called ." calls.");
+            }
+        }
+    }
+
 
     protected function compileContainer(ContainerBuilder $container)
     {
