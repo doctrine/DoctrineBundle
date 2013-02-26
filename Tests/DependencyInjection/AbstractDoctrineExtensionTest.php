@@ -890,12 +890,12 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             if ($call[0] == $methodName) {
                 if ($called > $nbCalls) {
                     break;
-                } else {
-                    if (isset($params[$called])) {
-                        $this->assertEquals($params[$called], $call[1], "Expected parameters to methods '".$methodName."' do not match the actual parameters.");
-                    }
-                    $called++;
                 }
+                
+                if (isset($params[$called])) {
+                    $this->assertEquals($params[$called], $call[1], "Expected parameters to methods '".$methodName."' do not match the actual parameters.");
+                }
+                $called++;
             }
         }
         
