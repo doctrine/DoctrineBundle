@@ -171,11 +171,19 @@
         <xsd:attribute name="naming-strategy" type="xsd:string" />
     </xsd:complexType>
 
-    <xsd:complexType name="filter">
+    <xsd:complexType name="filter" mixed="true">
+        <xsd:choice minOccurs="0">
+            <xsd:element name="parameter" type="parameter" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:choice>
+        <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attribute name="class" type="xsd:string" />
+        <xsd:attribute name="enabled" type="xsd:boolean" />
+    </xsd:complexType>
+    
+    <xsd:complexType name="parameter">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
                 <xsd:attribute name="name" type="xsd:string" use="required" />
-                <xsd:attribute name="enabled" type="xsd:boolean" />
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
