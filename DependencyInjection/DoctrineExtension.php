@@ -60,7 +60,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'Doctrine\\Common\\Persistence\\ConnectionRegistry',
             'Doctrine\\Common\\Persistence\\Proxy',
             'Doctrine\\Common\\Util\\ClassUtils',
-            'Doctrine\\Bundle\\DoctrineBundle\\DataCollector\\DoctrineDataCollector',
             'Doctrine\\Bundle\\DoctrineBundle\\Registry',
         ));
     }
