@@ -167,25 +167,24 @@ class MetadataFactory
     }
 
     /**
-     * @param string $entity
+     * @param string $entity Entity class name
      *
      * @return ClassMetadataCollection
      */
     private function getMetadataForClass($entity)
     {
-        $entityManagers = $this->registry->getManagers();
+        $metadata                 = array();
+        $entityManagers           = $this->registry->getManagers();
         $metadataFactoryClassName = $this->getClassMetadataFactoryClass();
 
         foreach ($entityManagers as $em) {
             $cmf = new $metadataFactoryClassName();
             $cmf->setEntityManager($em);
 
-            $metadata = $cmf->getMetadataFor($entity);
-            
-            return new ClassMetadataCollection(array($metadata));
+            $metadata[] = $cmf->getMetadataFor($entity);
         }
 
-        return new ClassMetadataCollection(array());
+        return new ClassMetadataCollection($metadata);
     }
 
     /**
