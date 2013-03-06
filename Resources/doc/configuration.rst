@@ -210,8 +210,6 @@ can control. The following configuration options exist for a mapping:
     single: Configuration; Doctrine DBAL
     single: Doctrine; DBAL configuration
 
-.. _`reference-dbal-configuration`:
-
 Filters Configuration
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -236,6 +234,8 @@ You can easily define `doctrine filters`_ in your configuration file:
 * ``myParameter: myValue`` Bind the value ``myValue`` to the parameter ``myParameter`` (Optional)
 
 .. _doctrine filters: http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/filters.html
+
+.. _`reference-dbal-configuration`:
 
 Doctrine DBAL Configuration
 ---------------------------
