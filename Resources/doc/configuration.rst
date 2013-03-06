@@ -210,6 +210,31 @@ can control. The following configuration options exist for a mapping:
     single: Configuration; Doctrine DBAL
     single: Doctrine; DBAL configuration
 
+Filters Configuration
+~~~~~~~~~~~~~~~~~~~~~
+
+You can easily define `doctrine filters`_ in your configuration file:
+
+.. code-block:: yaml
+
+    doctrine:
+        orm:
+            filters:
+                myFilter:
+                    class: MyVendor\MyBundle\Filters\MyFilter
+                    enabled: true
+                    parameters:
+                        myParameter: myValue
+                        mySecondParameter: mySecondValue
+
+* ``myFilter:``   Filter identifier (Required)
+* ``class:``      Filter target class (Required)
+* ``enabled:``    Enable/Disable the filter by default (Optional - Default disabled)
+* ``parameters:`` Set default parameters (Optional)
+* ``myParameter: myValue`` Bind the value ``myValue`` to the parameter ``myParameter`` (Optional)
+
+.. _doctrine filters: http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/filters.html
+
 .. _`reference-dbal-configuration`:
 
 Doctrine DBAL Configuration
