@@ -106,7 +106,7 @@ EOT
         $cmf = new DisconnectedClassMetadataFactory();
         $cmf->setEntityManager($em);
         $metadata = $cmf->getAllFilteredMetadata($input->getOption('filter'));
-//        $metadata = MetadataFilter::filter($metadata, $input->getOption('filter'));
+
         if ($metadata) {
             $output->writeln(sprintf('Importing mapping information from "<info>%s</info>" entity manager', $emName));
             foreach ($metadata as $class) {
