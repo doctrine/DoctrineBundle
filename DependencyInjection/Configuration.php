@@ -134,6 +134,7 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
                 ->scalarNode('platform_service')->end()
+                ->append($this->getCacheDriverNode('result_cache_driver'))
                 ->scalarNode('schema_filter')->end()
                 ->booleanNode('logging')->defaultValue($this->debug)->end()
                 ->booleanNode('profiling')->defaultValue($this->debug)->end()
@@ -296,9 +297,9 @@ class Configuration implements ConfigurationInterface
             ->useAttributeAsKey('name')
             ->prototype('array')
                 ->addDefaultsIfNotSet()
-                ->append($this->getOrmCacheDriverNode('query_cache_driver'))
-                ->append($this->getOrmCacheDriverNode('metadata_cache_driver'))
-                ->append($this->getOrmCacheDriverNode('result_cache_driver'))
+                ->append($this->getCacheDriverNode('query_cache_driver'))
+                ->append($this->getCacheDriverNode('metadata_cache_driver'))
+                ->append($this->getCacheDriverNode('result_cache_driver'))
                 ->children()
                     ->scalarNode('connection')->end()
                     ->scalarNode('class_metadata_factory_name')->defaultValue('Doctrine\ORM\Mapping\ClassMetadataFactory')->end()
@@ -396,13 +397,13 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * Return a ORM cache driver node for an given entity manager
+     * Return a Doctrine cache driver node for a given connection or entity manager
      *
      * @param string $name
      *
      * @return ArrayNodeDefinition
      */
-    private function getOrmCacheDriverNode($name)
+    private function getCacheDriverNode($name)
     {
         $treeBuilder = new TreeBuilder();
         $node = $treeBuilder->root($name);
