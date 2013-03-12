@@ -56,10 +56,10 @@ class ResultSetMappingTest extends \PHPUnit_Framework_TestCase
         $mapping = new ResultSetMapping($em);
         $this->assertSame(
             $mapping,
-            $mapping->addEntityResult('ExampleBundle:Entity', 'e')
+            $mapping->addEntityResult('ExampleBundle:Entity', 'alias')
         );
-        $this->assertSame($mapping->aliasMap['e'], $metaData->name);
-        $this->assertArrayHasKey('e', $mapping->entityMappings);
+        $this->assertSame($mapping->aliasMap['alias'], $metaData->name);
+        $this->assertArrayHasKey('alias', $mapping->entityMappings);
     }
 
     public function testAddJoinedEntityResult()
