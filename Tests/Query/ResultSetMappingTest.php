@@ -59,5 +59,6 @@ class ResultSetMappingTest extends \PHPUnit_Framework_TestCase
             $mapping->addEntityResult('ExampleBundle:Entity', 'e')
         );
         $this->assertSame($mapping->aliasMap['e'], $metaData->name);
+        $this->assertArrayHasKey('e', $mapping->entityMappings);
     }
 }
