@@ -22,21 +22,21 @@ class ResultSetMappingTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->metaData = new \stdClass;
-        $this->metaData->name = 'Example\Bundle\Entity\Entity';
+        $this->metadata = new \stdClass;
+        $this->metadata->name = 'Example\Bundle\Entity\Entity';
 
-        $metaDataFactory = $this->getMock(
+        $metadataFactory = $this->getMock(
             'Doctrine\ORM\Mapping\ClassMetadataFactory'
         );
-        $metaDataFactory->expects($this->once())
+        $metadataFactory->expects($this->once())
             ->method('getMetadataFor')
             ->with('ExampleBundle:Entity')
-            ->will($this->returnValue($this->metaData));
+            ->will($this->returnValue($this->metadata));
 
         $config = $this->getMock('Doctrine\ORM\Configuration');
         $config->expects($this->once())
             ->method('getClassMetadataFactoryName')
-            ->will($this->returnValue($metaDataFactory));
+            ->will($this->returnValue($metadataFactory));
 
         $em = $this->getMockbuilder('Doctrine\ORM\EntityManager')
             ->disableOriginalConstructor()->getMock();
@@ -55,7 +55,7 @@ class ResultSetMappingTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertSame(
             $this->mapping->aliasMap['alias'],
-            $this->metaData->name
+            $this->metadata->name
         );
         $this->assertArrayHasKey('alias', $this->mapping->entityMappings);
     }
@@ -70,7 +70,7 @@ class ResultSetMappingTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertSame(
             $this->mapping->aliasMap['alias'],
-            $this->metaData->name
+            $this->metadata->name
         );
         $this->assertArrayHasKey('alias', $this->mapping->parentAliasMap);
         $this->assertArrayHasKey('alias', $this->mapping->relationMap);
