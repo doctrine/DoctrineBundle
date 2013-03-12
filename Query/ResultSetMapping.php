@@ -71,6 +71,24 @@ class ResultSetMapping extends BaseMapping
     }
 
     /**
+     * Adds a joined entity result.
+     *
+     * @param string $class       The class name or namespace shortcut of the joined entity.
+     * @param string $alias       The unique alias to use for the joined entity.
+     * @param string $parentAlias The alias of the entity result that is the parent of this joined result.
+     * @param object $relation    The association field that connects the parent entity result
+     *                            with the joined entity result.
+     *
+     * @return ResultSetMapping This ResultSetMapping instance.
+     */
+    public function addJoinedEntityResult($class, $alias, $parentAlias, $relation)
+    {
+        $class = $this->getMetaClassName($class);
+
+        return parent::addJoinedEntityResult($class, $alias, $parentAlias, $relation);
+    }
+
+    /**
      * Get the proper class name for a given shortcut or class name. This uses
      * the ClassMetaDataFactory to fetch the correct data.
      *

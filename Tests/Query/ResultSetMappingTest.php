@@ -61,4 +61,38 @@ class ResultSetMappingTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($mapping->aliasMap['e'], $metaData->name);
         $this->assertArrayHasKey('e', $mapping->entityMappings);
     }
+
+    public function testAddJoinedEntityResult()
+    {
+        $metaData = new \stdClass;
+        $metaData->name = 'Example\Bundle\Entity\Entity';
+        $metaDataFactory = $this->getMock(
+            'Doctrine\ORM\Mapping\ClassMetadataFactory'
+        );
+        $metaDataFactory->expects($this->once())
+            ->method('getMetadataFor')
+            ->with('ExampleBundle:Entity')
+            ->will($this->returnValue($metaData));
+
+        $config = $this->getMock('Doctrine\ORM\Configuration');
+        $config->expects($this->once())
+            ->method('getClassMetadataFactoryName')
+            ->will($this->returnValue($metaDataFactory));
+        $em = $this->getMockbuilder('Doctrine\ORM\EntityManager')
+            ->disableOriginalConstructor()->getMock();
+        $em->expects($this->once())
+            ->method('getConfiguration')
+            ->will($this->returnValue($config));
+
+        $mapping = new ResultSetMapping($em);
+        $this->assertSame(
+            $mapping,
+            $mapping->addJoinedEntityResult(
+                'ExampleBundle:Entity', 'alias', 'parentAlias', 'relation'
+            )
+        );
+        $this->assertSame($mapping->aliasMap['alias'], $metaData->name);
+        $this->assertArrayHasKey('alias', $mapping->parentAliasMap);
+        $this->assertArrayHasKey('alias', $mapping->relationMap);
+    }
 }
