@@ -18,19 +18,6 @@ use Doctrine\Bundle\DoctrineBundle\Query\ResultSetMapping;
 
 class ResultSetMappingTest extends \PHPUnit_Framework_TestCase
 {
-    public function testGetConfig()
-    {
-        $config = $this->getMock('Doctrine\ORM\Configuration');
-        $em = $this->getMockbuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()->getMock();
-        $em->expects($this->once())
-            ->method('getConfiguration')
-            ->will($this->returnValue($config));
-
-        $mapping = new ResultSetMapping($em);
-        $this->assertSame($config, $mapping->getConfig());
-    }
-
     public function testAddEntityResult()
     {
         $metaData = new \stdClass;

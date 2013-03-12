@@ -43,16 +43,6 @@ class ResultSetMapping extends BaseMapping
     }
 
     /**
-     * Retrieve the Configuration we've passed through via the EntityManager.
-     *
-     * @return \Doctrine\ORM\Configuration
-     */
-    public function getConfig()
-    {
-        return $this->em->getConfiguration();
-    }
-
-    /**
      * Adds an entity result to this ResultSetMapping.
      *
      * @param string $class The class name or namespace shortcut of the entity.
@@ -97,7 +87,7 @@ class ResultSetMapping extends BaseMapping
      */
     private function getMetaClassName($class)
     {
-        return $this->getConfig()->getClassMetadataFactoryName()
+        return $this->em->getConfiguration()->getClassMetadataFactoryName()
             ->getMetadataFor($class)->name;
     }
 }
