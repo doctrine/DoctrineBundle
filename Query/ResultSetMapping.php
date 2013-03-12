@@ -51,4 +51,35 @@ class ResultSetMapping extends BaseMapping
     {
         return $this->em->getConfiguration();
     }
+
+    /**
+     * Adds an entity result to this ResultSetMapping.
+     *
+     * @param string $class The class name or namespace shortcut of the entity.
+     * @param string $alias The alias for the class. The alias must be unique among all entity
+     *                                 results or joined entity results within this ResultSetMapping.
+     * @param string|null $resultAlias The result alias with which the entity result should be
+     *                                 placed in the result structure.
+     *
+     * @return ResultSetMapping This ResultSetMapping instance.
+     */
+    public function addEntityResult($class, $alias, $resultAlias = null)
+    {
+        $class = $this->getMetaClassName($class);
+
+        return parent::addEntityResult($class, $alias, $resultAlias);
+    }
+
+    /**
+     * Get the proper class name for a given shortcut or class name. This uses
+     * the ClassMetaDataFactory to fetch the correct data.
+     *
+     * @param string    The class name or namespace shortcut of the entity.
+     * @return string
+     */
+    private function getMetaClassName($class)
+    {
+        return $this->getConfig()->getClassMetadataFactoryName()
+            ->getMetadataFor($class)->name;
+    }
 }
