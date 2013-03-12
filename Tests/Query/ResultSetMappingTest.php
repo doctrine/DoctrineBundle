@@ -18,68 +18,61 @@ use Doctrine\Bundle\DoctrineBundle\Query\ResultSetMapping;
 
 class ResultSetMappingTest extends \PHPUnit_Framework_TestCase
 {
-    public function testAddEntityResult()
+    protected $metadata, $mapping;
+
+    public function setUp()
     {
-        $metaData = new \stdClass;
-        $metaData->name = 'Example\Bundle\Entity\Entity';
+        $this->metaData = new \stdClass;
+        $this->metaData->name = 'Example\Bundle\Entity\Entity';
+
         $metaDataFactory = $this->getMock(
             'Doctrine\ORM\Mapping\ClassMetadataFactory'
         );
         $metaDataFactory->expects($this->once())
             ->method('getMetadataFor')
             ->with('ExampleBundle:Entity')
-            ->will($this->returnValue($metaData));
+            ->will($this->returnValue($this->metaData));
 
         $config = $this->getMock('Doctrine\ORM\Configuration');
         $config->expects($this->once())
             ->method('getClassMetadataFactoryName')
             ->will($this->returnValue($metaDataFactory));
+
         $em = $this->getMockbuilder('Doctrine\ORM\EntityManager')
             ->disableOriginalConstructor()->getMock();
         $em->expects($this->once())
             ->method('getConfiguration')
             ->will($this->returnValue($config));
 
-        $mapping = new ResultSetMapping($em);
+        $this->mapping = new ResultSetMapping($em);
+    }
+
+    public function testAddEntityResult()
+    {
         $this->assertSame(
-            $mapping,
-            $mapping->addEntityResult('ExampleBundle:Entity', 'alias')
+            $this->mapping,
+            $this->mapping->addEntityResult('ExampleBundle:Entity', 'alias')
         );
-        $this->assertSame($mapping->aliasMap['alias'], $metaData->name);
-        $this->assertArrayHasKey('alias', $mapping->entityMappings);
+        $this->assertSame(
+            $this->mapping->aliasMap['alias'],
+            $this->metaData->name
+        );
+        $this->assertArrayHasKey('alias', $this->mapping->entityMappings);
     }
 
     public function testAddJoinedEntityResult()
     {
-        $metaData = new \stdClass;
-        $metaData->name = 'Example\Bundle\Entity\Entity';
-        $metaDataFactory = $this->getMock(
-            'Doctrine\ORM\Mapping\ClassMetadataFactory'
-        );
-        $metaDataFactory->expects($this->once())
-            ->method('getMetadataFor')
-            ->with('ExampleBundle:Entity')
-            ->will($this->returnValue($metaData));
-
-        $config = $this->getMock('Doctrine\ORM\Configuration');
-        $config->expects($this->once())
-            ->method('getClassMetadataFactoryName')
-            ->will($this->returnValue($metaDataFactory));
-        $em = $this->getMockbuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()->getMock();
-        $em->expects($this->once())
-            ->method('getConfiguration')
-            ->will($this->returnValue($config));
-
-        $mapping = new ResultSetMapping($em);
         $this->assertSame(
-            $mapping,
-            $mapping->addJoinedEntityResult(
+            $this->mapping,
+            $this->mapping->addJoinedEntityResult(
                 'ExampleBundle:Entity', 'alias', 'parentAlias', 'relation'
             )
         );
-        $this->assertSame($mapping->aliasMap['alias'], $metaData->name);
-        $this->assertArrayHasKey('alias', $mapping->parentAliasMap);
-        $this->assertArrayHasKey('alias', $mapping->relationMap);
+        $this->assertSame(
+            $this->mapping->aliasMap['alias'],
+            $this->metaData->name
+        );
+        $this->assertArrayHasKey('alias', $this->mapping->parentAliasMap);
+        $this->assertArrayHasKey('alias', $this->mapping->relationMap);
     }
 }
