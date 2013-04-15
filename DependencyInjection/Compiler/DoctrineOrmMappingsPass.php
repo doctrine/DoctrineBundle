@@ -29,9 +29,9 @@ class DoctrineOrmMappingsPass extends BaseMappingPass
      * You should not directly instantiate this class but use one of the
      * factory methods.
      *
-     * @param array  $mappings       hashmap of absolute directory paths to namespaces
-     * @param string $type           type of mapping, allowed are xml, yml, php
-     * @param bool $enabledParameter if specified, the compiler pass only
+     * @param Definition|Reference $driver           the driver to use
+     * @param array                $namespaces       list of namespaces this driver should handle
+     * @param bool                 $enabledParameter if specified, the compiler pass only
      *      executes if this parameter exists in the service container.
      */
     public function __construct($driver, $namespaces, $enabledParameter = false)
@@ -65,7 +65,7 @@ class DoctrineOrmMappingsPass extends BaseMappingPass
      * @param string $enabledParameter Service container parameter that must be
      *      present to enable the mapping. Set to false to not do any check, optional.
      */
-    public static function createYmlMappingDriver(array $mappings, $enabledParameter = false)
+    public static function createYamlMappingDriver(array $mappings, $enabledParameter = false)
     {
         $arguments = array($mappings, '.orm.yml');
         $locator = new Definition('Doctrine\Common\Persistence\Mapping\Driver\SymfonyFileLocator', $arguments);
