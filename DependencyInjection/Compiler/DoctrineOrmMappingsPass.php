@@ -12,7 +12,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
-use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterMappingsPass as BaseMappingPass;
+use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterMappingsPass;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
@@ -23,7 +23,7 @@ use Symfony\Component\DependencyInjection\Reference;
  *
  * @author David Buchmann <david@liip.ch>
  */
-class DoctrineOrmMappingsPass extends BaseMappingPass
+class DoctrineOrmMappingsPass extends RegisterMappingsPass
 {
     /**
      * You should not directly instantiate this class but use one of the
@@ -90,15 +90,14 @@ class DoctrineOrmMappingsPass extends BaseMappingPass
 
     /**
      * @param array  $namespaces       List of namespaces that are handled with annotation mapping
-     * @param array  $directories      List of directories to look for annotation mapping files
+     * @param array  $directories      List of directories to look for annotated classes
      * @param string $enabledParameter Service container parameter that must be
      *      present to enable the mapping. Set to false to not do any check, optional.
      */
     public static function createAnnotationMappingDriver(array $namespaces, array $directories, $enabledParameter = false)
     {
-        $arguments = array(new Reference('doctrine.orm.metadata.annotation_reader'), $directories);
-        $locator = new Definition('Doctrine\Common\Persistence\Mapping\Driver\SymfonyFileLocator', $arguments);
-        $driver = new Definition('Doctrine\ORM\Mapping\Driver\AnnotationDriver', array($locator));
+        $reader = new Reference('doctrine.orm.metadata.annotation_reader');
+        $driver = new Definition('Doctrine\ORM\Mapping\Driver\AnnotationDriver', array($reader, $directories));
 
         return new DoctrineOrmMappingsPass($driver, $namespaces, $enabledParameter);
     }
@@ -111,9 +110,7 @@ class DoctrineOrmMappingsPass extends BaseMappingPass
      */
     public static function createStaticPhpMappingDriver(array $namespaces, array $directories, $enabledParameter = false)
     {
-        $arguments = array($directories);
-        $locator = new Definition('Doctrine\Common\Persistence\Mapping\Driver\SymfonyFileLocator', $arguments);
-        $driver = new Definition('Doctrine\ORM\Mapping\Driver\StaticPHPDriver', array($locator));
+        $driver = new Definition('Doctrine\ORM\Mapping\Driver\StaticPHPDriver', array($directories));
 
         return new DoctrineOrmMappingsPass($driver, $namespaces, $enabledParameter);
     }
