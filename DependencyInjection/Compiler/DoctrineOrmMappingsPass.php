@@ -30,10 +30,12 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      * factory methods.
      *
      * @param Definition|Reference $driver            the driver to use
-     * @param array                $namespaces        list of namespaces this driver should handle
-     * @param string[]             $managerParameters list of parameters that could tell the manager name to use
-     * @param bool                 $enabledParameter  if specified, the compiler pass only
-     *      executes if this parameter exists in the service container.
+     * @param array                $namespaces        list of namespaces this driver should handle.
+     * @param string[]             $managerParameters ordered list of container parameters that may
+     *      provide the name of the manager to register the mappings for. The first non-empty name
+     *      is used, the others skipped.
+     * @param bool                 $enabledParameter  if specified, the compiler pass only executes
+     *      if this parameter exists in the service container.
      */
     public function __construct($driver, $namespaces, array $managerParameters, $enabledParameter = false)
     {
