@@ -98,7 +98,7 @@ EOT
             $name = strtr($input->getArgument('name'), '/', '\\');
 
             if (false !== $pos = strpos($name, ':')) {
-                $name = $this->getContainer()->get('doctrine')->getEntityNamespace(substr($name, 0, $pos)).'\\'.substr($name, $pos + 1);
+                $name = $this->getContainer()->get('doctrine')->getAliasNamespace(substr($name, 0, $pos)).'\\'.substr($name, $pos + 1);
             }
 
             if (class_exists($name)) {
