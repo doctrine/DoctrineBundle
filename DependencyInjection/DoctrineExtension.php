@@ -133,6 +133,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $configuration->addMethodCall('setSQLLogger', array($logger));
         }
 
+        if (isset($connection['result_cache_driver']) && $connection['result_cache_driver']) {
+            /** @todo Alternate solution is needed to address loading cache driver for either dbal or orm */
+            $connection['name'] = 'dbal.'.$name; # temporary fix to ensure unique to dbal. also see line 140
+            $this->loadObjectManagerCacheDriver($connection, $container, 'result_cache');
+            $configuration->addMethodCall('setResultCacheImpl', array(new Reference(sprintf('doctrine.orm.dbal.%s_result_cache', $name))));
+            unset($connection['result_cache_driver']);
+        }
+
         // event manager
         $def = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), new DefinitionDecorator('doctrine.dbal.connection.event_manager'));
 

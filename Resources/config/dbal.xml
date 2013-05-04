@@ -17,6 +17,25 @@
         <parameter key="doctrine.class">Doctrine\Bundle\DoctrineBundle\Registry</parameter>
         <parameter key="doctrine.entity_managers" type="collection"></parameter>
         <parameter key="doctrine.default_entity_manager"></parameter>
+
+        <!-- cache -->
+        <parameter key="doctrine.dbal.cache.array.class">Doctrine\Common\Cache\ArrayCache</parameter>
+        <parameter key="doctrine.dbal.cache.apc.class">Doctrine\Common\Cache\ApcCache</parameter>
+        <parameter key="doctrine.dbal.cache.memcache.class">Doctrine\Common\Cache\MemcacheCache</parameter>
+        <parameter key="doctrine.dbal.cache.memcache_host">localhost</parameter>
+        <parameter key="doctrine.dbal.cache.memcache_port">11211</parameter>
+        <parameter key="doctrine.dbal.cache.memcache_instance.class">Memcache</parameter>
+        <parameter key="doctrine.dbal.cache.memcached.class">Doctrine\Common\Cache\MemcachedCache</parameter>
+        <parameter key="doctrine.dbal.cache.memcached_host">localhost</parameter>
+        <parameter key="doctrine.dbal.cache.memcached_port">11211</parameter>
+        <parameter key="doctrine.dbal.cache.memcached_instance.class">Memcached</parameter>
+        <parameter key="doctrine.dbal.cache.redis.class">Doctrine\Common\Cache\RedisCache</parameter>
+        <parameter key="doctrine.dbal.cache.redis_host">localhost</parameter>
+        <parameter key="doctrine.dbal.cache.redis_port">6379</parameter>
+        <parameter key="doctrine.dbal.cache.redis_instance.class">Redis</parameter>
+        <parameter key="doctrine.dbal.cache.xcache.class">Doctrine\Common\Cache\XcacheCache</parameter>
+        <parameter key="doctrine.dbal.cache.wincache.class">Doctrine\Common\Cache\WinCacheCache</parameter>
+        <parameter key="doctrine.dbal.cache.zenddata.class">Doctrine\Common\Cache\ZendDataCache</parameter>
     </parameters>
 
     <services>

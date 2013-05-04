@@ -14,17 +14,22 @@
         </xsd:complexType>
     </xsd:element>
 
-    <xsd:attributeGroup name="connection-config">
+    <xsd:complexType name="connection-config">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="result-cache-driver" type="cache_driver" minOccurs="0" maxOccurs="1" />
+        </xsd:choice>
+
         <xsd:attribute name="driver" type="xsd:string" />
         <xsd:attribute name="driver-class" type="xsd:string" />
         <xsd:attribute name="wrapper-class" type="xsd:string" />
         <xsd:attribute name="keep-slave" type="xsd:string" />
         <xsd:attribute name="platform-service" type="xsd:string" />
+        <xsd:attribute name="result-cache-driver" type="xsd:string" />
         <xsd:attribute name="schema-filter" type="xsd:string" />
         <xsd:attribute name="logging" type="xsd:string" default="false" />
         <xsd:attribute name="profiling" type="xsd:string" default="false" />
         <xsd:attributeGroup ref="driver-config" />
-    </xsd:attributeGroup>
+    </xsd:complexType>
 
     <xsd:attributeGroup name="driver-config">
         <xsd:attribute name="dbname" type="xsd:string" />
@@ -54,7 +59,7 @@
         </xsd:choice>
 
         <xsd:attribute name="default-connection" type="xsd:string" />
-        <xsd:attributeGroup ref="connection-config" />
+        <xsd:attribute name="connection-config" type="connection-config" />
     </xsd:complexType>
 
     <xsd:complexType name="option">
@@ -88,7 +93,7 @@
             <xsd:element name="slave" type="slave" />
         </xsd:choice>
         <xsd:attribute name="name" type="xsd:string" use="required" />
-        <xsd:attributeGroup ref="connection-config" />
+        <xsd:attribute name="connection-config" type="connection-config" />
     </xsd:complexType>
 
     <xsd:complexType name="slave">
