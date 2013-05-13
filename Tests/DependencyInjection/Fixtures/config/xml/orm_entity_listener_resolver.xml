@@ -11,8 +11,6 @@
             <connection name="default" dbname="db" />
         </dbal>
 
-        <orm default-entity-manager="default">
-            <entity-listener-resolver>entity_listener_resolver</entity-listener-resolver>
-        </orm>
+        <orm default-entity-manager="default" entity-listener-resolver="entity_listener_resolver" />
     </config>
 </srv:container>
