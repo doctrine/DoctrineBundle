@@ -300,6 +300,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'setNamingStrategy'       => new Reference($entityManager['naming_strategy']),
             ));
         }
+        if ($entityManager['entity_listener_resolver']) {
+            $methods['setEntityListenerResolver'] = new Reference($entityManager['entity_listener_resolver']);
+        }
         foreach ($methods as $method => $arg) {
             $ormConfigDef->addMethodCall($method, array($arg));
         }

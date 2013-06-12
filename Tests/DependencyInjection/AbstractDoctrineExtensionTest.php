@@ -806,6 +806,20 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setFilterSchemaAssetsExpression', array('^sf2_'));
     }
 
+    public function testEntityListenerResolver()
+    {
+        $container = $this->getContainer();
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'orm_entity_listener_resolver');
+
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array('entity_listener_resolver'));
+    }
+
     protected function getContainer($bundles = 'YamlBundle', $vendor = null)
     {
         $bundles = (array) $bundles;
