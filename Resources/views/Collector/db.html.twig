@@ -62,11 +62,20 @@
                 <em>No queries.</em>
             </p>
         {% else %}
+            <p>
+                <button type="button" class="sf-button" onclick="expandAllQueries(this);" data-action="expand">
+                    <span class="border-l">
+                        <span class="border-r">
+                            <span class="btn-bg">Expand all queries</span>
+                        </span>
+                    </span>
+                </button>
+            </p>
             <ul class="alt" id="queriesPlaceholder-{{ loop.index }}">
                 {% for i, query in queries %}
                     <li class="{{ cycle(['odd', 'even'], i) }}" data-extra-info="{{ '%0.2f'|format(query.executionMS * 1000) }}" data-target-id="{{ i }}">
                         <div style="margin-top: 4px" id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
-                            <div onclick="return expandQuery(this);" title="Expand query" data-target-id="code-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">
+                            <div class="query-section" data-state="collapsed" onclick="return expandQuery(this);" title="Expand query" data-target-id="code-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">
                                 <img alt="+" src="{{ asset('bundles/framework/images/blue_picto_more.gif') }}" style="display: inline;" />
                                 <img alt="-" src="{{ asset('bundles/framework/images/blue_picto_less.gif') }}" style="display: none;" />
                                 <span style="display: none">Shrink query</span>
@@ -181,6 +190,32 @@
             return false;
         }
 
+        function expandAllQueries(button) {
+            var queries = document.getElementsByClassName('query-section'),
+                i = queries.length,
+                action = button.getAttribute('data-action');
+
+            if (action == 'expand') {
+                button.getElementsByClassName('btn-bg')[0].innerHTML = 'Collapse all queries';
+
+                while (i--) {
+                    if (queries[i].getAttribute('data-state') == 'collapsed') {
+                        expandQuery(queries[i]);
+                    }
+                }
+            } else {
+                button.getElementsByClassName('btn-bg')[0].innerHTML = 'Expand all queries';
+
+                while (i--) {
+                    if (queries[i].getAttribute('data-state') == 'expanded') {
+                        expandQuery(queries[i]);
+                    }
+                }
+            }
+
+            button.setAttribute('data-action', action == 'expand' ? 'collapse' : 'expand');
+        }
+
         function expandQuery(link) {
             var sections = link.children,
                 target = link.getAttribute('data-target-id'),
@@ -200,6 +235,8 @@
                 sections[0].style.display = 'none';
                 sections[1].style.display = 'inline';
                 sections[2].style.display = 'inline';
+
+                link.setAttribute('data-state', 'expanded');
             } else {
                 document.getElementById('small' + target).style.display = 'inline';
                 document.getElementById(target).style.display = 'none';
@@ -207,6 +244,8 @@
                 sections[0].style.display = 'inline';
                 sections[1].style.display = 'none';
                 sections[2].style.display = 'none';
+
+                link.setAttribute('data-state', 'collapsed');
             }
 
             return false;
