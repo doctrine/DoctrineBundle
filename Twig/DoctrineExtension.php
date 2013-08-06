@@ -39,9 +39,9 @@ class DoctrineExtension extends \Twig_Extension
     public function getFilters()
     {
         return array(
-            'doctrine_minify_query' => new \Twig_Filter_Method($this, 'minifyQuery'),
-            'doctrine_pretty_query' => new \Twig_Filter_Function('SqlFormatter::format'),
-            'doctrine_replace_query_parameters' => new \Twig_Filter_Method($this, 'replaceQueryParameters'),
+            new \Twig_SimpleFilter('doctrine_minify_query', array($this, 'minifyQuery')),
+            new \Twig_SimpleFilter('doctrine_pretty_query', 'SqlFormatter::format'),
+            new \Twig_SimpleFilter('doctrine_replace_query_parameters', array($this, 'replaceQueryParameters')),
         );
     }
 
