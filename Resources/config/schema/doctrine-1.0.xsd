@@ -130,6 +130,7 @@
         <xsd:attribute name="query-cache-driver" type="xsd:string" />
         <xsd:attribute name="naming-strategy" type="xsd:string" />
         <xsd:attribute name="entity-listener-resolver" type="xsd:string" />
+        <xsd:attribute name="repository-factory" type="xsd:string" />
     </xsd:complexType>
 
     <xsd:complexType name="resolve_target_entity">
@@ -180,7 +181,7 @@
         <xsd:attribute name="class" type="xsd:string" />
         <xsd:attribute name="enabled" type="xsd:boolean" />
     </xsd:complexType>
-    
+
     <xsd:complexType name="parameter">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
