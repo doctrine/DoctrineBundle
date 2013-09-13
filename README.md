@@ -27,4 +27,4 @@ schema management and PDO abstraction.
 
 ## Documentation
 
-See the Resources/docs folder for more detailed documentation and installation instructions.
+See the Resources/docs folder for more detailed documentation including [configuration](Resources/doc/configuration.rst) and [installation](Resources/doc/installation.rst) instructions.
