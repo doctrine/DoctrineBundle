@@ -23,7 +23,7 @@
         "php": ">=5.3.2",
         "symfony/framework-bundle": "~2.2",
         "symfony/doctrine-bridge": "~2.2",
-        "doctrine/dbal": ">=2.2,<2.5-dev",
+        "doctrine/dbal": ">=2.2,<2.6-dev",
         "jdorn/sql-formatter": "~1.1"
     },
     "require-dev": {
