@@ -139,6 +139,7 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('profiling')->defaultValue($this->debug)->end()
                 ->scalarNode('driver_class')->end()
                 ->scalarNode('wrapper_class')->end()
+                ->scalarNode('shardChoser')->end()
                 ->booleanNode('keep_slave')->end()
                 ->arrayNode('options')
                     ->useAttributeAsKey('key')
@@ -158,6 +159,25 @@ class Configuration implements ConfigurationInterface
                     ->prototype('array')
         ;
         $this->configureDbalDriverNode($slaveNode);
+
+        $globalNode = $connectionNode
+            ->children()
+                ->arrayNode('global')
+        ;
+        $this->configureDbalDriverNode($globalNode);
+
+        $shardNode = $connectionNode
+            ->children()
+                ->arrayNode('shards')
+                    ->prototype('array')
+                    ->children()
+                        ->integerNode('id')
+                            ->min(1)
+                            ->isRequired()
+                        ->end()
+                    ->end()
+        ;
+        $this->configureDbalDriverNode($shardNode);
 
         return $node;
     }
