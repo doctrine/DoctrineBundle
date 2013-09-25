@@ -131,6 +131,7 @@ class Configuration implements ConfigurationInterface
             ->fixXmlConfig('option')
             ->fixXmlConfig('mapping_type')
             ->fixXmlConfig('slave')
+            ->fixXmlConfig('shard')
             ->children()
                 ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
                 ->scalarNode('platform_service')->end()

@@ -193,7 +193,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $nonRewrittenKeys = array(
                 'driver' => true, 'driverOptions' => true, 'driverClass' => true,
                 'wrapperClass' => true, 'keepSlave' => true,
-                'platform' => true, 'slaves' => true, 'master' => true,
+                'platform' => true, 'slaves' => true, 'master' => true, 'shards' => true,
                 // included by safety but should have been unset already
                 'logging' => true, 'profiling' => true, 'mapping_types' => true, 'platform_service' => true,
             );
@@ -210,6 +210,30 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         } else {
             unset($options['slaves']);
+        }
+
+
+        if (!empty($options['shards'])) {
+            $nonRewrittenKeys = array(
+                'driver' => true, 'driverOptions' => true, 'driverClass' => true,
+                'wrapperClass' => true, 'keepSlave' => true,
+                'platform' => true, 'slaves' => true, 'global' => true, 'shards' => true,
+                // included by safety but should have been unset already
+                'logging' => true, 'profiling' => true, 'mapping_types' => true, 'platform_service' => true,
+            );
+            foreach ($options as $key => $value) {
+                if (isset($nonRewrittenKeys[$key])) {
+                    continue;
+                }
+                $options['global'][$key] = $value;
+                unset($options[$key]);
+            }
+            if (empty($options['wrapperClass'])) {
+                // Change the wrapper class only if the user does not already forced using a custom one.
+                $options['wrapperClass'] = 'Doctrine\\DBAL\\Sharding\\PoolingShardConnection';
+            }
+        } else {
+            unset($options['shards']);
         }
 
         return $options;
