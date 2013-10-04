@@ -73,6 +73,15 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver', $container->getParameter('doctrine.orm.metadata.xml.class'));
         $this->assertEquals('Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver', $container->getParameter('doctrine.orm.metadata.yml.class'));
 
+        // second-level cache
+        $this->assertEquals('Doctrine\ORM\Cache\DefaultCacheFactory', $container->getParameter('doctrine.orm.second_level_cache.default_cache_factory.class'));
+        $this->assertEquals('Doctrine\ORM\Cache\Region\DefaultRegion', $container->getParameter('doctrine.orm.second_level_cache.default_region.class'));
+        $this->assertEquals('Doctrine\ORM\Cache\Region\FileLockRegion', $container->getParameter('doctrine.orm.second_level_cache.filelock_region.class'));
+        $this->assertEquals('Doctrine\ORM\Cache\Logging\CacheLoggerChain', $container->getParameter('doctrine.orm.second_level_cache.logger_chain.class'));
+        $this->assertEquals('Doctrine\ORM\Cache\Logging\StatisticsCacheLogger', $container->getParameter('doctrine.orm.second_level_cache.logger_statistics.class'));
+        $this->assertEquals('Doctrine\ORM\Cache\CacheConfiguration', $container->getParameter('doctrine.orm.second_level_cache.cache_configuration.class'));
+        $this->assertEquals('Doctrine\ORM\Cache\RegionsConfiguration', $container->getParameter('doctrine.orm.second_level_cache.regions_configuration.class'));
+
         $config = array(
             'proxy_namespace' => 'MyProxies',
             'auto_generate_proxy_classes' => true,

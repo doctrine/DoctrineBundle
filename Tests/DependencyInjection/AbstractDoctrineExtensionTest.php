@@ -489,6 +489,70 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($def2, 'setNamingStrategy', array(0 => new Reference('doctrine.orm.naming_strategy.underscore')));
     }
 
+    public function testSecondLevelCache()
+    {
+        $container  = $this->getContainer();
+        $loader     = new DoctrineExtension();
+
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'orm_second_level_cache');
+        $this->compileContainer($container);
+
+        $this->assertTrue($container->has('doctrine.orm.default_configuration'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.cache_configuration'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region_cache_driver'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.regions_configuration'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.default_cache_factory'));
+
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.logger_chain'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.logger_statistics'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.logger.my_service_logger1'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.logger.my_service_logger2'));
+
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region.my_entity_region'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region.my_service_region'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region.my_query_region_filelock'));
+
+        $slcFactoryDef       = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
+        $myEntityRegionDef   = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_entity_region');
+        $loggerChainDef      = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_chain');
+        $loggerStatisticsDef = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_statistics');
+        $myQueryRegionDef    = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_query_region_filelock');
+        $cacheDriverDef      = $container->getDefinition('doctrine.orm.default_second_level_cache.region_cache_driver');
+        $configDef           = $container->getDefinition('doctrine.orm.default_configuration');
+        $myEntityRegionArgs  = $myEntityRegionDef->getArguments();
+        $myQueryRegionArgs   = $myQueryRegionDef->getArguments();
+        $slcFactoryArgs      = $slcFactoryDef->getArguments();
+
+        $this->assertDICDefinitionClass($slcFactoryDef, '%doctrine.orm.second_level_cache.default_cache_factory.class%');
+        $this->assertDICDefinitionClass($myQueryRegionDef, '%doctrine.orm.second_level_cache.filelock_region.class%');
+        $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
+        $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
+        $this->assertDICDefinitionClass($loggerStatisticsDef, '%doctrine.orm.second_level_cache.logger_statistics.class%');
+        $this->assertDICDefinitionClass($cacheDriverDef, '%doctrine.orm.cache.array.class%');
+        $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
+        $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', array(), 3);
+        $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', array(), 3);
+
+        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $slcFactoryArgs[0]);
+        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $slcFactoryArgs[1]);
+
+        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $myEntityRegionArgs[1]);
+        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $myQueryRegionArgs[0]);
+
+        $this->assertEquals('my_entity_region', $myEntityRegionArgs[0]);
+        $this->assertEquals('doctrine.orm.default_second_level_cache.region.my_entity_region_driver', $myEntityRegionArgs[1]);
+        $this->assertEquals(600, $myEntityRegionArgs[2]);
+
+        $this->assertEquals('doctrine.orm.default_second_level_cache.region.my_query_region', $myQueryRegionArgs[0]);
+        $this->assertContains('/doctrine/orm/slc/filelock', $myQueryRegionArgs[1]);
+        $this->assertEquals(60, $myQueryRegionArgs[2]);
+
+        $this->assertEquals('doctrine.orm.default_second_level_cache.regions_configuration', $slcFactoryArgs[0]);
+        $this->assertEquals('doctrine.orm.default_second_level_cache.region_cache_driver', $slcFactoryArgs[1]);
+    }
+
     public function testSingleEMSetCustomFunctions()
     {
         $container = $this->getContainer(array('YamlBundle'));
