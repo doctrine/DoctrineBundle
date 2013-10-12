@@ -22,6 +22,8 @@
         </xsd:simpleContent>
     </xsd:complexType>
 
+    <!-- DBAL configuration -->
+
     <xsd:attributeGroup name="connection-config">
         <xsd:attribute name="driver" type="xsd:string" />
         <xsd:attribute name="driver-class" type="xsd:string" />
@@ -54,14 +56,20 @@
         <xsd:attribute name="multiple-active-result-sets" type="xsd:string" />
     </xsd:attributeGroup>
 
-    <xsd:complexType name="dbal">
-        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:element name="connection" type="connection" />
-            <xsd:element name="type" type="named_scalar" />
+    <xsd:group name="connection-child-config">
+        <xsd:choice>
             <xsd:element name="option" type="option" />
             <xsd:element name="mapping-type" type="named_scalar" />
             <xsd:element name="slave" type="slave" />
             <xsd:element name="shard" type="shard" />
+        </xsd:choice>
+    </xsd:group>
+
+    <xsd:complexType name="dbal">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="connection" type="connection" />
+            <xsd:element name="type" type="named_scalar" />
+            <xsd:group ref="connection-child-config" />
         </xsd:choice>
 
         <xsd:attribute name="default-connection" type="xsd:string" />
@@ -77,12 +85,8 @@
     </xsd:complexType>
 
     <xsd:complexType name="connection">
-        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:element name="option" type="option" />
-            <xsd:element name="mapping-type" type="named_scalar" />
-            <xsd:element name="slave" type="slave" />
-            <xsd:element name="shard" type="shard" />
-        </xsd:choice>
+        <xsd:group ref="connection-child-config" minOccurs="0" maxOccurs="unbounded" />
+
         <xsd:attribute name="name" type="xsd:string" use="required" />
         <xsd:attributeGroup ref="connection-config" />
     </xsd:complexType>
@@ -96,6 +100,8 @@
         <xsd:attribute name="id" type="xsd:integer" use="required" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:complexType>
+
+    <!-- ORM configuration -->
 
     <xsd:complexType name="mapping">
         <xsd:attribute name="name" type="xsd:string" use="required" />
