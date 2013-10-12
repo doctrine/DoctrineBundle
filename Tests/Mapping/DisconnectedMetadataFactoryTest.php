@@ -35,7 +35,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
         $registry = $this->getMock('Doctrine\Common\Persistence\ManagerRegistry');
         $factory = new DisconnectedMetadataFactory($registry);
 
-        $this->setExpectedException("RuntimeException", "Can't find base path for \"Doctrine\Bundle\DoctrineBundle\Tests\MetadataFactoryTest");
+        $this->setExpectedException("RuntimeException", "Can't find base path for \"Doctrine\Bundle\DoctrineBundle\Tests\Mapping\DisconnectedMetadataFactoryTest");
         $factory->findNamespaceAndPathForMetadata($collection);
     }
 }
