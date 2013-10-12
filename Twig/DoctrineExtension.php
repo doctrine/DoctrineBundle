@@ -269,6 +269,10 @@ class DoctrineExtension extends \Twig_Extension
             case is_object($result) :
                 $result = addslashes((string) $result);
                 break;
+
+            case null === $result :
+                $result = 'NULL';
+                break;
         }
 
         return $result;
@@ -290,11 +294,11 @@ class DoctrineExtension extends \Twig_Extension
             '/\?|(:[a-z0-9_]+)/i',
             function ($matches) use ($parameters, &$i) {
                 $key = substr($matches[0], 1);
-                if (!isset($parameters[$i]) && !isset($parameters[$key])) {
+                if (!array_key_exists($i, $parameters) && !array_key_exists($key, $parameters)) {
                     return $matches[0];
                 }
 
-                $value = isset($parameters[$i]) ? $parameters[$i] : $parameters[$key];
+                $value = array_key_exists($i, $parameters) ? $parameters[$i] : $parameters[$key];
                 $result = DoctrineExtension::escapeFunction($value);
                 $i++;
 
