@@ -37,7 +37,7 @@ Add the following dependencies to your projects composer.json file:
 
     "require": {
         # ..
-        "doctrine/doctrine-bundle": ">=2.1"
+        "doctrine/doctrine-bundle": "~1.2"
         # ..
     }
 

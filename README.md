@@ -25,32 +25,6 @@ alternative to SQL that maintains flexibility without requiring unnecessary code
 DBAL is a powerful database abstraction layer with many features for database schema introspection,
 schema management and PDO abstraction.
 
-## Installation
-
-### 1. Old deps and bin/vendors way
-
-Add the following snippets to "deps" files:
-
-    [doctrine-dbal]
-        git=http://github.com/doctrine/dbal.git
-
-    [doctrine-orm]
-        git=http://github.com/doctrine/doctrine2.git
-
-    [DoctrineBundle]
-        git=http://github.com/doctrine/DoctrineBundle.git
-        target=/bundles/Doctrine/Bundle/DoctrineBundle
-
-### 2. Composer
-
-Add the following dependencies to your projects composer.json file:
-
-    "require": {
-        # ..
-        "doctrine/doctrine-bundle": ">=2.1"
-        # ..
-    }
-
 ## Documentation
 
-See the Resources/docs folder more a full documentation.
+See the Resources/docs folder for more detailed documentation including [configuration](Resources/doc/configuration.rst) and [installation](Resources/doc/installation.rst) instructions.
