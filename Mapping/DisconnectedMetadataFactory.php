@@ -177,9 +177,12 @@ class DisconnectedMetadataFactory
      */
     private function getMetadataForClass($entity)
     {
-        foreach ($this->getAllMetadata() as $metadata) {
-            if ($metadata->name === $entity) {
-                return new ClassMetadataCollection(array($metadata));
+        foreach ($this->registry->getManagers() as $em) {
+            $cmf = new DisconnectedClassMetadataFactory();
+            $cmf->setEntityManager($em);
+
+            if (!$cmf->isTransient($entity)) {
+                return new ClassMetadataCollection(array($cmf->getMetadataFor($entity)));
             }
         }
 
