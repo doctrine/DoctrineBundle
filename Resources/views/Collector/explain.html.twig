@@ -11,8 +11,8 @@
     <tbody>
         {% for row in data %}
         <tr>
-            {% for item in row %}
-                <td>{{ item }}</td>
+            {% for key, item in row %}
+                <td>{{ 'possible_keys' == key ? item|replace({',': ', '}) : item }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
