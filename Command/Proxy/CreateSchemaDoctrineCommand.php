@@ -17,7 +17,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\Output;
 use Doctrine\ORM\Tools\Console\Command\SchemaTool\CreateCommand;
 
 /**
@@ -39,22 +38,7 @@ class CreateSchemaDoctrineCommand extends CreateCommand
         $this
             ->setName('doctrine:schema:create')
             ->setDescription('Executes (or dumps) the SQL needed to generate the database schema')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
-            ->setHelp(<<<EOT
-The <info>doctrine:schema:create</info> command executes the SQL needed to
-generate the database schema for the default entity manager:
-
-<info>php app/console doctrine:schema:create</info>
-
-You can also generate the database schema for a specific entity manager:
-
-<info>php app/console doctrine:schema:create --em=default</info>
-
-Finally, instead of executing the SQL, you can output the SQL:
-
-<info>php app/console doctrine:schema:create --dump-sql</info>
-EOT
-        );
+            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**

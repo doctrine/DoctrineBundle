@@ -37,19 +37,7 @@ class ClearResultCacheDoctrineCommand extends ResultCommand
         $this
             ->setName('doctrine:cache:clear-result')
             ->setDescription('Clears result cache for an entity manager')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
-            ->setHelp(<<<EOT
-The <info>doctrine:cache:clear-result</info> command clears all result cache
-for the default entity manager:
-
-<info>php app/console doctrine:cache:clear-result</info>
-
-You can also optionally specify the <comment>--em</comment> option to specify
-which entity manager to clear the cache for:
-
-<info>php app/console doctrine:cache:clear-result --em=default</info>
-EOT
-        );
+            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**

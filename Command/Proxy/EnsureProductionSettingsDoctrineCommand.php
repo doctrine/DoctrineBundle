@@ -17,7 +17,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\Output;
 use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand;
 
 /**
@@ -37,19 +36,7 @@ class EnsureProductionSettingsDoctrineCommand extends EnsureProductionSettingsCo
 
         $this
             ->setName('doctrine:ensure-production-settings')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
-            ->setHelp(<<<EOT
-The <info>doctrine:ensure-production-settings</info> command ensures that
-Doctrine is properly configured for a production environment.:
-
-<info>php app/console doctrine:ensure-production-settings</info>
-
-You can also optionally specify the <comment>--em</comment> option to specify
-which entity manager to use:
-
-<info>php app/console doctrine:ensure-production-settings --em=default</info>
-EOT
-        );
+            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');;
     }
 
     /**

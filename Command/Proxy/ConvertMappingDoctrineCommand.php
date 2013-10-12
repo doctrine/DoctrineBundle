@@ -17,7 +17,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\Output;
 use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
 use Doctrine\ORM\Tools\Export\Driver\XmlExporter;
 use Doctrine\ORM\Tools\Export\Driver\YamlExporter;
@@ -39,14 +38,7 @@ class ConvertMappingDoctrineCommand extends ConvertMappingCommand
         parent::configure();
         $this
             ->setName('doctrine:mapping:convert')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
-            ->setHelp(<<<EOT
-The <info>doctrine:mapping:convert</info> command converts mapping information
-between supported formats:
-
-<info>php app/console doctrine:mapping:convert xml /path/to/output</info>
-EOT
-        );
+            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**

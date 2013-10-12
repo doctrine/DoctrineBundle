@@ -33,21 +33,7 @@ class InfoDoctrineCommand extends InfoCommand
     {
         $this
             ->setName('doctrine:mapping:info')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
-            ->setDescription('Shows basic information about all mapped entities')
-            ->setHelp(<<<EOT
-The <info>doctrine:mapping:info</info> shows basic information about which
-entities exist and possibly if their mapping information contains errors or
-not.
-
-<info>php app/console doctrine:mapping:info</info>
-
-If you are using multiple entity managers you can pick your choice with the
-<info>--em</info> option:
-
-<info>php app/console doctrine:mapping:info --em=default</info>
-EOT
-        );
+            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**
