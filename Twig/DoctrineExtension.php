@@ -14,8 +14,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Twig;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
 /**
  * This class contains the needed functions in order to do the query highlighting
  *
@@ -48,7 +46,7 @@ class DoctrineExtension extends \Twig_Extension
     /**
      * Get the possible combinations of elements from the given array
      *
-     * @param array $elements
+     * @param array   $elements
      * @param integer $combinationsLevel
      *
      * @return array
@@ -127,7 +125,6 @@ class DoctrineExtension extends \Twig_Extension
                 $value .= ' [...]';
             }
 
-
             $result .= ' ' . $combination[$key] . ' ' . $value;
         }
 
@@ -137,8 +134,8 @@ class DoctrineExtension extends \Twig_Extension
     /**
      * Attempt to compose the best scenario minified query so that a user could find it without expanding it
      *
-     * @param string $query
-     * @param array $keywords
+     * @param string  $query
+     * @param array   $keywords
      * @param integer $required
      *
      * @return string
@@ -249,7 +246,7 @@ class DoctrineExtension extends \Twig_Extension
      *
      * @return string
      */
-    static public function escapeFunction($parameter)
+    public static function escapeFunction($parameter)
     {
         $result = $parameter;
 
@@ -282,7 +279,7 @@ class DoctrineExtension extends \Twig_Extension
      * Return a query with the parameters replaced
      *
      * @param string $query
-     * @param array $parameters
+     * @param array  $parameters
      *
      * @return string
      */

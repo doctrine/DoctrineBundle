@@ -44,6 +44,7 @@ class MetadataFactory
      * @param BundleInterface $bundle A BundleInterface instance
      *
      * @return ClassMetadataCollection A ClassMetadataCollection instance
+     *
      * @throws \RuntimeException When bundle does not contain mapped entities
      */
     public function getBundleMetadata(BundleInterface $bundle)
@@ -69,6 +70,7 @@ class MetadataFactory
      * @param string $path  The path where the class is stored (if known)
      *
      * @return ClassMetadataCollection A ClassMetadataCollection instance
+     *
      * @throws MappingException When class is not valid entity or mapped superclass
      */
     public function getClassMetadata($class, $path = null)
@@ -90,6 +92,7 @@ class MetadataFactory
      * @param string $path      The path where the class is stored (if known)
      *
      * @return ClassMetadataCollection A ClassMetadataCollection instance
+     *
      * @throws \RuntimeException When namespace not contain mapped entities
      */
     public function getNamespaceMetadata($namespace, $path = null)

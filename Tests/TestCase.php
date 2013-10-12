@@ -16,11 +16,9 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
-
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
-use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 
 class TestCase extends \PHPUnit_Framework_TestCase
 {

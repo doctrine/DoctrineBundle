@@ -73,7 +73,7 @@ class ManagerConfigurator
     /**
      * Set defaults parameters for a given filter
      *
-     * @param string $name Filter name
+     * @param string    $name   Filter name
      * @param SQLFilter $filter Filter object
      *
      * @return null

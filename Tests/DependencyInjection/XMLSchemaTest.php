@@ -16,7 +16,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 class XMLSchemaTest extends \PHPUnit_Framework_TestCase
 {
-    static public function dataValidateSchemaFiles()
+    public static function dataValidateSchemaFiles()
     {
         $schemaFiles = array();
         $di = new \DirectoryIterator(__DIR__."/Fixtures/config/xml");

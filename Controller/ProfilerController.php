@@ -27,8 +27,8 @@ class ProfilerController extends ContainerAware
     /**
      * Renders the profiler panel for the given token.
      *
-     * @param string $token The profiler token
-     * @param string $connectionName
+     * @param string  $token          The profiler token
+     * @param string  $connectionName
      * @param integer $query
      *
      * @return Response A Response instance

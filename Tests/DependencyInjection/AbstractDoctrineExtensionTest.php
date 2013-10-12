@@ -14,14 +14,11 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
-use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
-use Symfony\Component\Config\FileLocator;
 
 abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 {
@@ -858,7 +855,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
      * Assertion on the Class of a DIC Service Definition.
      *
      * @param \Symfony\Component\DependencyInjection\Definition $definition
-     * @param string $expectedClass
+     * @param string                                            $expectedClass
      */
     protected function assertDICDefinitionClass($definition, $expectedClass)
     {
@@ -886,8 +883,8 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
      *
      * @param \Symfony\Component\DependencyInjection\Definition $definition
-     * @param string $methodName
-     * @param array $params
+     * @param string                                            $methodName
+     * @param array                                             $params
      */
     protected function assertDICDefinitionMethodCallOnce($definition, $methodName, array $params = null)
     {

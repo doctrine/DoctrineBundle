@@ -14,7 +14,6 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterMappingsPass;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
@@ -70,7 +69,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
     }
 
     /**
-     * @param array  $mappings            Hashmap of directory path to namespace
+     * @param array    $mappings          Hashmap of directory path to namespace
      * @param string[] $managerParameters List of parameters that could which object manager name
      *                                    your bundle uses. This compiler pass will automatically
      *                                    append the parameter name for the default entity manager
