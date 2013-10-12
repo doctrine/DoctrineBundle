@@ -14,6 +14,14 @@
         </xsd:complexType>
     </xsd:element>
 
+    <xsd:complexType name="named_scalar">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
     <xsd:attributeGroup name="connection-config">
         <xsd:attribute name="driver" type="xsd:string" />
         <xsd:attribute name="driver-class" type="xsd:string" />
@@ -49,9 +57,9 @@
     <xsd:complexType name="dbal">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="connection" type="connection" />
-            <xsd:element name="type" type="type" />
+            <xsd:element name="type" type="named_scalar" />
             <xsd:element name="option" type="option" />
-            <xsd:element name="mapping-type" type="mapping-type" />
+            <xsd:element name="mapping-type" type="named_scalar" />
             <xsd:element name="slave" type="slave" />
             <xsd:element name="shard" type="shard" />
         </xsd:choice>
@@ -68,26 +76,10 @@
         </xsd:simpleContent>
     </xsd:complexType>
 
-    <xsd:complexType name="mapping-type">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:extension>
-        </xsd:simpleContent>
-    </xsd:complexType>
-
-    <xsd:complexType name="type">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:extension>
-        </xsd:simpleContent>
-    </xsd:complexType>
-
     <xsd:complexType name="connection">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="option" type="option" />
-            <xsd:element name="mapping-type" type="mapping-type" />
+            <xsd:element name="mapping-type" type="named_scalar" />
             <xsd:element name="slave" type="slave" />
             <xsd:element name="shard" type="shard" />
         </xsd:choice>
@@ -166,7 +158,7 @@
             <xsd:element name="result-cache-driver" type="cache_driver" minOccurs="0" maxOccurs="1" />
             <xsd:element name="query-cache-driver" type="cache_driver" minOccurs="0" maxOccurs="1" />
             <xsd:element name="dql" type="dql" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="hydrator" type="type" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="hydrator" type="named_scalar" minOccurs="0" maxOccurs="unbounded" />
             <xsd:element name="filter" type="filter" minOccurs="0" maxOccurs="unbounded" />
         </xsd:choice>
     </xsd:group>
@@ -187,34 +179,18 @@
 
     <xsd:complexType name="filter" mixed="true">
         <xsd:choice minOccurs="0">
-            <xsd:element name="parameter" type="parameter" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="parameter" type="named_scalar" minOccurs="0" maxOccurs="unbounded" />
         </xsd:choice>
         <xsd:attribute name="name" type="xsd:string" use="required" />
         <xsd:attribute name="class" type="xsd:string" />
         <xsd:attribute name="enabled" type="xsd:boolean" />
     </xsd:complexType>
 
-    <xsd:complexType name="parameter">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:extension>
-        </xsd:simpleContent>
-    </xsd:complexType>
-
     <xsd:complexType name="dql">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:element name="string-function" type="dql_function" />
-            <xsd:element name="numeric-function" type="dql_function" />
-            <xsd:element name="datetime-function" type="dql_function" />
+            <xsd:element name="string-function" type="named_scalar" />
+            <xsd:element name="numeric-function" type="named_scalar" />
+            <xsd:element name="datetime-function" type="named_scalar" />
         </xsd:choice>
-    </xsd:complexType>
-
-    <xsd:complexType name="dql_function">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:extension>
-        </xsd:simpleContent>
     </xsd:complexType>
 </xsd:schema>
