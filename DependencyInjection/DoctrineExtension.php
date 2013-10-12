@@ -303,6 +303,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if ($entityManager['entity_listener_resolver']) {
             $methods['setEntityListenerResolver'] = new Reference($entityManager['entity_listener_resolver']);
         }
+        if ($entityManager['repository_factory']) {
+            $methods['setRepositoryFactory'] = new Reference($entityManager['repository_factory']);
+        }
         foreach ($methods as $method => $arg) {
             $ormConfigDef->addMethodCall($method, array($arg));
         }
