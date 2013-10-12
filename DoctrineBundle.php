@@ -18,6 +18,7 @@ use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand;
+use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -61,44 +62,43 @@ class DoctrineBundle extends Bundle
         if ($this->container->hasParameter('doctrine.orm.proxy_namespace')) {
             $namespace = $this->container->getParameter('doctrine.orm.proxy_namespace');
             $dir = $this->container->getParameter('doctrine.orm.proxy_dir');
-            // See https://github.com/symfony/symfony/pull/3419 for usage of
-            // references
-            $container =& $this->container;
+            $proxyGenerator = null;
 
-            $this->autoloader = function($class) use ($namespace, $dir, &$container) {
-                if (0 === strpos($class, $namespace)) {
-                    $fileName = str_replace('\\', '', substr($class, strlen($namespace) +1));
-                    $file = $dir.DIRECTORY_SEPARATOR.$fileName.'.php';
+            if ($this->container->getParameter('doctrine.orm.auto_generate_proxy_classes')) {
+                // See https://github.com/symfony/symfony/pull/3419 for usage of
+                // references
+                $container =& $this->container;
 
-                    if (!is_file($file) && $container->getParameter('doctrine.orm.auto_generate_proxy_classes')) {
-                        $originalClassName = ClassUtils::getRealClass($class);
-                        /** @var $registry Registry */
-                        $registry = $container->get('doctrine');
+                $proxyGenerator = function ($proxyDir, $proxyNamespace, $class) use (&$container) {
+                    $originalClassName = ClassUtils::getRealClass($class);
+                    /** @var $registry Registry */
+                    $registry = $container->get('doctrine');
 
-                        // Tries to auto-generate the proxy file
-                        /** @var $em \Doctrine\ORM\EntityManager */
-                        foreach ($registry->getManagers() as $em) {
-
-                            if ($em->getConfiguration()->getAutoGenerateProxyClasses()) {
-                                $classes = $em->getMetadataFactory()->getAllMetadata();
-
-                                foreach ($classes as $classMetadata) {
-                                    if ($classMetadata->name == $originalClassName) {
-                                        $em->getProxyFactory()->generateProxyClasses(array($classMetadata));
-                                    }
-                                }
-                            }
+                    // Tries to auto-generate the proxy file
+                    /** @var $em \Doctrine\ORM\EntityManager */
+                    foreach ($registry->getManagers() as $em) {
+                        if (!$em->getConfiguration()->getAutoGenerateProxyClasses()) {
+                            continue;
                         }
 
-                        clearstatcache(true, $file);
-                    }
+                        $metadataFactory = $em->getMetadataFactory();
 
-                    if (file_exists($file)) {
-                        require $file;
+                        if ($metadataFactory->isTransient($originalClassName)) {
+                            continue;
+                        }
+
+                        $classMetadata = $metadataFactory->getMetadataFor($originalClassName);
+
+                        $em->getProxyFactory()->generateProxyClasses(array($classMetadata));
+
+                        clearstatcache(true, Autoloader::resolveFile($proxyDir, $proxyNamespace, $class));
+
+                        break;
                     }
-                }
-            };
-            spl_autoload_register($this->autoloader);
+                };
+            }
+
+            $this->autoloader = Autoloader::register($dir, $namespace, $proxyGenerator);
         }
     }
 
