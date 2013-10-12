@@ -51,6 +51,7 @@
             <xsd:element name="option" type="option" />
             <xsd:element name="mapping-type" type="mapping-type" />
             <xsd:element name="slave" type="slave" />
+            <xsd:element name="shard" type="shard" />
         </xsd:choice>
 
         <xsd:attribute name="default-connection" type="xsd:string" />
@@ -86,6 +87,7 @@
             <xsd:element name="option" type="option" />
             <xsd:element name="mapping-type" type="mapping-type" />
             <xsd:element name="slave" type="slave" />
+            <xsd:element name="shard" type="shard" />
         </xsd:choice>
         <xsd:attribute name="name" type="xsd:string" use="required" />
         <xsd:attributeGroup ref="connection-config" />
@@ -93,6 +95,11 @@
 
     <xsd:complexType name="slave">
         <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attributeGroup ref="driver-config" />
+    </xsd:complexType>
+
+    <xsd:complexType name="shard">
+        <xsd:attribute name="id" type="xsd:integer" use="required" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:complexType>
 
