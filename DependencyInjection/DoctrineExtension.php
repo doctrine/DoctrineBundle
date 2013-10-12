@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Common\Proxy\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -134,7 +135,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         // event manager
-        $def = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), new DefinitionDecorator('doctrine.dbal.connection.event_manager'));
+        $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), new DefinitionDecorator('doctrine.dbal.connection.event_manager'));
 
         // connection
         // PDO ignores the charset property before 5.3.6 so the init listener has to be used instead.
@@ -177,11 +178,17 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
         unset($options['mapping_types']);
 
+        if (isset($options['shard_choser_service'])) {
+            $options['shard_choser'] = new Reference($options['shard_choser_service']);
+            unset($options['shard_choser_service']);
+        }
+
         foreach (array(
             'options'       => 'driverOptions',
             'driver_class'  => 'driverClass',
             'wrapper_class' => 'wrapperClass',
             'keep_slave'    => 'keepSlave',
+            'shard_choser'  => 'shardChoser',
         ) as $old => $new) {
             if (isset($options[$old])) {
                 $options[$new] = $options[$old];
@@ -189,10 +196,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         }
 
+        if (!empty($options['slaves']) && !empty($options['shards'])) {
+            throw new InvalidArgumentException('Sharding and master-slave connection cannot be used together');
+        }
+
         if (!empty($options['slaves'])) {
             $nonRewrittenKeys = array(
                 'driver' => true, 'driverOptions' => true, 'driverClass' => true,
-                'wrapperClass' => true, 'keepSlave' => true,
+                'wrapperClass' => true, 'keepSlave' => true, 'shardChoser' => true,
                 'platform' => true, 'slaves' => true, 'master' => true, 'shards' => true,
                 // included by safety but should have been unset already
                 'logging' => true, 'profiling' => true, 'mapping_types' => true, 'platform_service' => true,
@@ -216,7 +227,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (!empty($options['shards'])) {
             $nonRewrittenKeys = array(
                 'driver' => true, 'driverOptions' => true, 'driverClass' => true,
-                'wrapperClass' => true, 'keepSlave' => true,
+                'wrapperClass' => true, 'keepSlave' => true, 'shardChoser' => true,
                 'platform' => true, 'slaves' => true, 'global' => true, 'shards' => true,
                 // included by safety but should have been unset already
                 'logging' => true, 'profiling' => true, 'mapping_types' => true, 'platform_service' => true,

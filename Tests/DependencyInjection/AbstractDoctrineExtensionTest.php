@@ -141,7 +141,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
         $this->assertEquals('Doctrine\\DBAL\\Sharding\\PoolingShardConnection', $param['wrapperClass']);
-        $this->assertTrue($param['keepSlave']);
+        $this->assertEquals(new Reference('foo.shard_choser'), $param['shardChoser']);
         $this->assertEquals(
             array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t', 'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost', 'unix_socket' => '/path/to/mysqld.sock'),
             $param['global']
@@ -819,17 +819,17 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addResolveTargetEntity', array('Symfony\Component\Security\Core\User\UserInterface', 'MyUserClass', array()));
         $this->assertEquals(array('doctrine.event_listener' => array( array('event' => 'loadClassMetadata') ) ), $definition->getTags());
     }
-    
+
     public function testDbalSchemaFilter()
     {
         $container = $this->getContainer();
         $loader = new DoctrineExtension();
         $container->registerExtension($loader);
-    
+
         $this->loadFromFile($container, 'dbal_schema_filter');
-    
+
         $this->compileContainer($container);
-        
+
         $definition = $container->getDefinition('doctrine.dbal.default_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setFilterSchemaAssetsExpression', array('^sf2_'));
     }
@@ -933,14 +933,14 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                 if ($called > $nbCalls) {
                     break;
                 }
-                
+
                 if (isset($params[$called])) {
                     $this->assertEquals($params[$called], $call[1], "Expected parameters to methods '".$methodName."' do not match the actual parameters.");
                 }
                 $called++;
             }
         }
-        
+
         $this->assertEquals($nbCalls, $called, sprintf('The method "%s" should be called %d times', $methodName, $nbCalls));
     }
 

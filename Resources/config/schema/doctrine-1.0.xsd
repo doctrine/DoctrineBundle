@@ -20,6 +20,8 @@
         <xsd:attribute name="wrapper-class" type="xsd:string" />
         <xsd:attribute name="keep-slave" type="xsd:string" />
         <xsd:attribute name="platform-service" type="xsd:string" />
+        <xsd:attribute name="shard-choser" type="xsd:string" />
+        <xsd:attribute name="shard-choser-service" type="xsd:string" />
         <xsd:attribute name="schema-filter" type="xsd:string" />
         <xsd:attribute name="logging" type="xsd:string" default="false" />
         <xsd:attribute name="profiling" type="xsd:string" default="false" />
@@ -187,7 +189,7 @@
         <xsd:attribute name="class" type="xsd:string" />
         <xsd:attribute name="enabled" type="xsd:boolean" />
     </xsd:complexType>
-    
+
     <xsd:complexType name="parameter">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">

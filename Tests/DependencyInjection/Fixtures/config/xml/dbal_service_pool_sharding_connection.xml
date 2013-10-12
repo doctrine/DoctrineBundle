@@ -7,7 +7,7 @@
                         http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
 
     <config>
-        <dbal dbname="mysql_db" user="mysql_user" password="mysql_s3cr3t" unix-socket="/path/to/mysqld.sock" keep-slave="true">
+        <dbal dbname="mysql_db" user="mysql_user" password="mysql_s3cr3t" unix-socket="/path/to/mysqld.sock" shard-choser-service="foo.shard_choser">
             <shard id="1" dbname="shard_db" user="shard_user" password="shard_s3cr3t" unix-socket="/path/to/mysqld_shard.sock" />
         </dbal>
     </config>
