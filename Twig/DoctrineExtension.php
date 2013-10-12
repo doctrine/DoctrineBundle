@@ -251,11 +251,11 @@ class DoctrineExtension extends \Twig_Extension
         $result = $parameter;
 
         switch (true) {
-            case is_string($result) :
+            case is_string($result):
                 $result = "'" . addslashes($result) . "'";
                 break;
 
-            case is_array($result) :
+            case is_array($result):
                 foreach ($result as &$value) {
                     $value = static::escapeFunction($value);
                 }
@@ -263,12 +263,16 @@ class DoctrineExtension extends \Twig_Extension
                 $result = implode(', ', $result);
                 break;
 
-            case is_object($result) :
+            case is_object($result):
                 $result = addslashes((string) $result);
                 break;
 
-            case null === $result :
+            case null === $result:
                 $result = 'NULL';
+                break;
+
+            case is_bool($result):
+                $result = $result ? '1': '0';
                 break;
         }
 
