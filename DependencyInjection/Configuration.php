@@ -162,12 +162,6 @@ class Configuration implements ConfigurationInterface
         ;
         $this->configureDbalDriverNode($slaveNode);
 
-        $globalNode = $connectionNode
-            ->children()
-                ->arrayNode('global')
-        ;
-        $this->configureDbalDriverNode($globalNode);
-
         $shardNode = $connectionNode
             ->children()
                 ->arrayNode('shards')
