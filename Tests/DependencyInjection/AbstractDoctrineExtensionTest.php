@@ -124,6 +124,34 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testDbalLoadPoolShardingConnection()
+    {
+        $container = $this->getContainer();
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'dbal_service_pool_sharding_connection');
+
+        $this->compileContainer($container);
+
+        // doctrine.dbal.mysql_connection
+        $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+
+        $this->assertEquals('Doctrine\\DBAL\\Sharding\\PoolingShardConnection', $param['wrapperClass']);
+        $this->assertEquals(new Reference('foo.shard_choser'), $param['shardChoser']);
+        $this->assertEquals(
+            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t', 'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost', 'unix_socket' => '/path/to/mysqld.sock'),
+            $param['global']
+        );
+        $this->assertEquals(
+            array(
+                'user' => 'shard_user', 'password' => 'shard_s3cr3t', 'port' => null, 'dbname' => 'shard_db',
+                'host' => 'localhost', 'unix_socket' => '/path/to/mysqld_shard.sock', 'id' => 1,
+            ),
+            $param['shards'][0]
+        );
+    }
+
     public function testDependencyInjectionConfigurationDefaults()
     {
         $container = $this->getContainer();

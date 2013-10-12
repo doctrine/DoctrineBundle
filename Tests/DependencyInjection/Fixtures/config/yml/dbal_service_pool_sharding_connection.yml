@@ -1,0 +1,14 @@
+doctrine:
+    dbal:
+        dbname: mysql_db
+        user: mysql_user
+        password: mysql_s3cr3t
+        unix_socket: /path/to/mysqld.sock
+        shard_choser_service: foo.shard_choser
+        shards:
+            -
+                id: 1
+                user: shard_user
+                dbname: shard_db
+                password: shard_s3cr3t
+                unix_socket: /path/to/mysqld_shard.sock

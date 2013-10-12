@@ -20,6 +20,8 @@
         <xsd:attribute name="wrapper-class" type="xsd:string" />
         <xsd:attribute name="keep-slave" type="xsd:string" />
         <xsd:attribute name="platform-service" type="xsd:string" />
+        <xsd:attribute name="shard-choser" type="xsd:string" />
+        <xsd:attribute name="shard-choser-service" type="xsd:string" />
         <xsd:attribute name="schema-filter" type="xsd:string" />
         <xsd:attribute name="logging" type="xsd:string" default="false" />
         <xsd:attribute name="profiling" type="xsd:string" default="false" />
@@ -51,6 +53,7 @@
             <xsd:element name="option" type="option" />
             <xsd:element name="mapping-type" type="mapping-type" />
             <xsd:element name="slave" type="slave" />
+            <xsd:element name="shard" type="shard" />
         </xsd:choice>
 
         <xsd:attribute name="default-connection" type="xsd:string" />
@@ -86,6 +89,7 @@
             <xsd:element name="option" type="option" />
             <xsd:element name="mapping-type" type="mapping-type" />
             <xsd:element name="slave" type="slave" />
+            <xsd:element name="shard" type="shard" />
         </xsd:choice>
         <xsd:attribute name="name" type="xsd:string" use="required" />
         <xsd:attributeGroup ref="connection-config" />
@@ -93,6 +97,11 @@
 
     <xsd:complexType name="slave">
         <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attributeGroup ref="driver-config" />
+    </xsd:complexType>
+
+    <xsd:complexType name="shard">
+        <xsd:attribute name="id" type="xsd:integer" use="required" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:complexType>
 
