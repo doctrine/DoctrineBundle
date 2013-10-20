@@ -66,7 +66,8 @@ Configuration Reference
                                 test_numeric: Acme\HelloBundle\DQL\NumericFunction
                             datetime_functions:
                                 test_datetime: Acme\HelloBundle\DQL\DatetimeFunction
-                        naming_strategy:    doctrine.orm.naming_strategy.default # Service Reference
+                        naming_strategy:          doctrine.orm.naming_strategy.default          # Service Reference
+                        entity_listener_resolver: doctrine.orm.entity_listener_resolver.default # Service reference
                     em2:
                         # ...
 
