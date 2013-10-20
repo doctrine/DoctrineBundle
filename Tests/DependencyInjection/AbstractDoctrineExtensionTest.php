@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -575,13 +576,17 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer();
         $loader = new DoctrineExtension();
         $container->registerExtension($loader);
+        $container->addCompilerPass(new EntityListenerPass());
 
         $this->loadFromFile($container, 'orm_entity_listener_resolver');
 
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array('entity_listener_resolver'));
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.default_entity_listener_resolver')));
+
+        $listener = $container->getDefinition('entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener')));
     }
 
     public function testRepositoryFactory()
