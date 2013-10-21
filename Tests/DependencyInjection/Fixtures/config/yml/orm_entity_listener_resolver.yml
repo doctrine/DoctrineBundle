@@ -7,6 +7,11 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, entity_manager: default }
 
+    default_entity_listener:
+        class: \EntityListener
+        tags:
+            - { name: doctrine.orm.entity_listener }
+
 doctrine:
     dbal:
         default_connection: default

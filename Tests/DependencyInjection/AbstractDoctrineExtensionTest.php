@@ -586,7 +586,8 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.default_entity_listener_resolver')));
 
         $listener = $container->getDefinition('entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener')));
+        $this->assertDICDefinitionMethodCallAt(0, $listener, 'register', array(new Reference('entity_listener')));
+        $this->assertDICDefinitionMethodCallAt(1, $listener, 'register', array(new Reference('default_entity_listener')));
     }
 
     public function testRepositoryFactory()

@@ -12,6 +12,10 @@
         <srv:service id="entity_listener" class="EntityListener">
             <srv:tag name="doctrine.orm.entity_listener" entity_manager="default" />
         </srv:service>
+
+        <srv:service id="default_entity_listener" class="EntityListener">
+            <srv:tag name="doctrine.orm.entity_listener" />
+        </srv:service>
     </srv:services>
 
     <config>

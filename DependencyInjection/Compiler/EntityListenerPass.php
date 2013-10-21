@@ -32,7 +32,7 @@ class EntityListenerPass implements CompilerPassInterface
 
         foreach ($resolvers as $id => $tagAttributes) {
             foreach ($tagAttributes as $attributes) {
-                $name = isset($attributes['entity_manager']) ? $attributes['entity_manager'] : 'default';
+                $name = isset($attributes['entity_manager']) ? $attributes['entity_manager'] : $container->getParameter('doctrine.default_entity_manager');
                 $entityManager = sprintf('doctrine.orm.%s_entity_manager', $name);
 
                 if (!$container->hasDefinition($entityManager)) {
