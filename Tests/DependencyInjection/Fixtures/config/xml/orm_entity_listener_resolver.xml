@@ -9,12 +9,12 @@
     <srv:services>
         <srv:service id="entity_listener_resolver" class="Doctrine\ORM\Mapping\DefaultEntityListenerResolver" />
 
-        <srv:service id="entity_listener" class="EntityListener">
-            <srv:tag name="doctrine.orm.entity_listener" entity_manager="default" />
+        <srv:service id="entity_listener1" class="EntityListener">
+            <srv:tag name="doctrine.orm.entity_listener" />
         </srv:service>
 
-        <srv:service id="default_entity_listener" class="EntityListener">
-            <srv:tag name="doctrine.orm.entity_listener" />
+        <srv:service id="entity_listener2" class="EntityListener">
+            <srv:tag name="doctrine.orm.entity_listener" entity_manager="em2" />
         </srv:service>
     </srv:services>
 
@@ -23,6 +23,9 @@
             <connection name="default" dbname="db" />
         </dbal>
 
-        <orm default-entity-manager="default" entity-listener-resolver="entity_listener_resolver" />
+        <orm default-entity-manager="em1">
+            <entity-manager name="em1" />
+            <entity-manager name="em2" entity-listener-resolver="entity_listener_resolver" />
+        </orm>
     </config>
 </srv:container>

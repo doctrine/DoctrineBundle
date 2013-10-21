@@ -39,8 +39,10 @@ class EntityListenerPass implements CompilerPassInterface
                     continue;
                 }
 
-                $alias = sprintf('doctrine.orm.%s_entity_listener_resolver', $name);
-                $resolver = (string) $container->getAlias($alias);
+                $resolver = sprintf('doctrine.orm.%s_entity_listener_resolver', $name);
+                if ($container->hasAlias($resolver)) {
+                    $resolver = (string) $container->getAlias($resolver);
+                }
 
                 if (!$container->hasDefinition($resolver)) {
                     continue;

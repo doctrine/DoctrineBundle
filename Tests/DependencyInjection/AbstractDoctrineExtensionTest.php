@@ -582,12 +582,17 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->compileContainer($container);
 
-        $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.default_entity_listener_resolver')));
+        $definition = $container->getDefinition('doctrine.orm.em1_configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em1_entity_listener_resolver')));
+
+        $definition = $container->getDefinition('doctrine.orm.em2_configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em2_entity_listener_resolver')));
+
+        $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener1')));
 
         $listener = $container->getDefinition('entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallAt(0, $listener, 'register', array(new Reference('entity_listener')));
-        $this->assertDICDefinitionMethodCallAt(1, $listener, 'register', array(new Reference('default_entity_listener')));
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener2')));
     }
 
     public function testRepositoryFactory()
