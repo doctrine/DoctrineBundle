@@ -397,6 +397,29 @@ class DoctrineExtension extends AbstractDoctrineExtension
             sprintf('doctrine.orm.%s_entity_manager.event_manager', $entityManager['name']),
             new Alias(sprintf('doctrine.dbal.%s_connection.event_manager', $entityManager['connection']), false)
         );
+
+        if (isset($entityManager['entity_listeners']) && version_compare(\Doctrine\ORM\Version::VERSION, "2.5.0-DEV") >= 0) {
+
+            $entities     = $entityManager['entity_listeners']['entities'];
+            $listenerId   = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
+            $listenerDef  = $container->setDefinition($listenerId, new Definition('%doctrine.orm.listeners.attach_entity_listeners.class%'));
+
+            foreach ($entities as $entityListenerClass => $entity) {
+                foreach ($entity['listeners'] as $listenerClass => $listener) {
+                    foreach ($listener['events'] as $listenerEvent) {
+
+                        $listenerEventName = $listenerEvent['type'];
+                        $listenerMethod    = $listenerEvent['method'];
+
+                        $listenerDef->addMethodCall('addEntityListener', array(
+                            $entityListenerClass, $listenerClass, $listenerEventName, $listenerMethod
+                        ));
+                    }
+                }
+            }
+
+            $listenerDef->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
+        }
     }
 
     /**

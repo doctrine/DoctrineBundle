@@ -556,6 +556,65 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('doctrine.event_listener' => array( array('event' => 'loadClassMetadata') ) ), $definition->getTags());
     }
 
+    public function testAttachEntityListeners()
+    {
+        $container  = $this->getContainer(array('YamlBundle'));
+        $loader     = new DoctrineExtension();
+
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'orm_attach_entity_listener');
+        $this->compileContainer($container);
+
+        $definition  = $container->getDefinition('doctrine.orm.default_listeners.attach_entity_listeners');
+        $methodCalls = $definition->getMethodCalls();
+
+        $this->assertDICDefinitionMethodCallCount($definition, 'addEntityListener', array(), 6);
+        $this->assertEquals(array('doctrine.event_listener' => array( array('event' => 'loadClassMetadata') ) ), $definition->getTags());
+
+        $this->assertEquals($methodCalls[0], array('addEntityListener', array (
+            'ExternalBundles\Entities\FooEntity',
+            'MyBundles\Listeners\FooEntityListener',
+            'prePersist',
+            null
+        )));
+
+        $this->assertEquals($methodCalls[1], array('addEntityListener', array (
+            'ExternalBundles\Entities\FooEntity',
+            'MyBundles\Listeners\FooEntityListener',
+            'postPersist',
+            'postPersist',
+        )));
+
+        $this->assertEquals($methodCalls[2], array('addEntityListener', array (
+            'ExternalBundles\Entities\FooEntity',
+            'MyBundles\Listeners\FooEntityListener',
+            'postLoad',
+            'postLoadHandler',
+        )));
+
+        $this->assertEquals($methodCalls[3], array('addEntityListener', array (
+            'ExternalBundles\Entities\BarEntity',
+            'MyBundles\Listeners\BarEntityListener',
+            'prePersist',
+            'prePersist'
+        )));
+
+        $this->assertEquals($methodCalls[4], array('addEntityListener', array (
+            'ExternalBundles\Entities\BarEntity',
+            'MyBundles\Listeners\BarEntityListener',
+            'prePersist',
+            'prePersistHandler',
+        )));
+
+        $this->assertEquals($methodCalls[5], array('addEntityListener', array (
+            'ExternalBundles\Entities\BarEntity',
+            'MyBundles\Listeners\LogDeleteEntityListener',
+            'postDelete',
+            'postDelete',
+        )));
+    }
+
     public function testDbalSchemaFilter()
     {
         $container = $this->getContainer();

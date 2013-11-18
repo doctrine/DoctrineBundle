@@ -298,6 +298,76 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
+     * Return ORM entity listener node
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\NodeDefinition
+     */
+    private function getOrmEntityListenersNode()
+    {
+        $builder    = new TreeBuilder();
+        $node       = $builder->root('entity_listeners');
+        $normalizer = function($mappings) {
+
+            $events = array();
+
+            foreach ($mappings as $type => $mapping) {
+
+                if ($mapping === null) {
+                    $mapping = array(null);
+                }
+
+                foreach ($mapping as $method) {
+                     $events[] = array(
+                        'type'   => $type,
+                        'method' => $method,
+                    );
+                }
+            }
+
+            return $events;
+        };
+
+        $node
+            ->fixXmlConfig('entity', 'entities')
+            ->children()
+                ->arrayNode('entities')
+                    ->useAttributeAsKey('class')
+                    ->prototype('array')
+                        ->fixXmlConfig('listener')
+                        ->children()
+                            ->scalarNode('class')->end()
+                            ->arrayNode('listeners')
+                                ->useAttributeAsKey('class')
+                                ->prototype('array')
+                                    ->fixXmlConfig('event')
+                                    ->children()
+                                        ->scalarNode('class')->end()
+                                        ->arrayNode('events')
+                                            ->beforeNormalization()
+                                                // Yaml normalization
+                                                ->ifTrue(function ($v) { return is_array($v) && is_string(key($v)); })
+                                                ->then($normalizer)
+                                            ->end()
+                                            ->prototype('array')
+                                                ->children()
+                                                    ->scalarNode('type')->end()
+                                                    ->scalarNode('method')->defaultNull()->end()
+                                                ->end()
+                                            ->end()
+                                        ->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+
+        return $node;
+    }
+
+    /**
      * Return ORM entity manager node
      *
      * @return ArrayNodeDefinition
@@ -315,6 +385,7 @@ class Configuration implements ConfigurationInterface
                 ->append($this->getOrmCacheDriverNode('query_cache_driver'))
                 ->append($this->getOrmCacheDriverNode('metadata_cache_driver'))
                 ->append($this->getOrmCacheDriverNode('result_cache_driver'))
+                ->append($this->getOrmEntityListenersNode())
                 ->children()
                     ->scalarNode('connection')->end()
                     ->scalarNode('class_metadata_factory_name')->defaultValue('Doctrine\ORM\Mapping\ClassMetadataFactory')->end()
