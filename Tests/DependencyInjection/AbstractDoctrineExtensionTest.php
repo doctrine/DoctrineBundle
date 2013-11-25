@@ -558,6 +558,10 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testAttachEntityListeners()
     {
+        if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0 ) {
+            $this->markTestIncomplete('This test requires ORM 2.5-dev.');
+        }
+
         $container  = $this->getContainer(array('YamlBundle'));
         $loader     = new DoctrineExtension();
 

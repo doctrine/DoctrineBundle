@@ -171,7 +171,6 @@
     </xsd:complexType>
 
     <xsd:complexType name="entity_listeners_event">
-        <xsd:all></xsd:all>
         <xsd:attribute name="type" type="xsd:string" />
         <xsd:attribute name="method" type="xsd:string" />
     </xsd:complexType>

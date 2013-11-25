@@ -14,7 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
-use Doctrine\Common\Proxy\Exception\InvalidArgumentException;
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -398,7 +398,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             new Alias(sprintf('doctrine.dbal.%s_connection.event_manager', $entityManager['connection']), false)
         );
 
-        if (isset($entityManager['entity_listeners']) && version_compare(\Doctrine\ORM\Version::VERSION, "2.5.0-DEV") >= 0) {
+        if (isset($entityManager['entity_listeners'])) {
+
+            if (version_compare(\Doctrine\ORM\Version::VERSION, "2.5.0-DEV") < 0) {
+                throw new InvalidArgumentException('Entity listeners configuration requires doctrine-orm 2.5.0 or newer');
+            }
 
             $entities     = $entityManager['entity_listeners']['entities'];
             $listenerId   = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
