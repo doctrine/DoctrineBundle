@@ -308,26 +308,51 @@ class Configuration implements ConfigurationInterface
         $node       = $builder->root('entity_listeners');
         $normalizer = function($mappings) {
 
-            $events = array();
+            $entities = array();
 
-            foreach ($mappings as $type => $mapping) {
+            foreach ($mappings as $entityClass => $mapping) {
 
-                if ($mapping === null) {
-                    $mapping = array(null);
-                }
+                $listeners = array();
 
-                foreach ($mapping as $method) {
-                     $events[] = array(
-                        'type'   => $type,
-                        'method' => $method,
+                foreach ($mapping as $listenerClass => $listenerEvent) {
+
+                    $events = array();
+
+                    foreach ($listenerEvent as $eventType => $eventMapping) {
+
+                        if ($eventMapping === null) {
+                            $eventMapping = array(null);
+                        }
+
+                        foreach ($eventMapping as $method) {
+                            $events[] = array(
+                               'type'   => $eventType,
+                               'method' => $method,
+                            );
+                        }
+                    }
+
+                    $listeners[] = array(
+                        'class' => $listenerClass,
+                        'event' => $events,
                     );
                 }
+
+                $entities[] = array(
+                    'class' => $entityClass,
+                    'listener' => $listeners,
+                );
             }
 
-            return $events;
+            return array('entities' => $entities);
         };
 
         $node
+            ->beforeNormalization()
+                // Yaml normalization
+                ->ifTrue(function ($v) { return is_array(reset($v)) && is_string(key(reset($v))); })
+                ->then($normalizer)
+            ->end()
             ->fixXmlConfig('entity', 'entities')
             ->children()
                 ->arrayNode('entities')
@@ -335,19 +360,12 @@ class Configuration implements ConfigurationInterface
                     ->prototype('array')
                         ->fixXmlConfig('listener')
                         ->children()
-                            ->scalarNode('class')->end()
                             ->arrayNode('listeners')
                                 ->useAttributeAsKey('class')
                                 ->prototype('array')
                                     ->fixXmlConfig('event')
                                     ->children()
-                                        ->scalarNode('class')->end()
                                         ->arrayNode('events')
-                                            ->beforeNormalization()
-                                                // Yaml normalization
-                                                ->ifTrue(function ($v) { return is_array($v) && is_string(key($v)); })
-                                                ->then($normalizer)
-                                            ->end()
                                             ->prototype('array')
                                                 ->children()
                                                     ->scalarNode('type')->end()
