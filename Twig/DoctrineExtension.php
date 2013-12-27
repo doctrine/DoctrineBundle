@@ -291,7 +291,7 @@ class DoctrineExtension extends \Twig_Extension
     public function replaceQueryParameters($query, $parameters, $highlight = true)
     {
         $i = 0;
-        
+
         $result = preg_replace_callback(
             '/\?|((?<!:):[a-z0-9_]+)/i',
             function ($matches) use ($parameters, &$i) {
@@ -309,7 +309,7 @@ class DoctrineExtension extends \Twig_Extension
             $query
         );
 
-        if (true === $highlight) {
+        if ($highlight) {
             $result = \SqlFormatter::highlight($result);
             $result = str_replace(array("<pre ", "</pre>"), array("<span ", "</span>"), $result);
         }
