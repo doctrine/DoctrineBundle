@@ -264,7 +264,7 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->children()
                         ->scalarNode('default_entity_manager')->end()
-                        ->booleanNode('auto_generate_proxy_classes')->defaultFalse()->end()
+                        ->integerNode('auto_generate_proxy_classes')->defaultValue(0)->end()
                         ->scalarNode('proxy_dir')->defaultValue('%kernel.cache_dir%/doctrine/orm/Proxies')->end()
                         ->scalarNode('proxy_namespace')->defaultValue('Proxies')->end()
                     ->end()
