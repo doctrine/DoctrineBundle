@@ -264,7 +264,7 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->children()
                         ->scalarNode('default_entity_manager')->end()
-                        ->scalarNode('auto_generate_proxy_classes')->defaultValue(0)
+                        ->scalarNode('auto_generate_proxy_classes')->defaultValue(false)
                             ->info('Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL"')
                             ->validate()
                             ->ifTrue(function($v){
