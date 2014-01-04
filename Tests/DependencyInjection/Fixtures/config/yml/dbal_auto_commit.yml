@@ -1,0 +1,3 @@
+doctrine:
+    dbal:
+        auto_commit: false

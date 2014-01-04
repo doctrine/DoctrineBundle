@@ -688,6 +688,20 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         )));
     }
 
+    public function testDbalAutoCommit()
+    {
+        $container = $this->getContainer();
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'dbal_auto_commit');
+
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.dbal.default_connection.configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setAutoCommit', array(false));
+    }
+
     public function testDbalSchemaFilter()
     {
         $container = $this->getContainer();
