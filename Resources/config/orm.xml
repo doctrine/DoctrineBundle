@@ -55,6 +55,15 @@
         <!-- naming strategy -->
         <parameter key="doctrine.orm.naming_strategy.default.class">Doctrine\ORM\Mapping\DefaultNamingStrategy</parameter>
         <parameter key="doctrine.orm.naming_strategy.underscore.class">Doctrine\ORM\Mapping\UnderscoreNamingStrategy</parameter>
+
+        <!-- second level cache -->
+        <parameter key="doctrine.orm.second_level_cache.default_cache_factory.class">Doctrine\ORM\Cache\DefaultCacheFactory</parameter>
+        <parameter key="doctrine.orm.second_level_cache.default_region.class">Doctrine\ORM\Cache\Region\DefaultRegion</parameter>
+        <parameter key="doctrine.orm.second_level_cache.filelock_region.class">Doctrine\ORM\Cache\Region\FileLockRegion</parameter>
+        <parameter key="doctrine.orm.second_level_cache.logger_chain.class">Doctrine\ORM\Cache\Logging\CacheLoggerChain</parameter>
+        <parameter key="doctrine.orm.second_level_cache.logger_statistics.class">Doctrine\ORM\Cache\Logging\StatisticsCacheLogger</parameter>
+        <parameter key="doctrine.orm.second_level_cache.cache_configuration.class">Doctrine\ORM\Cache\CacheConfiguration</parameter>
+        <parameter key="doctrine.orm.second_level_cache.regions_configuration.class">Doctrine\ORM\Cache\RegionsConfiguration</parameter>
     </parameters>
 
     <services>

@@ -335,6 +335,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'setNamingStrategy'       => new Reference($entityManager['naming_strategy']),
             ));
         }
+
+        if (isset($entityManager['second_level_cache'])) {
+            $this->loadOrmSecondLevelCache($entityManager, $ormConfigDef, $container);
+        }
+
         if ($entityManager['entity_listener_resolver']) {
             $methods['setEntityListenerResolver'] = new Reference($entityManager['entity_listener_resolver']);
         }
@@ -442,6 +447,125 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->registerMappingDrivers($entityManager, $container);
 
         $ormConfigDef->addMethodCall('setEntityNamespaces', array($this->aliasMap));
+    }
+
+    /**
+     * Loads an ORM second level cache bundle mapping information.
+     * 
+     * @example
+     *  entity_managers:
+     *      default:
+     *          second_level_cache:
+     *              region_cache_driver: apc
+     *              log_enabled: true
+     *              regions:
+     *                  my_service_region:
+     *                      type: service
+     *                      service : "my_service_region"
+     *
+     *                  my_query_region:
+     *                      lifetime: 300
+     *                      cache_driver: array
+     *                      type: filelock
+     *
+     *                  my_entity_region:
+     *                      lifetime: 600
+     *                      cache_driver:
+     *                          type: apc
+     *
+     * @param array            $entityManager A configured ORM entity manager
+     * @param Definition       $ormConfigDef  A Definition instance
+     * @param ContainerBuilder $container     A ContainerBuilder instance
+     */
+    protected function loadOrmSecondLevelCache(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container)
+    {
+        if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0) {
+            throw new \InvalidArgumentException('Second-level cache requires doctrine-orm 2.5.0 or newer');
+        }
+
+        $driverId = null;
+        $enabled  = $entityManager['second_level_cache']['enabled'];
+
+        if (isset($entityManager['second_level_cache']['region_cache_driver'])) {
+            $driverName  = 'second_level_cache.region_cache_driver';
+            $driverMap   = $entityManager['second_level_cache']['region_cache_driver'];
+            $driverId    = $this->loadCacheDriver($driverName, $entityManager['name'], $driverMap, $container);
+        }
+
+        $configId        = sprintf('doctrine.orm.%s_second_level_cache.cache_configuration', $entityManager['name']);
+        $regionsId       = sprintf('doctrine.orm.%s_second_level_cache.regions_configuration', $entityManager['name']);
+        $driverId        = $driverId ?: sprintf('doctrine.orm.%s_second_level_cache.region_cache_driver', $entityManager['name']);
+        $configDef       = $container->setDefinition($configId, new Definition('%doctrine.orm.second_level_cache.cache_configuration.class%'));
+        $regionsDef      = $container->setDefinition($regionsId, new Definition('%doctrine.orm.second_level_cache.regions_configuration.class%'));
+
+        $slcFactoryId  = sprintf('doctrine.orm.%s_second_level_cache.default_cache_factory', $entityManager['name']);
+        $slcFactoryDef = $container
+            ->setDefinition($slcFactoryId, new Definition('%doctrine.orm.second_level_cache.default_cache_factory.class%'))
+            ->setArguments(array(new Reference($regionsId), new Reference($driverId)));
+
+        if (isset($entityManager['second_level_cache']['regions'])) {
+            foreach ($entityManager['second_level_cache']['regions'] as $name => $region) {
+
+                $regionRef  = null;
+                $regionType = $region['type'];
+
+                if ($regionType === 'service') {
+                    $regionId  = sprintf('doctrine.orm.%s_second_level_cache.region.%s', $entityManager['name'], $name);
+                    $regionRef = new Reference($region['service']);
+
+                    $container->setAlias($regionId, new Alias($region['service'], false));
+                }
+
+                if ($regionType === 'default' || $regionType === 'filelock') {
+                    $regionId   = sprintf('doctrine.orm.%s_second_level_cache.region.%s', $entityManager['name'], $name);
+                    $driverName = sprintf('second_level_cache.region.%s_driver', $name);
+                    $driverMap  = $region['cache_driver'];
+                    $driverId   = $this->loadCacheDriver($driverName, $entityManager['name'], $driverMap, $container);
+                    $regionRef  = new Reference($regionId);
+
+                    $container
+                        ->setDefinition($regionId, new Definition('%doctrine.orm.second_level_cache.default_region.class%'))
+                        ->setArguments(array($name, new Reference($driverId), $region['lifetime']));
+                }
+
+                if ($regionType === 'filelock') {
+                    $regionId = sprintf('doctrine.orm.%s_second_level_cache.region.%s_filelock', $entityManager['name'], $name);
+
+                    $container
+                        ->setDefinition($regionId, new Definition('%doctrine.orm.second_level_cache.filelock_region.class%'))
+                        ->setArguments(array($regionRef, $region['lock_path'], $region['lock_lifetime']));
+
+                    $regionRef = new Reference($regionId);
+                    $regionsDef->addMethodCall('getLockLifetime', array($name, $region['lock_lifetime']));
+                }
+
+                $regionsDef->addMethodCall('setLifetime', array($name, $region['lifetime']));
+                $slcFactoryDef->addMethodCall('setRegion', array($regionRef));
+            }
+        }
+
+        if ($entityManager['second_level_cache']['log_enabled']) {
+            $loggerChainId   = sprintf('doctrine.orm.%s_second_level_cache.logger_chain', $entityManager['name']);
+            $loggerStatsId   = sprintf('doctrine.orm.%s_second_level_cache.logger_statistics', $entityManager['name']);
+            $loggerChaingDef = $container->setDefinition($loggerChainId, new Definition('%doctrine.orm.second_level_cache.logger_chain.class%'));
+            $loggerStatsDef  = $container->setDefinition($loggerStatsId, new Definition('%doctrine.orm.second_level_cache.logger_statistics.class%'));
+
+            $loggerChaingDef->addMethodCall('setLogger', array('statistics', $loggerStatsDef));
+            $configDef->addMethodCall('setCacheLogger', array($loggerChaingDef));
+
+            foreach ($entityManager['second_level_cache']['loggers'] as $name => $logger) {
+                $loggerId  = sprintf('doctrine.orm.%s_second_level_cache.logger.%s', $entityManager['name'], $name);
+                $loggerRef = new Reference($logger['service']);
+
+                $container->setAlias($loggerId, new Alias($logger['service'], false));
+                $loggerChaingDef->addMethodCall('setLogger', array($name, $loggerRef));
+            }
+        }
+
+        $configDef->addMethodCall('setCacheFactory', array($slcFactoryDef));
+        $configDef->addMethodCall('setRegionsConfiguration', array($regionsDef));
+        $ormConfigDef->addMethodCall('setSecondLevelCacheEnabled', array($enabled));
+        $ormConfigDef->addMethodCall('setSecondLevelCacheConfiguration', array($configDef));
     }
 
     /**
