@@ -14,28 +14,33 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
+use Doctrine\Bundle\DoctrineBundle\Query\ContainerFilterCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Filter\SQLFilter;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Configurator for an EntityManager
+ *
+ * Gets  a container so it can lazy-load filters
  *
  * @author Christophe Coevoet <stof@notk.org>
  */
 class ManagerConfigurator
 {
-    private $enabledFilters = array();
-    private $filtersParameters = array();
+    private $filters;
+
+    private $container;
 
     /**
      * Construct.
-     *
-     * @param array $enabledFilters
+     * @param array $filters
+     * @param ContainerInterface $container
      */
-    public function __construct(array $enabledFilters, array $filtersParameters)
+    public function __construct(array $filters, ContainerInterface $container)
     {
-        $this->enabledFilters = $enabledFilters;
-        $this->filtersParameters = $filtersParameters;
+        $this->filters = $filters;
+        $this->container = $container;
     }
 
     /**
@@ -45,6 +50,10 @@ class ManagerConfigurator
      */
     public function configure(EntityManager $entityManager)
     {
+        $configuration = $entityManager->getConfiguration();
+        foreach($this->filters as $name => $filter) {
+            $configuration->addFilter($name, $filter['identifier']);
+        }
         $this->enableFilters($entityManager);
     }
 
@@ -57,33 +66,21 @@ class ManagerConfigurator
      */
     private function enableFilters(EntityManager $entityManager)
     {
-        if (empty($this->enabledFilters)) {
+        $enabledFilters = array_filter($this->filters, function(array $filter) {
+            return $filter['enabled'];
+        });
+        if (empty($enabledFilters)) {
             return;
         }
+        $entityManager->setFilters(new ContainerFilterCollection($entityManager, $this->container));
 
         $filterCollection = $entityManager->getFilters();
-        foreach ($this->enabledFilters as $filter) {
-            $filterObject = $filterCollection->enable($filter);
+        foreach ($enabledFilters as $name => $filter) {
+            $filterObject = $filterCollection->enable($name);
             if (null !== $filterObject) {
-                $this->setFilterParameters($filter, $filterObject);
-            }
-        }
-    }
-
-    /**
-     * Set defaults parameters for a given filter
-     *
-     * @param string    $name   Filter name
-     * @param SQLFilter $filter Filter object
-     *
-     * @return null
-     */
-    private function setFilterParameters($name, SQLFilter $filter)
-    {
-        if (!empty($this->filtersParameters[$name])) {
-            $parameters = $this->filtersParameters[$name];
-            foreach ($parameters as $paramName => $paramValue) {
-                $filter->setParameter($paramName, $paramValue);
+                foreach($filter['parameters'] as $paramName => $paramValue) {
+                    $filterObject->setParameter($paramName, $paramValue);
+                }
             }
         }
     }

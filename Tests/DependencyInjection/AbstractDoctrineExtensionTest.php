@@ -14,6 +14,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\FilterConfigurationPass;
+
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -525,15 +527,19 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->loadFromFile($container, 'orm_filters');
         $this->compileContainer($container);
 
-        $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $args = array(
-            array('soft_delete', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'),
-            array('myFilter', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter')
-        );
-        $this->assertDICDefinitionMethodCallCount($definition, 'addFilter', $args, 2);
-
         $definition = $container->getDefinition('doctrine.orm.default_manager_configurator');
-        $this->assertDICConstructorArguments($definition, array(array('soft_delete', 'myFilter'), array('myFilter' => array('myParameter' => 'myValue', 'mySecondParameter' => 'mySecondValue'))));
+        $this->assertDICConstructorArguments($definition, array(array(
+            'soft_delete' => array(
+                'enabled' => true,
+                'identifier' => 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter',
+                'parameters' => array()),
+            'myFilter' => array(
+                'enabled' => true,
+                'identifier' => 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter',
+                'parameters' => array('myParameter' => 'myValue', 'mySecondParameter' => 'mySecondValue'
+            ))),
+            new Reference('service_container')
+        ));
 
         // Let's create the instance to check the configurator work.
         /** @var $entityManager \Doctrine\ORM\EntityManager */
@@ -696,7 +702,9 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     private function compileContainer(ContainerBuilder $container)
     {
-        $container->getCompilerPassConfig()->setOptimizationPasses(array(new ResolveDefinitionTemplatesPass()));
+        $container->getCompilerPassConfig()->setOptimizationPasses(array(
+                new ResolveDefinitionTemplatesPass(),
+                new FilterConfigurationPass('doctrine')));
         $container->getCompilerPassConfig()->setRemovingPasses(array());
         $container->compile();
     }

@@ -397,7 +397,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->fixXmlConfig('parameter')
                             ->children()
-                                ->scalarNode('class')->isRequired()->end()
+                                ->scalarNode('class')->end()
                                 ->booleanNode('enabled')->defaultFalse()->end()
                                 ->arrayNode('parameters')
                                     ->useAttributeAsKey('name')
