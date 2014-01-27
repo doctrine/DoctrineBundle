@@ -1,3 +1,17 @@
+services:
+    entity_listener_resolver:
+        class: \Doctrine\ORM\Mapping\DefaultEntityListenerResolver
+
+    entity_listener1:
+        class: \EntityListener
+        tags:
+            - { name: doctrine.orm.entity_listener }
+
+    entity_listener2:
+        class: \EntityListener
+        tags:
+            - { name: doctrine.orm.entity_listener, entity_manager: em2 }
+
 doctrine:
     dbal:
         default_connection: default
@@ -6,4 +20,8 @@ doctrine:
                 dbname: db
 
     orm:
-        entity_listener_resolver: entity_listener_resolver
+        default_entity_manager: em1
+        entity_managers:
+            em1:
+            em2:
+                entity_listener_resolver: entity_listener_resolver
