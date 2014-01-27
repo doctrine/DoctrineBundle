@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<srv:container xmlns:srv="http://symfony.com/schema/dic/services" xmlns="http://symfony.com/schema/dic/doctrine" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd                         http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
+    <config>
+        <dbal default-connection="default">
+            <connection name="default" dbname="db" />
+        </dbal>
+        <orm default-entity-manager="default">
+            <entity-listeners>
+                <entity class="ExternalBundles\Entities\FooEntity">
+                    <listener class="MyBundles\Listeners\FooEntityListener">
+                        <event type="prePersist"/>
+                        <event type="postPersist" method="postPersist"/>
+                        <event type="postLoad" method="postLoadHandler"/>
+                    </listener>
+                </entity>
+                <entity class="ExternalBundles\Entities\BarEntity">
+                    <listener class="MyBundles\Listeners\BarEntityListener">
+                        <event type="prePersist" method="prePersist"/>
+                        <event type="prePersist" method="prePersistHandler"/>
+                    </listener>
+                    <listener class="MyBundles\Listeners\LogDeleteEntityListener">
+                        <event type="postDelete" method="postDelete"/>
+                    </listener>
+                </entity>
+            </entity-listeners>
+        </orm>
+    </config>
+</srv:container>
