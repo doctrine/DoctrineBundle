@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+
+<srv:container xmlns="http://symfony.com/schema/dic/doctrine"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:srv="http://symfony.com/schema/dic/services"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
+                        http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
+
+    <srv:services>
+        <srv:service id="my_service_logger1" class="Doctrine\ORM\Cache\Logging\StatisticsCacheLogger"/>
+        <srv:service id="my_service_logger2" class="Doctrine\ORM\Cache\Logging\StatisticsCacheLogger"/>
+
+        <srv:service id="my_service_region" class="Doctrine\ORM\Cache\Region\DefaultRegion">
+            <srv:argument type="service" id="my_service_region_driver"/>
+            <srv:argument>3600</srv:argument>
+        </srv:service>
+        
+        <srv:service id="my_factory_config" class="Doctrine\ORM\Cache\CacheConfiguration"/>
+        <srv:service id="my_factory_driver" class="Doctrine\Common\Cache\ArrayCache"/>
+        <srv:service id="my_factory" class="Doctrine\ORM\Cache\DefaultCacheFactory">
+            <srv:argument type="service" id="my_factory_config"/>
+            <srv:argument type="service" id="my_factory_driver"/>
+        </srv:service>
+
+    </srv:services>
+
+    <config>
+        <dbal default-connection="default">
+            <connection name="default" dbname="db" />
+        </dbal>
+
+        <orm default-entity-manager="default">
+
+            <entity-manager name="custom_slc_factory">
+                <second-level-cache factory="my_factory"/>
+            </entity-manager>
+
+            <entity-manager name="default">
+                <second-level-cache region-lifetime="3600" region-lock-lifetime="60" log-enabled="true" enabled="true">
+                    <region-cache-driver type="array"/>
+
+                    <region name="my_service_region" type="service" service="my_service_region"/>
+                    <region name="my_query_region"  lifetime="300" cache-driver="array" type="filelock"/>
+                    <region name="my_entity_region" lifetime="600">
+                        <cache-driver type="apc"/>
+                    </region>
+
+                    <logger name="my_service_logger1" service="my_service_logger1"/>
+                    <logger name="my_service_logger2" service="my_service_logger2"/>
+
+                </second-level-cache>
+            </entity-manager>
+        </orm>
+    </config>
+</srv:container>
