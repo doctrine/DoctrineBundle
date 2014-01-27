@@ -278,21 +278,22 @@ class DoctrineExtension extends \Twig_Extension
 
         return $result;
     }
-
+    
     /**
      * Return a query with the parameters replaced
      *
      * @param string $query
      * @param array  $parameters
+     * @param bool   $highlight
      *
      * @return string
      */
-    public function replaceQueryParameters($query, $parameters)
+    public function replaceQueryParameters($query, $parameters, $highlight = true)
     {
         $i = 0;
 
         $result = preg_replace_callback(
-            '/\?|(:[a-z0-9_]+)/i',
+            '/\?|((?<!:):[a-z0-9_]+)/i',
             function ($matches) use ($parameters, &$i) {
                 $key = substr($matches[0], 1);
                 if (!array_key_exists($i, $parameters) && !array_key_exists($key, $parameters)) {
@@ -308,8 +309,10 @@ class DoctrineExtension extends \Twig_Extension
             $query
         );
 
-        $result = \SqlFormatter::highlight($result);
-        $result = str_replace(array("<pre ", "</pre>"), array("<span ", "</span>"), $result);
+        if ($highlight) {
+            $result = \SqlFormatter::highlight($result);
+            $result = str_replace(array("<pre ", "</pre>"), array("<span ", "</span>"), $result);
+        }
 
         return $result;
     }

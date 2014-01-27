@@ -29,7 +29,8 @@
     "require-dev": {
         "doctrine/orm": "~2.3",
         "symfony/yaml": "~2.2",
-        "symfony/validator": "~2.2"
+        "symfony/validator": "~2.2",
+        "twig/twig" : "~1"
     },
     "suggest": {
         "symfony/web-profiler-bundle": "to use the data collector",
