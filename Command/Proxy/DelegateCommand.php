@@ -45,20 +45,34 @@ abstract class DelegateCommand extends Command
     }
 
     /**
+     * @return boolean
+     */
+    private function isVersionCompatible()
+    {
+        return (version_compare(\Doctrine\ORM\Version::VERSION, $this->getMinimalVersion()) >= 0);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isEnabled()
+    {
+        return $this->isVersionCompatible();
+    }
+
+    /**
      * {@inheritDoc}
      */
     protected function configure()
     {
-        parent::configure();
-
-        if (version_compare(\Doctrine\ORM\Version::VERSION, $this->getMinimalVersion()) >= 0) {
+        if ($this->isVersionCompatible()) {
             $this->command = $this->createCommand();
-            $help          = $this->command->getHelp();
-            $difinition    = $this->command->getDefinition();
-            $description   = $this->command->getDescription();
+            $help = $this->command->getHelp();
+            $definition = $this->command->getDefinition();
+            $description = $this->command->getDescription();
 
             $this->setHelp($help);
-            $this->setDefinition($difinition);
+            $this->setDefinition($definition);
             $this->setDescription($description);
         }
 
@@ -70,7 +84,7 @@ abstract class DelegateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (version_compare(\Doctrine\ORM\Version::VERSION, $this->getMinimalVersion()) < 0) {
+        if ( ! $this->isVersionCompatible()) {
             throw new \RuntimeException(sprintf('"%s" requires doctrine-orm "%s" or newer', $this->getName(), $this->getMinimalVersion()));
         }
 
