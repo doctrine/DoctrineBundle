@@ -264,7 +264,32 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->children()
                         ->scalarNode('default_entity_manager')->end()
-                        ->booleanNode('auto_generate_proxy_classes')->defaultFalse()->end()
+                        ->scalarNode('auto_generate_proxy_classes')->defaultValue(false)
+                            ->info('Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL"')
+                            ->validate()
+                            ->ifTrue(function($v){
+                                if (is_int($v) && in_array(intval($v), $this->getAutoGenerateModesValues()/*array(0, 1, 2, 3)*/)){
+                                    return false;
+                                }
+                                if (is_bool($v)){
+                                    return false;
+                                }
+                                if (is_string($v)){
+                                    if (in_array(strtoupper($v), $this->getAutoGenerateModesNames()/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'EVAL')*/)){
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            })
+                                ->thenInvalid('Invalid auto generate mode value %s')
+                            ->end()
+                            ->validate()
+                            ->ifString()
+                                ->then(function($v){
+                                    return constant('Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_'.strtoupper($v));
+                                })
+                            ->end()
+                        ->end()
                         ->scalarNode('proxy_dir')->defaultValue('%kernel.cache_dir%/doctrine/orm/Proxies')->end()
                         ->scalarNode('proxy_namespace')->defaultValue('Proxies')->end()
                     ->end()
@@ -443,5 +468,54 @@ class Configuration implements ConfigurationInterface
         ;
 
         return $node;
+    }
+
+    /**
+     * Find proxy auto generate modes for their names and int values
+     *
+     * @return array
+     */
+    private function getAutoGenerateModes(){
+        $abstractProxyFactoryClass = 'Doctrine\Common\Proxy\AbstractProxyFactory';
+        $constPrefix = 'AUTOGENERATE_';
+        $prefixLen = strlen($constPrefix);
+        $refClass = new \ReflectionClass($abstractProxyFactoryClass);
+        $constsArray = $refClass->getConstants();
+        foreach($constsArray as $key => $value){
+            if (strpos($key, $constPrefix) === 0){
+                $namesArray[] = substr($key, $prefixLen);
+                $valuesArray[] = (int)$value;
+            }
+        }
+        return array(
+            'names' => (array)$namesArray,
+            'values' => (array)$valuesArray
+        );
+    }
+
+    /**
+     * Find proxy auto generate modes for their names
+     *
+     * @return array
+     */
+    private function getAutoGenerateModesNames(){
+        $array = $this->getAutoGenerateModes();
+        if(!isset($array['names'])){
+            return false;
+        }
+        return $array['names'];
+    }
+
+    /**
+     * Find proxy auto generate modes for their int values
+     *
+     * @return array
+     */
+    private function getAutoGenerateModesValues(){
+        $array = $this->getAutoGenerateModes();
+        if(!isset($array['values'])){
+            return false;
+        }
+        return $array['values'];
     }
 }
