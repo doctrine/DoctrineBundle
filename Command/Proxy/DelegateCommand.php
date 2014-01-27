@@ -67,13 +67,10 @@ abstract class DelegateCommand extends Command
     {
         if ($this->isVersionCompatible()) {
             $this->command = $this->createCommand();
-            $help = $this->command->getHelp();
-            $definition = $this->command->getDefinition();
-            $description = $this->command->getDescription();
 
-            $this->setHelp($help);
-            $this->setDefinition($definition);
-            $this->setDescription($description);
+            $this->setHelp($this->command->getHelp());
+            $this->setDefinition($this->command->getDefinition());
+            $this->setDescription($this->command->getDescription());
         }
 
         $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
@@ -88,9 +85,9 @@ abstract class DelegateCommand extends Command
             throw new \RuntimeException(sprintf('"%s" requires doctrine-orm "%s" or newer', $this->getName(), $this->getMinimalVersion()));
         }
 
+        $this->command->setApplication($this->getApplication());
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
 
-        $this->command->setHelperSet($this->getHelperSet());
-        $this->command->execute($input, $output);
+        return $this->command->execute($input, $output);
     }
 }
