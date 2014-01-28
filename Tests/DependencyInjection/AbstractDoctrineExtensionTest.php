@@ -492,6 +492,10 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testSecondLevelCache()
     {
+        if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0) {
+            $this->markTestSkipped('Second-level cache requires doctrine-orm 2.5.0 or newer');
+        }
+
         $container  = $this->getContainer();
         $loader     = new DoctrineExtension();
 
