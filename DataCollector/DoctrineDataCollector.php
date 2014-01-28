@@ -77,6 +77,10 @@ class DoctrineDataCollector extends BaseCollector
                 }
             }
 
+            if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0) {
+                continue;
+            }
+
             /** @var $emConfig \Doctrine\ORM\Configuration */
             $emConfig   = $em->getConfiguration();
             $slcEnabled = $emConfig->isSecondLevelCacheEnabled();
