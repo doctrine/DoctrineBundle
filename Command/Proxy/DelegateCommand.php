@@ -61,6 +61,22 @@ abstract class DelegateCommand extends Command
     }
 
     /**
+     * @param string $entityManagerName
+     * @return string
+     */
+    protected function wrapCommand($entityManagerName)
+    {
+        if ( ! $this->isVersionCompatible()) {
+            throw new \RuntimeException(sprintf('"%s" requires doctrine-orm "%s" or newer', $this->getName(), $this->getMinimalVersion()));
+        }
+
+        DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $entityManagerName);
+        $this->command->setApplication($this->getApplication());
+
+        return $this->command;
+    }
+
+    /**
      * {@inheritDoc}
      */
     protected function configure()
@@ -81,13 +97,22 @@ abstract class DelegateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ( ! $this->isVersionCompatible()) {
-            throw new \RuntimeException(sprintf('"%s" requires doctrine-orm "%s" or newer', $this->getName(), $this->getMinimalVersion()));
-        }
+        return $this->wrapCommand($input->getOption('em'))->execute($input, $output);
+    }
 
-        $this->command->setApplication($this->getApplication());
-        DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
+    /**
+     * {@inheritDoc}
+     */
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+        $this->wrapCommand($input->getOption('em'))->interact($input, $output);
+    }
 
-        return $this->command->execute($input, $output);
+    /**
+     * {@inheritDoc}
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        $this->wrapCommand($input->getOption('em'))->initialize($input, $output);
     }
 }
