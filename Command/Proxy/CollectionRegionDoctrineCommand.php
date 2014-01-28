@@ -14,18 +14,14 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Doctrine\ORM\Tools\Console\Command\ClearCache\CollectionRegionCommand;
 
 /**
  * Command to clear a collection cache region.
  *
- * @author Fabien Potencier <fabien@symfony.com>
  * @author Fabio B. Silva <fabio.bat.silva@gmail.com>
  */
-class CollectionRegionDoctrineCommand extends CollectionRegionCommand
+class CollectionRegionDoctrineCommand extends DelegateCommand
 {
     /**
      * {@inheritDoc}
@@ -34,19 +30,22 @@ class CollectionRegionDoctrineCommand extends CollectionRegionCommand
     {
         parent::configure();
 
-        $this
-            ->setName('doctrine:cache:clear-collection-region')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
-        ;
+        $this->setName('doctrine:cache:clear-collection-region');
     }
 
     /**
      * {@inheritDoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function createCommand()
     {
-        DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
+        return new CollectionRegionCommand();
+    }
 
-        return parent::execute($input, $output);
+    /**
+     * {@inheritDoc}
+     */
+    protected function getMinimalVersion()
+    {
+        return '2.5.0-DEV';
     }
 }
