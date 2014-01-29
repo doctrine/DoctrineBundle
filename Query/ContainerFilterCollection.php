@@ -42,28 +42,14 @@ class ContainerFilterCollection extends FilterCollection
     }
 
     /**
-     * @see \Doctrine\ORM\Query\FilterCollection::enable()
+     * @see \Doctrine\ORM\Query\FilterCollection::createFilterClass()
      */
-    public function enable($name)
+    protected function createFilterClass($name)
     {
-        if ( ! $this->has($name)) {
-            throw new \InvalidArgumentException("Filter '" . $name . "' does not exist.");
+        $service_id = $this->config->getFilterClassName($name);
+        if (strpos($service_id, '.') === false) {
+            return parent::createFilterClass($name);
         }
-
-        if ( ! $this->isEnabled($name)) {
-            $service_id = $this->config->getFilterClassName($name);
-            if(strpos($service_id, '.') === false) {
-                return parent::enable($name);
-            }
-            $this->enabledFilters[$name] = $this->container->get($service_id);
-
-            // Keep the enabled filters sorted for the hash
-            ksort($this->enabledFilters);
-
-            // Now the filter collection is dirty
-            $this->filtersState = self::FILTERS_STATE_DIRTY;
-        }
-
-        return $this->enabledFilters[$name];
+        return $this->container->get($service_id);
     }
 }

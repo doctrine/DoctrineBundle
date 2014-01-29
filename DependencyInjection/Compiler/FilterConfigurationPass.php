@@ -32,7 +32,7 @@ class FilterConfigurationPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         $filtersFromTags = $this->gatherFiltersFromTags(
-                $container->findTaggedServiceIds($this->tagPrefix . '.filter'));
+                $container->findTaggedServiceIds($this->tagPrefix . '.orm.filter'));
         $entityManagers = $container->getParameter('doctrine.entity_managers');
         foreach ($entityManagers as $name => $service_id) {
             // Get the configurator of the entity manager, this needs to be a
@@ -88,7 +88,7 @@ class FilterConfigurationPass implements CompilerPassInterface
         foreach ($filtersFromTags as $name => $filter) {
             $resultingFilters[$name] = $filter;
             if (isset($filters[$name]['enabled'])) {
-                $resultingFilters['enabled'] = $filters[$name]['enabled'];
+                $resultingFilters[$name]['enabled'] = $filters[$name]['enabled'];
             }
         }
 
@@ -105,7 +105,6 @@ class FilterConfigurationPass implements CompilerPassInterface
                     'parameters' => $filter['parameters']
             );
         }
-
         $managerConfigurator->replaceArgument(0, $resultingFilters);
     }
 }
