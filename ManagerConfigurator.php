@@ -14,15 +14,11 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
-use Doctrine\Bundle\DoctrineBundle\Query\ContainerFilterCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Filter\SQLFilter;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Configurator for an EntityManager
- *
- * Gets  a container so it can lazy-load filters
  *
  * @author Christophe Coevoet <stof@notk.org>
  */
@@ -30,17 +26,13 @@ class ManagerConfigurator
 {
     private $filters;
 
-    private $container;
-
     /**
      * Construct.
      * @param array $filters
-     * @param ContainerInterface $container
      */
-    public function __construct(array $filters, ContainerInterface $container)
+    public function __construct(array $filters)
     {
         $this->filters = $filters;
-        $this->container = $container;
     }
 
     /**
@@ -72,7 +64,6 @@ class ManagerConfigurator
         if (empty($enabledFilters)) {
             return;
         }
-        $entityManager->setFilters(new ContainerFilterCollection($entityManager, $this->container));
 
         $filterCollection = $entityManager->getFilters();
         foreach ($enabledFilters as $name => $filter) {

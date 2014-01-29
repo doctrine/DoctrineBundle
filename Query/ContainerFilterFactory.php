@@ -14,10 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Query;
 
-use Doctrine\ORM\Query\FilterCollection;
-
-use Doctrine\ORM\EntityManagerInterface;
-
+use Doctrine\ORM\Query\Filter\DefaultFilterFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -25,30 +22,26 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @author Nico Schoenmaker <nschoenmaker@hostnet.nl>
  */
-class ContainerFilterCollection extends FilterCollection
+class ContainerFilterFactory extends DefaultFilterFactory
 {
-    private $config;
     private $container;
 
     /**
-     * @param EntityManagerInterface $em
      * @param ContainerInterface $container
      */
-    public function __construct(EntityManagerInterface $em, ContainerInterface $container)
+    public function __construct(ContainerInterface $container)
     {
-        parent::__construct($em);
-        $this->config = $em->getConfiguration();
         $this->container = $container;
     }
 
     /**
-     * @see \Doctrine\ORM\Query\FilterCollection::createFilterClass()
+     * {@inheritDoc}
      */
-    protected function createFilterClass($name)
+    public function createFilter($name)
     {
-        $service_id = $this->config->getFilterClassName($name);
+        $service_id = $this->getConfig()->getFilterClassName($name);
         if (strpos($service_id, '.') === false) {
-            return parent::createFilterClass($name);
+            return parent::createFilter($name);
         }
         return $this->container->get($service_id);
     }

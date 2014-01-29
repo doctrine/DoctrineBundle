@@ -7,6 +7,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
+
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -15,7 +16,7 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 
 /**
  * Combines the filters from the config with the filters that are tagged with
- * doctrine.filter
+ * doctrine.orm.filter
  *
  * @author Nico Schoenmaker<nschoenmaker@hostnet.nl>
  */

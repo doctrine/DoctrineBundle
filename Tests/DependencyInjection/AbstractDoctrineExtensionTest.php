@@ -605,8 +605,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                 'enabled' => true,
                 'identifier' => 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter',
                 'parameters' => array('myParameter' => 'myValue', 'mySecondParameter' => 'mySecondValue'
-            ))),
-            new Reference('service_container')
+            )))
         ));
 
         // Let's create the instance to check the configurator work.

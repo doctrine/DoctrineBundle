@@ -336,6 +336,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->setDefinition(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name']), new Definition('%doctrine.orm.entity_listener_resolver.class%'));
         }
 
+        $container->setDefinition(sprintf('doctrine.orm.%s_filter_factory', $entityManager['name']), new DefinitionDecorator('doctrine.orm.filter_factory'));
+
         $methods = array(
             'setMetadataCacheImpl'        => new Reference(sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name'])),
             'setQueryCacheImpl'           => new Reference(sprintf('doctrine.orm.%s_query_cache', $entityManager['name'])),
@@ -346,6 +348,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setAutoGenerateProxyClasses' => '%doctrine.orm.auto_generate_proxy_classes%',
             'setClassMetadataFactoryName' => $entityManager['class_metadata_factory_name'],
             'setDefaultRepositoryClassName' => $entityManager['default_repository_class'],
+            'setFilterFactory'            => new Reference(sprintf('doctrine.orm.%s_filter_factory', $entityManager['name'])),
         );
         // check for version to keep BC
         if (version_compare(\Doctrine\ORM\Version::VERSION, "2.3.0-DEV") >= 0) {
@@ -487,7 +490,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     /**
      * Loads an ORM second level cache bundle mapping information.
-     * 
+     *
      * @example
      *  entity_managers:
      *      default:

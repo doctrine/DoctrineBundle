@@ -8,6 +8,7 @@
         <parameter key="doctrine.orm.configuration.class">Doctrine\ORM\Configuration</parameter>
         <parameter key="doctrine.orm.entity_manager.class">Doctrine\ORM\EntityManager</parameter>
         <parameter key="doctrine.orm.manager_configurator.class">Doctrine\Bundle\DoctrineBundle\ManagerConfigurator</parameter>
+        <parameter key="doctrine.orm.container_filter_factory.class">Doctrine\Bundle\DoctrineBundle\Query\ContainerFilterFactory</parameter>
 
         <!-- cache -->
         <parameter key="doctrine.orm.cache.array.class">Doctrine\Common\Cache\ArrayCache</parameter>
@@ -96,6 +97,9 @@
         <!-- The configurator cannot be a private service -->
         <service id="doctrine.orm.manager_configurator.abstract" class="%doctrine.orm.manager_configurator.class%" abstract="true">
             <argument type="collection" />
+        </service>
+
+        <service id="doctrine.orm.filter_factory" class="%doctrine.orm.container_filter_factory.class%" abstract="true" public="false">
             <argument type="service" id="service_container" />
         </service>
 
