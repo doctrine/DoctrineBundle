@@ -14,8 +14,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\FilterConfigurationPass;
-
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -491,6 +491,74 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($def2, 'setNamingStrategy', array(0 => new Reference('doctrine.orm.naming_strategy.underscore')));
     }
 
+    public function testSecondLevelCache()
+    {
+        if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0) {
+            $this->markTestSkipped('Second-level cache requires doctrine-orm 2.5.0 or newer');
+        }
+
+        $container  = $this->getContainer();
+        $loader     = new DoctrineExtension();
+
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'orm_second_level_cache');
+        $this->compileContainer($container);
+
+        $this->assertTrue($container->has('doctrine.orm.default_configuration'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.cache_configuration'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region_cache_driver'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.regions_configuration'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.default_cache_factory'));
+
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.logger_chain'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.logger_statistics'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.logger.my_service_logger1'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.logger.my_service_logger2'));
+
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region.my_entity_region'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region.my_service_region'));
+        $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region.my_query_region_filelock'));
+
+        $slcFactoryDef       = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
+        $myEntityRegionDef   = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_entity_region');
+        $loggerChainDef      = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_chain');
+        $loggerStatisticsDef = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_statistics');
+        $myQueryRegionDef    = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_query_region_filelock');
+        $cacheDriverDef      = $container->getDefinition('doctrine.orm.default_second_level_cache.region_cache_driver');
+        $configDef           = $container->getDefinition('doctrine.orm.default_configuration');
+        $myEntityRegionArgs  = $myEntityRegionDef->getArguments();
+        $myQueryRegionArgs   = $myQueryRegionDef->getArguments();
+        $slcFactoryArgs      = $slcFactoryDef->getArguments();
+
+        $this->assertDICDefinitionClass($slcFactoryDef, '%doctrine.orm.second_level_cache.default_cache_factory.class%');
+        $this->assertDICDefinitionClass($myQueryRegionDef, '%doctrine.orm.second_level_cache.filelock_region.class%');
+        $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
+        $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
+        $this->assertDICDefinitionClass($loggerStatisticsDef, '%doctrine.orm.second_level_cache.logger_statistics.class%');
+        $this->assertDICDefinitionClass($cacheDriverDef, '%doctrine.orm.cache.array.class%');
+        $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
+        $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', array(), 3);
+        $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', array(), 3);
+
+        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $slcFactoryArgs[0]);
+        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $slcFactoryArgs[1]);
+
+        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $myEntityRegionArgs[1]);
+        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $myQueryRegionArgs[0]);
+
+        $this->assertEquals('my_entity_region', $myEntityRegionArgs[0]);
+        $this->assertEquals('doctrine.orm.default_second_level_cache.region.my_entity_region_driver', $myEntityRegionArgs[1]);
+        $this->assertEquals(600, $myEntityRegionArgs[2]);
+
+        $this->assertEquals('doctrine.orm.default_second_level_cache.region.my_query_region', $myQueryRegionArgs[0]);
+        $this->assertContains('/doctrine/orm/slc/filelock', $myQueryRegionArgs[1]);
+        $this->assertEquals(60, $myQueryRegionArgs[2]);
+
+        $this->assertEquals('doctrine.orm.default_second_level_cache.regions_configuration', $slcFactoryArgs[0]);
+        $this->assertEquals('doctrine.orm.default_second_level_cache.region_cache_driver', $slcFactoryArgs[1]);
+    }
+
     public function testSingleEMSetCustomFunctions()
     {
         $container = $this->getContainer(array('YamlBundle'));
@@ -562,6 +630,69 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('doctrine.event_listener' => array( array('event' => 'loadClassMetadata') ) ), $definition->getTags());
     }
 
+    public function testAttachEntityListeners()
+    {
+        if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0 ) {
+            $this->markTestIncomplete('This test requires ORM 2.5-dev.');
+        }
+
+        $container  = $this->getContainer(array('YamlBundle'));
+        $loader     = new DoctrineExtension();
+
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'orm_attach_entity_listener');
+        $this->compileContainer($container);
+
+        $definition  = $container->getDefinition('doctrine.orm.default_listeners.attach_entity_listeners');
+        $methodCalls = $definition->getMethodCalls();
+
+        $this->assertDICDefinitionMethodCallCount($definition, 'addEntityListener', array(), 6);
+        $this->assertEquals(array('doctrine.event_listener' => array( array('event' => 'loadClassMetadata') ) ), $definition->getTags());
+
+        $this->assertEquals($methodCalls[0], array('addEntityListener', array (
+            'ExternalBundles\Entities\FooEntity',
+            'MyBundles\Listeners\FooEntityListener',
+            'prePersist',
+            null
+        )));
+
+        $this->assertEquals($methodCalls[1], array('addEntityListener', array (
+            'ExternalBundles\Entities\FooEntity',
+            'MyBundles\Listeners\FooEntityListener',
+            'postPersist',
+            'postPersist',
+        )));
+
+        $this->assertEquals($methodCalls[2], array('addEntityListener', array (
+            'ExternalBundles\Entities\FooEntity',
+            'MyBundles\Listeners\FooEntityListener',
+            'postLoad',
+            'postLoadHandler',
+        )));
+
+        $this->assertEquals($methodCalls[3], array('addEntityListener', array (
+            'ExternalBundles\Entities\BarEntity',
+            'MyBundles\Listeners\BarEntityListener',
+            'prePersist',
+            'prePersist'
+        )));
+
+        $this->assertEquals($methodCalls[4], array('addEntityListener', array (
+            'ExternalBundles\Entities\BarEntity',
+            'MyBundles\Listeners\BarEntityListener',
+            'prePersist',
+            'prePersistHandler',
+        )));
+
+        $this->assertEquals($methodCalls[5], array('addEntityListener', array (
+            'ExternalBundles\Entities\BarEntity',
+            'MyBundles\Listeners\LogDeleteEntityListener',
+            'postDelete',
+            'postDelete',
+        )));
+    }
+
     public function testDbalSchemaFilter()
     {
         $container = $this->getContainer();
@@ -581,13 +712,23 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer();
         $loader = new DoctrineExtension();
         $container->registerExtension($loader);
+        $container->addCompilerPass(new EntityListenerPass());
 
         $this->loadFromFile($container, 'orm_entity_listener_resolver');
 
         $this->compileContainer($container);
 
-        $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array('entity_listener_resolver'));
+        $definition = $container->getDefinition('doctrine.orm.em1_configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em1_entity_listener_resolver')));
+
+        $definition = $container->getDefinition('doctrine.orm.em2_configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em2_entity_listener_resolver')));
+
+        $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener1')));
+
+        $listener = $container->getDefinition('entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener2')));
     }
 
     public function testRepositoryFactory()

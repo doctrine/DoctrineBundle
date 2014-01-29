@@ -10,6 +10,9 @@
         {% if collector.invalidEntityCount > 0 %}
             <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-red"> </span>
         {% endif %}
+        {% if collector.cacheEnabled %}
+            <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-green" title="Second level cache enabled">2l cache</span>
+        {% endif %}
     {% endset %}
     {% set text %}
         <div class="sf-toolbar-info-piece">
@@ -24,6 +27,20 @@
             <b>Invalid entities</b>
             <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' : 'green' }}">{{ collector.invalidEntityCount }}</span>
         </div>
+        {% if collector.cacheEnabled %}
+            <div class="sf-toolbar-info-piece">
+                <b>Cache hits</b>
+                <span class="sf-toolbar-status sf-toolbar-status-green">{{ collector.cacheHitsCount }}</span>
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Cache misses</b>
+                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.cacheMissesCount > 0 ? 'yellow' : 'green' }}">{{ collector.cacheMissesCount }}</span>
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Cache puts</b>
+                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.cachePutsCount > 0 ? 'yellow' : 'green' }}">{{ collector.cachePutsCount }}</span>
+            </div>
+        {% endif %}
     {% endset %}
     {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url } %}
 {% endblock %}
@@ -130,6 +147,31 @@
     {% else %}
         <p>
             <em>No entity managers.</em>
+        </p>
+    {% endif %}
+
+    <h2>Second Level Cache</h2>
+
+    {% if collector.cacheCounts %}
+        {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.cacheCounts} only %}
+
+        {% if collector.cacheRegions.hits %}
+            <h3>Number of cache hits</h3>
+            {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.cacheRegions.hits} only %}
+        {% endif %}
+
+        {% if collector.cacheRegions.misses %}
+            <h3>Number of cache misses</h3>
+            {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.cacheRegions.misses} only %}
+        {% endif %}
+
+        {% if collector.cacheRegions.puts %}
+            <h3>Number of cache puts</h3>
+            {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.cacheRegions.puts} only %}
+        {% endif %}
+    {% else %}
+        <p>
+            <em>No cache.</em>
         </p>
     {% endif %}
 

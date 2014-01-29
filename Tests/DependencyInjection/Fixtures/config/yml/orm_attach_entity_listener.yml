@@ -1,0 +1,21 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        entity_managers:
+            default:
+                entity_listeners:
+                        ExternalBundles\Entities\FooEntity:
+                            MyBundles\Listeners\FooEntityListener:
+                                prePersist:
+                                postPersist: [postPersist]
+                                postLoad: [postLoadHandler]
+                        ExternalBundles\Entities\BarEntity:
+                                MyBundles\Listeners\BarEntityListener:
+                                    prePersist: [prePersist, prePersistHandler]
+                                MyBundles\Listeners\LogDeleteEntityListener:
+                                    postDelete: [postDelete]

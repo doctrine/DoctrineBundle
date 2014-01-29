@@ -1,0 +1,65 @@
+services:
+    my_service_region_driver:
+        class: Doctrine\Common\Cache\ArrayCache
+
+    my_service_logger1:
+        class: Doctrine\ORM\Cache\Logging\StatisticsCacheLogger
+
+    my_service_logger2:
+        class: Doctrine\ORM\Cache\Logging\StatisticsCacheLogger
+
+    my_service_region:
+        class:     Doctrine\ORM\Cache\Region\DefaultRegion
+        arguments: ["my_service_region", "@my_service_region_driver", 3600]
+
+    my_factory_config:
+        class: Doctrine\ORM\Cache\CacheConfiguration
+
+    my_factory_driver:
+        class: Doctrine\Common\Cache\ArrayCache
+
+    my_factory:
+        class:     Doctrine\ORM\Cache\DefaultCacheFactory
+        arguments: ["@my_factory_config", "@my_factory_driver"]
+
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        entity_managers:
+            custom_slc_factory:
+                second_level_cache:
+                  factory: "my_factory"
+
+            default:
+                second_level_cache:
+                  log_enabled: true
+                  enabled: true
+                  region_cache_driver: array
+
+                  loggers:
+                      my_service_logger1 :
+                        service: "my_service_logger1"
+
+                      my_service_logger2 :
+                        service: "my_service_logger1"
+
+                  regions:
+                      my_service_region:
+                        type: service
+                        service : "my_service_region"
+
+                      my_query_region:
+                        lifetime: 300
+                        cache_driver: array
+                        type: filelock
+                        lock_path: %kernel.cache_dir%/doctrine/orm/slc/filelock
+
+                      my_entity_region:
+                          lifetime: 600
+                          cache_driver:
+                            type: apc

@@ -113,9 +113,9 @@ EOT
                 $className = $class->name;
                 $class->name = $bundle->getNamespace().'\\Entity\\'.$className;
                 if ('annotation' === $type) {
-                    $path = $destPath.'/'.$className.'.php';
+                    $path = $destPath.'/'.str_replace('\\', '.', $className).'.php';
                 } else {
-                    $path = $destPath.'/'.$className.'.orm.'.$type;
+                    $path = $destPath.'/'.str_replace('\\', '.', $className).'.orm.'.$type;
                 }
                 $output->writeln(sprintf('  > writing <comment>%s</comment>', $path));
                 $code = $exporter->exportClassMetadata($class);

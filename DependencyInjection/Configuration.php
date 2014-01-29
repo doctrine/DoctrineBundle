@@ -264,7 +264,32 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->children()
                         ->scalarNode('default_entity_manager')->end()
-                        ->booleanNode('auto_generate_proxy_classes')->defaultFalse()->end()
+                        ->scalarNode('auto_generate_proxy_classes')->defaultValue(false)
+                            ->info('Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL"')
+                            ->validate()
+                            ->ifTrue(function($v){
+                                if (is_int($v) && in_array(intval($v), $this->getAutoGenerateModesValues()/*array(0, 1, 2, 3)*/)){
+                                    return false;
+                                }
+                                if (is_bool($v)){
+                                    return false;
+                                }
+                                if (is_string($v)){
+                                    if (in_array(strtoupper($v), $this->getAutoGenerateModesNames()/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'EVAL')*/)){
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            })
+                                ->thenInvalid('Invalid auto generate mode value %s')
+                            ->end()
+                            ->validate()
+                            ->ifString()
+                                ->then(function($v){
+                                    return constant('Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_'.strtoupper($v));
+                                })
+                            ->end()
+                        ->end()
                         ->scalarNode('proxy_dir')->defaultValue('%kernel.cache_dir%/doctrine/orm/Proxies')->end()
                         ->scalarNode('proxy_namespace')->defaultValue('Proxies')->end()
                     ->end()
@@ -298,6 +323,94 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
+     * Return ORM entity listener node
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\NodeDefinition
+     */
+    private function getOrmEntityListenersNode()
+    {
+        $builder    = new TreeBuilder();
+        $node       = $builder->root('entity_listeners');
+        $normalizer = function($mappings) {
+
+            $entities = array();
+
+            foreach ($mappings as $entityClass => $mapping) {
+
+                $listeners = array();
+
+                foreach ($mapping as $listenerClass => $listenerEvent) {
+
+                    $events = array();
+
+                    foreach ($listenerEvent as $eventType => $eventMapping) {
+
+                        if ($eventMapping === null) {
+                            $eventMapping = array(null);
+                        }
+
+                        foreach ($eventMapping as $method) {
+                            $events[] = array(
+                               'type'   => $eventType,
+                               'method' => $method,
+                            );
+                        }
+                    }
+
+                    $listeners[] = array(
+                        'class' => $listenerClass,
+                        'event' => $events,
+                    );
+                }
+
+                $entities[] = array(
+                    'class' => $entityClass,
+                    'listener' => $listeners,
+                );
+            }
+
+            return array('entities' => $entities);
+        };
+
+        $node
+            ->beforeNormalization()
+                // Yaml normalization
+                ->ifTrue(function ($v) { return is_array(reset($v)) && is_string(key(reset($v))); })
+                ->then($normalizer)
+            ->end()
+            ->fixXmlConfig('entity', 'entities')
+            ->children()
+                ->arrayNode('entities')
+                    ->useAttributeAsKey('class')
+                    ->prototype('array')
+                        ->fixXmlConfig('listener')
+                        ->children()
+                            ->arrayNode('listeners')
+                                ->useAttributeAsKey('class')
+                                ->prototype('array')
+                                    ->fixXmlConfig('event')
+                                    ->children()
+                                        ->arrayNode('events')
+                                            ->prototype('array')
+                                                ->children()
+                                                    ->scalarNode('type')->end()
+                                                    ->scalarNode('method')->defaultNull()->end()
+                                                ->end()
+                                            ->end()
+                                        ->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+
+        return $node;
+    }
+
+    /**
      * Return ORM entity manager node
      *
      * @return ArrayNodeDefinition
@@ -315,6 +428,7 @@ class Configuration implements ConfigurationInterface
                 ->append($this->getOrmCacheDriverNode('query_cache_driver'))
                 ->append($this->getOrmCacheDriverNode('metadata_cache_driver'))
                 ->append($this->getOrmCacheDriverNode('result_cache_driver'))
+                ->append($this->getOrmEntityListenersNode())
                 ->children()
                     ->scalarNode('connection')->end()
                     ->scalarNode('class_metadata_factory_name')->defaultValue('Doctrine\ORM\Mapping\ClassMetadataFactory')->end()
@@ -323,6 +437,47 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('naming_strategy')->defaultValue('doctrine.orm.naming_strategy.default')->end()
                     ->scalarNode('entity_listener_resolver')->defaultNull()->end()
                     ->scalarNode('repository_factory')->defaultNull()->end()
+                ->end()
+                ->children()
+                    ->arrayNode('second_level_cache')
+                        ->children()
+                            ->append($this->getOrmCacheDriverNode('region_cache_driver'))
+                            ->scalarNode('region_lock_lifetime')->defaultValue(60)->end()
+                            ->booleanNode('log_enabled')->defaultValue($this->debug)->end()
+                            ->scalarNode('region_lifetime')->defaultValue(0)->end()
+                            ->booleanNode('enabled')->defaultValue(true)->end()
+                            ->scalarNode('factory')->end()
+                        ->end()
+                        ->fixXmlConfig('region')
+                        ->children()
+                            ->arrayNode('regions')
+                                ->useAttributeAsKey('name')
+                                ->prototype('array')
+                                    ->children()
+                                        ->append($this->getOrmCacheDriverNode('cache_driver'))
+                                        ->scalarNode('lock_path')->defaultValue('%kernel.cache_dir%/doctrine/orm/slc/filelock')->end()
+                                        ->scalarNode('lock_lifetime')->defaultValue(60)->end()
+                                        ->scalarNode('type')->defaultValue('default')->end()
+                                        ->scalarNode('lifetime')->defaultValue(0)->end()
+                                        ->scalarNode('service')->end()
+                                        ->scalarNode('name')->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->fixXmlConfig('logger')
+                        ->children()
+                            ->arrayNode('loggers')
+                                ->useAttributeAsKey('name')
+                                ->prototype('array')
+                                    ->children()
+                                        ->scalarNode('name')->end()
+                                        ->scalarNode('service')->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
                 ->end()
                 ->fixXmlConfig('hydrator')
                 ->children()
@@ -443,5 +598,54 @@ class Configuration implements ConfigurationInterface
         ;
 
         return $node;
+    }
+
+    /**
+     * Find proxy auto generate modes for their names and int values
+     *
+     * @return array
+     */
+    private function getAutoGenerateModes(){
+        $abstractProxyFactoryClass = 'Doctrine\Common\Proxy\AbstractProxyFactory';
+        $constPrefix = 'AUTOGENERATE_';
+        $prefixLen = strlen($constPrefix);
+        $refClass = new \ReflectionClass($abstractProxyFactoryClass);
+        $constsArray = $refClass->getConstants();
+        foreach($constsArray as $key => $value){
+            if (strpos($key, $constPrefix) === 0){
+                $namesArray[] = substr($key, $prefixLen);
+                $valuesArray[] = (int)$value;
+            }
+        }
+        return array(
+            'names' => (array)$namesArray,
+            'values' => (array)$valuesArray
+        );
+    }
+
+    /**
+     * Find proxy auto generate modes for their names
+     *
+     * @return array
+     */
+    private function getAutoGenerateModesNames(){
+        $array = $this->getAutoGenerateModes();
+        if(!isset($array['names'])){
+            return false;
+        }
+        return $array['names'];
+    }
+
+    /**
+     * Find proxy auto generate modes for their int values
+     *
+     * @return array
+     */
+    private function getAutoGenerateModesValues(){
+        $array = $this->getAutoGenerateModes();
+        if(!isset($array['values'])){
+            return false;
+        }
+        return $array['values'];
     }
 }
