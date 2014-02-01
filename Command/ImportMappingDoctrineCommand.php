@@ -123,10 +123,12 @@ EOT
                     mkdir($dir, 0777, true);
                 }
                 file_put_contents($path, $code);
+                return 0;
             }
         } else {
             $output->writeln('Database does not have any mapping information.', 'ERROR');
             $output->writeln('', 'ERROR');
+            return 1;
         }
     }
 }
