@@ -47,6 +47,6 @@ class UpdateSchemaDoctrineCommand extends UpdateCommand
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
 
-        parent::execute($input, $output);
+        return parent::execute($input, $output);
     }
 }
