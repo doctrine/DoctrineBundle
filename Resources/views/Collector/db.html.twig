@@ -8,7 +8,7 @@
             <span class="sf-toolbar-info-piece-additional-detail">in {{ '%0.2f'|format(collector.time * 1000) }} ms</span>
         {% endif %}
         {% if collector.invalidEntityCount > 0 %}
-            <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-red"> </span>
+            <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-red">{{ collector.invalidEntityCount }}</span>
         {% endif %}
         {% if collector.cacheEnabled %}
             <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-green" title="Second level cache enabled">2l cache</span>
