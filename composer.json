@@ -22,7 +22,7 @@
     "require": {
         "php": ">=5.3.2",
         "symfony/framework-bundle": "~2.2",
-        "symfony/doctrine-bridge": "~2.2",
+        "symfony/doctrine-bridge": "dev-master",
         "doctrine/dbal": ">=2.3,<2.6-dev",
         "jdorn/sql-formatter": "~1.1"
     },
