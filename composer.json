@@ -15,22 +15,37 @@
             "email": "kontakt@beberlei.de"
         },
         {
+            "name": "Fabio B. Silva",
+            "email": "fabio.bat.silva@gmail.com"
+        },
+        {
+            "name": "Kinn Coelho Julião",
+            "email": "kinncj@php.net"
+        },
+        {
             "name": "Symfony Community",
             "homepage": "http://symfony.com/contributors"
+        },
+        {
+            "name":     "Doctrine Project",
+            "homepage": "http://www.doctrine-project.org/"
         }
     ],
     "require": {
         "php": ">=5.3.2",
         "symfony/framework-bundle": "~2.2",
-        "symfony/doctrine-bridge": "~2.2",
         "doctrine/dbal": ">=2.3,<2.6-dev",
-        "jdorn/sql-formatter": "~1.1"
+        "jdorn/sql-formatter": "~1.1",
+        "symfony/doctrine-bridge": "2.2"
     },
     "require-dev": {
         "doctrine/orm": "~2.3",
         "symfony/yaml": "~2.2",
         "symfony/validator": "~2.2",
-        "twig/twig" : "~1"
+        "twig/twig" : "~1",
+        "phpunit/php-code-coverage": "1.2.16",
+        "phpunit/phpunit-mock-objects": "1.2.3",
+        "phpunit/phpunit": "3.7"
     },
     "suggest": {
         "symfony/web-profiler-bundle": "to use the data collector",

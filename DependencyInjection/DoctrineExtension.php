@@ -23,6 +23,8 @@ use Symfony\Component\DependencyInjection\DefinitionDecorator;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Component\Config\FileLocator;
+use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\SymfonyBridgeAdapter;
+use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\DoctrineCacheExtension;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -30,19 +32,24 @@ use Symfony\Component\Config\FileLocator;
  * @author Jonathan H. Wage <jonwage@gmail.com>
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Benjamin Eberlei <kontakt@beberlei.de>
+ * @author Fabio B. Silva <fabio.bat.silva@gmail.com>
+ * @author Kinn Coelho Julião <kinncj@php.net>
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {
     private $defaultConnection;
     private $entityManagers;
+    private $symfonyBridgeAdapter;
 
     /**
      * {@inheritDoc}
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-        $configuration = $this->getConfiguration($configs, $container);
-        $config = $this->processConfiguration($configuration, $configs);
+        $configuration              = $this->getConfiguration($configs, $container);
+        $config                     = $this->processConfiguration($configuration, $configs);
+        $doctrineCacheExtension     = new DoctrineCacheExtension;
+        $this->symfonyBridgeAdapter = new SymfonyBridgeAdapter($doctrineCacheExtension, 'doctrine.orm', 'orm');
 
         if (!empty($config['dbal'])) {
             $this->dbalLoad($config['dbal'], $container);
@@ -84,6 +91,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $keys = array_keys($config['connections']);
             $config['default_connection'] = reset($keys);
         }
+
         $this->defaultConnection = $config['default_connection'];
 
         $container->setAlias('database_connection', sprintf('doctrine.dbal.%s_connection', $this->defaultConnection));
@@ -92,9 +100,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setParameter('doctrine.dbal.connection_factory.types', $config['types']);
 
         $connections = array();
+
         foreach (array_keys($config['connections']) as $name) {
             $connections[$name] = sprintf('doctrine.dbal.%s_connection', $name);
         }
+
         $container->setParameter('doctrine.connections', $connections);
         $container->setParameter('doctrine.default_connection', $this->defaultConnection);
 
@@ -500,7 +510,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     /**
      * Loads an ORM second level cache bundle mapping information.
-     * 
+     *
      * @example
      *  entity_managers:
      *      default:
@@ -646,6 +656,21 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return 'orm';
     }
 
+    protected function loadCacheDriver($driverName, $entityManager, $driverMap, $container)
+    {
+        if (!empty($driverMap['cache_provider'])) {
+
+            $aliasId   = $this->getObjectManagerElementName($driverName);
+            $serviceId = printf('doctrine_cache.providers.%s', $driverMap['cache_provider']);
+
+            $container->setAlias($aliasId, new Alias($serviceId, false));
+
+            return;
+        }
+
+        return $this->symfonyBridgeAdapter->loadCacheDriver($driverName, $entityManager, $driverMap, $container);
+    }
+
     /**
      * Loads a configured entity managers cache drivers.
      *
@@ -654,9 +679,19 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function loadOrmCacheDrivers(array $entityManager, ContainerBuilder $container)
     {
-        $this->loadObjectManagerCacheDriver($entityManager, $container, 'metadata_cache');
-        $this->loadObjectManagerCacheDriver($entityManager, $container, 'result_cache');
-        $this->loadObjectManagerCacheDriver($entityManager, $container, 'query_cache');
+        $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container);
+        $this->loadCacheDriver('result_cache', $entityManager['name'], $entityManager['result_cache_driver'], $container);
+        $this->loadCacheDriver('query_cache', $entityManager['name'], $entityManager['query_cache_driver'], $container);
+    }
+
+    /**
+     * @param array                                                     $objectManager
+     * @param \Symfony\Component\DependencyInjection\ContainerBuilder   $container
+     * @param string                                                    $cacheName
+     */
+    public function loadObjectManagerCacheDriver(array $objectManager, ContainerBuilder $container, $cacheName)
+    {
+        $this->loadCacheDriver($cacheName, $objectManager['name'], $objectManager[$cacheName.'_driver'], $container);
     }
 
     /**
