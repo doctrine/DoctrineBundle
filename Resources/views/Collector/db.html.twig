@@ -88,10 +88,20 @@
                     </span>
                 </button>
             </p>
-            <ul class="alt" id="queriesPlaceholder-{{ loop.index }}">
+            <table class="alt" id="queriesPlaceholder-{{ loop.index }}">
+                <thead>
+                    <tr>
+                        <th onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;">#<span>&#9650;</span></th>
+                        <th onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time<span></span></th>
+                        <th style="width: 100%;">Info</th>
+                    </tr>
+                </thead>
+                <tbody id="queries-{{ loop.index }}">
                 {% for i, query in queries %}
-                    <li class="{{ cycle(['odd', 'even'], i) }}" data-extra-info="{{ '%0.2f'|format(query.executionMS * 1000) }}" data-target-id="{{ i }}">
-                        <div style="margin-top: 4px" id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
+                    <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}" class="{{ cycle(['odd', 'even'], i) }}">
+                        <td>{{ loop.index }}</td>
+                        <td>{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                        <td>
                             <div class="query-section" data-state="collapsed" onclick="return expandQuery(this);" title="Expand query" data-target-id="code-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">
                                 <img alt="+" src="{{ asset('bundles/framework/images/blue_picto_more.gif') }}" style="display: inline;" />
                                 <img alt="-" src="{{ asset('bundles/framework/images/blue_picto_less.gif') }}" style="display: none;" />
@@ -109,8 +119,8 @@
                             <small>
                                 <strong>Parameters</strong>: {{ query.params|yaml_encode }} <br />
                                 [<span id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this);" target-data-id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">Display runnable query</span>]<br/>
-                                <strong>Time</strong>: {{ '%0.2f'|format(query.executionMS * 1000) }} ms
                             </small>
+
                             {% if query.explainable %}
                                 [<a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'page': 'explain', 'connection': connection, 'query': i}) }}" onclick="return explain(this);" style="text-decoration: none;" title="Explains the query" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}" >
                                     <img alt="+" src="{{ asset('bundles/framework/images/blue_picto_more.gif') }}" style="display: inline; width: 12px; height: 12px;" />
@@ -120,13 +130,15 @@
                             {% else %}
                                 This query cannot be explained
                             {% endif %}
-                        </div>
-                        {% if query.explainable %}
-                        <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="loading"></div>
-                        {% endif %}
-                    </li>
+
+                            {% if query.explainable %}
+                                <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="loading"></div>
+                            {% endif %}
+                        </td>
+                    </tr>
                 {% endfor %}
-            </ul>
+                </tbody>
+            </table>
         {% endif %}
     {% endfor %}
 
@@ -316,6 +328,41 @@
                 target.innerHTML = 'Display runnable query';
 
                 document.getElementById('smallcode' + targetId).style.display = 'inline';
+            }
+        }
+
+        function sortTable(header, column, targetId) {
+            "use strict";
+
+            var direction = parseInt(header.getAttribute('data-sort-direction')) || 1,
+                items = [],
+                target = document.getElementById(targetId),
+                rows = target.children,
+                headers = header.parentElement.children,
+                i;
+
+            for (i = 0; i < rows.length; ++i) {
+                items.push(rows[i]);
+            }
+
+            for (i = 0; i < headers.length; ++i) {
+                headers[i].removeAttribute('data-sort-direction');
+                if (headers[i].children.length > 0) {
+                    headers[i].children[0].innerHTML = '';
+                }
+            }
+
+            header.setAttribute('data-sort-direction', (-1*direction).toString());
+            header.children[0].innerHTML = direction > 0 ? '&#9650;' : '&#9660;';
+
+            items.sort(function(a, b) {
+                return direction*(parseFloat(a.children[column].innerHTML) - parseFloat(b.children[column].innerHTML));
+            });
+
+            for (i = 0; i < items.length; ++i) {
+                Sfjs.removeClass(items[i], i % 2 ? 'even' : 'odd');
+                Sfjs.addClass(items[i], i % 2 ? 'odd' : 'even');
+                target.appendChild(items[i]);
             }
         }
 
