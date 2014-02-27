@@ -595,6 +595,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('class')->end()
                 ->scalarNode('id')->end()
                 ->scalarNode('namespace')->defaultNull()->end()
+                ->scalarNode('cache_provider')->defaultNull()->end()
             ->end()
         ;
 

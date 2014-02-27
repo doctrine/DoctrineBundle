@@ -27,9 +27,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testDbalOverrideDefaultConnection()
     {
         $container = $this->getContainer();
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
-        $loader->load(array(array(), array('dbal' => array('default_connection' => 'foo')), array()), $container);
+        $container->registerExtension($extension);
+
+        $extension->load(array(array(), array('dbal' => array('default_connection' => 'foo')), array()), $container);
 
         // doctrine.dbal.default_connection
         $this->assertEquals('%doctrine.default_connection%', $container->getDefinition('doctrine')->getArgument(3), '->load() overrides existing configuration options');
@@ -134,14 +136,14 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[11][1][0]);
         }
 
-        $definition = $container->getDefinition('doctrine.orm.default_metadata_cache');
-        $this->assertEquals('%doctrine.orm.cache.array.class%', $definition->getClass());
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
+        $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
 
-        $definition = $container->getDefinition('doctrine.orm.default_query_cache');
-        $this->assertEquals('%doctrine.orm.cache.array.class%', $definition->getClass());
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_query_cache'));
+        $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
 
-        $definition = $container->getDefinition('doctrine.orm.default_result_cache');
-        $this->assertEquals('%doctrine.orm.cache.array.class%', $definition->getClass());
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_result_cache'));
+        $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
     }
 
     public function testSingleEntityManagerConfiguration()

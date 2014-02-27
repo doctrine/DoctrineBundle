@@ -259,14 +259,14 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[1]);
         $this->assertEquals('doctrine.orm.em2_configuration', (string) $arguments[1]);
 
-        $definition = $container->getDefinition('doctrine.orm.em1_metadata_cache');
-        $this->assertEquals('%doctrine.orm.cache.xcache.class%', $definition->getClass());
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em1_metadata_cache'));
+        $this->assertEquals('%doctrine_cache.xcache.class%', $definition->getClass());
 
-        $definition = $container->getDefinition('doctrine.orm.em1_query_cache');
-        $this->assertEquals('%doctrine.orm.cache.array.class%', $definition->getClass());
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em1_query_cache'));
+        $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
 
-        $definition = $container->getDefinition('doctrine.orm.em1_result_cache');
-        $this->assertEquals('%doctrine.orm.cache.array.class%', $definition->getClass());
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em1_result_cache'));
+        $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
     }
 
     public function testLoadLogging()
@@ -299,11 +299,11 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->compileContainer($container);
 
-        $definition = $container->getDefinition('doctrine.orm.em1_metadata_cache');
-        $this->assertDICDefinitionClass($definition, '%doctrine.orm.cache.xcache.class%');
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em1_metadata_cache'));
+        $this->assertDICDefinitionClass($definition, '%doctrine_cache.xcache.class%');
 
-        $definition = $container->getDefinition('doctrine.orm.em2_metadata_cache');
-        $this->assertDICDefinitionClass($definition, '%doctrine.orm.cache.apc.class%');
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em2_metadata_cache'));
+        $this->assertDICDefinitionClass($definition, '%doctrine_cache.apc.class%');
     }
 
     public function testEntityManagerMemcacheMetadataCacheDriverConfiguration()
@@ -316,15 +316,15 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->compileContainer($container);
 
-        $definition = $container->getDefinition('doctrine.orm.default_metadata_cache');
-        $this->assertDICDefinitionClass($definition, 'Doctrine\Common\Cache\MemcacheCache');
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
+        $this->assertDICDefinitionClass($definition, '%doctrine_cache.memcache.class%');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setMemcache',
-            array(new Reference('doctrine.orm.default_memcache_instance'))
+            array(new Reference('doctrine_cache.services.doctrine.orm.default_metadata_cache.connection'))
         );
 
-        $definition = $container->getDefinition('doctrine.orm.default_memcache_instance');
-        $this->assertDICDefinitionClass($definition, 'Memcache');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'connect', array(
+        $definition = $container->getDefinition('doctrine_cache.services.doctrine.orm.default_metadata_cache.connection');
+        $this->assertDICDefinitionClass($definition, '%doctrine_cache.memcache.connection.class%');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addServer', array(
             'localhost', '11211'
         ));
     }
@@ -339,8 +339,8 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->compileContainer($container);
 
-        $cacheDefinition = $container->getDefinition('doctrine.orm.default_metadata_cache');
-        $this->assertEquals('%doctrine.orm.cache.apc.class%', $cacheDefinition->getClass());
+        $cacheDefinition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
+        $this->assertEquals('%doctrine_cache.apc.class%', $cacheDefinition->getClass());
 
         $configDefinition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setAutoGenerateProxyClasses', array('%doctrine.orm.auto_generate_proxy_classes%'));
@@ -524,7 +524,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $loggerChainDef      = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_chain');
         $loggerStatisticsDef = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_statistics');
         $myQueryRegionDef    = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_query_region_filelock');
-        $cacheDriverDef      = $container->getDefinition('doctrine.orm.default_second_level_cache.region_cache_driver');
+        $cacheDriverDef      = $container->getDefinition($container->getAlias('doctrine.orm.default_second_level_cache.region_cache_driver'));
         $configDef           = $container->getDefinition('doctrine.orm.default_configuration');
         $myEntityRegionArgs  = $myEntityRegionDef->getArguments();
         $myQueryRegionArgs   = $myQueryRegionDef->getArguments();
@@ -535,7 +535,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
         $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
         $this->assertDICDefinitionClass($loggerStatisticsDef, '%doctrine.orm.second_level_cache.logger_statistics.class%');
-        $this->assertDICDefinitionClass($cacheDriverDef, '%doctrine.orm.cache.array.class%');
+        $this->assertDICDefinitionClass($cacheDriverDef, '%doctrine_cache.array.class%');
         $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
         $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', array(), 3);
         $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', array(), 3);
