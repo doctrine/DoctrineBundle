@@ -31,6 +31,7 @@ Configuration Reference
                         charset:              UTF8
                         logging:              %kernel.debug%
                         platform_service:     MyOwnDatabasePlatformService
+                        auto_commit:          false
                         schema_filter:        ^sf2_
                         mapping_types:
                             enum: string
@@ -98,6 +99,7 @@ Configuration Reference
                         charset="UTF8"
                         logging="%kernel.debug%"
                         platform-service="MyOwnDatabasePlatformService"
+                        auto-commit="false"
                         schema-filter="^sf2_"
                     >
                         <doctrine:option key="foo">bar</doctrine:option>
@@ -272,6 +274,7 @@ can configure. The following block shows all possible configuration keys:
                 charset:              UTF8
                 logging:              %kernel.debug%
                 platform_service:     MyOwnDatabasePlatformService
+                auto_commit:          false
                 schema_filter:        ^sf2_
                 mapping_types:
                     enum: string
@@ -300,6 +303,7 @@ can configure. The following block shows all possible configuration keys:
                 charset="UTF8"
                 logging="%kernel.debug%"
                 platform-service="MyOwnDatabasePlatformService"
+                auto-commit="false"
                 schema-filter="^sf2_"
             >
                 <doctrine:option key="foo">bar</doctrine:option>

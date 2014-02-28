@@ -136,6 +136,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
         unset($connection['profiling']);
 
+        if (isset($connection['auto_commit'])) {
+            $configuration->addMethodCall('setAutoCommit', array($connection['auto_commit']));
+        }
+
+        unset($connection['auto_commit']);
+
         if (isset($connection['schema_filter']) && $connection['schema_filter']) {
             $configuration->addMethodCall('setFilterSchemaAssetsExpression', array($connection['schema_filter']));
         }
