@@ -36,7 +36,7 @@
         "symfony/yaml": "~2.2",
         "symfony/validator": "~2.2",
         "twig/twig": "~1",
-        "satooshi/php-coveralls": "~0.6",
+        "satooshi/php-coveralls": "~0.6.1",
         "phpunit/phpunit": "~3.7",
         "phpunit/php-code-coverage": "~1.2",
         "phpunit/phpunit-mock-objects": "~1.2"
