@@ -681,7 +681,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return 'orm';
     }
 
-    protected function loadCacheDriver($driverName, $entityManager, $driverMap, $container)
+    /**
+     * {@inheritDoc}
+     */
+    protected function loadCacheDriver($driverName, $entityManagerName, array $driverMap, ContainerBuilder $container)
     {
         if (!empty($driverMap['cache_provider'])) {
             $aliasId = $this->getObjectManagerElementName($driverName);
@@ -692,7 +695,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             return;
         }
 
-        return $this->adapter->loadCacheDriver($driverName, $entityManager, $driverMap, $container);
+        return $this->adapter->loadCacheDriver($driverName, $entityManagerName, $driverMap, $container);
     }
 
     /**
