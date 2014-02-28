@@ -1,5 +1,10 @@
 {% extends app.request.isXmlHttpRequest ? 'WebProfilerBundle:Profiler:ajax_layout.html.twig' : 'WebProfilerBundle:Profiler:layout.html.twig' %}
 
+{% block head %}
+    {{ parent() }}
+    <link href="{{ asset('bundles/framework/css/exception.css') }}" rel="stylesheet" type="text/css" media="all" />
+{% endblock %}
+
 {% block toolbar %}
     {% set icon %}
         <img width="20" height="28" alt="Database" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAcCAYAAABh2p9gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQRJREFUeNpi/P//PwM1ARMDlcGogZQDlpMnT7pxc3NbA9nhQKxOpL5rQLwJiPeBsI6Ozl+YBOOOHTv+AOllQNwtLS39F2owKYZ/gRq8G4i3ggxEToggWzvc3d2Pk+1lNL4fFAs6ODi8JzdS7mMRVyDVoAMHDsANdAPiOCC+jCQvQKqBQB/BDbwBxK5AHA3E/kB8nKJkA8TMQBwLxaBIKQbi70AvTADSBiSadwFXpCikpKQU8PDwkGTaly9fHFigkaKIJid4584dkiMFFI6jkTJII0WVmpHCAixZQEXWYhDeuXMnyLsVlEQKI45qFBQZ8eRECi4DBaAlDqle/8A48ip6gAADANdQY88Uc0oGAAAAAElFTkSuQmCC" />
@@ -100,7 +105,7 @@
                                     {{ query.sql|doctrine_minify_query|raw }}
                                 </span>
                             </div>
-                            <code id="code-{{ i }}-{{ loop.parent.loop.index }}">
+                            <code id="code-{{ i }}-{{ loop.parent.loop.index }}" class="pretty_query">
                                 {{ query.sql|doctrine_pretty_query(i, loop.parent.loop.index)|raw }}
                             </code>
                             <span id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="display: none;">
@@ -120,10 +125,16 @@
                             {% else %}
                                 This query cannot be explained
                             {% endif %}
+                            [<a href="#" onclick="return stacktrace(this);" style="text-decoration: none;" title="Show stacktrace" data-target-id="stacktrace-{{ i }}-{{ loop.parent.loop.index }}" >
+                                <img alt="+" src="{{ asset('bundles/framework/images/blue_picto_more.gif') }}" style="display: inline; width: 12px; height: 12px;" />
+                                <img alt="-" src="{{ asset('bundles/framework/images/blue_picto_less.gif') }}" style="display: none; width: 12px; height: 12px;" />
+                                <span style="vertical-align:top">Show stacktrace</span>
+                            </a>]
                         </div>
                         {% if query.explainable %}
                         <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="loading"></div>
                         {% endif %}
+                        <div id="stacktrace-{{ i }}-{{ loop.parent.loop.index }}" style="display: none">{{ include('DoctrineBundle:Collector:stacktrace.html.twig', { 'connectionName': connection, 'position': i, 'stacktrace': query.stacktrace } ) }}</div>
                     </li>
                 {% endfor %}
             </ul>
@@ -232,6 +243,15 @@
             return false;
         }
 
+        function stacktrace(link) {
+            var imgs = link.children,
+                target = link.getAttribute('data-target-id');
+
+            Sfjs.toggle(target, imgs[0], imgs[1]);
+
+            return false;
+        }
+
         function expandAllQueries(button) {
             var queries = document.getElementsByClassName('query-section'),
                 i = queries.length,
@@ -319,6 +339,36 @@
             }
         }
 
+        function toggleTrace(id, clazz) {
+            var el = document.getElementById(id),
+                current = el.style.display,
+                i;
+
+            if (clazz) {
+                var tags = document.getElementsByTagName('*');
+                for (i = tags.length - 1; i >= 0 ; i--) {
+                    if (tags[i].className === clazz) {
+                        tags[i].style.display = 'none';
+                    }
+                }
+            }
+
+            el.style.display = current === 'none' ? 'block' : 'none';
+        }
+
+        function switchIcons(id1, id2) {
+            var icon1, icon2, visibility1, visibility2;
+
+            icon1 = document.getElementById(id1);
+            icon2 = document.getElementById(id2);
+
+            visibility1 = icon1.style.visibility;
+            visibility2 = icon2.style.visibility;
+
+            icon1.style.visibility = visibility2;
+            icon2.style.visibility = visibility1;
+        }
+
     //]]></script>
 
     <style>
@@ -326,11 +376,11 @@
             margin-bottom: 0px;
         }
 
-        code {
+        .pretty_query {
             display: none;
         }
 
-        code pre {
+        .pretty_query pre {
             padding: 5px;
         }
     </style>

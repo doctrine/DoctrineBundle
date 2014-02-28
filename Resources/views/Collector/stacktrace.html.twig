@@ -1,0 +1,33 @@
+<div class="sf-reset">
+    <div class="block">
+        <h2>Stack Trace</h2>
+        <ol class="traces list-exception" id="traces-{{ connectionName ~ '-' ~ position }}">
+            {% for i, trace in stacktrace %}
+                <li>
+                    {% if trace.function %}
+                        at
+                        <strong>
+                            {% if trace.class is defined %}<abbr title="{{ trace.class }}">{{ trace.class }}</abbr>{% endif %}
+                            {{ trace.type ~ trace.function }}
+                        </strong>
+                        ({{ trace.args|format_args }})
+                    {% endif %}
+
+                    {% if trace.file is defined and trace.file and trace.line is defined and trace.line %}
+                        {{ trace.function ? '<br />' : '' }}
+                        in {{ trace.file|format_file(trace.line) }}&nbsp;
+                        {% spaceless %}
+                        <a href="#" onclick="toggleTrace('trace-{{ connectionName ~ '-' ~ position ~ '-' ~ i }}'); switchIcons('icon-{{ connectionName ~ '-' ~ position ~ '-' ~ i }}-open', 'icon-{{ connectionName ~ '-' ~ position ~ '-' ~ i }}-close'); return false;">
+                            <img class="toggle" id="icon-{{ connectionName ~ '-' ~ position ~ '-' ~ i }}-close" alt="-" src="data:image/gif;base64,R0lGODlhEgASAMQSANft94TG57Hb8GS44ez1+mC24IvK6ePx+Wa44dXs92+942e54o3L6W2844/M6dnu+P/+/l614P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABIALAAAAAASABIAQAVCoCQBTBOd6Kk4gJhGBCTPxysJb44K0qD/ER/wlxjmisZkMqBEBW5NHrMZmVKvv9hMVsO+hE0EoNAstEYGxG9heIhCADs=" style="visibility: {{ 0 == i ? 'visible' : 'hidden' }}" />
+                            <img class="toggle" id="icon-{{ connectionName ~ '-' ~ position ~ '-' ~ i }}-open" alt="+" src="data:image/gif;base64,R0lGODlhEgASAMQTANft99/v+Ga44bHb8ITG52S44dXs9+z1+uPx+YvK6WC24G+944/M6W28443L6dnu+Ge54v/+/l614P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABMALAAAAAASABIAQAVS4DQBTiOd6LkwgJgeUSzHSDoNaZ4PU6FLgYBA5/vFID/DbylRGiNIZu74I0h1hNsVxbNuUV4d9SsZM2EzWe1qThVzwWFOAFCQFa1RQq6DJB4iIQA7" style="visibility: {{ 0 == i ? 'hidden' : 'visible' }}; margin-left: -18px" />
+                        </a>
+                        {% endspaceless %}
+                        <div id="trace-{{ connectionName ~ '-' ~ position ~ '-' ~ i }}" style="display: {{ 0 == i ? 'block' : 'none' }}" class="trace">
+                            {{ trace.file|file_excerpt(trace.line) }}
+                        </div>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+</div>
