@@ -65,33 +65,4 @@ class ProfilerController extends ContainerAware
             'query' => $query,
         ));
     }
-
-    /**
-     * Renders the stacktrace for the given token and query.
-     *
-     * @param string $token
-     * @param string $connectionName
-     * @param integer $query
-     *
-     * @return Response
-     */
-    public function stacktraceAction($token, $connectionName, $query)
-    {
-        /** @var $profiler \Symfony\Component\HttpKernel\Profiler\Profiler */
-        $profiler = $this->container->get('profiler');
-        $profiler->disable();
-
-        $profile = $profiler->loadProfile($token);
-        $queries = $profile->getCollector('db')->getQueries();
-
-        if (!isset($queries[$connectionName][$query])) {
-            return new Response('This query does not exist.');
-        }
-
-        return $this->container->get('templating')->renderResponse('DoctrineBundle:Collector:stacktrace.html.twig', array(
-            'connectionName' => $connectionName,
-            'position' => $query,
-            'stacktrace' => $queries[$connectionName][$query]['stacktrace'],
-        ));
-    }
 }
