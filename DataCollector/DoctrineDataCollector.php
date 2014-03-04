@@ -93,15 +93,15 @@ class DoctrineDataCollector extends BaseCollector
 
             /** @var $cacheConfiguration \Doctrine\ORM\Cache\CacheConfiguration */
             /** @var $clacheLoggerChain \Doctrine\ORM\Cache\Logging\CacheLoggerChain */
-            /** @var $cacheLoggerStats \Doctrine\ORM\Cache\Logging\StatisticsCacheLogger */
             $cacheConfiguration = $emConfig->getSecondLevelCacheConfiguration();
             $cacheLoggerChain   = $cacheConfiguration->getCacheLogger();
-            $cacheLoggerStats   = $cacheLoggerChain->getLogger('statistics');
 
-            if ( ! $cacheLoggerStats) {
+            if ( ! $cacheLoggerChain || ! $cacheLoggerChain->getLogger('statistics')) {
                 continue;
             }
 
+            /** @var $cacheLoggerStats \Doctrine\ORM\Cache\Logging\StatisticsCacheLogger */
+            $cacheLoggerStats = $cacheLoggerChain->getLogger('statistics');
             $caches['log_enabled'] = true;
 
             $caches['counts']['puts']   += $cacheLoggerStats->getPutCount();
