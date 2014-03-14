@@ -14,7 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Filter\SQLFilter;
 
 /**
@@ -41,9 +41,9 @@ class ManagerConfigurator
     /**
      * Create a connection by name.
      *
-     * @param EntityManager $entityManager
+     * @param EntityManagerInterface $entityManager
      */
-    public function configure(EntityManager $entityManager)
+    public function configure(EntityManagerInterface $entityManager)
     {
         $this->enableFilters($entityManager);
     }
@@ -51,11 +51,11 @@ class ManagerConfigurator
     /**
      * Enable filters for an given entity manager
      *
-     * @param EntityManager $entityManager
+     * @param EntityManagerInterface $entityManager
      *
      * @return null
      */
-    private function enableFilters(EntityManager $entityManager)
+    private function enableFilters(EntityManagerInterface $entityManager)
     {
         if (empty($this->enabledFilters)) {
             return;
