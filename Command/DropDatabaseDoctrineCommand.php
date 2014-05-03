@@ -85,6 +85,9 @@ EOT
 
             try {
                 $connection->getSchemaManager()->dropDatabase($name);
+                if ($connection->isConnected()) {
+                    $connection->close();
+                }
                 $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
             } catch (\Exception $e) {
                 $output->writeln(sprintf('<error>Could not drop database for connection named <comment>%s</comment></error>', $name));
