@@ -329,6 +329,21 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function testEntityManagerCacheProviderMetadataCacheDriverConfiguration()
+    {
+        $container = $this->getContainer();
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'orm_service_multiple_entity_managers');
+
+        $this->compileContainer($container);
+
+        $alias = $container->getAlias('doctrine.orm.em3_metadata_cache');
+
+        $this->assertEquals('doctrine_cache.providers.service', (string) $alias, 'Expected Service Id of the DIC Container Alias Definition is wrong');
+    }
+
     public function testDependencyInjectionImportsOverrideDefaults()
     {
         $container = $this->getContainer();

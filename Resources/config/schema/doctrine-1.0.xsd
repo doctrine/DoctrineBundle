@@ -144,6 +144,7 @@
             <xsd:element name="host" type="xsd:string" minOccurs="0" maxOccurs="1" />
             <xsd:element name="port" type="xsd:string" minOccurs="0" maxOccurs="1" />
             <xsd:element name="instance-class" type="xsd:string" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="cache-provider" type="xsd:string" minOccurs="0" maxOccurs="1" />
         </xsd:all>
 
         <xsd:attribute name="type" type="xsd:string" />
@@ -250,7 +251,7 @@
         <xsd:attribute name="region-lifetime" type="xsd:integer" />
         <xsd:attribute name="region-lock-lifetime" type="xsd:integer" />
     </xsd:complexType>
-    
+
     <xsd:complexType name="dql">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="string-function" type="named_scalar" />
