@@ -296,7 +296,7 @@ class DoctrineExtension extends \Twig_Extension
             '/\?|((?<!:):[a-z0-9_]+)/i',
             function ($matches) use ($parameters, &$i) {
                 $key = substr($matches[0], 1);
-                if (!array_key_exists($i, $parameters) && !array_key_exists($key, $parameters)) {
+                if (!array_key_exists($i, $parameters) && (false === $key || !array_key_exists($key, $parameters))) {
                     return $matches[0];
                 }
 
