@@ -57,7 +57,7 @@ class ProfilerController extends ContainerAware
         try {
             if ($connection->getDatabasePlatform() instanceof SQLServerPlatform) {
                 if (strtoupper(substr($query['sql'], 0, 6)) === 'SELECT') {
-                    $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . ' SET STATISTICS PROFILE OFF;';
+                    $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . '; SET STATISTICS PROFILE OFF;';
                 } else {
                     $sql = 'SET SHOWPLAN_TEXT ON; GO; SET NOEXEC ON; ' . $query['sql'] .'; SET NOEXEC OFF; GO; SET SHOWPLAN_TEXT OFF;';
                 }
