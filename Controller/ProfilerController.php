@@ -54,8 +54,19 @@ class ProfilerController extends ContainerAware
         /** @var $connection \Doctrine\DBAL\Connection */
         $connection = $this->container->get('doctrine')->getConnection($connectionName);
         try {
-            $results = $connection->executeQuery('EXPLAIN '.$query['sql'], $query['params'], $query['types'])
-                ->fetchAll(\PDO::FETCH_ASSOC);
+            if ($connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLServerPlatform) {
+                if (substr($query['sql'], 0, 6) === 'SELECT') {
+                    $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'];
+                } else {
+                    $sql = 'SET SHOWPLAN_TEXT ON; GO; SET NOEXEC ON; ' . $query['sql'] .'; SET NOEXEC OFF; GO; SET SHOWPLAN_TEXT OFF;';
+                }
+                $stmt = $connection->executeQuery($sql, $query['params'], $query['types']);
+                $stmt->nextRowset();
+                $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            } else {
+                $results = $connection->executeQuery('EXPLAIN '.$query['sql'], $query['params'], $query['types'])
+                    ->fetchAll(\PDO::FETCH_ASSOC);
+            }
         } catch (\Exception $e) {
             return new Response('This query cannot be explained.');
         }
