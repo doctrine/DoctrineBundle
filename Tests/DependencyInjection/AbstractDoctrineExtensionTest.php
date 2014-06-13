@@ -655,6 +655,30 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener2')));
     }
 
+    public function testAttachEntityListenerTag()
+    {
+        $container = $this->getContainer(array());
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $container->addCompilerPass(new EntityListenerPass());
+
+        $this->loadFromFile($container, 'orm_attach_entity_listener_tag');
+
+        $this->compileContainer($container);
+
+        $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener1')));
+
+        $listener = $container->getDefinition('doctrine.orm.em2_entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener2')));
+
+        $attachListener = $container->getDefinition('doctrine.orm.em1_listeners.attach_entity_listeners');
+        $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', array('EntityListener1', 'My/Entity1'));
+
+        $attachListener = $container->getDefinition('doctrine.orm.em2_listeners.attach_entity_listeners');
+        $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', array('EntityListener2', 'My/Entity2', 'preFlush', 'preFlushHandler'));
+    }
+
     public function testRepositoryFactory()
     {
         $container = $this->loadContainer('orm_repository_factory');

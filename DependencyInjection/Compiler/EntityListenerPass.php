@@ -48,8 +48,41 @@ class EntityListenerPass implements CompilerPassInterface
                     continue;
                 }
 
+                if (isset($attributes['entity'])) {
+                    $this->attachToListener($container, $name, $id, $attributes);
+                }
+
                 $container->getDefinition($resolver)->addMethodCall('register', array(new Reference($id)));
             }
         }
+    }
+
+    private function attachToListener(ContainerBuilder $container, $name, $id, array $attributes)
+    {
+        $listenerId   = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $name);
+        if ($container->hasAlias($listenerId)) {
+            $listenerId = (string)$container->getAlias($listenerId);
+        }
+
+        if (!$container->hasDefinition($listenerId)) {
+            return;
+        }
+
+        $serviceDef = $container->getDefinition($id);
+
+        $args = array(
+            $serviceDef->getClass(),
+            $attributes['entity'],
+        );
+
+        if (isset($attributes['type'])) {
+            $args[] = $attributes['type'];
+        }
+
+        if (isset($attributes['method'])) {
+            $args[] = $attributes['method'];
+        }
+
+        $container->getDefinition($listenerId)->addMethodCall('addEntityListener', $args);
     }
 }
