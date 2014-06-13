@@ -201,11 +201,28 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('unix_socket')->info('The unix socket to use for MySQL')->end()
                 ->booleanNode('persistent')->info('True to use as persistent connection for the ibm_db2 driver')->end()
                 ->scalarNode('protocol')->info('The protocol to use for the ibm_db2 driver (default to TCPIP if ommited)')->end()
-                ->booleanNode('service')->info('True to use dbname as service name instead of SID for Oracle')->end()
+                ->booleanNode('service')
+                    ->info('True to use SERVICE_NAME as connection parameter instead of SID for Oracle')
+                ->end()
+                ->scalarNode('servicename')
+                    ->info(
+                        'Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter ' .
+                        'for Oracle depending on the service parameter.'
+                    )
+                ->end()
                 ->scalarNode('sessionMode')
                     ->info('The session mode to use for the oci8 driver')
                 ->end()
-                ->booleanNode('pooled')->info('True to use a pooled server with the oci8 driver')->end()
+                ->scalarNode('server')
+                    ->info('The name of a running database server to connect to for SQL Anywhere.')
+                ->end()
+                ->scalarNode('sslmode')
+                    ->info(
+                        'Determines whether or with what priority a SSL TCP/IP connection will be negotiated with ' .
+                        'the server for PostgreSQL.'
+                    )
+                ->end()
+                ->booleanNode('pooled')->info('True to use a pooled server with the oci8/pdo_oracle driver')->end()
                 ->booleanNode('MultipleActiveResultSets')->info('Configuring MultipleActiveResultSets for the pdo_sqlsrv driver')->end()
             ->end()
             ->beforeNormalization()

@@ -14,25 +14,34 @@ Configuration Reference
                 default_connection:   default
                 connections:
                     default:
-                        dbname:               database
-                        host:                 localhost
-                        port:                 1234
-                        user:                 user
-                        password:             secret
-                        driver:               pdo_mysql
-                        driver_class:         MyNamespace\MyDriverImpl
+                        dbname:                   database
+                        host:                     localhost
+                        port:                     1234
+                        user:                     user
+                        password:                 secret
+                        driver:                   pdo_mysql
+                        driver_class:             MyNamespace\MyDriverImpl
                         options:
                             foo: bar
-                        path:                 %kernel.data_dir%/data.sqlite
-                        memory:               true
-                        unix_socket:          /tmp/mysql.sock
-                        wrapper_class:        MyDoctrineDbalConnectionWrapper
-                        keep_slave:           true
-                        charset:              UTF8
-                        logging:              %kernel.debug%
-                        platform_service:     MyOwnDatabasePlatformService
-                        auto_commit:          false
-                        schema_filter:        ^sf2_
+                        path:                     %kernel.data_dir%/data.sqlite # SQLite specific
+                        memory:                   true                          # SQLite specific
+                        unix_socket:              /tmp/mysql.sock
+                        persistent:               true
+                        MultipleActiveResultSets: true                # pdo_sqlsrv driver specific
+                        pooled:                   true                # Oracle specific (SERVER=POOLED)
+                        protocol:                 TCPIP               # IBM DB2 specific (PROTOCOL)
+                        server:                   my_database_server  # SQL Anywhere specific (ServerName)
+                        service:                  true                # Oracle specific (SERVICE_NAME instead of SID)
+                        servicename:              MyOracleServiceName # Oracle specific (SERVICE_NAME)
+                        sessionMode:              2                   # oci8 driver specific (session_mode)
+                        sslmode:                  require             # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE)
+                        wrapper_class:            MyDoctrineDbalConnectionWrapper
+                        keep_slave:               true
+                        charset:                  UTF8
+                        logging:                  %kernel.debug%
+                        platform_service:         MyOwnDatabasePlatformService
+                        auto_commit:              false
+                        schema_filter:            ^sf2_
                         mapping_types:
                             enum: string
                     conn1:
@@ -91,9 +100,18 @@ Configuration Reference
                         password="secret"
                         driver="pdo_mysql"
                         driver-class="MyNamespace\MyDriverImpl"
-                        path="%kernel.data_dir%/data.sqlite"
-                        memory="true"
+                        path="%kernel.data_dir%/data.sqlite" <!-- SQLite specific -->
+                        memory="true"                        <!-- SQLite specific -->
                         unix-socket="/tmp/mysql.sock"
+                        persistent="true"
+                        multiple-active-result-sets="true" <!-- pdo_sqlsrv driver specific -->
+                        pooled="true"                      <!-- Oracle specific (SERVER=POOLED) -->
+                        protocol="TCPIP"                   <!-- IBM DB2 specific (PROTOCOL) -->
+                        server="my_database_server"        <!-- SQL Anywhere specific (ServerName) -->
+                        service="true"                     <!-- Oracle specific (SERVICE_NAME instead of SID) -->
+                        servicename="MyOracleServiceName"  <!-- Oracle specific (SERVICE_NAME) -->
+                        sessionMode"2"                     <!-- oci8 driver specific (session_mode) -->
+                        sslmode="require"                  <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLMODE) -->
                         wrapper-class="MyDoctrineDbalConnectionWrapper"
                         keep-slave="true"
                         charset="UTF8"
@@ -258,24 +276,33 @@ can configure. The following block shows all possible configuration keys:
 
         doctrine:
             dbal:
-                dbname:               database
-                host:                 localhost
-                port:                 1234
-                user:                 user
-                password:             secret
-                driver:               pdo_mysql
-                driver_class:         MyNamespace\MyDriverImpl
+                dbname:                   database
+                host:                     localhost
+                port:                     1234
+                user:                     user
+                password:                 secret
+                driver:                   pdo_mysql
+                driver_class:             MyNamespace\MyDriverImpl
                 options:
                     foo: bar
-                path:                 %kernel.data_dir%/data.sqlite
-                memory:               true
-                unix_socket:          /tmp/mysql.sock
-                wrapper_class:        MyDoctrineDbalConnectionWrapper
-                charset:              UTF8
-                logging:              %kernel.debug%
-                platform_service:     MyOwnDatabasePlatformService
-                auto_commit:          false
-                schema_filter:        ^sf2_
+                path:                     %kernel.data_dir%/data.sqlite # SQLite specific
+                memory:                   true                          # SQLite specific
+                unix_socket:              /tmp/mysql.sock
+                persistent:               true
+                MultipleActiveResultSets: true                # pdo_sqlsrv driver specific
+                pooled:                   true                # Oracle specific (SERVER=POOLED)
+                protocol:                 TCPIP               # IBM DB2 specific (PROTOCOL)
+                server:                   my_database_server  # SQL Anywhere specific (ServerName)
+                service:                  true                # Oracle specific (SERVICE_NAME instead of SID)
+                servicename:              MyOracleServiceName # Oracle specific (SERVICE_NAME)
+                sessionMode:              2                   # oci8 driver specific (session_mode)
+                sslmode:                  require             # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE)
+                wrapper_class:            MyDoctrineDbalConnectionWrapper
+                charset:                  UTF8
+                logging:                  %kernel.debug%
+                platform_service:         MyOwnDatabasePlatformService
+                auto_commit:              false
+                schema_filter:            ^sf2_
                 mapping_types:
                     enum: string
                 types:
@@ -296,9 +323,18 @@ can configure. The following block shows all possible configuration keys:
                 password="secret"
                 driver="pdo_mysql"
                 driver-class="MyNamespace\MyDriverImpl"
-                path="%kernel.data_dir%/data.sqlite"
-                memory="true"
+                path="%kernel.data_dir%/data.sqlite" <!-- SQLite specific -->
+                memory="true"                        <!-- SQLite specific -->
                 unix-socket="/tmp/mysql.sock"
+                persistent="true"
+                multiple-active-result-sets="true" <!-- pdo_sqlsrv driver specific -->
+                pooled="true"                      <!-- Oracle specific (SERVER=POOLED) -->
+                protocol="TCPIP"                   <!-- IBM DB2 specific (PROTOCOL) -->
+                server="my_database_server"        <!-- SQL Anywhere specific (ServerName) -->
+                service="true"                     <!-- Oracle specific (SERVICE_NAME instead of SID) -->
+                servicename="MyOracleServiceName"  <!-- Oracle specific (SERVICE_NAME) -->
+                sessionMode"2"                     <!-- oci8 driver specific (session_mode) -->
+                sslmode="require"                  <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLMODE) -->
                 wrapper-class="MyDoctrineDbalConnectionWrapper"
                 charset="UTF8"
                 logging="%kernel.debug%"

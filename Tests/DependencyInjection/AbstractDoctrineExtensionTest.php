@@ -47,11 +47,52 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         // doctrine.dbal.sqlite_connection
         $config = $container->getDefinition('doctrine.dbal.sqlite_connection')->getArgument(0);
-        $this->assertArrayHasKey('memory', $config);
+        $this->assertSame('pdo_sqlite', $config['driver']);
+        $this->assertSame('sqlite_db', $config['dbname']);
+        $this->assertSame('sqlite_user', $config['user']);
+        $this->assertSame('sqlite_s3cr3t', $config['password']);
+        $this->assertSame('/tmp/db.sqlite', $config['path']);
+        $this->assertTrue($config['memory']);
 
         // doctrine.dbal.oci8_connection
         $config = $container->getDefinition('doctrine.dbal.oci_connection')->getArgument(0);
-        $this->assertArrayHasKey('charset', $config);
+        $this->assertSame('oci8', $config['driver']);
+        $this->assertSame('oracle_db', $config['dbname']);
+        $this->assertSame('oracle_user', $config['user']);
+        $this->assertSame('oracle_s3cr3t', $config['password']);
+        $this->assertSame('oracle_service', $config['servicename']);
+        $this->assertTrue($config['service']);
+        $this->assertTrue($config['pooled']);
+        $this->assertSame('utf8', $config['charset']);
+
+        // doctrine.dbal.ibmdb2_connection
+        $config = $container->getDefinition('doctrine.dbal.ibmdb2_connection')->getArgument(0);
+        $this->assertSame('ibm_db2', $config['driver']);
+        $this->assertSame('ibmdb2_db', $config['dbname']);
+        $this->assertSame('ibmdb2_user', $config['user']);
+        $this->assertSame('ibmdb2_s3cr3t', $config['password']);
+        $this->assertSame('TCPIP', $config['protocol']);
+
+        // doctrine.dbal.pgsql_connection
+        $config = $container->getDefinition('doctrine.dbal.pgsql_connection')->getArgument(0);
+        $this->assertSame('pdo_pgsql', $config['driver']);
+        $this->assertSame('pgsql_db', $config['dbname']);
+        $this->assertSame('pgsql_user', $config['user']);
+        $this->assertSame('pgsql_s3cr3t', $config['password']);
+        $this->assertSame('require', $config['sslmode']);
+        $this->assertSame('utf8', $config['charset']);
+
+        // doctrine.dbal.sqlanywhere_connection
+        $config = $container->getDefinition('doctrine.dbal.sqlanywhere_connection')->getArgument(0);
+        $this->assertSame('sqlanywhere', $config['driver']);
+        $this->assertSame('localhost', $config['host']);
+        $this->assertSame(2683, $config['port']);
+        $this->assertSame('sqlanywhere_server', $config['server']);
+        $this->assertSame('sqlanywhere_db', $config['dbname']);
+        $this->assertSame('sqlanywhere_user', $config['user']);
+        $this->assertSame('sqlanywhere_s3cr3t', $config['password']);
+        $this->assertTrue($config['persistent']);
+        $this->assertSame('utf8', $config['charset']);
     }
 
     public function testDbalLoadFromXmlSingleConnections()

@@ -9,10 +9,40 @@ doctrine:
                 unix_socket: /path/to/mysqld.sock
             sqlite:
                 driver: pdo_sqlite
+                dbname: sqlite_db
+                user: sqlite_user
+                password: sqlite_s3cr3t
+                path: /tmp/db.sqlite
                 memory: true
             oci:
                 driver: oci8
                 dbname: oracle_db
                 user: oracle_user
                 password: oracle_s3cr3t
+                servicename: oracle_service
+                service: true
+                pooled: true
+                charset: utf8
+            ibmdb2:
+                driver: ibm_db2
+                dbname: ibmdb2_db
+                user: ibmdb2_user
+                password: ibmdb2_s3cr3t
+                protocol: TCPIP
+            pgsql:
+                driver: pdo_pgsql
+                dbname: pgsql_db
+                user: pgsql_user
+                password: pgsql_s3cr3t
+                sslmode: require
+                charset: utf8
+            sqlanywhere:
+                driver: sqlanywhere
+                host: localhost
+                port: 2683
+                server: sqlanywhere_server
+                dbname: sqlanywhere_db
+                user: sqlanywhere_user
+                password: sqlanywhere_s3cr3t
+                persistent: true
                 charset: utf8
