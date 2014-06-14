@@ -48,7 +48,7 @@ class EntityListenerPass implements CompilerPassInterface
                     continue;
                 }
 
-                if (isset($attributes['entity'])) {
+                if (isset($attributes['entity']) && isset($attributes['type'])) {
                     $this->attachToListener($container, $name, $id, $attributes);
                 }
 
