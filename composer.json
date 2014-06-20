@@ -46,9 +46,8 @@
         "doctrine/orm": "The Doctrine ORM integration is optional in the bundle."
     },
     "autoload": {
-        "psr-0": { "Doctrine\\Bundle\\DoctrineBundle": "" }
+        "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "" }
     },
-    "target-dir": "Doctrine/Bundle/DoctrineBundle",
     "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
