@@ -73,7 +73,7 @@ class DoctrineDataCollector extends BaseCollector
                     $classErrors = $validator->validateClass($class);
                     $entities[$name][$class->getName()] = $class->getName();
 
-                    if (!empty($classErrors)) {
+                    if ( ! empty($classErrors)) {
                         $errors[$name][$class->getName()] = $classErrors;
                     }
                 }
