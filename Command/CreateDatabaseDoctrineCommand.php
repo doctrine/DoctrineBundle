@@ -36,6 +36,8 @@ class CreateDatabaseDoctrineCommand extends DoctrineCommand
             ->setName('doctrine:database:create')
             ->setDescription('Creates the configured databases')
             ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
+            ->addOption('ifNotExists', null, InputOption::VALUE_NONE, 'Only create if the database does not exists')
+            ->addOption('dropAndCreate', null, InputOption::VALUE_NONE, 'First drop the database and then create it')
             ->setHelp(<<<EOT
 The <info>doctrine:database:create</info> command creates the default
 connections database:
@@ -55,6 +57,11 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        if($input->getOption('ifNotExists') && $input->getOption('dropAndCreate')){
+            $output->writeln("<error>You can't use both <comment>ifNotExists</comment>
+            and <comment>dropAndCreate</comment> option</error>");
+        }
+
         $connection = $this->getDoctrineConnection($input->getOption('connection'));
 
         $params = $connection->getParams();
@@ -70,6 +77,7 @@ EOT
 
         $tmpConnection = DriverManager::getConnection($params);
 
+        $dbAlreadyExists = count(array_intersect((array) $name, $tmpConnection->getSchemaManager()->listDatabases()));
         // Only quote if we don't have a path
         if (!isset($params['path'])) {
             $name = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
@@ -77,8 +85,16 @@ EOT
 
         $error = false;
         try {
-            $tmpConnection->getSchemaManager()->createDatabase($name);
-            $output->writeln(sprintf('<info>Created database for connection named <comment>%s</comment></info>', $name));
+
+            $action = 'createDatabase';
+            $action = $input->getOption('dropAndCreate') ? 'dropAndCreateDatabase' : $action;
+            $action = $input->getOption('ifNotExists') && $dbAlreadyExists ? '' : $action;
+            if ($action) {
+                $tmpConnection->getSchemaManager()->{$action}($name);
+                $output->writeln(sprintf('<info>Created database <comment>%s</comment> for connection named <comment>%s</comment></info>', $name, $connectionName));
+            } else {
+                $output->writeln(sprintf('<info>Database <comment>%s</comment> for connection named <comment>%s</comment> already existed</info>', $name, $connectionName));
+            }
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Could not create database for connection named <comment>%s</comment></error>', $name));
             $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
