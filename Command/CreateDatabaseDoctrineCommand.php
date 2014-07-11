@@ -36,8 +36,8 @@ class CreateDatabaseDoctrineCommand extends DoctrineCommand
             ->setName('doctrine:database:create')
             ->setDescription('Creates the configured databases')
             ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
-            ->addOption('ifNotExists', null, InputOption::VALUE_NONE, 'Only create if the database does not exists')
-            ->addOption('dropAndCreate', null, InputOption::VALUE_NONE, 'First drop the database and then create it')
+            ->addOption('if-not-exists', null, InputOption::VALUE_NONE, 'Only create if the database does not exists')
+            ->addOption('drop-and-create', null, InputOption::VALUE_NONE, 'First drop the database and then create it')
             ->setHelp(<<<EOT
 The <info>doctrine:database:create</info> command creates the default
 connections database:
