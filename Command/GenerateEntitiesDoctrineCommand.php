@@ -18,7 +18,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Doctrine\ORM\Tools\EntityRepositoryGenerator;
 use Doctrine\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
 
 /**
@@ -115,7 +114,7 @@ EOT
         $backupExisting = !$input->getOption('no-backup');
         $generator->setBackupExisting($backupExisting);
 
-        $repoGenerator = new EntityRepositoryGenerator();
+        $repoGenerator = $this->getEntityRepositoryGenerator();
         foreach ($metadata->getMetadata() as $m) {
             if ($backupExisting) {
                 $basename = substr($m->name, strrpos($m->name, '\\') + 1);
