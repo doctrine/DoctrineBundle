@@ -207,6 +207,46 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    /**
+     * The PDO driver allow to have the dbname not set when connecting to the database.
+     */
+    public function testLoadSimpleSingleConnectionWithoutDbName()
+    {
+        $container = $this->getContainer();
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+
+        $this->loadFromFile($container, 'orm_service_simple_single_entity_manager_without_dbname');
+
+        $this->compileContainer($container);
+
+        /** @var Definition $definition */
+        $definition = $container->getDefinition('doctrine.dbal.default_connection');
+
+        $this->assertDICConstructorArguments($definition, array(
+                array(
+                    'host' => 'localhost',
+                    'port' => null,
+                    'user' => 'root',
+                    'password' => null,
+                    'driver' => 'pdo_mysql',
+                    'driverOptions' => array(),
+                ),
+                new Reference('doctrine.dbal.default_connection.configuration'),
+                new Reference('doctrine.dbal.default_connection.event_manager'),
+                array(),
+            ));
+
+        $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+        $this->assertEquals('create', $definition->getFactoryMethod());
+
+        $this->assertDICConstructorArguments($definition, array(
+                new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration')
+            ));
+    }
+
     public function testLoadSingleConnection()
     {
         $container = $this->getContainer();
