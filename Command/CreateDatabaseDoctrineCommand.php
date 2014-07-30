@@ -57,9 +57,9 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if($input->getOption('ifNotExists') && $input->getOption('dropAndCreate')){
-            $output->writeln("<error>You can't use both <comment>ifNotExists</comment>
-            and <comment>dropAndCreate</comment> option</error>");
+        if($input->getOption('if-not-exists') && $input->getOption('drop-and-create')){
+            $output->writeln("<error>You can't use both <comment>if-not-exists</comment>
+            and <comment>drop-and-create</comment> option</error>");
             return 1;
         }
 
@@ -88,8 +88,8 @@ EOT
         try {
 
             $action = 'createDatabase';
-            $action = $input->getOption('dropAndCreate') ? 'dropAndCreateDatabase' : $action;
-            $action = $input->getOption('ifNotExists') && $dbAlreadyExists ? '' : $action;
+            $action = $input->getOption('drop-and-create') ? 'dropAndCreateDatabase' : $action;
+            $action = $input->getOption('if-not-exists') && $dbAlreadyExists ? '' : $action;
             if ($action) {
                 $tmpConnection->getSchemaManager()->{$action}($name);
                 $output->writeln(sprintf('<info>Created database <comment>%s</comment> for connection named <comment>%s</comment></info>', $name, $connectionName));
