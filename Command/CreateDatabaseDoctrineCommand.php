@@ -60,6 +60,7 @@ EOT
         if($input->getOption('ifNotExists') && $input->getOption('dropAndCreate')){
             $output->writeln("<error>You can't use both <comment>ifNotExists</comment>
             and <comment>dropAndCreate</comment> option</error>");
+            return 1;
         }
 
         $connection = $this->getDoctrineConnection($input->getOption('connection'));
