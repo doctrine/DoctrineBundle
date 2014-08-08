@@ -66,7 +66,7 @@ EOT
         if (!$name) {
             throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
-        unset($params['dbname']);
+        $params['dbname'] = null;
 
         $tmpConnection = DriverManager::getConnection($params);
 
