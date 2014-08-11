@@ -331,9 +331,21 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->setAlias('doctrine.orm.entity_manager', sprintf('doctrine.orm.%s_entity_manager', $config['default_entity_manager']));
 
+        // BC logic to handle DoctrineBridge < 2.6
+        if (!method_exists($this, 'determineMappedBundles')) {
+            foreach ($config['entity_managers'] as $entityManager) {
+                if ($entityManager['auto_mapping'] && count($this->entityManagers) > 1) {
+                    throw new \LogicException('You cannot enable "auto_mapping" when several entity managers are defined.');
+                }
+            }
+            $mappedBundles = array();
+        } else {
+            $mappedBundles = $this->determineMappedBundles($config['entity_managers']);
+        }
+
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
-            $this->loadOrmEntityManager($entityManager, $container);
+            $this->loadOrmEntityManager($entityManager, $container, $mappedBundles);
         }
 
         if ($config['resolve_target_entities']) {
@@ -353,16 +365,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *
      * @param array            $entityManager A configured ORM entity manager.
      * @param ContainerBuilder $container     A ContainerBuilder instance
+     * @param array            $mappedBundles A list of explicitly mapped Bundles
      */
-    protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container)
+    protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container, array $mappedBundles = array())
     {
-        if ($entityManager['auto_mapping'] && count($this->entityManagers) > 1) {
-            throw new \LogicException('You cannot enable "auto_mapping" when several entity managers are defined.');
-        }
-
         $ormConfigDef = $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), new DefinitionDecorator('doctrine.orm.configuration'));
 
-        $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container);
+        $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container, $mappedBundles);
         $this->loadOrmCacheDrivers($entityManager, $container);
 
         if (isset($entityManager['entity_listener_resolver']) && $entityManager['entity_listener_resolver']) {
@@ -520,14 +529,15 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * @param array            $entityManager A configured ORM entity manager
      * @param Definition       $ormConfigDef  A Definition instance
      * @param ContainerBuilder $container     A ContainerBuilder instance
+     * @param array            $mappedBundles A list of explicitly mapped Bundles
      */
-    protected function loadOrmEntityManagerMappingInformation(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container)
+    protected function loadOrmEntityManagerMappingInformation(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container, array $mappedBundles = array())
     {
         // reset state of drivers and alias map. They are only used by this methods and children.
         $this->drivers = array();
         $this->aliasMap = array();
 
-        $this->loadMappingInformation($entityManager, $container);
+        $this->loadMappingInformation($entityManager, $container, $mappedBundles);
         $this->registerMappingDrivers($entityManager, $container);
 
         $ormConfigDef->addMethodCall('setEntityNamespaces', array($this->aliasMap));
