@@ -14,10 +14,10 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 
 class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
