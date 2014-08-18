@@ -1,0 +1,44 @@
+---------------------------------------------------------------------------
+
+by kimhemsoe at 2014-08-15T19:43:50Z
+
+Could you provide a test that reproduces this error ?
+
+---------------------------------------------------------------------------
+
+by ste93cry at 2014-08-16T21:07:55Z
+
+just my two cents: referring to the [Symfony coding standards](http://symfony.com/doc/current/contributing/code/standards.html) there shouldn't be a space in the if between the opening bracket and the content. Imho it's really unaesthetic
+
+---------------------------------------------------------------------------
+
+by alsma-magecore at 2014-08-17T17:44:59Z
+
+Hey @ste93cry !
+That comes from current code style in this [file](https://github.com/alsma-magecore/DoctrineBundle/blob/master/DataCollector/DoctrineDataCollector.php#L112)
+
+---------------------------------------------------------------------------
+
+by alsma-magecore at 2014-08-17T18:28:59Z
+
+Hey @kimhemsoe !
+
+Added test, but it's not clear from test why metadata factory contains duplicates... Any idea how to clarify ?
+
+---------------------------------------------------------------------------
+
+by ste93cry at 2014-08-17T19:00:04Z
+
+You're correct about the code style, anyway imho it's the file that's not correct. There shouldn't be spaces there, so probably I would fix the codestyle of the entire file following the Symfony standards. Obviously, this is out of the scope of this issue, my comment was just an opinion on the commit.
+
+---------------------------------------------------------------------------
+
+by alsma-magecore at 2014-08-17T19:04:37Z
+
+Ok, thanks! I also was surprised, but decided to follow style from **master**
+
+---------------------------------------------------------------------------
+
+by stof at 2014-08-18T19:12:17Z
+
+the CS issue is because the Doctrine coding standards are asking for a space around the negation in conditions. And recent changes in the bundle have been made by some people used to the Doctrine codebase
