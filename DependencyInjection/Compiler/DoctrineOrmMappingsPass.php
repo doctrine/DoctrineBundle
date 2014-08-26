@@ -119,7 +119,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      */
     public static function createAnnotationMappingDriver(array $namespaces, array $directories, array $managerParameters = array(), $enabledParameter = false)
     {
-        $reader = new Reference('doctrine.orm.metadata.annotation_reader');
+        $reader = new Reference('annotation_reader');
         $driver = new Definition('Doctrine\ORM\Mapping\Driver\AnnotationDriver', array($reader, $directories));
 
         return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter);

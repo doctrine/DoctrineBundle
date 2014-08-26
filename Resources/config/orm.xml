@@ -71,7 +71,7 @@
     </parameters>
 
     <services>
-        <!--- Annotation Metadata Reader Service -->
+        <!--- Deprecated Annotation Metadata Reader Service alias, use annotation_reader service -->
         <service id="doctrine.orm.metadata.annotation_reader" alias="annotation_reader" public="false" />
 
         <service id="doctrine.orm.proxy_cache_warmer" class="%doctrine.orm.proxy_cache_warmer.class%" public="false">
