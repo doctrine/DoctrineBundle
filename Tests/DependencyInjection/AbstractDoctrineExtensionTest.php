@@ -112,6 +112,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('mysql_user', $config['user']);
         $this->assertEquals('mysql_db', $config['dbname']);
         $this->assertEquals('/path/to/mysqld.sock', $config['unix_socket']);
+        $this->assertEquals('5.6.20', $config['serverVersion']);
     }
 
     public function testDbalLoadSingleMasterSlaveConnection()
