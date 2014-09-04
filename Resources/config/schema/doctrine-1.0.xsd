@@ -36,6 +36,7 @@
         <xsd:attribute name="schema-filter" type="xsd:string" />
         <xsd:attribute name="logging" type="xsd:string" default="false" />
         <xsd:attribute name="profiling" type="xsd:string" default="false" />
+        <xsd:attribute name="server-version" type="xsd:string" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:attributeGroup>
 

@@ -139,6 +139,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('schema_filter')->end()
                 ->booleanNode('logging')->defaultValue($this->debug)->end()
                 ->booleanNode('profiling')->defaultValue($this->debug)->end()
+                ->scalarNode('server_version')->end()
                 ->scalarNode('driver_class')->end()
                 ->scalarNode('wrapper_class')->end()
                 ->scalarNode('shard_choser')->end()

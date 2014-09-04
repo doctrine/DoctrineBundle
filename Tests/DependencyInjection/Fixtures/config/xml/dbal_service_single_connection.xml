@@ -7,6 +7,6 @@
                         http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
 
     <config>
-        <dbal dbname="mysql_db" user="mysql_user" password="mysql_s3cr3t" unix-socket="/path/to/mysqld.sock" />
+        <dbal dbname="mysql_db" user="mysql_user" password="mysql_s3cr3t" unix-socket="/path/to/mysqld.sock" server-version="5.6.20" />
     </config>
 </srv:container>

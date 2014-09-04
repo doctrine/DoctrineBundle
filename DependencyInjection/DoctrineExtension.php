@@ -236,6 +236,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'wrapper_class' => 'wrapperClass',
             'keep_slave'    => 'keepSlave',
             'shard_choser'  => 'shardChoser',
+            'server_version' => 'serverVersion',
         ) as $old => $new) {
             if (isset($options[$old])) {
                 $options[$new] = $options[$old];
