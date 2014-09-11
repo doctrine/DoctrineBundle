@@ -372,6 +372,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->setDefinition(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name']), new Definition('%doctrine.orm.entity_listener_resolver.class%'));
         }
 
+        $container->setDefinition(sprintf('doctrine.orm.%s_filter_factory', $entityManager['name']), new DefinitionDecorator('doctrine.orm.filter_factory'));
+
         $methods = array(
             'setMetadataCacheImpl'        => new Reference(sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name'])),
             'setQueryCacheImpl'           => new Reference(sprintf('doctrine.orm.%s_query_cache', $entityManager['name'])),
@@ -382,6 +384,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setAutoGenerateProxyClasses' => '%doctrine.orm.auto_generate_proxy_classes%',
             'setClassMetadataFactoryName' => $entityManager['class_metadata_factory_name'],
             'setDefaultRepositoryClassName' => $entityManager['default_repository_class'],
+            'setFilterFactory'            => new Reference(sprintf('doctrine.orm.%s_filter_factory', $entityManager['name'])),
         );
         // check for version to keep BC
         if (version_compare(\Doctrine\ORM\Version::VERSION, "2.3.0-DEV") >= 0) {
@@ -424,23 +427,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         }
 
-        $enabledFilters = array();
-        $filtersParameters = array();
-        foreach ($entityManager['filters'] as $name => $filter) {
-            $ormConfigDef->addMethodCall('addFilter', array($name, $filter['class']));
-            if ($filter['enabled']) {
-                $enabledFilters[] = $name;
-            }
-            if ($filter['parameters']) {
-                $filtersParameters[$name] = $filter['parameters'];
-            }
-        }
-
         $managerConfiguratorName = sprintf('doctrine.orm.%s_manager_configurator', $entityManager['name']);
         $managerConfiguratorDef = $container
             ->setDefinition($managerConfiguratorName, new DefinitionDecorator('doctrine.orm.manager_configurator.abstract'))
-            ->replaceArgument(0, $enabledFilters)
-            ->replaceArgument(1, $filtersParameters)
+            ->replaceArgument(0, $entityManager['filters'])
         ;
 
         if (!isset($entityManager['connection'])) {
