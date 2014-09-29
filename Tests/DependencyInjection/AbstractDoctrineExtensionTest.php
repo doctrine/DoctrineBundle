@@ -208,7 +208,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * The PDO driver allow to have the dbname not set when connecting to the database.
+     * The PDO driver doesn't require a database name to be to set when connecting to a database server
      */
     public function testLoadSimpleSingleConnectionWithoutDbName()
     {
