@@ -1,0 +1,123 @@
+---------------------------------------------------------------------------
+
+by goetas at 2014-08-11T15:54:15Z
+
+I have committed the changes proposed by @guilhermeblanco
+
+---------------------------------------------------------------------------
+
+by lsmith77 at 2014-08-15T11:54:38Z
+
+the question is if this code should not get pushed to the DoctrineBridge in Symfony, since the ODM bundles will need this code too.
+
+---------------------------------------------------------------------------
+
+by goetas at 2014-08-15T19:18:52Z
+
+Unfortunately I have zero experience with odm, but Monday I will try to take a look!
+
+---------------------------------------------------------------------------
+
+by goetas at 2014-08-18T06:59:31Z
+
+@lsmith77  I can't see a clean solution how to move this code to DoctrineBridge...
+
+My first idea was to move `validateORMAutoMapping` and `collectAutoMappings` to DoctrineBridge, marking them as `protected`. But this solution introduces an extra dependency between DoctrineBridge and DoctrineBundle... and still need a change into DoctrineBundle.
+
+First implementation:
+DoctrineBundle: https://github.com/goetas/DoctrineBundle/compare/auto-mapping-alternative
+DoctrineBridge: https://github.com/goetas/symfony/compare/auto-mapping
+DoctrineMongoDBBundle: ...
+
+Do you have some suggestions?
+
+---------------------------------------------------------------------------
+
+by stof at 2014-08-18T14:09:03Z
+
+@goetas DoctrineBundle already depends on DoctrineBridge currently.
+
+---------------------------------------------------------------------------
+
+by goetas at 2014-08-18T14:56:34Z
+
+@stof
+Is acceptable the way used in https://github.com/goetas/DoctrineBundle/compare/auto-mapping-and
+https://github.com/goetas/symfony/compare/auto-mapping ?
+
+Can it be merged (in the next future)?
+
+---------------------------------------------------------------------------
+
+by joschi127 at 2014-08-25T14:24:47Z
+
+:+1:
+
+---------------------------------------------------------------------------
+
+by goetas at 2014-09-01T08:32:28Z
+
+Hi!
+I have modified this PR, now it requires the merging of https://github.com/symfony/symfony/pull/11815, but it adds the ability to add the same functionality to DoctrineMongoDBBundle (see https://github.com/doctrine/DoctrineMongoDBBundle/pull/267).
+
+---------------------------------------------------------------------------
+
+by lsmith77 at 2014-09-10T08:14:52Z
+
+for BC you should do something like what I did in https://github.com/doctrine/DoctrinePHPCRBundle/pull/167
+
+---------------------------------------------------------------------------
+
+by goetas at 2014-09-10T08:18:41Z
+
+why not add `~2.6` as min version in `composer.json`?
+
+---------------------------------------------------------------------------
+
+by stof at 2014-09-10T08:19:50Z
+
+@goetas I don't want to need supporting 2 versions of the bundle. We need to keep supporting the 2.3 LTS until its EOL
+
+---------------------------------------------------------------------------
+
+by goetas at 2014-09-10T08:26:09Z
+
+Added the BC commit
+
+---------------------------------------------------------------------------
+
+by lsmith77 at 2014-09-23T06:40:44Z
+
+do your tests require 2.6?
+
+https://travis-ci.org/doctrine/DoctrineBundle/jobs/34889877#L189
+
+---------------------------------------------------------------------------
+
+by goetas at 2014-09-23T06:49:05Z
+
+@lsmith77  I think that i should skip the test if `DoctrineExtension` does not have the `fixManagersAutoMappings` method. Might it work?
+
+---------------------------------------------------------------------------
+
+by lsmith77 at 2014-09-23T06:54:47Z
+
+yup
+
+---------------------------------------------------------------------------
+
+by goetas at 2014-09-23T07:19:18Z
+
+Squashed and tested against 2.6
+
+---------------------------------------------------------------------------
+
+by lsmith77 at 2014-09-23T07:22:42Z
+
+ready to merge then ..
+
+---------------------------------------------------------------------------
+
+by lsmith77 at 2014-09-23T08:28:34Z
+
+@stof seems to be like you are the chief merger on this Bundle .. I do have the shiny green button but do not want to get into the way of things.
