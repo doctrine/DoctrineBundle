@@ -17,6 +17,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\Version;
+use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -29,13 +30,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testDbalLoadFromXmlMultipleConnections()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'dbal_service_multiple_connections');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('dbal_service_multiple_connections');
 
         // doctrine.dbal.mysql_connection
         $config = $container->getDefinition('doctrine.dbal.mysql_connection')->getArgument(0);
@@ -97,13 +92,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testDbalLoadFromXmlSingleConnections()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'dbal_service_single_connection');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('dbal_service_single_connection');
 
         // doctrine.dbal.mysql_connection
         $config = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
@@ -117,13 +106,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testDbalLoadSingleMasterSlaveConnection()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'dbal_service_single_master_slave_connection');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('dbal_service_single_master_slave_connection');
 
         // doctrine.dbal.mysql_connection
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
@@ -145,13 +128,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testDbalLoadPoolShardingConnection()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'dbal_service_pool_sharding_connection');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('dbal_service_pool_sharding_connection');
 
         // doctrine.dbal.mysql_connection
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
@@ -173,13 +150,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadSimpleSingleConnection()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_service_simple_single_entity_manager');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_service_simple_single_entity_manager');
 
         $definition = $container->getDefinition('doctrine.dbal.default_connection');
 
@@ -210,13 +181,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadSingleConnection()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_service_single_entity_manager');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_service_single_entity_manager');
 
         $definition = $container->getDefinition('doctrine.dbal.default_connection');
 
@@ -251,13 +216,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadMultipleConnections()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_service_multiple_entity_managers');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
         $definition = $container->getDefinition('doctrine.dbal.conn1_connection');
 
@@ -313,13 +272,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadLogging()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'dbal_logging');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('dbal_logging');
 
         $definition = $container->getDefinition('doctrine.dbal.log_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger')));
@@ -333,13 +286,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testEntityManagerMetadataCacheDriverConfiguration()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_service_multiple_entity_managers');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
         $definition = $container->getDefinition($container->getAlias('doctrine.orm.em1_metadata_cache'));
         $this->assertDICDefinitionClass($definition, '%doctrine_cache.xcache.class%');
@@ -350,13 +297,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testEntityManagerMemcacheMetadataCacheDriverConfiguration()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_service_simple_single_entity_manager');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_service_simple_single_entity_manager');
 
         $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertDICDefinitionClass($definition, '%doctrine_cache.memcache.class%');
@@ -373,13 +314,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testDependencyInjectionImportsOverrideDefaults()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_imports');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_imports');
 
         $cacheDefinition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertEquals('%doctrine_cache.apc.class%', $cacheDefinition->getClass());
@@ -390,14 +325,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testSingleEntityManagerMultipleMappingBundleDefinitions()
     {
-        $container = $this->getContainer(array('YamlBundle', 'AnnotationsBundle', 'XmlBundle'));
-
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_single_em_bundle_mappings');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_single_em_bundle_mappings', array('YamlBundle', 'AnnotationsBundle', 'XmlBundle'));
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
 
@@ -435,14 +363,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testMultipleEntityManagersMappingBundleDefinitions()
     {
-        $container = $this->getContainer(array('YamlBundle', 'AnnotationsBundle', 'XmlBundle'));
-
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_multiple_em_bundle_mappings');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_multiple_em_bundle_mappings', array('YamlBundle', 'AnnotationsBundle', 'XmlBundle'));
 
         $this->assertEquals(array('em1' => 'doctrine.orm.em1_entity_manager', 'em2' => 'doctrine.orm.em2_entity_manager'), $container->getParameter('doctrine.entity_managers'), "Set of the existing EntityManagers names is incorrect.");
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), "Set of the existing EntityManagers names is incorrect.");
@@ -484,12 +405,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testSetTypes()
     {
-        $container = $this->getContainer(array('YamlBundle'));
-
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-        $this->loadFromFile($container, 'dbal_types');
-        $this->compileContainer($container);
+        $container = $this->loadContainer('dbal_types');
 
         $this->assertEquals(
             array('test' => array('class' => 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType', 'commented' => true)),
@@ -500,12 +416,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testSetCustomFunctions()
     {
-        $container = $this->getContainer(array('YamlBundle'));
-
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-        $this->loadFromFile($container, 'orm_functions');
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_functions');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomStringFunction', array('test_string', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction'));
@@ -518,12 +429,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         if (version_compare(Version::VERSION, "2.3.0-DEV") < 0) {
             $this->markTestSkipped('Naming Strategies are not available');
         }
-        $container = $this->getContainer(array('YamlBundle'));
-
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-        $this->loadFromFile($container, 'orm_namingstrategy');
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_namingstrategy');
 
         $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
         $def2 = $container->getDefinition('doctrine.orm.em2_configuration');
@@ -534,17 +440,11 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testSecondLevelCache()
     {
-        if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0) {
+        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
             $this->markTestSkipped('Second-level cache requires doctrine-orm 2.5.0 or newer');
         }
 
-        $container  = $this->getContainer();
-        $loader     = new DoctrineExtension();
-
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_second_level_cache');
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_second_level_cache');
 
         $this->assertTrue($container->has('doctrine.orm.default_configuration'));
         $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.cache_configuration'));
@@ -602,12 +502,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testSingleEMSetCustomFunctions()
     {
-        $container = $this->getContainer(array('YamlBundle'));
-
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-        $this->loadFromFile($container, 'orm_single_em_dql_functions');
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_single_em_dql_functions');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomStringFunction', array('test_string', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction'));
@@ -615,12 +510,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testAddCustomHydrationMode()
     {
-        $container = $this->getContainer(array('YamlBundle'));
-
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-        $this->loadFromFile($container, 'orm_hydration_mode');
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_hydration_mode');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomHydrationMode', array('test_hydrator', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator'));
@@ -628,13 +518,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testAddFilter()
     {
-        $container = $this->getContainer(array('YamlBundle'));
-
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_filters');
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_filters');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $args = array(
@@ -654,13 +538,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testResolveTargetEntity()
     {
-        $container = $this->getContainer(array('YamlBundle'));
-
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_resolve_target_entity');
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_resolve_target_entity');
 
         $definition = $container->getDefinition('doctrine.orm.listeners.resolve_target_entity');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addResolveTargetEntity', array('Symfony\Component\Security\Core\User\UserInterface', 'MyUserClass', array()));
@@ -669,19 +547,13 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testAttachEntityListeners()
     {
-        if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0 ) {
+        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0 ) {
             $this->markTestIncomplete('This test requires ORM 2.5-dev.');
         }
 
-        $container  = $this->getContainer(array('YamlBundle'));
-        $loader     = new DoctrineExtension();
+        $container = $this->loadContainer('orm_attach_entity_listener');
 
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_attach_entity_listener');
-        $this->compileContainer($container);
-
-        $definition  = $container->getDefinition('doctrine.orm.default_listeners.attach_entity_listeners');
+        $definition = $container->getDefinition('doctrine.orm.default_listeners.attach_entity_listeners');
         $methodCalls = $definition->getMethodCalls();
 
         $this->assertDICDefinitionMethodCallCount($definition, 'addEntityListener', array(), 6);
@@ -732,13 +604,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testDbalAutoCommit()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'dbal_auto_commit');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('dbal_auto_commit');
 
         $definition = $container->getDefinition('doctrine.dbal.default_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setAutoCommit', array(false));
@@ -746,13 +612,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testDbalSchemaFilter()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'dbal_schema_filter');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('dbal_schema_filter');
 
         $definition = $container->getDefinition('doctrine.dbal.default_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setFilterSchemaAssetsExpression', array('^sf2_'));
@@ -760,14 +620,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testEntityListenerResolver()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-        $container->addCompilerPass(new EntityListenerPass());
-
-        $this->loadFromFile($container, 'orm_entity_listener_resolver');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_entity_listener_resolver', array('YamlBundle'), new EntityListenerPass());
 
         $definition = $container->getDefinition('doctrine.orm.em1_configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em1_entity_listener_resolver')));
@@ -784,27 +637,35 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testRepositoryFactory()
     {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-
-        $this->loadFromFile($container, 'orm_repository_factory');
-
-        $this->compileContainer($container);
+        $container = $this->loadContainer('orm_repository_factory');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setRepositoryFactory', array('repository_factory'));
     }
 
-    private function getContainer($bundles = 'YamlBundle', $vendor = null)
+    private function loadContainer($fixture, array $bundles = array('YamlBundle'), CompilerPassInterface $compilerPass = null)
     {
-        $bundles = (array) $bundles;
+        $container = $this->getContainer($bundles);
+        $container->registerExtension(new DoctrineExtension());
 
+        $this->loadFromFile($container, $fixture);
+
+        if (null !== $compilerPass) {
+            $container->addCompilerPass($compilerPass);
+        }
+
+        $this->compileContainer($container);
+
+        return $container;
+    }
+
+    private function getContainer(array $bundles)
+    {
         $map = array();
         foreach ($bundles as $bundle) {
-            require_once __DIR__.'/Fixtures/Bundles/'.($vendor ? $vendor.'/' : '').$bundle.'/'.$bundle.'.php';
+            require_once __DIR__.'/Fixtures/Bundles/'.$bundle.'/'.$bundle.'.php';
 
-            $map[$bundle] = 'Fixtures\\Bundles\\'.($vendor ? $vendor.'\\' : '').$bundle.'\\'.$bundle;
+            $map[$bundle] = 'Fixtures\\Bundles\\'.$bundle.'\\'.$bundle;
         }
 
         return new ContainerBuilder(new ParameterBag(array(
