@@ -39,6 +39,110 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    public function getAutomappingConfigurations()
+    {
+        return array(
+            array(
+                array(
+                    'em1' => array(
+                        'mappings' => array(
+                            'YamlBundle' => null
+                        )
+                    ),
+                    'em2' => array(
+                        'mappings' => array(
+                            'XmlBundle' => null
+                        )
+                    )
+                )
+            ),
+            array(
+                array(
+                    'em1' => array(
+                        'auto_mapping' => true
+                    ),
+                    'em2' => array(
+                        'mappings' => array(
+                            'XmlBundle' => null
+                        )
+                    )
+                )
+            ),
+            array(
+                array(
+                    'em1' => array(
+                        'auto_mapping' => true,
+                        'mappings' => array(
+                            'YamlBundle' => null
+                        )
+                    ),
+                    'em2' => array(
+                        'mappings' => array(
+                            'XmlBundle' => null
+                        )
+                    )
+                )
+            )
+        );
+    }
+
+    /**
+     * @dataProvider getAutomappingConfigurations
+     */
+    public function testAutomapping(array $entityManagers)
+    {
+        $loader = new DoctrineExtension();
+
+        if (!method_exists($loader, 'fixManagersAutoMappings')) {
+            $this->markTestSkipped('Auto mapping with multiple managers available with Symfony ~2.6');
+            return;
+        }
+
+        $container = $this->getContainer(array(
+            'YamlBundle',
+            'XmlBundle'
+        ));
+
+        $loader->load(
+            array(
+                array(
+                    'dbal' => array(
+                        'default_connection' => 'cn1',
+                        'connections' => array(
+                            'cn1' => array(),
+                            'cn2' => array()
+                        )
+                    ),
+                    'orm' => array(
+                        'entity_managers' => $entityManagers
+                    )
+                )
+            ), $container);
+
+        $configEm1 = $container->getDefinition('doctrine.orm.em1_configuration');
+        $configEm2 = $container->getDefinition('doctrine.orm.em2_configuration');
+
+        $this->assertContains(
+            array(
+                'setEntityNamespaces',
+                array(
+                    array(
+                        'YamlBundle' => 'Fixtures\Bundles\YamlBundle\Entity'
+                    )
+                )
+            ), $configEm1->getMethodCalls());
+
+        $this->assertContains(
+            array(
+                'setEntityNamespaces',
+                array(
+                    array(
+                        'XmlBundle' => 'Fixtures\Bundles\XmlBundle\Entity'
+                    )
+                )
+            ), $configEm2->getMethodCalls());
+    }
+
     public function testDbalLoad()
     {
         $container = $this->getContainer();

@@ -332,6 +332,17 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->setAlias('doctrine.orm.entity_manager', sprintf('doctrine.orm.%s_entity_manager', $config['default_entity_manager']));
 
+        // BC logic to handle DoctrineBridge < 2.6
+        if (!method_exists($this, 'fixManagersAutoMappings')) {
+            foreach ($config['entity_managers'] as $entityManager) {
+                if ($entityManager['auto_mapping'] && count($config['entity_managers']) > 1) {
+                    throw new \LogicException('You cannot enable "auto_mapping" when several entity managers are defined.');
+                }
+            }
+        } else{
+            $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $container->getParameter('kernel.bundles'));
+        }
+
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
@@ -357,10 +368,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container)
     {
-        if ($entityManager['auto_mapping'] && count($this->entityManagers) > 1) {
-            throw new \LogicException('You cannot enable "auto_mapping" when several entity managers are defined.');
-        }
-
         $ormConfigDef = $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), new DefinitionDecorator('doctrine.orm.configuration'));
 
         $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container);
