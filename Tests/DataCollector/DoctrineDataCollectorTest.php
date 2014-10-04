@@ -16,7 +16,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 
@@ -47,7 +46,7 @@ class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
         $metadatas = array(
             $this->createEntityMetadata(self::FIRST_ENTITY),
             $this->createEntityMetadata(self::SECOND_ENTITY),
-            $this->createEntityMetadata(self::FIRST_ENTITY)
+            $this->createEntityMetadata(self::FIRST_ENTITY),
         );
         $factory->expects($this->once())
             ->method('getLoadedMetadata')

@@ -125,7 +125,7 @@ class DoctrineExtension extends \Twig_Extension
                 $value .= ' [...]';
             }
 
-            $result .= ' ' . $combination[$key] . ' ' . $value;
+            $result .= ' '.$combination[$key].' '.$value;
         }
 
         return trim($result);
@@ -158,11 +158,10 @@ class DoctrineExtension extends \Twig_Extension
         foreach ($combinations as $combination) {
             $combination = array_merge($mandatoryKeywords, $combination);
 
-            $regexp = implode('(.*) ', $combination) . ' (.*)';
-            $regexp = '/^' . $regexp . '/is';
+            $regexp = implode('(.*) ', $combination).' (.*)';
+            $regexp = '/^'.$regexp.'/is';
 
             if (preg_match($regexp, $query, $matches)) {
-
                 $result = $this->shrinkParameters($matches, $combination);
 
                 return $result;
@@ -170,8 +169,8 @@ class DoctrineExtension extends \Twig_Extension
         }
 
         // Try and match the simplest query form that contains only the mandatory keywords
-        $regexp = implode(' (.*)', $mandatoryKeywords) . ' (.*)';
-        $regexp = '/^' . $regexp . '/is';
+        $regexp = implode(' (.*)', $mandatoryKeywords).' (.*)';
+        $regexp = '/^'.$regexp.'/is';
 
         if (preg_match($regexp, $query, $matches)) {
             $result = $this->shrinkParameters($matches, $mandatoryKeywords);
@@ -252,7 +251,7 @@ class DoctrineExtension extends \Twig_Extension
 
         switch (true) {
             case is_string($result):
-                $result = "'" . addslashes($result) . "'";
+                $result = "'".addslashes($result)."'";
                 break;
 
             case is_array($result):
@@ -272,13 +271,13 @@ class DoctrineExtension extends \Twig_Extension
                 break;
 
             case is_bool($result):
-                $result = $result ? '1': '0';
+                $result = $result ? '1' : '0';
                 break;
         }
 
         return $result;
     }
-    
+
     /**
      * Return a query with the parameters replaced
      *
@@ -326,5 +325,4 @@ class DoctrineExtension extends \Twig_Extension
     {
         return 'doctrine_extension';
     }
-
 }

@@ -35,7 +35,7 @@ class Configuration implements ConfigurationInterface
      *
      * @param Boolean $debug Whether to use the debug mode
      */
-    public function  __construct($debug)
+    public function __construct($debug)
     {
         $this->debug = (Boolean) $debug;
     }
@@ -93,7 +93,7 @@ class Configuration implements ConfigurationInterface
                         ->prototype('array')
                             ->beforeNormalization()
                                 ->ifString()
-                                ->then(function($v) { return array('class' => $v); })
+                                ->then(function ($v) { return array('class' => $v); })
                             ->end()
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
@@ -207,7 +207,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('servicename')
                     ->info(
-                        'Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter ' .
+                        'Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter '.
                         'for Oracle depending on the service parameter.'
                     )
                 ->end()
@@ -219,7 +219,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('sslmode')
                     ->info(
-                        'Determines whether or with what priority a SSL TCP/IP connection will be negotiated with ' .
+                        'Determines whether or with what priority a SSL TCP/IP connection will be negotiated with '.
                         'the server for PostgreSQL.'
                     )
                 ->end()
@@ -227,8 +227,8 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('MultipleActiveResultSets')->info('Configuring MultipleActiveResultSets for the pdo_sqlsrv driver')->end()
             ->end()
             ->beforeNormalization()
-                ->ifTrue(function($v) {return !isset($v['sessionMode']) && isset($v['session_mode']);})
-                ->then(function($v) {
+                ->ifTrue(function ($v) {return !isset($v['sessionMode']) && isset($v['session_mode']);})
+                ->then(function ($v) {
                     $v['sessionMode'] = $v['session_mode'];
                     unset($v['session_mode']);
 
@@ -236,8 +236,8 @@ class Configuration implements ConfigurationInterface
                 })
             ->end()
             ->beforeNormalization()
-                ->ifTrue(function($v) {return !isset($v['MultipleActiveResultSets']) && isset($v['multiple_active_result_sets']);})
-                ->then(function($v) {
+                ->ifTrue(function ($v) {return !isset($v['MultipleActiveResultSets']) && isset($v['multiple_active_result_sets']);})
+                ->then(function ($v) {
                     $v['MultipleActiveResultSets'] = $v['multiple_active_result_sets'];
                     unset($v['multiple_active_result_sets']);
 
@@ -286,25 +286,26 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('auto_generate_proxy_classes')->defaultValue(false)
                             ->info('Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL"')
                             ->validate()
-                            ->ifTrue(function($v){
-                                if (is_int($v) && in_array(intval($v), $this->getAutoGenerateModesValues()/*array(0, 1, 2, 3)*/)){
-                                    return false;
-                                }
-                                if (is_bool($v)){
-                                    return false;
-                                }
-                                if (is_string($v)){
-                                    if (in_array(strtoupper($v), $this->getAutoGenerateModesNames()/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'EVAL')*/)){
+                                ->ifTrue(function ($v) {
+                                    if (is_int($v) && in_array(intval($v), $this->getAutoGenerateModesValues()/*array(0, 1, 2, 3)*/)) {
                                         return false;
                                     }
-                                }
-                                return true;
-                            })
+                                    if (is_bool($v)) {
+                                        return false;
+                                    }
+                                    if (is_string($v)) {
+                                        if (in_array(strtoupper($v), $this->getAutoGenerateModesNames()/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'EVAL')*/)) {
+                                            return false;
+                                        }
+                                    }
+
+                                    return true;
+                                })
                                 ->thenInvalid('Invalid auto generate mode value %s')
                             ->end()
                             ->validate()
-                            ->ifString()
-                                ->then(function($v){
+                                ->ifString()
+                                ->then(function ($v) {
                                     return constant('Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_'.strtoupper($v));
                                 })
                             ->end()
@@ -350,20 +351,16 @@ class Configuration implements ConfigurationInterface
     {
         $builder    = new TreeBuilder();
         $node       = $builder->root('entity_listeners');
-        $normalizer = function($mappings) {
-
+        $normalizer = function ($mappings) {
             $entities = array();
 
             foreach ($mappings as $entityClass => $mapping) {
-
                 $listeners = array();
 
                 foreach ($mapping as $listenerClass => $listenerEvent) {
-
                     $events = array();
 
                     foreach ($listenerEvent as $eventType => $eventMapping) {
-
                         if ($eventMapping === null) {
                             $eventMapping = array(null);
                         }
@@ -512,7 +509,7 @@ class Configuration implements ConfigurationInterface
                         ->prototype('array')
                             ->beforeNormalization()
                                 ->ifString()
-                                ->then(function($v) { return array('type' => $v); })
+                                ->then(function ($v) { return array('type' => $v); })
                             ->end()
                             ->treatNullLike(array())
                             ->treatFalseLike(array('mapping' => false))
@@ -555,14 +552,14 @@ class Configuration implements ConfigurationInterface
                         ->prototype('array')
                             ->beforeNormalization()
                                 ->ifString()
-                                ->then(function($v) { return array('class' => $v); })
+                                ->then(function ($v) { return array('class' => $v); })
                             ->end()
                             ->beforeNormalization()
                                 // The content of the XML node is returned as the "value" key so we need to rename it
-                                ->ifTrue(function($v) {
+                                ->ifTrue(function ($v) {
                                     return is_array($v) && isset($v['value']);
                                 })
-                                ->then(function($v) {
+                                ->then(function ($v) {
                                     $v['class'] = $v['value'];
                                     unset($v['value']);
 
@@ -603,7 +600,7 @@ class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet()
             ->beforeNormalization()
                 ->ifString()
-                ->then(function($v) { return array('type' => $v); })
+                ->then(function ($v) { return array('type' => $v); })
             ->end()
             ->children()
                 ->scalarNode('type')->defaultValue('array')->end()
@@ -625,21 +622,25 @@ class Configuration implements ConfigurationInterface
      *
      * @return array
      */
-    private function getAutoGenerateModes(){
-        $abstractProxyFactoryClass = 'Doctrine\Common\Proxy\AbstractProxyFactory';
+    private function getAutoGenerateModes()
+    {
         $constPrefix = 'AUTOGENERATE_';
         $prefixLen = strlen($constPrefix);
-        $refClass = new \ReflectionClass($abstractProxyFactoryClass);
+        $refClass = new \ReflectionClass('Doctrine\Common\Proxy\AbstractProxyFactory');
         $constsArray = $refClass->getConstants();
-        foreach($constsArray as $key => $value){
-            if (strpos($key, $constPrefix) === 0){
+        $namesArray = array();
+        $valuesArray = array();
+
+        foreach ($constsArray as $key => $value) {
+            if (strpos($key, $constPrefix) === 0) {
                 $namesArray[] = substr($key, $prefixLen);
-                $valuesArray[] = (int)$value;
+                $valuesArray[] = (int) $value;
             }
         }
+
         return array(
-            'names' => (array)$namesArray,
-            'values' => (array)$valuesArray
+            'names' => $namesArray,
+            'values' => $valuesArray,
         );
     }
 
@@ -648,11 +649,10 @@ class Configuration implements ConfigurationInterface
      *
      * @return array
      */
-    private function getAutoGenerateModesNames(){
+    private function getAutoGenerateModesNames()
+    {
         $array = $this->getAutoGenerateModes();
-        if(!isset($array['names'])){
-            return false;
-        }
+
         return $array['names'];
     }
 
@@ -661,11 +661,10 @@ class Configuration implements ConfigurationInterface
      *
      * @return array
      */
-    private function getAutoGenerateModesValues(){
+    private function getAutoGenerateModesValues()
+    {
         $array = $this->getAutoGenerateModes();
-        if(!isset($array['values'])){
-            return false;
-        }
+
         return $array['values'];
     }
 }

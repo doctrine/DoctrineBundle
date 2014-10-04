@@ -68,9 +68,8 @@ class DoctrineBundle extends Bundle
             $proxyGenerator = null;
 
             if ($this->container->getParameter('doctrine.orm.auto_generate_proxy_classes')) {
-                // See https://github.com/symfony/symfony/pull/3419 for usage of
-                // references
-                $container =& $this->container;
+                // See https://github.com/symfony/symfony/pull/3419 for usage of references
+                $container = &$this->container;
 
                 $proxyGenerator = function ($proxyDir, $proxyNamespace, $class) use (&$container) {
                     $originalClassName = ClassUtils::getRealClass($class);

@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -271,7 +272,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
             unset($options['slaves']);
         }
 
-
         if (!empty($options['shards'])) {
             $nonRewrittenKeys = array(
                 'driver' => true, 'driverOptions' => true, 'driverClass' => true,
@@ -339,7 +339,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     throw new \LogicException('You cannot enable "auto_mapping" when several entity managers are defined.');
                 }
             }
-        } else{
+        } else {
             $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $container->getParameter('kernel.bundles'));
         }
 
@@ -352,7 +352,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $def = $container->findDefinition('doctrine.orm.listeners.resolve_target_entity');
             foreach ($config['resolve_target_entities'] as $name => $implementation) {
                 $def->addMethodCall('addResolveTargetEntity', array(
-                    $name, $implementation, array()
+                    $name, $implementation, array(),
                 ));
             }
 
@@ -391,13 +391,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setDefaultRepositoryClassName' => $entityManager['default_repository_class'],
         );
         // check for version to keep BC
-        if (version_compare(\Doctrine\ORM\Version::VERSION, "2.3.0-DEV") >= 0) {
+        if (version_compare(Version::VERSION, "2.3.0-DEV") >= 0) {
             $methods = array_merge($methods, array(
                 'setNamingStrategy'       => new Reference($entityManager['naming_strategy']),
             ));
         }
 
-        if (version_compare(\Doctrine\ORM\Version::VERSION, "2.4.0-DEV") >= 0) {
+        if (version_compare(Version::VERSION, "2.4.0-DEV") >= 0) {
             $methods = array_merge($methods, array(
                 'setEntityListenerResolver' => new Reference(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name'])),
             ));
@@ -444,7 +444,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         $managerConfiguratorName = sprintf('doctrine.orm.%s_manager_configurator', $entityManager['name']);
-        $managerConfiguratorDef = $container
+        $container
             ->setDefinition($managerConfiguratorName, new DefinitionDecorator('doctrine.orm.manager_configurator.abstract'))
             ->replaceArgument(0, $enabledFilters)
             ->replaceArgument(1, $filtersParameters)
@@ -458,7 +458,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ->setDefinition(sprintf('doctrine.orm.%s_entity_manager', $entityManager['name']), new DefinitionDecorator('doctrine.orm.entity_manager.abstract'))
             ->setArguments(array(
                 new Reference(sprintf('doctrine.dbal.%s_connection', $entityManager['connection'])),
-                new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager['name']))
+                new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager['name'])),
             ))
             ->setConfigurator(array(new Reference($managerConfiguratorName), 'configure'))
         ;
@@ -469,8 +469,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         );
 
         if (isset($entityManager['entity_listeners'])) {
-
-            if (version_compare(\Doctrine\ORM\Version::VERSION, "2.5.0-DEV") < 0) {
+            if (version_compare(Version::VERSION, "2.5.0-DEV") < 0) {
                 throw new InvalidArgumentException('Entity listeners configuration requires doctrine-orm 2.5.0 or newer');
             }
 
@@ -481,12 +480,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             foreach ($entities as $entityListenerClass => $entity) {
                 foreach ($entity['listeners'] as $listenerClass => $listener) {
                     foreach ($listener['events'] as $listenerEvent) {
-
                         $listenerEventName = $listenerEvent['type'];
                         $listenerMethod    = $listenerEvent['method'];
 
                         $listenerDef->addMethodCall('addEntityListener', array(
-                            $entityListenerClass, $listenerClass, $listenerEventName, $listenerMethod
+                            $entityListenerClass, $listenerClass, $listenerEventName, $listenerMethod,
                         ));
                     }
                 }
@@ -571,7 +569,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function loadOrmSecondLevelCache(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container)
     {
-        if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0) {
+        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
             throw new \InvalidArgumentException('Second-level cache requires doctrine-orm 2.5.0 or newer');
         }
 
@@ -597,7 +595,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (isset($entityManager['second_level_cache']['regions'])) {
             foreach ($entityManager['second_level_cache']['regions'] as $name => $region) {
-
                 $regionRef  = null;
                 $regionType = $region['type'];
 
@@ -700,7 +697,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
             $container->setAlias($aliasId, new Alias($serviceId, false));
 
-            return;
+            return $aliasId;
         }
 
         return $this->adapter->loadCacheDriver($driverName, $entityManagerName, $driverMap, $container);
@@ -720,9 +717,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
     }
 
     /**
-     * @param array                                                     $objectManager
-     * @param \Symfony\Component\DependencyInjection\ContainerBuilder   $container
-     * @param string                                                    $cacheName
+     * @param array            $objectManager
+     * @param ContainerBuilder $container
+     * @param string           $cacheName
      */
     public function loadObjectManagerCacheDriver(array $objectManager, ContainerBuilder $container, $cacheName)
     {

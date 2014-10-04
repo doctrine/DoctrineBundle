@@ -137,7 +137,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             array(
                 'user' => 'slave_user', 'password' => 'slave_s3cr3t', 'port' => null, 'dbname' => 'slave_db',
-                'host' => 'localhost', 'unix_socket' => '/path/to/mysqld_slave.sock'
+                'host' => 'localhost', 'unix_socket' => '/path/to/mysqld_slave.sock',
             ),
             $param['slaves']['slave1']
         );
@@ -204,7 +204,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('create', $definition->getFactoryMethod());
 
         $this->assertDICConstructorArguments($definition, array(
-            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration')
+            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
         ));
     }
 
@@ -242,7 +242,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('create', $definition->getFactoryMethod());
 
         $this->assertDICConstructorArguments($definition, array(
-            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration')
+            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
         ));
 
         $configDef = $container->getDefinition('doctrine.orm.default_configuration');
@@ -367,7 +367,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $definition = $container->getDefinition('doctrine_cache.services.doctrine.orm.default_metadata_cache.connection');
         $this->assertDICDefinitionClass($definition, '%doctrine_cache.memcache.connection.class%');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addServer', array(
-            'localhost', '11211'
+            'localhost', '11211',
         ));
     }
 
@@ -403,33 +403,33 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', array(
             new Reference('doctrine.orm.default_annotation_metadata_driver'),
-            'Fixtures\Bundles\AnnotationsBundle\Entity'
+            'Fixtures\Bundles\AnnotationsBundle\Entity',
         ));
 
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', array(
             new Reference('doctrine.orm.default_yml_metadata_driver'),
-            'Fixtures\Bundles\YamlBundle\Entity'
+            'Fixtures\Bundles\YamlBundle\Entity',
         ));
 
         $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', array(
             new Reference('doctrine.orm.default_xml_metadata_driver'),
-            'Fixtures\Bundles\XmlBundle'
+            'Fixtures\Bundles\XmlBundle',
         ));
 
         $annDef = $container->getDefinition('doctrine.orm.default_annotation_metadata_driver');
         $this->assertDICConstructorArguments($annDef, array(
             new Reference('doctrine.orm.metadata.annotation_reader'),
-            array(__DIR__ .DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'AnnotationsBundle'.DIRECTORY_SEPARATOR.'Entity')
+            array(__DIR__.DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'AnnotationsBundle'.DIRECTORY_SEPARATOR.'Entity'),
         ));
 
         $ymlDef = $container->getDefinition('doctrine.orm.default_yml_metadata_driver');
         $this->assertDICConstructorArguments($ymlDef, array(
-            array(__DIR__ .DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'YamlBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'doctrine' => 'Fixtures\Bundles\YamlBundle\Entity')
+            array(__DIR__.DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'YamlBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'doctrine' => 'Fixtures\Bundles\YamlBundle\Entity'),
         ));
 
         $xmlDef = $container->getDefinition('doctrine.orm.default_xml_metadata_driver');
         $this->assertDICConstructorArguments($xmlDef, array(
-            array(__DIR__ .DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'XmlBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'doctrine' => 'Fixtures\Bundles\XmlBundle')
+            array(__DIR__.DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'XmlBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'doctrine' => 'Fixtures\Bundles\XmlBundle'),
         ));
     }
 
@@ -452,33 +452,33 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertDICDefinitionMethodCallAt(0, $def1, 'addDriver', array(
             new Reference('doctrine.orm.em1_annotation_metadata_driver'),
-            'Fixtures\Bundles\AnnotationsBundle\Entity'
+            'Fixtures\Bundles\AnnotationsBundle\Entity',
         ));
 
         $this->assertDICDefinitionMethodCallAt(0, $def2, 'addDriver', array(
             new Reference('doctrine.orm.em2_yml_metadata_driver'),
-            'Fixtures\Bundles\YamlBundle\Entity'
+            'Fixtures\Bundles\YamlBundle\Entity',
         ));
 
         $this->assertDICDefinitionMethodCallAt(1, $def2, 'addDriver', array(
             new Reference('doctrine.orm.em2_xml_metadata_driver'),
-            'Fixtures\Bundles\XmlBundle'
+            'Fixtures\Bundles\XmlBundle',
         ));
 
         $annDef = $container->getDefinition('doctrine.orm.em1_annotation_metadata_driver');
         $this->assertDICConstructorArguments($annDef, array(
             new Reference('doctrine.orm.metadata.annotation_reader'),
-            array(__DIR__ .DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'AnnotationsBundle'.DIRECTORY_SEPARATOR.'Entity')
+            array(__DIR__.DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'AnnotationsBundle'.DIRECTORY_SEPARATOR.'Entity'),
         ));
 
         $ymlDef = $container->getDefinition('doctrine.orm.em2_yml_metadata_driver');
         $this->assertDICConstructorArguments($ymlDef, array(
-            array(__DIR__ .DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'YamlBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'doctrine' => 'Fixtures\Bundles\YamlBundle\Entity')
+            array(__DIR__.DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'YamlBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'doctrine' => 'Fixtures\Bundles\YamlBundle\Entity'),
         ));
 
         $xmlDef = $container->getDefinition('doctrine.orm.em2_xml_metadata_driver');
         $this->assertDICConstructorArguments($xmlDef, array(
-            array(__DIR__ .DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'XmlBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'doctrine' => 'Fixtures\Bundles\XmlBundle')
+            array(__DIR__.DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'XmlBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'doctrine' => 'Fixtures\Bundles\XmlBundle'),
         ));
     }
 
@@ -639,7 +639,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $args = array(
             array('soft_delete', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'),
-            array('myFilter', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter')
+            array('myFilter', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter'),
         );
         $this->assertDICDefinitionMethodCallCount($definition, 'addFilter', $args, 2);
 
@@ -691,7 +691,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             'ExternalBundles\Entities\FooEntity',
             'MyBundles\Listeners\FooEntityListener',
             'prePersist',
-            null
+            null,
         )));
 
         $this->assertEquals($methodCalls[1], array('addEntityListener', array (
@@ -712,7 +712,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             'ExternalBundles\Entities\BarEntity',
             'MyBundles\Listeners\BarEntityListener',
             'prePersist',
-            'prePersist'
+            'prePersist',
         )));
 
         $this->assertEquals($methodCalls[4], array('addEntityListener', array (
@@ -812,7 +812,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             'kernel.bundles'     => $map,
             'kernel.cache_dir'   => sys_get_temp_dir(),
             'kernel.environment' => 'test',
-            'kernel.root_dir'    => __DIR__.'/../../' // src dir
+            'kernel.root_dir'    => __DIR__.'/../../', // src dir
         )));
     }
 

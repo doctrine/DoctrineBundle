@@ -36,7 +36,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
             'kernel.bundles'     => array('YamlBundle' => 'Fixtures\Bundles\YamlBundle\YamlBundle'),
             'kernel.cache_dir'   => sys_get_temp_dir(),
             'kernel.environment' => 'test',
-            'kernel.root_dir'    => __DIR__.'/../../../../' // src dir
+            'kernel.root_dir'    => __DIR__.'/../../../../', // src dir
         )));
         $container->set('annotation_reader', new AnnotationReader());
         $loader = new DoctrineExtension();
@@ -48,7 +48,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
                         'driver' => 'pdo_mysql',
                         'charset' => 'UTF8',
                         'platform-service' => 'my.platform',
-                    )
+                    ),
                 ),
                 'default_connection' => 'default',
                 'types' => array(
@@ -58,16 +58,17 @@ class TestCase extends \PHPUnit_Framework_TestCase
                 'default_entity_manager' => 'default',
                 'entity_managers' => array (
                     'default' => array(
-                    'mappings' => array('YamlBundle' => array(
-                        'type' => 'yml',
-                        'dir' => __DIR__.'/DependencyInjection/Fixtures/Bundles/YamlBundle/Resources/config/doctrine',
-                        'prefix' => 'Fixtures\Bundles\YamlBundle\Entity',
-                    )
-                ))),
+                        'mappings' => array('YamlBundle' => array(
+                            'type' => 'yml',
+                            'dir' => __DIR__.'/DependencyInjection/Fixtures/Bundles/YamlBundle/Resources/config/doctrine',
+                            'prefix' => 'Fixtures\Bundles\YamlBundle\Entity',
+                        )),
+                    ),
+                ),
                 'resolve_target_entities' => array(
                     'Symfony\Component\Security\Core\User\UserInterface' => 'stdClass',
                 ),
-            )
+            ),
         )), $container);
 
         $container->setDefinition('my.platform', new \Symfony\Component\DependencyInjection\Definition('Doctrine\DBAL\Platforms\MySqlPlatform'));

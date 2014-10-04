@@ -36,7 +36,6 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         // doctrine.dbal.default_connection
         $this->assertEquals('%doctrine.default_connection%', $container->getDefinition('doctrine')->getArgument(3), '->load() overrides existing configuration options');
         $this->assertEquals('foo', $container->getParameter('doctrine.default_connection'), '->load() overrides existing configuration options');
-
     }
 
     public function getAutomappingConfigurations()
@@ -46,43 +45,43 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                 array(
                     'em1' => array(
                         'mappings' => array(
-                            'YamlBundle' => null
-                        )
+                            'YamlBundle' => null,
+                        ),
                     ),
                     'em2' => array(
                         'mappings' => array(
-                            'XmlBundle' => null
-                        )
-                    )
-                )
+                            'XmlBundle' => null,
+                        ),
+                    ),
+                ),
             ),
             array(
                 array(
                     'em1' => array(
-                        'auto_mapping' => true
+                        'auto_mapping' => true,
                     ),
                     'em2' => array(
                         'mappings' => array(
-                            'XmlBundle' => null
-                        )
-                    )
-                )
+                            'XmlBundle' => null,
+                        ),
+                    ),
+                ),
             ),
             array(
                 array(
                     'em1' => array(
                         'auto_mapping' => true,
                         'mappings' => array(
-                            'YamlBundle' => null
-                        )
+                            'YamlBundle' => null,
+                        ),
                     ),
                     'em2' => array(
                         'mappings' => array(
-                            'XmlBundle' => null
-                        )
-                    )
-                )
-            )
+                            'XmlBundle' => null,
+                        ),
+                    ),
+                ),
+            ),
         );
     }
 
@@ -91,32 +90,31 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
      */
     public function testAutomapping(array $entityManagers)
     {
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
-        if (!method_exists($loader, 'fixManagersAutoMappings')) {
+        if (!method_exists($extension, 'fixManagersAutoMappings')) {
             $this->markTestSkipped('Auto mapping with multiple managers available with Symfony ~2.6');
-            return;
         }
 
         $container = $this->getContainer(array(
             'YamlBundle',
-            'XmlBundle'
+            'XmlBundle',
         ));
 
-        $loader->load(
+        $extension->load(
             array(
                 array(
                     'dbal' => array(
                         'default_connection' => 'cn1',
                         'connections' => array(
                             'cn1' => array(),
-                            'cn2' => array()
-                        )
+                            'cn2' => array(),
+                        ),
                     ),
                     'orm' => array(
-                        'entity_managers' => $entityManagers
-                    )
-                )
+                        'entity_managers' => $entityManagers,
+                    ),
+                ),
             ), $container);
 
         $configEm1 = $container->getDefinition('doctrine.orm.em1_configuration');
@@ -127,20 +125,24 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                 'setEntityNamespaces',
                 array(
                     array(
-                        'YamlBundle' => 'Fixtures\Bundles\YamlBundle\Entity'
-                    )
-                )
-            ), $configEm1->getMethodCalls());
+                        'YamlBundle' => 'Fixtures\Bundles\YamlBundle\Entity',
+                    ),
+                ),
+            ),
+            $configEm1->getMethodCalls()
+        );
 
         $this->assertContains(
             array(
                 'setEntityNamespaces',
                 array(
                     array(
-                        'XmlBundle' => 'Fixtures\Bundles\XmlBundle\Entity'
-                    )
-                )
-            ), $configEm2->getMethodCalls());
+                        'XmlBundle' => 'Fixtures\Bundles\XmlBundle\Entity',
+                    ),
+                ),
+            ),
+            $configEm2->getMethodCalls()
+        );
     }
 
     public function testDbalLoad()
@@ -195,8 +197,8 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             'entity_managers' => array(
                 'default' => array(
                     'mappings' => array('YamlBundle' => array()),
-                    )
-                )
+                    ),
+                ),
         );
 
         $container = $this->getContainer();
@@ -264,7 +266,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('create', $definition->getFactoryMethod());
 
         $this->assertDICConstructorArguments($definition, array(
-            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration')
+            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
         ));
     }
 
@@ -310,7 +312,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', array(
             new Reference('doctrine.orm.default_yml_metadata_driver'),
-            'Fixtures\Bundles\YamlBundle\Entity'
+            'Fixtures\Bundles\YamlBundle\Entity',
         ));
     }
 
@@ -326,7 +328,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', array(
             new Reference('doctrine.orm.default_xml_metadata_driver'),
-            'Fixtures\Bundles\XmlBundle\Entity'
+            'Fixtures\Bundles\XmlBundle\Entity',
         ));
     }
 
@@ -342,7 +344,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', array(
             new Reference('doctrine.orm.default_annotation_metadata_driver'),
-            'Fixtures\Bundles\AnnotationsBundle\Entity'
+            'Fixtures\Bundles\AnnotationsBundle\Entity',
         ));
     }
 
@@ -356,25 +358,27 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             'auto_generate_proxy_classes' => true,
             'default_entity_manager' => 'default',
             'entity_managers' => array(
-                'default' => array('mappings' => array('AnnotationsBundle' => array()))
-        ));
+                'default' => array('mappings' => array('AnnotationsBundle' => array())),
+            ),
+        );
         $config2 = $this->getConnectionConfig();
         $config2['orm'] = array(
             'auto_generate_proxy_classes' => false,
             'default_entity_manager' => 'default',
             'entity_managers' => array(
-                'default' => array('mappings' => array('XmlBundle' => array()))
-        ));
+                'default' => array('mappings' => array('XmlBundle' => array())),
+            ),
+        );
         $loader->load(array($config1, $config2), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', array(
             new Reference('doctrine.orm.default_annotation_metadata_driver'),
-            'Fixtures\Bundles\AnnotationsBundle\Entity'
+            'Fixtures\Bundles\AnnotationsBundle\Entity',
         ));
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', array(
             new Reference('doctrine.orm.default_xml_metadata_driver'),
-            'Fixtures\Bundles\XmlBundle\Entity'
+            'Fixtures\Bundles\XmlBundle\Entity',
         ));
 
         $configDef = $container->getDefinition('doctrine.orm.default_configuration');
@@ -419,7 +423,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             'kernel.bundles'     => $map,
             'kernel.cache_dir'   => sys_get_temp_dir(),
             'kernel.environment' => 'test',
-            'kernel.root_dir'    => __DIR__.'/../../' // src dir
+            'kernel.root_dir'    => __DIR__.'/../../', // src dir
         )));
     }
 
@@ -467,7 +471,6 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             $this->fail("Method '".$methodName."' is expected to be called once, definition does not contain a call though.");
         }
     }
-
 
     private function compileContainer(ContainerBuilder $container)
     {

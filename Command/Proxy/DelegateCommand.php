@@ -62,7 +62,8 @@ abstract class DelegateCommand extends Command
 
     /**
      * @param string $entityManagerName
-     * @return string
+     *
+     * @return Command
      */
     protected function wrapCommand($entityManagerName)
     {
