@@ -15,6 +15,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -250,6 +251,27 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_result_cache'));
         $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
+    }
+
+    public function testAutoGenerateProxyClasses()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = array(
+            'proxy_namespace' => 'MyProxies',
+            'auto_generate_proxy_classes' => 'eval',
+            'default_entity_manager' => 'default',
+            'entity_managers' => array(
+                'default' => array(
+                    'mappings' => array('YamlBundle' => array()),
+                ),
+            ),
+        );
+
+        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => $config)), $container);
+
+        $this->assertEquals(AbstractProxyFactory::AUTOGENERATE_EVAL, $container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
     }
 
     public function testSingleEntityManagerConfiguration()

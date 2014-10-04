@@ -254,6 +254,8 @@ class Configuration implements ConfigurationInterface
      */
     private function addOrmSection(ArrayNodeDefinition $node)
     {
+        $generationModes = $this->getAutoGenerateModes();
+
         $node
             ->children()
                 ->arrayNode('orm')
@@ -286,15 +288,15 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('auto_generate_proxy_classes')->defaultValue(false)
                             ->info('Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL"')
                             ->validate()
-                                ->ifTrue(function ($v) {
-                                    if (is_int($v) && in_array(intval($v), $this->getAutoGenerateModesValues()/*array(0, 1, 2, 3)*/)) {
+                                ->ifTrue(function ($v) use ($generationModes) {
+                                    if (is_int($v) && in_array($v, $generationModes['values']/*array(0, 1, 2, 3)*/)) {
                                         return false;
                                     }
                                     if (is_bool($v)) {
                                         return false;
                                     }
                                     if (is_string($v)) {
-                                        if (in_array(strtoupper($v), $this->getAutoGenerateModesNames()/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'EVAL')*/)) {
+                                        if (in_array(strtoupper($v), $generationModes['names']/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'EVAL')*/)) {
                                             return false;
                                         }
                                     }
@@ -642,29 +644,5 @@ class Configuration implements ConfigurationInterface
             'names' => $namesArray,
             'values' => $valuesArray,
         );
-    }
-
-    /**
-     * Find proxy auto generate modes for their names
-     *
-     * @return array
-     */
-    private function getAutoGenerateModesNames()
-    {
-        $array = $this->getAutoGenerateModes();
-
-        return $array['names'];
-    }
-
-    /**
-     * Find proxy auto generate modes for their int values
-     *
-     * @return array
-     */
-    private function getAutoGenerateModesValues()
-    {
-        $array = $this->getAutoGenerateModes();
-
-        return $array['values'];
     }
 }
