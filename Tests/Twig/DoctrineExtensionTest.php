@@ -20,10 +20,10 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testReplaceQueryParametersWithPostgresCasting()
     {
         $extension = new DoctrineExtension();
-        $query = "a=? OR (1)::string OR b=?";
+        $query = 'a=? OR (1)::string OR b=?';
         $parameters = array(1, 2);
 
         $result = $extension->replaceQueryParameters($query, $parameters, false);
-        $this->assertEquals("a=1 OR (1)::string OR b=2", $result);
+        $this->assertEquals('a=1 OR (1)::string OR b=2', $result);
     }
 }

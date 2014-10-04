@@ -27,11 +27,6 @@ class ManagerConfigurator
     private $enabledFilters = array();
     private $filtersParameters = array();
 
-    /**
-     * Construct.
-     *
-     * @param array $enabledFilters
-     */
     public function __construct(array $enabledFilters, array $filtersParameters)
     {
         $this->enabledFilters = $enabledFilters;
@@ -49,11 +44,9 @@ class ManagerConfigurator
     }
 
     /**
-     * Enable filters for an given entity manager
+     * Enables filters for a given entity manager
      *
      * @param EntityManager $entityManager
-     *
-     * @return null
      */
     private function enableFilters(EntityManager $entityManager)
     {
@@ -71,12 +64,10 @@ class ManagerConfigurator
     }
 
     /**
-     * Set defaults parameters for a given filter
+     * Sets default parameters for a given filter
      *
      * @param string    $name   Filter name
      * @param SQLFilter $filter Filter object
-     *
-     * @return null
      */
     private function setFilterParameters($name, SQLFilter $filter)
     {

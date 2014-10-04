@@ -19,7 +19,7 @@ class XMLSchemaTest extends \PHPUnit_Framework_TestCase
     public static function dataValidateSchemaFiles()
     {
         $schemaFiles = array();
-        $di = new \DirectoryIterator(__DIR__."/Fixtures/config/xml");
+        $di = new \DirectoryIterator(__DIR__.'/Fixtures/config/xml');
         foreach ($di as $element) {
             if ($element->isFile() && substr($element->getFilename(), -4) === ".xml") {
                 $schemaFiles[] = array($element->getPathname());
@@ -38,7 +38,7 @@ class XMLSchemaTest extends \PHPUnit_Framework_TestCase
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->load($file);
 
-        $xmlns = "http://symfony.com/schema/dic/doctrine";
+        $xmlns = 'http://symfony.com/schema/dic/doctrine';
 
         $dbalElements = $dom->getElementsByTagNameNS($xmlns, 'dbal');
         if ($dbalElements->length) {
@@ -48,8 +48,8 @@ class XMLSchemaTest extends \PHPUnit_Framework_TestCase
             $configNode->appendChild($dbalNode);
             $dbalDom->appendChild($configNode);
 
-            $ret = $dbalDom->schemaValidate(__DIR__."/../../Resources/config/schema/doctrine-1.0.xsd");
-            $this->assertTrue($ret, "DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.");
+            $ret = $dbalDom->schemaValidate(__DIR__.'/../../Resources/config/schema/doctrine-1.0.xsd');
+            $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
             $found = true;
         }
 
@@ -61,11 +61,11 @@ class XMLSchemaTest extends \PHPUnit_Framework_TestCase
             $configNode->appendChild($ormNode);
             $ormDom->appendChild($configNode);
 
-            $ret = $ormDom->schemaValidate(__DIR__."/../../Resources/config/schema/doctrine-1.0.xsd");
-            $this->assertTrue($ret, "DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.");
+            $ret = $ormDom->schemaValidate(__DIR__.'/../../Resources/config/schema/doctrine-1.0.xsd');
+            $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
             $found = true;
         }
 
-        $this->assertTrue($found, "Neither <doctrine:orm> nor <doctrine:dbal> elements found in given XML. Are namespaces configured correctly?");
+        $this->assertTrue($found, 'Neither <doctrine:orm> nor <doctrine:dbal> elements found in given XML. Are namespaces configured correctly?');
     }
 }

@@ -149,9 +149,9 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testDbalLoad()
     {
         $container = $this->getContainer();
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
-        $loader->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo')))), array(), array('dbal' => array('default_connection' => 'foo')), array()), $container);
+        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo')))), array(), array('dbal' => array('default_connection' => 'foo')), array()), $container);
 
         $config = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
@@ -162,9 +162,9 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testDependencyInjectionConfigurationDefaults()
     {
         $container = $this->getContainer();
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
-        $loader->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array())))))), $container);
+        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array())))))), $container);
 
         $this->assertFalse($container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
         $this->assertEquals('Doctrine\ORM\Configuration', $container->getParameter('doctrine.orm.configuration.class'));
@@ -203,7 +203,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         );
 
         $container = $this->getContainer();
-        $loader->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => $config)), $container);
+        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => $config)), $container);
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.dbal.default_connection');
@@ -277,9 +277,9 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testSingleEntityManagerConfiguration()
     {
         $container = $this->getContainer();
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
-        $loader->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array())))))), $container);
+        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array())))))), $container);
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
@@ -295,11 +295,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testBundleEntityAliases()
     {
         $container = $this->getContainer();
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
         $config = $this->getConnectionConfig();
         $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array()))));
-        $loader->load(array($config), $container);
+        $extension->load(array($config), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityNamespaces',
@@ -310,11 +310,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testOverwriteEntityAliases()
     {
         $container = $this->getContainer();
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
         $config = $this->getConnectionConfig();
         $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array('alias' => 'yml')))));
-        $loader->load(array($config), $container);
+        $extension->load(array($config), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityNamespaces',
@@ -325,11 +325,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testYamlBundleMappingDetection()
     {
         $container = $this->getContainer('YamlBundle');
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
         $config = $this->getConnectionConfig();
         $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array()))));
-        $loader->load(array($config), $container);
+        $extension->load(array($config), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', array(
@@ -341,11 +341,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testXmlBundleMappingDetection()
     {
         $container = $this->getContainer('XmlBundle');
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
         $config = $this->getConnectionConfig();
         $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('XmlBundle' => array()))));
-        $loader->load(array($config), $container);
+        $extension->load(array($config), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', array(
@@ -357,11 +357,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testAnnotationsBundleMappingDetection()
     {
         $container = $this->getContainer('AnnotationsBundle');
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
         $config = $this->getConnectionConfig();
         $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('AnnotationsBundle' => array()))));
-        $loader->load(array($config), $container);
+        $extension->load(array($config), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', array(
@@ -373,7 +373,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testOrmMergeConfigs()
     {
         $container = $this->getContainer(array('XmlBundle', 'AnnotationsBundle'));
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
         $config1 = $this->getConnectionConfig();
         $config1['orm'] = array(
@@ -391,7 +391,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                 'default' => array('mappings' => array('XmlBundle' => array())),
             ),
         );
-        $loader->load(array($config1, $config2), $container);
+        $extension->load(array($config1, $config2), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', array(
@@ -408,7 +408,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $calls = $configDef->getMethodCalls();
         foreach ($calls as $call) {
-            if ($call[0] == 'setAutoGenerateProxyClasses') {
+            if ($call[0] === 'setAutoGenerateProxyClasses') {
                 $this->assertFalse($container->getParameterBag()->resolveValue($call[1][0]));
                 break;
             }
@@ -418,11 +418,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testAnnotationsBundleMappingDetectionWithVendorNamespace()
     {
         $container = $this->getContainer('AnnotationsBundle', 'Vendor');
-        $loader = new DoctrineExtension();
+        $extension = new DoctrineExtension();
 
         $config = $this->getConnectionConfig();
         $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('AnnotationsBundle' => array()))));
-        $loader->load(array($config), $container);
+        $extension->load(array($config), $container);
 
         $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
         $this->assertEquals('doctrine.orm.default_annotation_metadata_driver', (string) $calls[0][1][0]);
@@ -449,7 +449,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         )));
     }
 
-    private function assertDICConstructorArguments(Definition $definition, $args)
+    private function assertDICConstructorArguments(Definition $definition, array $args)
     {
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '".$definition->getClass()."' don't match.");
     }
@@ -471,14 +471,14 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
      *
      * @param Definition $definition
      * @param string     $methodName
-     * @param array      $params
+     * @param array|null $params
      */
     private function assertDICDefinitionMethodCallOnce(Definition $definition, $methodName, array $params = null)
     {
         $calls = $definition->getMethodCalls();
         $called = false;
         foreach ($calls as $call) {
-            if ($call[0] == $methodName) {
+            if ($call[0] === $methodName) {
                 if ($called) {
                     $this->fail("Method '".$methodName."' is expected to be called only once, a second call was registered though.");
                 } else {

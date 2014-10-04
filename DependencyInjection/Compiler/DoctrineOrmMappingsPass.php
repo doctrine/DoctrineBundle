@@ -66,6 +66,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                    enable the mapping. Set to false to not do any check,
      *                                    optional.
      * @param string[] $aliasMap          Map of alias to namespace.
+     *
+     * @return self
      */
     public static function createXmlMappingDriver(array $namespaces, array $managerParameters = array(), $enabledParameter = false, array $aliasMap = array())
     {
@@ -86,6 +88,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                    enable the mapping. Set to false to not do any check,
      *                                    optional.
      * @param string[] $aliasMap          Map of alias to namespace.
+     *
+     * @return self
      */
     public static function createYamlMappingDriver(array $namespaces, array $managerParameters = array(), $enabledParameter = false, array $aliasMap = array())
     {
@@ -106,6 +110,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                    enable the mapping. Set to false to not do any check,
      *                                    optional.
      * @param string[] $aliasMap          Map of alias to namespace.
+     *
+     * @return self
      */
     public static function createPhpMappingDriver(array $namespaces, array $managerParameters = array(), $enabledParameter = false, array $aliasMap = array())
     {
@@ -127,6 +133,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                    enable the mapping. Set to false to not do any check,
      *                                    optional.
      * @param string[] $aliasMap          Map of alias to namespace.
+     *
+     * @return self
      */
     public static function createAnnotationMappingDriver(array $namespaces, array $directories, array $managerParameters = array(), $enabledParameter = false, array $aliasMap = array())
     {
@@ -147,6 +155,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                    enable the mapping. Set to false to not do any check,
      *                                    optional.
      * @param string[] $aliasMap          Map of alias to namespace.
+     *
+     * @return self
      */
     public static function createStaticPhpMappingDriver(array $namespaces, array $directories, array $managerParameters = array(), $enabledParameter = false, array $aliasMap = array())
     {

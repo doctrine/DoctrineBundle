@@ -17,6 +17,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 
@@ -39,9 +40,9 @@ class TestCase extends \PHPUnit_Framework_TestCase
             'kernel.root_dir'    => __DIR__.'/../../../../', // src dir
         )));
         $container->set('annotation_reader', new AnnotationReader());
-        $loader = new DoctrineExtension();
-        $container->registerExtension($loader);
-        $loader->load(array(array(
+        $extension = new DoctrineExtension();
+        $container->registerExtension($extension);
+        $extension->load(array(array(
             'dbal' => array(
                 'connections' => array(
                     'default' => array(
@@ -71,7 +72,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
             ),
         )), $container);
 
-        $container->setDefinition('my.platform', new \Symfony\Component\DependencyInjection\Definition('Doctrine\DBAL\Platforms\MySqlPlatform'));
+        $container->setDefinition('my.platform', new Definition('Doctrine\DBAL\Platforms\MySqlPlatform'));
 
         $container->getCompilerPassConfig()->setOptimizationPasses(array(new ResolveDefinitionTemplatesPass()));
         $container->getCompilerPassConfig()->setRemovingPasses(array());

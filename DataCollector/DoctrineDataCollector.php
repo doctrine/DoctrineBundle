@@ -94,7 +94,7 @@ class DoctrineDataCollector extends BaseCollector
             $caches['enabled'] = true;
 
             /** @var $cacheConfiguration \Doctrine\ORM\Cache\CacheConfiguration */
-            /** @var $clacheLoggerChain \Doctrine\ORM\Cache\Logging\CacheLoggerChain */
+            /** @var $cacheLoggerChain \Doctrine\ORM\Cache\Logging\CacheLoggerChain */
             $cacheConfiguration = $emConfig->getSecondLevelCacheConfiguration();
             $cacheLoggerChain   = $cacheConfiguration->getCacheLogger();
 

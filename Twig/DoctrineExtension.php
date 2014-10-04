@@ -51,12 +51,12 @@ class DoctrineExtension extends \Twig_Extension
      *
      * @return array
      */
-    private function getPossibleCombinations($elements, $combinationsLevel)
+    private function getPossibleCombinations(array $elements, $combinationsLevel)
     {
         $baseCount = count($elements);
         $result = array();
 
-        if ($combinationsLevel == 1) {
+        if (1 === $combinationsLevel) {
             foreach ($elements as $element) {
                 $result[] = array($element);
             }
@@ -96,7 +96,7 @@ class DoctrineExtension extends \Twig_Extension
      *
      * @return string
      */
-    private function shrinkParameters($parameters, $combination)
+    private function shrinkParameters(array $parameters, array $combination)
     {
         array_shift($parameters);
         $result = '';
@@ -140,7 +140,7 @@ class DoctrineExtension extends \Twig_Extension
      *
      * @return string
      */
-    private function composeMiniQuery($query, $keywords = array(), $required = 1)
+    private function composeMiniQuery($query, array $keywords, $required)
     {
         // Extract the mandatory keywords and consider the rest as optional keywords
         $mandatoryKeywords = array_splice($keywords, 0, $required);
@@ -237,7 +237,7 @@ class DoctrineExtension extends \Twig_Extension
 
     /**
      * Escape parameters of a SQL query
-     * DON'T USE THIS FUNCTION OUTSIDE ITS INTEDED SCOPE
+     * DON'T USE THIS FUNCTION OUTSIDE ITS INTENDED SCOPE
      *
      * @internal
      *
@@ -287,7 +287,7 @@ class DoctrineExtension extends \Twig_Extension
      *
      * @return string
      */
-    public function replaceQueryParameters($query, $parameters, $highlight = true)
+    public function replaceQueryParameters($query, array $parameters, $highlight = true)
     {
         $i = 0;
 
