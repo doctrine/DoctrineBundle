@@ -67,7 +67,7 @@ abstract class DelegateCommand extends Command
      */
     protected function wrapCommand($entityManagerName)
     {
-        if ( ! $this->isVersionCompatible()) {
+        if (!$this->isVersionCompatible()) {
             throw new \RuntimeException(sprintf('"%s" requires doctrine-orm "%s" or newer', $this->getName(), $this->getMinimalVersion()));
         }
 

@@ -9,7 +9,7 @@ services:
         class: Doctrine\ORM\Cache\Logging\StatisticsCacheLogger
 
     my_service_region:
-        class:     Doctrine\ORM\Cache\Region\DefaultRegion
+        class: Doctrine\ORM\Cache\Region\DefaultRegion
         arguments: ["my_service_region", "@my_service_region_driver", 3600]
 
     my_factory_config:
@@ -19,7 +19,7 @@ services:
         class: Doctrine\Common\Cache\ArrayCache
 
     my_factory:
-        class:     Doctrine\ORM\Cache\DefaultCacheFactory
+        class: Doctrine\ORM\Cache\DefaultCacheFactory
         arguments: ["@my_factory_config", "@my_factory_driver"]
 
 doctrine:

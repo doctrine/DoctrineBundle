@@ -351,8 +351,8 @@ class Configuration implements ConfigurationInterface
      */
     private function getOrmEntityListenersNode()
     {
-        $builder    = new TreeBuilder();
-        $node       = $builder->root('entity_listeners');
+        $builder = new TreeBuilder();
+        $node = $builder->root('entity_listeners');
         $normalizer = function ($mappings) {
             $entities = array();
 
@@ -369,7 +369,7 @@ class Configuration implements ConfigurationInterface
 
                         foreach ($eventMapping as $method) {
                             $events[] = array(
-                               'type'   => $eventType,
+                               'type' => $eventType,
                                'method' => $method,
                             );
                         }

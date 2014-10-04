@@ -204,17 +204,17 @@ class DoctrineExtension extends \Twig_Extension
                 $required = 2;
                 break;
 
-            case stripos($query, 'DELETE') !== false :
+            case stripos($query, 'DELETE') !== false:
                 $keywords = array('DELETE', 'FROM', 'WHERE', 'ORDER BY', 'LIMIT');
                 $required = 2;
                 break;
 
-            case stripos($query, 'UPDATE') !== false :
+            case stripos($query, 'UPDATE') !== false:
                 $keywords = array('UPDATE', 'SET', 'WHERE', 'ORDER BY', 'LIMIT');
                 $required = 2;
                 break;
 
-            case stripos($query, 'INSERT') !== false :
+            case stripos($query, 'INSERT') !== false:
                 $keywords = array('INSERT', 'INTO', 'VALUE', 'VALUES');
                 $required = 2;
                 break;

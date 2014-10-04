@@ -40,7 +40,7 @@
                     <region-cache-driver type="array"/>
 
                     <region name="my_service_region" type="service" service="my_service_region"/>
-                    <region name="my_query_region"  lifetime="300" cache-driver="array" type="filelock"/>
+                    <region name="my_query_region" lifetime="300" cache-driver="array" type="filelock"/>
                     <region name="my_entity_region" lifetime="600">
                         <cache-driver type="apc"/>
                     </region>

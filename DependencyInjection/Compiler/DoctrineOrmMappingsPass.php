@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Class for Symfony bundles to configure mappings for model classes not in the
- * automapped folder.
+ * auto-mapped folder.
  *
  * NOTE: alias is only supported by Symfony 2.6+ and will be ignored with older versions.
  *
@@ -36,7 +36,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                                could hold the manager name.
      *                                                doctrine.default_entity_manager is appended
      *                                                automatically.
-     * @param bool                 $enabledParameter  If specified, the compiler pass only executes
+     * @param string|false         $enabledParameter  If specified, the compiler pass only executes
      *                                                if this parameter is defined in the service
      *                                                container.
      * @param array                $aliasMap          Map of alias to namespace.
@@ -62,7 +62,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                    your bundle uses. This compiler pass will automatically
      *                                    append the parameter name for the default entity manager
      *                                    to this list.
-     * @param string   $enabledParameter  Service container parameter that must be present to
+     * @param string|false   $enabledParameter  Service container parameter that must be present to
      *                                    enable the mapping. Set to false to not do any check,
      *                                    optional.
      * @param string[] $aliasMap          Map of alias to namespace.
@@ -84,7 +84,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                    your bundle uses. This compiler pass will automatically
      *                                    append the parameter name for the default entity manager
      *                                    to this list.
-     * @param string   $enabledParameter  Service container parameter that must be present to
+     * @param string|false   $enabledParameter  Service container parameter that must be present to
      *                                    enable the mapping. Set to false to not do any check,
      *                                    optional.
      * @param string[] $aliasMap          Map of alias to namespace.
@@ -129,7 +129,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                    your bundle uses. This compiler pass will automatically
      *                                    append the parameter name for the default entity manager
      *                                    to this list.
-     * @param string   $enabledParameter  Service container parameter that must be present to
+     * @param string|false   $enabledParameter  Service container parameter that must be present to
      *                                    enable the mapping. Set to false to not do any check,
      *                                    optional.
      * @param string[] $aliasMap          Map of alias to namespace.
@@ -151,7 +151,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                    your bundle uses. This compiler pass will automatically
      *                                    append the parameter name for the default entity manager
      *                                    to this list.
-     * @param string   $enabledParameter  Service container parameter that must be present to
+     * @param string|false   $enabledParameter  Service container parameter that must be present to
      *                                    enable the mapping. Set to false to not do any check,
      *                                    optional.
      * @param string[] $aliasMap          Map of alias to namespace.

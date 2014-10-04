@@ -461,16 +461,16 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region.my_service_region'));
         $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region.my_query_region_filelock'));
 
-        $slcFactoryDef       = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
-        $myEntityRegionDef   = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_entity_region');
-        $loggerChainDef      = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_chain');
+        $slcFactoryDef = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
+        $myEntityRegionDef = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_entity_region');
+        $loggerChainDef = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_chain');
         $loggerStatisticsDef = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_statistics');
-        $myQueryRegionDef    = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_query_region_filelock');
-        $cacheDriverDef      = $container->getDefinition($container->getAlias('doctrine.orm.default_second_level_cache.region_cache_driver'));
-        $configDef           = $container->getDefinition('doctrine.orm.default_configuration');
-        $myEntityRegionArgs  = $myEntityRegionDef->getArguments();
-        $myQueryRegionArgs   = $myQueryRegionDef->getArguments();
-        $slcFactoryArgs      = $slcFactoryDef->getArguments();
+        $myQueryRegionDef = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_query_region_filelock');
+        $cacheDriverDef = $container->getDefinition($container->getAlias('doctrine.orm.default_second_level_cache.region_cache_driver'));
+        $configDef = $container->getDefinition('doctrine.orm.default_configuration');
+        $myEntityRegionArgs = $myEntityRegionDef->getArguments();
+        $myQueryRegionArgs = $myQueryRegionDef->getArguments();
+        $slcFactoryArgs = $slcFactoryDef->getArguments();
 
         $this->assertDICDefinitionClass($slcFactoryDef, '%doctrine.orm.second_level_cache.default_cache_factory.class%');
         $this->assertDICDefinitionClass($myQueryRegionDef, '%doctrine.orm.second_level_cache.filelock_region.class%');
@@ -669,11 +669,11 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         }
 
         return new ContainerBuilder(new ParameterBag(array(
-            'kernel.debug'       => false,
-            'kernel.bundles'     => $map,
-            'kernel.cache_dir'   => sys_get_temp_dir(),
+            'kernel.debug' => false,
+            'kernel.bundles' => $map,
+            'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
-            'kernel.root_dir'    => __DIR__.'/../../', // src dir
+            'kernel.root_dir' => __DIR__.'/../../', // src dir
         )));
     }
 

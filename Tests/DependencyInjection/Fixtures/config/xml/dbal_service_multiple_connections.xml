@@ -13,7 +13,7 @@
                 dbname="mysql_db"
                 user="mysql_user"
                 password="mysql_s3cr3t"
-                unix-socket="/path/to/mysqld.sock" /><!--  -->
+                unix-socket="/path/to/mysqld.sock" />
             <connection
                 name="sqlite"
                 driver="pdo_sqlite"

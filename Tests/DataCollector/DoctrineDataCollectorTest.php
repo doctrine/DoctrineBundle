@@ -26,9 +26,9 @@ class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
 
     public function testCollectEntities()
     {
-        $manager   = $this->getMock('Doctrine\ORM\EntityManagerInterface');
-        $config    = $this->getMock('Doctrine\ORM\Configuration');
-        $factory   = $this->getMockBuilder('Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory')
+        $manager = $this->getMock('Doctrine\ORM\EntityManagerInterface');
+        $config = $this->getMock('Doctrine\ORM\Configuration');
+        $factory = $this->getMockBuilder('Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory')
             ->setMethods(array('getLoadedMetadata'))->getMockForAbstractClass();
         $collector = $this->createCollector(array('default' => $manager));
 
@@ -66,7 +66,7 @@ class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
      */
     private function createEntityMetadata($entityFQCN)
     {
-        $metadata       = new ClassMetadataInfo($entityFQCN);
+        $metadata = new ClassMetadataInfo($entityFQCN);
         $metadata->name = $entityFQCN;
 
         return $metadata;

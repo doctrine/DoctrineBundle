@@ -16,6 +16,7 @@ namespace Doctrine\Bundle\DoctrineBundle\DataCollector;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Tools\SchemaValidator;
+use Doctrine\ORM\Version;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,20 +45,20 @@ class DoctrineDataCollector extends BaseCollector
     {
         parent::collect($request, $response, $exception);
 
-        $errors   = array();
+        $errors = array();
         $entities = array();
-        $caches   = array(
-            'enabled'     => false,
+        $caches = array(
+            'enabled' => false,
             'log_enabled' => false,
-            'counts'  => array(
-                'puts'    => 0,
-                'hits'    => 0,
-                'misses'  => 0,
+            'counts' => array(
+                'puts' => 0,
+                'hits' => 0,
+                'misses' => 0,
             ),
             'regions' => array(
-                'puts'    => array(),
-                'hits'    => array(),
-                'misses'  => array(),
+                'puts' => array(),
+                'hits' => array(),
+                'misses' => array(),
             ),
         );
 
@@ -69,25 +70,25 @@ class DoctrineDataCollector extends BaseCollector
 
             /** @var $class \Doctrine\ORM\Mapping\ClassMetadataInfo */
             foreach ($factory->getLoadedMetadata() as $class) {
-                if ( ! isset($entities[$name][$class->getName()])) {
+                if (!isset($entities[$name][$class->getName()])) {
                     $classErrors = $validator->validateClass($class);
                     $entities[$name][$class->getName()] = $class->getName();
 
-                    if ( ! empty($classErrors)) {
+                    if (!empty($classErrors)) {
                         $errors[$name][$class->getName()] = $classErrors;
                     }
                 }
             }
 
-            if (version_compare(\Doctrine\ORM\Version::VERSION, '2.5.0-DEV') < 0) {
+            if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
                 continue;
             }
 
             /** @var $emConfig \Doctrine\ORM\Configuration */
-            $emConfig   = $em->getConfiguration();
+            $emConfig = $em->getConfiguration();
             $slcEnabled = $emConfig->isSecondLevelCacheEnabled();
 
-            if ( ! $slcEnabled) {
+            if (!$slcEnabled) {
                 continue;
             }
 
@@ -96,9 +97,9 @@ class DoctrineDataCollector extends BaseCollector
             /** @var $cacheConfiguration \Doctrine\ORM\Cache\CacheConfiguration */
             /** @var $cacheLoggerChain \Doctrine\ORM\Cache\Logging\CacheLoggerChain */
             $cacheConfiguration = $emConfig->getSecondLevelCacheConfiguration();
-            $cacheLoggerChain   = $cacheConfiguration->getCacheLogger();
+            $cacheLoggerChain = $cacheConfiguration->getCacheLogger();
 
-            if ( ! $cacheLoggerChain || ! $cacheLoggerChain->getLogger('statistics')) {
+            if (!$cacheLoggerChain || !$cacheLoggerChain->getLogger('statistics')) {
                 continue;
             }
 
@@ -106,12 +107,12 @@ class DoctrineDataCollector extends BaseCollector
             $cacheLoggerStats = $cacheLoggerChain->getLogger('statistics');
             $caches['log_enabled'] = true;
 
-            $caches['counts']['puts']   += $cacheLoggerStats->getPutCount();
-            $caches['counts']['hits']   += $cacheLoggerStats->getHitCount();
+            $caches['counts']['puts'] += $cacheLoggerStats->getPutCount();
+            $caches['counts']['hits'] += $cacheLoggerStats->getHitCount();
             $caches['counts']['misses'] += $cacheLoggerStats->getMissCount();
 
             foreach ($cacheLoggerStats->getRegionsPut() as $key => $value) {
-                if ( ! isset($caches['regions']['puts'][$key])) {
+                if (!isset($caches['regions']['puts'][$key])) {
                     $caches['regions']['puts'][$key] = 0;
                 }
 
@@ -119,7 +120,7 @@ class DoctrineDataCollector extends BaseCollector
             }
 
             foreach ($cacheLoggerStats->getRegionsHit() as $key => $value) {
-                if ( ! isset($caches['regions']['hits'][$key])) {
+                if (!isset($caches['regions']['hits'][$key])) {
                     $caches['regions']['hits'][$key] = 0;
                 }
 
@@ -127,7 +128,7 @@ class DoctrineDataCollector extends BaseCollector
             }
 
             foreach ($cacheLoggerStats->getRegionsMiss() as $key => $value) {
-                if ( ! isset($caches['regions']['misses'][$key])) {
+                if (!isset($caches['regions']['misses'][$key])) {
                     $caches['regions']['misses'][$key] = 0;
                 }
 
@@ -136,8 +137,8 @@ class DoctrineDataCollector extends BaseCollector
         }
 
         $this->data['entities'] = $entities;
-        $this->data['errors']   = $errors;
-        $this->data['caches']   = $caches;
+        $this->data['errors'] = $errors;
+        $this->data['caches'] = $caches;
     }
 
     public function getEntities()
