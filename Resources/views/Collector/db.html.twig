@@ -206,7 +206,7 @@
                     <tr>
                         <td>{{ class }}</td>
                         <td>
-                            {% if collector.mappingErrors[manager][class] is defined %}
+                            {% if collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
                                 <ul>
                                     {% for error in collector.mappingErrors[manager][class] %}
                                         <li>{{ error }}</li>
