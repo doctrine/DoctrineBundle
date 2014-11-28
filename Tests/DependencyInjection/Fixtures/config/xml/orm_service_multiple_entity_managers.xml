@@ -35,6 +35,12 @@
             <entity-manager name="em2" connection="conn2" metadata-cache-driver="apc">
                 <mapping name="YamlBundle" />
             </entity-manager>
+            <entity-manager name="em3" connection="conn2">
+                <metadata-cache-driver>
+                    <cache-provider>service</cache-provider>
+                </metadata-cache-driver>
+                <mapping name="YamlBundle" />
+            </entity-manager>
         </orm>
     </config>
 </srv:container>

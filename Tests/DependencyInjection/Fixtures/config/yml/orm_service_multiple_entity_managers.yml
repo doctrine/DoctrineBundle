@@ -32,3 +32,9 @@ doctrine:
                 connection: conn2
                 mappings:
                     YamlBundle: ~
+            em3:
+                metadata_cache_driver:
+                    cache_provider: service
+                connection: conn2
+                mappings:
+                    YamlBundle: ~
