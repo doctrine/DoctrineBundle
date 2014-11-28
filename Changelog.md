@@ -1,4 +1,49 @@
-## 1.2.0 (2013-XX-XX)
+## 1.3.0 (2014-11-28)
+
+Features:
+
+* add support for bundle namespace alias in the mapping compiler pass
+* Added support for server_version connection parameter
+* Added a way to enable auto_mapping option using multipe entity managers
+
+Bugfix:
+
+* Inlined the profiler picto images instead of getting from FrameworkBundle (where they are gone)
+* Remove duplicates in the list of mapped entities in the profile
+* Fixed the compatibility with PHP 5.3 (broken in 1.3.0-beta1)
+
+## 1.3.0-beta2 (2014-07-09)
+
+Feature:
+
+* add auto-commit DBAL configuration option
+* Use DoctrineCacheBundle to create cache drivers, supporting more configuration
+* Added sorting by time in DB panel
+
+Bugfix:
+
+* Fixed the compatibility of the DataCollector with Doctrine 2.4 (bug introduced in 1.3.0-beta1)
+* Fixed the exit code of commands on failure
+* Fixed the replacement of query parameters in the profiler
+
+## 1.3.0-beta1 (2014-01-26)
+
+Features:
+
+* Added option to configure entity listener resolver service
+* add compiler pass for bundles to register mappings
+* Added a button to expand/collapse all queries in the profiler
+* Added configuration for sharding
+* Added support for the new ways to generate proxies in Doctrine Common
+* Added configuration for the second-level cache
+
+Bugfix:
+
+* Removed deprecated call
+* fix drop and create command for connections with master slave configuration
+* Remove usage of deprecated Twig features
+
+## 1.2.0 (2013-03-25)
 
  * Bumped the requirement to Symfony 2.2
  * Updated the profiler templates for Symfony 2.2
