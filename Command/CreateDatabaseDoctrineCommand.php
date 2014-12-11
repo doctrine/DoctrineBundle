@@ -27,6 +27,10 @@ use Doctrine\DBAL\DriverManager;
  */
 class CreateDatabaseDoctrineCommand extends DoctrineCommand
 {
+    const RETURN_CODE_NOT_CREATE = 1;
+
+    const RETURN_CODE_SUCCESS = 0;
+
     /**
      * {@inheritDoc}
      */
@@ -96,6 +100,6 @@ EOT
 
         $tmpConnection->close();
 
-        return $error ? 1 : 0;
+        return $error ? RETURN_CODE_NOT_CREATE : RETURN_CODE_SUCCESS;
     }
 }
