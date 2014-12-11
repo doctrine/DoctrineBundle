@@ -64,7 +64,8 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $connection = $this->getDoctrineConnection($input->getOption('connection'));
+        $connectionName = $input->getOption('connection');
+        $connection = $this->getDoctrineConnection($connectionName);
 
         $params = $connection->getParams();
         if (isset($params['master'])) {
@@ -85,9 +86,17 @@ EOT
 
             try {
                 $connection->getSchemaManager()->dropDatabase($name);
-                $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
+                if (null === $connectionName) {
+                    $output->writeln(sprintf('<info>Dropped database named <comment>%s</comment> using the default connection</info>', $name));
+                } else {
+                    $output->writeln(sprintf('<info>Dropped database named <comment>%s</comment> using connection <comment>%s</comment></info>', $name, $connectionName));
+                }
             } catch (\Exception $e) {
-                $output->writeln(sprintf('<error>Could not drop database for connection named <comment>%s</comment></error>', $name));
+                if (null === $connectionName) {
+                    $output->writeln(sprintf('<error>Could not drop database named <comment>%s</comment> using the default connection</error>', $name));
+                } else {
+                    $output->writeln(sprintf('<error>Could not drop database named <comment>%s</comment> for connection <comment>%s</comment></error>', $name, $connectionName));
+                }
                 $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
 
                 return self::RETURN_CODE_NOT_DROP;

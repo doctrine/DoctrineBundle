@@ -55,7 +55,8 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $connection = $this->getDoctrineConnection($input->getOption('connection'));
+        $connectionName = $input->getOption('connection');
+        $connection = $this->getDoctrineConnection($connectionName);
 
         $params = $connection->getParams();
         if (isset($params['master'])) {
@@ -78,9 +79,17 @@ EOT
         $error = false;
         try {
             $tmpConnection->getSchemaManager()->createDatabase($name);
-            $output->writeln(sprintf('<info>Created database for connection named <comment>%s</comment></info>', $name));
+            if (null === $connectionName) {
+                $output->writeln(sprintf('<info>Created database named <comment>%s</comment> using the deafult connection</info>', $name));
+            } else {
+                $output->writeln(sprintf('<info>Created database named <comment>%s</comment> using connection <comment>%s</comment></info>', $name, $connectionName));
+            }
         } catch (\Exception $e) {
-            $output->writeln(sprintf('<error>Could not create database for connection named <comment>%s</comment></error>', $name));
+            if (null === $connectionName) {
+                $output->writeln(sprintf('<error>Could not create database named <comment>%s</comment> using the deafult connection</error>', $name));
+            } else {
+                $output->writeln(sprintf('<error>Could not create database named <comment>%s</comment> using the default connection</error>', $name, $connectionName));
+            }
             $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
             $error = true;
         }
