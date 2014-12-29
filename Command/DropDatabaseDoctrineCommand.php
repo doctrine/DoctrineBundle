@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
+use Doctrine\Bundle\DoctrineBundle\Command\Proxy\DoctrineCommandHelper;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,6 +30,22 @@ class DropDatabaseDoctrineCommand extends DoctrineCommand
     const RETURN_CODE_NOT_DROP = 1;
 
     const RETURN_CODE_NO_FORCE = 2;
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getHelp()
+    {
+        return DoctrineCommandHelper::processCommandHelp(parent::getHelp(), 'connection', $this->getApplication());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getNativeDefinition()
+    {
+        return DoctrineCommandHelper::processInputDefinition(parent::getNativeDefinition(), $this->getApplication());
+    }
 
     /**
      * {@inheritDoc}

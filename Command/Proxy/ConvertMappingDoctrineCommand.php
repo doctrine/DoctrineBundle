@@ -33,6 +33,22 @@ class ConvertMappingDoctrineCommand extends ConvertMappingCommand
     /**
      * {@inheritDoc}
      */
+    public function getHelp()
+    {
+        return DoctrineCommandHelper::processCommandHelp(parent::getHelp(), 'em', $this->getApplication());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getNativeDefinition()
+    {
+        return DoctrineCommandHelper::processInputDefinition(parent::getNativeDefinition(), $this->getApplication());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         parent::configure();

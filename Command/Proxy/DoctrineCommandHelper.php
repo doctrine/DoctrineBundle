@@ -13,9 +13,12 @@
  */
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
+use Symfony\Component\Console\Input\InputDefinition;
+
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper;
 use Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper;
+use Symfony\Component\Console\Command\Command;
 
 /**
  * Provides some helper and convenience methods to configure doctrine commands in the context of bundles
@@ -51,5 +54,58 @@ abstract class DoctrineCommandHelper
         $connection = $application->getKernel()->getContainer()->get('doctrine')->getConnection($connName);
         $helperSet = $application->getHelperSet();
         $helperSet->set(new ConnectionHelper($connection), 'db');
+    }
+
+    /**
+     * Convenience method to set default connection or manager into input definition.
+     *
+     * @param Application     $application
+     * @param InputDefinition $definition
+     */
+    public static function processInputDefinition(InputDefinition $definition, Application $application = null)
+    {
+        if (null === $application) {
+            return $definition;
+        }
+
+        $definition = clone $definition;
+        $doctrine = $application->getKernel()->getContainer()->get('doctrine');
+        $options = $definition->getOptions();
+
+        if (isset($options['connection']) && null === $options['connection']->getDefault()) {
+            $options['connection'] = clone $options['connection'];
+            $options['connection']->setDefault($doctrine->getDefaultConnectionName());
+        } elseif (isset($options['em']) && null === $options['em']->getDefault()) {
+            $options['em'] = clone $options['em'];
+            $options['em']->setDefault($doctrine->getDefaultManagerName());
+        }
+
+        $definition->setOptions($options);
+
+        return $definition;
+    }
+
+    /**
+     * Convenience method to push the available connections or managers into help of command.
+     *
+     * @param Application $application
+     * @param string      $help
+     * @param string      $type        "em" or "connection"
+     */
+    public static function processCommandHelp($help, $type, Application $application = null)
+    {
+        if (null === $application) {
+            return $help;
+        }
+
+        $doctrine = $application->getKernel()->getContainer()->get('doctrine');
+
+        if ('connection' == $type) {
+            $help .= "\n\nAvailable connections: ".implode(', ', array_keys($doctrine->getConnectionNames()));
+        } elseif ('em' == $type) {
+            $help .= "\n\nAvailable entity managers: ".implode(', ', array_keys($doctrine->getManagerNames()));
+        }
+
+        return $help;
     }
 }

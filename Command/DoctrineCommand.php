@@ -16,6 +16,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Doctrine\ORM\Tools\EntityGenerator;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
 
 /**
  * Base class for Doctrine console commands to extend from.
