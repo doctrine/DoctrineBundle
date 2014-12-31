@@ -86,9 +86,7 @@ EOT
             }
 
             try {
-                $shouldDropDatabase = $ifExists && ! in_array($name, $connection->getSchemaManager()->listDatabases())
-                    ? false
-                    : true;
+                $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
 
                 if ($shouldDropDatabase) {
                     $connection->getSchemaManager()->dropDatabase($name);

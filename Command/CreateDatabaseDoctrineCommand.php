@@ -79,11 +79,9 @@ EOT
 
         $error = false;
         try {
-            $shouldCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases())
-                ? false
-                : true;
+            $shouldNotCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
 
-            if (! $shouldCreateDatabase) {
+            if ($shouldNotCreateDatabase) {
                 $output->writeln(sprintf('<info>Database for connection named <comment>%s</comment> already exists. Skipped.</info>'));
             } else {
                 $tmpConnection->getSchemaManager()->createDatabase($name);
