@@ -91,7 +91,7 @@ EOT
                     $connection->getSchemaManager()->dropDatabase($name);
                     $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
                 } else {
-                    $output->writeln(sprintf('<info>Database for connection named <comment>%s</comment> doesn\'t exists. Skipped.</info>'));
+                    $output->writeln(sprintf('<info>Database for connection named <comment>%s</comment> doesn\'t exists. Skipped.</info>', $name));
                 }
             } catch (\Exception $e) {
                 $output->writeln(sprintf('<error>Could not drop database for connection named <comment>%s</comment></error>', $name));
