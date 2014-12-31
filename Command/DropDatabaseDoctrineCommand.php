@@ -86,8 +86,9 @@ EOT
             }
 
             try {
-                $databaseExists = in_array($name, $connection->getSchemaManager()->listDatabases());
-                if ($ifExists && $databaseExists) {
+                $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
+
+                if ($shouldDropDatabase) {
                     $connection->getSchemaManager()->dropDatabase($name);
                     $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
                 } else {
