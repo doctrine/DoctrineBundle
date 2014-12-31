@@ -1,0 +1,11 @@
+---------------------------------------------------------------------------
+
+by deeky666 at 2014-12-31T16:58:40Z
+
+@stof fixed
+
+---------------------------------------------------------------------------
+
+by stof at 2014-12-31T17:54:29Z
+
+@deeky666 when you have some time, it would be great to fix the SchemaValidator in Doctrine ORM 2.4 so that it stops triggering fatal errors
