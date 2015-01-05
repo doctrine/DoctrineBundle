@@ -80,16 +80,11 @@ EOT
         unset($params['dbname']);
 
         if ($input->getOption('force')) {
-            // Only quote if we don't have a path
-            if (!isset($params['path'])) {
-                $name = $connection->getDatabasePlatform()->quoteSingleIdentifier($name);
-            }
-
             try {
                 $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
 
                 if ($shouldDropDatabase) {
-                    $connection->getSchemaManager()->dropDatabase($name);
+                    $connection->getSchemaManager()->dropDatabase(!isset($params['path']) ? $connection->getDatabasePlatform()->quoteSingleIdentifier($name) : $name);
                     $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
                 } else {
                     $output->writeln(sprintf('<info>Database for connection named <comment>%s</comment> doesn\'t exists. Skipped.</info>', $name));
