@@ -1,0 +1,157 @@
+---------------------------------------------------------------------------
+
+by dzuelke at 2014-12-07T22:54:41Z
+
+Totally forgot about this part in addition to support for "url" in DBAL, @beberlei and @stof.
+
+---------------------------------------------------------------------------
+
+by xabbuh at 2014-12-07T23:00:19Z
+
+@dzuelke I guess the XSD file has to be updated as well.
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2014-12-07T23:14:29Z
+
+Good point @xabbuh, updated (and some docs, too)
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2014-12-08T17:51:57Z
+
+Paging @stof / @kimhemsoe / @guilhermeblanco - can we get this merged and released please? Otherwise that new DBAL feature can't be used.
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2014-12-08T22:20:30Z
+
+@beberlei The tests are failing because doctrine/orm 2.4's `SchemaValidator::validateClass()` does
+
+```php
+foreach ($class->reflClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $publicAttr) {
+```
+
+but `$class->reflClass` is `NULL`.
+
+This is unrelated to my PR; the tests fail on master etc as well.
+
+Seems to be a version incompatibility thing; it fetches lots of dev dependencies due to `minimum-stability` in `composer.json`.
+
+What to do?
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2014-12-08T22:25:37Z
+
+Changing the version requirement for `doctrine/orm` to `dev-master` and removing `minimum-stability` in `composer.json` fixes it. Changing only the version but leaving `minimum-stability` causes a lot of deprecation notices.
+
+Yay version hell.
+
+---------------------------------------------------------------------------
+
+by Ocramius at 2014-12-12T09:11:23Z
+
+I would just bump the version requirement to 2.5, but installation will fail until the ORM is actually released
+
+---------------------------------------------------------------------------
+
+by stof at 2014-12-12T09:30:13Z
+
+> I would just bump the version requirement to 2.5, but installation will fail until the ORM is actually released
+
+Please don't bump the requirement to 2.5 if it is not released yet. I don't want to have to maintain multiple versions in parallel because of that
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2014-12-12T09:30:21Z
+
+Yeah, looks like an ORM 2.5 is close though. Just a few issues left, and some of them look like they'll be moved to 3.0. Poking @beberlei again :p
+
+---------------------------------------------------------------------------
+
+by stof at 2014-12-12T09:39:24Z
+
+Btw, if the SchemaValidator is broken on Doctrine ORM 2.4, please report an issue on Doctrine ORM itself, as it should be fixed.
+
+---------------------------------------------------------------------------
+
+by Ocramius at 2014-12-12T10:02:34Z
+
+@dzuelke I'll have to tag the ORM in few days: requires a full week of work though.
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2014-12-12T12:43:25Z
+
+I don't think it's broken, @stof. It's just an incompatibility between ORM 2.4 and something else. When you "composer install" on DoctrineBundle itself, the `"minimum-stability": "dev"` takes effect (can that be removed?) and that messes stuff up I think.
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2014-12-12T13:15:32Z
+
+I have really no idea how this test ever passed. Nothing related to it seems to have changed in the bundle or in ORM.
+
+These:
+
+```
+    const FIRST_ENTITY = 'TestBundle\Test\Entity\Test1';
+    const SECOND_ENTITY = 'TestBundle\Test\Entity\Test2';
+```
+
+in `DoctrineDataCollectorTest` don't exist, so of course `$class->reflClass` in ORM's `SchemaValidator::validateClass()` is `null`.
+
+Fixing that `foreach()` to not run if `$class->reflClass` is `null` does the job, but then the test fails:
+
+> 1) Doctrine\Bundle\DoctrineBundle\Tests\DataCollector\DoctrineDataCollectorTest::testCollectEntities
+Expectation failed for method name is equal to <string:isSecondLevelCacheEnabled> when invoked 1 time(s).
+Method was expected to be called 1 times, actually called 0 times.
+
+There is some big arse version conflict thing going on that I can't figure out. I mean, the tests are failing even if you just run them on the bundle's master, not just this pull request.
+
+Something, somewhere, changed and that causes the tests to fail.
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2015-01-08T02:15:23Z
+
+*bump*?
+
+/cc @deeky666 @Ocramius @stof
+
+---------------------------------------------------------------------------
+
+by Ocramius at 2015-01-08T03:04:11Z
+
+Assigning @kimhemsoe for review/merge
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2015-01-08T04:22:06Z
+
+Well this works and is pretty trivial, @Ocramius, but the real issue is that tests are still failing due to unrelated version conflicts, even on master, and there's no solution and I haven't figured it out yet (I saw you closed the doctrine/doctrine2#1237 PR that attempted to fix this). Should I spin that off into its own bug report?
+
+---------------------------------------------------------------------------
+
+by deeky666 at 2015-01-08T08:11:26Z
+
+@dzuelke those unrelated test failures are fine for now. I already opened a PR https://github.com/doctrine/DoctrineBundle/pull/364 that deals with this issue, so no further action necessary here atm.
+Otherwise looking good so far, despite it is missing some trivial tests.
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2015-01-09T10:35:26Z
+
+Should I put the tests into `DoctrineExtensionTest` or somewhere else, @deeky666 ?
+
+---------------------------------------------------------------------------
+
+by stof at 2015-01-09T10:46:00Z
+
+I merged the Pr fixing the testsuite. Can you rebase your branch to rerun the testsuite with the fix ?
+
+---------------------------------------------------------------------------
+
+by dzuelke at 2015-01-09T11:59:54Z
+
+Done. Looks like all is well!
