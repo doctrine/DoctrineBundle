@@ -14,9 +14,10 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Controller;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Symfony\Component\DependencyInjection\ContainerAware;
 use Symfony\Component\HttpFoundation\Response;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * ProfilerController.
@@ -56,17 +57,9 @@ class ProfilerController extends ContainerAware
         $connection = $this->container->get('doctrine')->getConnection($connectionName);
         try {
             if ($connection->getDatabasePlatform() instanceof SQLServerPlatform) {
-                if (strtoupper(substr($query['sql'], 0, 6)) === 'SELECT') {
-                    $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . '; SET STATISTICS PROFILE OFF;';
-                } else {
-                    $sql = 'SET SHOWPLAN_TEXT ON; GO; SET NOEXEC ON; ' . $query['sql'] .'; SET NOEXEC OFF; GO; SET SHOWPLAN_TEXT OFF;';
-                }
-                $stmt = $connection->executeQuery($sql, $query['params'], $query['types']);
-                $stmt->nextRowset();
-                $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                $results = $this->explainSQLServerPlatform($connection, $query);
             } else {
-                $results = $connection->executeQuery('EXPLAIN '.$query['sql'], $query['params'], $query['types'])
-                    ->fetchAll(\PDO::FETCH_ASSOC);
+                $results = $this->explainOtherPlatform($connection, $query);
             }
         } catch (\Exception $e) {
             return new Response('This query cannot be explained.');
@@ -76,5 +69,23 @@ class ProfilerController extends ContainerAware
             'data' => $results,
             'query' => $query,
         ));
+    }
+
+    private explainSQLServerPlatform(Connection $connection, $query)
+    {
+        if (stripos($query['sql'], 'SELECT') === 0) {
+            $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . '; SET STATISTICS PROFILE OFF;';
+        } else {
+            $sql = 'SET SHOWPLAN_TEXT ON; GO; SET NOEXEC ON; ' . $query['sql'] .'; SET NOEXEC OFF; GO; SET SHOWPLAN_TEXT OFF;';
+        }
+        $stmt = $connection->executeQuery($sql, $query['params'], $query['types']);
+        $stmt->nextRowset();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    private explainOtherPlatform(Connection $connection, $query)
+    {
+        return $connection->executeQuery('EXPLAIN '.$query['sql'], $query['params'], $query['types'])
+            ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
