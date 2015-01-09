@@ -216,9 +216,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('doctrine.dbal.default_connection.event_manager', (string) $args[2]);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $factory = $definition->getFactory();
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $factory[0]);
+        $this->assertEquals('create', $factory[1]);
+
 
         $this->assertEquals(array('default' => 'doctrine.orm.default_entity_manager'), $container->getParameter('doctrine.entity_managers'), "Set of the existing EntityManagers names is incorrect.");
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), "Set of the existing EntityManagers names is incorrect.");
@@ -283,9 +285,10 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $factory = $definition->getFactory();
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $factory[0]);
+        $this->assertEquals('create', $factory[1]);
 
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),

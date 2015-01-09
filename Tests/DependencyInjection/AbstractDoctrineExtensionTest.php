@@ -170,9 +170,10 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         ));
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $factory = $definition->getFactory();
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $factory[0]);
+        $this->assertEquals('create', $factory[1]);
 
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
@@ -202,9 +203,10 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         ));
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $factory = $definition->getFactory();
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $factory[0]);
+        $this->assertEquals('create', $factory[1]);
 
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
@@ -230,9 +232,10 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('doctrine.orm.em2_entity_manager', (string) $container->getAlias('doctrine.orm.entity_manager'));
 
         $definition = $container->getDefinition('doctrine.orm.em1_entity_manager');
+        $factory = $definition->getFactory();
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $factory[0]);
+        $this->assertEquals('create', $factory[1]);
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -250,9 +253,10 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('doctrine.dbal.conn2_connection.event_manager', (string) $args[2]);
 
         $definition = $container->getDefinition('doctrine.orm.em2_entity_manager');
+        $factory = $definition->getFactory();
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $factory[0]);
+        $this->assertEquals('create', $factory[1]);
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
