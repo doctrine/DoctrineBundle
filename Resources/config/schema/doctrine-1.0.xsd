@@ -41,6 +41,7 @@
     </xsd:attributeGroup>
 
     <xsd:attributeGroup name="driver-config">
+        <xsd:attribute name="url" type="xsd:string" />
         <xsd:attribute name="dbname" type="xsd:string" />
         <xsd:attribute name="host" type="xsd:string" />
         <xsd:attribute name="port" type="xsd:string" />
