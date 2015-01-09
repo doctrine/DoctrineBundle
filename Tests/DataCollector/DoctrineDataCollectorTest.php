@@ -39,9 +39,11 @@ class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
             ->method('getConfiguration')
             ->will($this->returnValue($config));
 
-        $config->expects($this->once())
-            ->method('isSecondLevelCacheEnabled')
-            ->will($this->returnValue(false));
+        if (method_exists($config, 'isSecondLevelCacheEnabled')) {
+            $config->expects($this->once())
+                ->method('isSecondLevelCacheEnabled')
+                ->will($this->returnValue(false));
+        }
 
         $metadatas = array(
             $this->createEntityMetadata(self::FIRST_ENTITY),
@@ -68,6 +70,7 @@ class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
     {
         $metadata = new ClassMetadataInfo($entityFQCN);
         $metadata->name = $entityFQCN;
+        $metadata->reflClass = new \ReflectionClass('stdClass');
 
         return $metadata;
     }

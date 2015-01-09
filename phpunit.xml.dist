@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <phpunit colors="true" bootstrap="vendor/autoload.php">
+    <php>
+        <!-- Disable E_USER_DEPRECATED until reaching compatibility with Symfony 3.0 -->
+        <!-- php -r 'echo -1 & ~E_USER_DEPRECATED;' -->
+        <ini name="error_reporting" value="-16385"/>
+    </php>
+
     <testsuites>
         <testsuite name="DoctrineBundle for the Symfony Framework">
             <directory>./Tests</directory>
