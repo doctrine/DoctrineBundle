@@ -693,7 +693,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         if (!empty($driverMap['cache_provider'])) {
             $aliasId = $this->getObjectManagerElementName($driverName);
-            $serviceId = printf('doctrine_cache.providers.%s', $driverMap['cache_provider']);
+            $serviceId = sprintf('doctrine_cache.providers.%s', $driverMap['cache_provider']);
 
             $container->setAlias($aliasId, new Alias($serviceId, false));
 
