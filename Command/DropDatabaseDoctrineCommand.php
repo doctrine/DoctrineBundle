@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
+use Doctrine\DBAL\DriverManager;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -80,6 +81,11 @@ EOT
         unset($params['dbname']);
 
         if ($input->getOption('force')) {
+            // Reopen connection without database name set
+            // as some vendors do not allow dropping the database connected to.
+            $connection->close();
+            $connection = DriverManager::getConnection($params);
+
             // Only quote if we don't have a path
             if (!isset($params['path'])) {
                 $name = $connection->getDatabasePlatform()->quoteSingleIdentifier($name);
