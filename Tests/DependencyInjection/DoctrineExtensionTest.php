@@ -429,6 +429,39 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
     }
 
+    public function testCacheConfiguration()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = $this->getConnectionConfig();
+        $config['orm'] = array(
+            'metadata_cache_driver' => array(
+                'cache_provider' => 'metadata_cache',
+            ),
+            'query_cache_driver' => array(
+                'cache_provider' => 'query_cache',
+            ),
+            'result_cache_driver' => array(
+                'cache_provider' => 'result_cache',
+            ),
+        );
+
+        $extension->load(array($config), $container);
+
+        $this->assertTrue($container->hasAlias('doctrine.orm.default_metadata_cache'));
+        $alias = $container->getAlias('doctrine.orm.default_metadata_cache');
+        $this->assertEquals('doctrine_cache.providers.metadata_cache', (string) $alias);
+
+        $this->assertTrue($container->hasAlias('doctrine.orm.default_query_cache'));
+        $alias = $container->getAlias('doctrine.orm.default_query_cache');
+        $this->assertEquals('doctrine_cache.providers.query_cache', (string) $alias);
+
+        $this->assertTrue($container->hasAlias('doctrine.orm.default_result_cache'));
+        $alias = $container->getAlias('doctrine.orm.default_result_cache');
+        $this->assertEquals('doctrine_cache.providers.result_cache', (string) $alias);
+    }
+
     private function getContainer($bundles = 'YamlBundle', $vendor = null)
     {
         $bundles = (array) $bundles;
