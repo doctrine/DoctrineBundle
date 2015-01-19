@@ -1,14 +1,16 @@
-Doctrine Bundle
-===============
+Installation
+============
 
 Doctrine DBAL & ORM Bundle for the Symfony Framework.
 
-Because Symfony 2 does not want to force or suggest a specific persistence solutions on the users
-this bundle was removed from the core of the Symfony 2 framework. Doctrine2 will still be a major player
-in the Symfony world and the bundle is maintained by developers in the Doctrine and Symfony communities.
+Because Symfony does not want to force or suggest a specific persistence
+solutions on the users this bundle was removed from the core of the Symfony
+framework. Doctrine2 will still be a major player in the Symfony world and the
+bundle is maintained by developers in the Doctrine and Symfony communities.
 
-IMPORTANT: This bundle is developed for Symfony 2.1 and up. For Symfony 2.0 applications the DoctrineBundle
-is still shipped with the core Symfony repository.
+IMPORTANT: This bundle is developed for Symfony 2.1 and up. For Symfony 2.0
+applications the DoctrineBundle is still shipped with the core Symfony
+repository.
 
 Installation
 ------------
@@ -17,7 +19,7 @@ Installation
 
 Add the following snippets to "deps" files:
 
-.. code-block::
+.. code-block:: ini
 
     [doctrine-mongodb]
         git=http://github.com/doctrine/dbal.git
@@ -33,7 +35,7 @@ Add the following snippets to "deps" files:
 
 Add the following dependencies to your projects composer.json file:
 
-.. code-block::
+.. code-block:: json
 
     "require": {
         # ..
@@ -41,3 +43,4 @@ Add the following dependencies to your projects composer.json file:
         # ..
     }
 
+..
