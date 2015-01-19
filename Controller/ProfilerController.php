@@ -71,7 +71,7 @@ class ProfilerController extends ContainerAware
         ));
     }
 
-    private explainSQLServerPlatform(Connection $connection, $query)
+    private function explainSQLServerPlatform(Connection $connection, $query)
     {
         if (stripos($query['sql'], 'SELECT') === 0) {
             $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . '; SET STATISTICS PROFILE OFF;';
@@ -83,7 +83,7 @@ class ProfilerController extends ContainerAware
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    private explainOtherPlatform(Connection $connection, $query)
+    private function explainOtherPlatform(Connection $connection, $query)
     {
         return $connection->executeQuery('EXPLAIN '.$query['sql'], $query['params'], $query['types'])
             ->fetchAll(\PDO::FETCH_ASSOC);
