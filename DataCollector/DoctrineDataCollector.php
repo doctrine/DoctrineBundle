@@ -70,6 +70,9 @@ class DoctrineDataCollector extends BaseCollector
 
             /** @var $class \Doctrine\ORM\Mapping\ClassMetadataInfo */
             foreach ($factory->getLoadedMetadata() as $class) {
+                if (!$class instanceof ClassMetadataInfo) {
+                    continue;
+                }
                 if (!isset($entities[$name][$class->getName()])) {
                     $classErrors = $validator->validateClass($class);
                     $entities[$name][$class->getName()] = $class->getName();
