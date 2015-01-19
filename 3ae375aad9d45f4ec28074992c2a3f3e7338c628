@@ -1,0 +1,5 @@
+---------------------------------------------------------------------------
+
+by flip111 at 2014-05-19T12:29:35Z
+
+possibly on a non-SELECT `SET SHOWPLAN_XML` can be used but i couldn't make much of that XML file so i went with `SET SHOWPLAN_TEXT`
