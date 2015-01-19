@@ -1,43 +1,43 @@
-Doctrine Bundle
-===============
-
-Doctrine DBAL & ORM Bundle for the Symfony Framework.
-
-Because Symfony 2 does not want to force or suggest a specific persistence solutions on the users
-this bundle was removed from the core of the Symfony 2 framework. Doctrine2 will still be a major player
-in the Symfony world and the bundle is maintained by developers in the Doctrine and Symfony communities.
-
-IMPORTANT: This bundle is developed for Symfony 2.1 and up. For Symfony 2.0 applications the DoctrineBundle
-is still shipped with the core Symfony repository.
-
 Installation
-------------
+============
 
-1. Old deps and bin/vendors way
+Step 1: Download the Bundle
+---------------------------
 
-Add the following snippets to "deps" files:
+Open a command console, enter your project directory and execute the following
+command to download the latest stable version of this bundle:
 
-.. code-block::
+.. code-block:: bash
 
-    [doctrine-mongodb]
-        git=http://github.com/doctrine/dbal.git
+    $ composer require doctrine/doctrine-bundle
 
-    [doctrine-mongodb-odm]
-        git=http://github.com/doctrine/doctrine2.git
+This command requires you to have Composer installed globally, as explained
+in the `installation chapter`_ of the Composer documentation.
 
-    [DoctrineBundle]
-        git=http://github.com/doctrine/DoctrineBundle.git
-        target=/bundles/Doctrine/Bundle/DoctrineBundle
+Step 2: Enable the Bundle
+-------------------------
 
-2. Composer
+Then, enable the bundle by adding the following line in the ``app/AppKernel.php``
+file of your project::
 
-Add the following dependencies to your projects composer.json file:
+    <?php
+    // app/AppKernel.php
 
-.. code-block::
+    // ...
+    class AppKernel extends Kernel
+    {
+        public function registerBundles()
+        {
+            $bundles = array(
+                // ...
 
-    "require": {
-        # ..
-        "doctrine/doctrine-bundle": "~1.2"
-        # ..
+                new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
+            );
+
+            // ...
+        }
+
+        // ...
     }
 
+.. _`installation chapter`: https://getcomposer.org/doc/00-intro.md
