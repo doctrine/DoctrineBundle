@@ -333,8 +333,8 @@ Configuration Reference
                                     # example
                                     foo_param:              bar_value
 
--                # Search for the "ResolveTargetEntityListener" class for a cookbook about this
--                resolve_target_entities:
+                # Search for the "ResolveTargetEntityListener" class for a cookbook about this
+                resolve_target_entities:
 
                     # Prototype
                     Acme\InvoiceBundle\Model\InvoiceSubjectInterface: Acme\AppBundle\Entity\Customer
@@ -672,7 +672,7 @@ the ORM resolves to:
             # the standard distribution overrides this to be true in debug, false otherwise
             auto_generate_proxy_classes: false
             proxy_namespace: Proxies
-            proxy_dir: %kernel.cache_dir%/doctrine/orm/Proxies
+            proxy_dir: "%kernel.cache_dir%/doctrine/orm/Proxies"
             default_entity_manager: default
             metadata_cache_driver: array
             query_cache_driver: array
@@ -684,8 +684,8 @@ certain classes, but those are for very advanced use-cases only.
 Caching Drivers
 ~~~~~~~~~~~~~~~
 
-For the caching drivers you can specify the values "array", "apc", "memcache", "memcached"
-or "xcache".
+For the caching drivers you can specify the values ``array``, ``apc``, ``memcache``,
+``memcached`` or ``xcache``.
 
 The following example shows an overview of the caching configurations:
 
@@ -709,31 +709,36 @@ Explicit definition of all the mapped entities is the only necessary
 configuration for the ORM and there are several configuration options that you
 can control. The following configuration options exist for a mapping:
 
-* ``type`` One of ``annotation``, ``xml``, ``yml``, ``php`` or ``staticphp``.
-  This specifies which type of metadata type your mapping uses.
+``type``
+    One of ``annotation``, ``xml``, ``yml``, ``php`` or ``staticphp``.
+    This specifies which type of metadata type your mapping uses.
 
-* ``dir`` Path to the mapping or entity files (depending on the driver). If
-  this path is relative it is assumed to be relative to the bundle root. This
-  only works if the name of your mapping is a bundle name. If you want to use
-  this option to specify absolute paths you should prefix the path with the
-  kernel parameters that exist in the DIC (for example %kernel.root_dir%).
+``dir``
+    Path to the mapping or entity files (depending on the driver). If this path
+    is relative it is assumed to be relative to the bundle root. This only works
+    if the name of your mapping is a bundle name. If you want to use this option
+    to specify absolute paths you should prefix the path with the kernel
+    parameters that exist in the DIC (for example ``%kernel.root_dir%``).
 
-* ``prefix`` A common namespace prefix that all entities of this mapping
-  share. This prefix should never conflict with prefixes of other defined
-  mappings otherwise some of your entities cannot be found by Doctrine. This
-  option defaults to the bundle namespace + ``Entity``, for example for an
-  application bundle called ``AcmeHelloBundle`` prefix would be
-  ``Acme\HelloBundle\Entity``.
+``prefix``
+    A common namespace prefix that all entities of this mapping share. This
+    prefix should never conflict with prefixes of other defined mappings
+    otherwise some of your entities cannot be found by Doctrine. This option
+    defaults to the bundle namespace + ``Entity``, for example for an
+    application bundle called ``AcmeHelloBundle`` prefix would be
+    ``Acme\HelloBundle\Entity``.
 
-* ``alias`` Doctrine offers a way to alias entity namespaces to simpler,
-  shorter names to be used in DQL queries or for Repository access. When using
-  a bundle the alias defaults to the bundle name.
+``alias``
+    Doctrine offers a way to alias entity namespaces to simpler, shorter names
+    to be used in DQL queries or for Repository access. When using a bundle the
+    alias defaults to the bundle name.
 
-* ``is_bundle`` This option is a derived value from ``dir`` and by default is
-  set to true if dir is relative proved by a ``file_exists()`` check that
-  returns false. It is false if the existence check returns true. In this case
-  an absolute path was specified and the metadata files are most likely in a
-  directory outside of a bundle.
+``is_bundle``
+    This option is a derived value from ``dir`` and by default is set to true if
+    dir is relative proved by a ``file_exists()`` check that returns false. It
+    is false if the existence check returns true. In this case an absolute path
+    was specified and the metadata files are most likely in a directory outside
+    of a bundle.
 
 .. index::
     single: Configuration; Doctrine DBAL
@@ -756,11 +761,20 @@ You can easily define `doctrine filters`_ in your configuration file:
                         myParameter: myValue
                         mySecondParameter: mySecondValue
 
-* ``myFilter:``   Filter identifier (Required)
-* ``class:``      Filter target class (Required)
-* ``enabled:``    Enable/Disable the filter by default (Optional - Default disabled)
-* ``parameters:`` Set default parameters (Optional)
-* ``myParameter: myValue`` Bind the value ``myValue`` to the parameter ``myParameter`` (Optional)
+``myFilter``
+    Filter identifier (Required)
+
+``class``
+    Filter target class (Required)
+
+``enabled``
+    Enable/Disable the filter by default (Optional - Default disabled)
+
+``parameters:``
+    Set default parameters (Optional)
+
+``myParameter: myValue``
+    Bind the value ``myValue`` to the parameter ``myParameter`` (Optional)
 
 .. _doctrine filters: http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/filters.html
 
@@ -777,9 +791,9 @@ Doctrine DBAL Configuration
 
 .. note::
 
-    When specifying a "url" parameter, any information extracted from that
+    When specifying a ``url`` parameter, any information extracted from that
     URL will override explicitly set parameters. An example database URL
-    would be "mysql://snoopy:redbaron@localhost/baseball", and any explicitly
+    would be ``mysql://snoopy:redbaron@localhost/baseball``, and any explicitly
     set driver, user, password and dbname parameter would be overridden by
     this URL. See the Doctrine `DBAL documentation`_ for more information.
 
