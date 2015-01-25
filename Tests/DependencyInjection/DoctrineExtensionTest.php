@@ -217,8 +217,12 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $this->assertEquals(array('default' => 'doctrine.orm.default_entity_manager'), $container->getParameter('doctrine.entity_managers'), "Set of the existing EntityManagers names is incorrect.");
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), "Set of the existing EntityManagers names is incorrect.");
@@ -284,8 +288,12 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
