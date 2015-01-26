@@ -171,8 +171,12 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
@@ -203,8 +207,12 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'setFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
@@ -231,8 +239,12 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.em1_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -251,8 +263,12 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.em2_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -623,10 +639,14 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->loadContainer('orm_entity_listener_resolver', array('YamlBundle'), new EntityListenerPass());
 
         $definition = $container->getDefinition('doctrine.orm.em1_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em1_entity_listener_resolver')));
+        if (version_compare(Version::VERSION, "2.4.0-DEV") >= 0) {
+            $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em1_entity_listener_resolver')));
+        }
 
         $definition = $container->getDefinition('doctrine.orm.em2_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em2_entity_listener_resolver')));
+        if (version_compare(Version::VERSION, "2.4.0-DEV") >= 0) {
+            $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em2_entity_listener_resolver')));
+        }
 
         $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener1')));

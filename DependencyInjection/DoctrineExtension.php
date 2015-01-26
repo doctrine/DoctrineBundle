@@ -128,6 +128,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setParameter('doctrine.connections', $connections);
         $container->setParameter('doctrine.default_connection', $this->defaultConnection);
 
+        $def = $container->getDefinition('doctrine.dbal.connection');
+        if (method_exists($def, 'setFactory')) {
+            // to be inlined in dbal.xml when dependency on Symfony DependencyInjection is bumped to 2.6
+            $def->setFactory(array(new Reference('doctrine.dbal.connection_factory'), 'createConnection'));
+        } else {
+            // to be removed when dependency on Symfony DependencyInjection is bumped to 2.6
+            $def->setFactoryService('doctrine.dbal.connection_factory');
+            $def->setFactoryMethod('createConnection');
+        }
+
         foreach ($config['connections'] as $name => $connection) {
             $this->loadDbalConnection($name, $connection, $container);
         }
@@ -341,6 +351,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         } else {
             $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $container->getParameter('kernel.bundles'));
+        }
+
+        $def = $container->getDefinition('doctrine.orm.entity_manager.abstract');
+        if (method_exists($def, 'setFactory')) {
+            // to be inlined in dbal.xml when dependency on Symfony DependencyInjection is bumped to 2.6
+            $def->setFactory(array('%doctrine.orm.entity_manager.class%', 'create'));
+        } else {
+            // to be removed when dependency on Symfony DependencyInjection is bumped to 2.6
+            $def->setFactoryClass('%doctrine.orm.entity_manager.class%');
+            $def->setFactoryMethod('create');
         }
 
         foreach ($config['entity_managers'] as $name => $entityManager) {
