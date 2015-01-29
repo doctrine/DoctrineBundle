@@ -57,7 +57,7 @@ class ProfilerController extends ContainerAware
         $connection = $this->container->get('doctrine')->getConnection($connectionName);
 
         try {
-            $results =  $connection->executeQuery($query['sql'], $query['params'], $query['types'])
+            $results = $connection->executeQuery($query['sql'], $query['params'], $query['types'])
                 ->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
             return new Response('This query cannot be executed.');
