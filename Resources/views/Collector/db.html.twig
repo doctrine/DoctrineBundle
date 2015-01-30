@@ -117,7 +117,7 @@
                                 {{ query.sql|doctrine_replace_query_parameters(query.params)|raw }}
                             </span>
                             <small>
-                                <strong>Parameters</strong>: {{ query.params|yaml_encode }} <br />
+                                <strong>Parameters</strong>: {{ query.params|yaml_encode|raw }} <br />
                                 [<span id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this);" target-data-id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">Display runnable query</span>]<br/>
                             </small>
 
