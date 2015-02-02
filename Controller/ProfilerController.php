@@ -49,8 +49,8 @@ class ProfilerController extends ContainerAware
         }
 
         $query = $queries[$connectionName][$query];
-        if (!$query['explainable']) {
-            return new Response('This query cannot be explained.');
+        if (!$query['explainable'] || (stripos($query['sql'], 'SELECT') !== 0)) {
+            return new Response('This query cannot be executed.');
         }
 
         /** @var $connection \Doctrine\DBAL\Connection */
