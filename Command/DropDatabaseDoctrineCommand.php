@@ -92,7 +92,8 @@ EOT
             }
 
             try {
-                $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
+                $cleanName = str_replace('`', '', $name);
+                $shouldDropDatabase = !$ifExists || in_array($cleanName, $connection->getSchemaManager()->listDatabases());
 
                 if ($shouldDropDatabase) {
                     $connection->getSchemaManager()->dropDatabase($name);
