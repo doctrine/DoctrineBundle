@@ -47,6 +47,7 @@
         <xsd:attribute name="port" type="xsd:string" />
         <xsd:attribute name="user" type="xsd:string" />
         <xsd:attribute name="password" type="xsd:string" />
+        <xsd:attribute name="application_name" type="xsd:string" />
         <xsd:attribute name="path" type="xsd:string" />
         <xsd:attribute name="unix-socket" type="xsd:string" />
         <xsd:attribute name="memory" type="xsd:string" />
@@ -255,7 +256,7 @@
         <xsd:attribute name="region-lifetime" type="xsd:integer" />
         <xsd:attribute name="region-lock-lifetime" type="xsd:integer" />
     </xsd:complexType>
-    
+
     <xsd:complexType name="dql">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="string-function" type="named_scalar" />

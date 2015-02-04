@@ -197,6 +197,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('port')->defaultNull()->end()
                 ->scalarNode('user')->defaultValue('root')->end()
                 ->scalarNode('password')->defaultNull()->end()
+                ->scalarNode('application_name')->defaultNull()->end()
                 ->scalarNode('charset')->end()
                 ->scalarNode('path')->end()
                 ->booleanNode('memory')->end()
