@@ -27,5 +27,5 @@ schema management and PDO abstraction.
 
 ## Documentation
 
-See the Resources/docs folder for more detailed documentation including [configuration](Resources/doc/configuration.rst),
-[installation](Resources/doc/installation.rst) and [entity listeners](Resources/doc/entity-listeners.rst) instructions.
+The documentation is rendered on [the symfony.com website](http://symfony.com/doc/master/bundles/DoctrineBundle/index.html).
+The source of the documentation is available in the Resources/docs folder.
