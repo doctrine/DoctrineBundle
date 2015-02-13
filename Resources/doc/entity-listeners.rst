@@ -6,6 +6,8 @@ listener resolver. You can tag your entity listeners and they will automatically
 be added to the resolver. Use the entity_manager attribute to specify which
 entity manager it should be registered with. Example:
 
+.. configuration-block::
+
     .. code-block:: yaml
 
         services:
