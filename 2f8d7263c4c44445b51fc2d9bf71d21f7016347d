@@ -1,0 +1,36 @@
+---------------------------------------------------------------------------
+
+by Ocramius at 2015-01-05T00:56:36Z
+
+Is this just a matter of tests?
+Can a small integration test be written?
+
+What if I want to re-use a connection from a kernel after the kernel has been shut down (for example for late batch-processing of a 201 or 202 request)?
+
+---------------------------------------------------------------------------
+
+by stof at 2015-01-09T14:36:57Z
+
+@ocramius in a web context, the kernel is never shut down. A kernel.terminate action happens after handling the request and sending the response, but not after shutdown
+
+The main action of shutting down the kernel is removing the reference to the container, so that booting again recreates a new container (your existing container would ultimately be garbage collected but not immediately because of circular object graphs).
+
+The goal of the shutdown is to reset your kernel instance entirely. the only use case I see is testing (to isolate your tests while keeping the same kernel reference).
+
+---------------------------------------------------------------------------
+
+by driesvints at 2015-01-22T11:34:04Z
+
+Just a FYI but I also encountered this when running unit tests. I'm not using Symfony but I'm using Laravel 4.2 + Doctrine (DBAL 2.5.1). A simple connection `close` and entity manager `clear`, like @stof suggested above solved the problem for me as well.
+
+---------------------------------------------------------------------------
+
+by oleg-andreyev at 2015-02-02T15:54:32Z
+
+:+1: need this.
+
+---------------------------------------------------------------------------
+
+by stof at 2015-02-18T09:25:50Z
+
+I'm going to merge this one. Writing an integration test for the shutdown would be a pain
