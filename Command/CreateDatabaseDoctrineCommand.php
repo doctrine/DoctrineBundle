@@ -56,7 +56,12 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $connection = $this->getDoctrineConnection($input->getOption('connection'));
+        $connectionName = $input->getOption('connection');
+        if (empty($connectionName) === true) {
+            $connectionName = $this->getContainer()->get('doctrine')->getDefaultConnectionName();
+        }
+        $connection = $this->getDoctrineConnection($connectionName);
+
         $ifNotExists = $input->getOption('if-not-exists');
 
         $params = $connection->getParams();
@@ -82,13 +87,13 @@ EOT
             $shouldNotCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
 
             if ($shouldNotCreateDatabase) {
-                $output->writeln(sprintf('<info>Database for connection named <comment>%s</comment> already exists. Skipped.</info>'));
+                $output->writeln(sprintf('<info>Database <comment>%s</comment> for connection named <comment>%s</comment> already exists. Skipped.</info>', $name, $connectionName));
             } else {
                 $tmpConnection->getSchemaManager()->createDatabase($name);
-                $output->writeln(sprintf('<info>Created database for connection named <comment>%s</comment></info>', $name));
+                $output->writeln(sprintf('<info>Created database <comment>%s</comment> for connection named <comment>%s</comment></info>', $name, $connectionName));
             }
         } catch (\Exception $e) {
-            $output->writeln(sprintf('<error>Could not create database for connection named <comment>%s</comment></error>', $name));
+            $output->writeln(sprintf('<error>Could not create database <comment>%s</comment> for connection named <comment>%s</comment></error>', $name, $connectionName));
             $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
             $error = true;
         }
