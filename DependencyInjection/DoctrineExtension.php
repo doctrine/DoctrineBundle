@@ -76,6 +76,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         if (!empty($config['orm'])) {
+            if (empty($config['dbal'])) {
+                throw new \LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
+            }
+
             $this->ormLoad($config['orm'], $container);
         }
 

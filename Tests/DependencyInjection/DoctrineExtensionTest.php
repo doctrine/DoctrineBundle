@@ -39,6 +39,17 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('foo', $container->getParameter('doctrine.default_connection'), '->load() overrides existing configuration options');
     }
 
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Configuring the ORM layer requires to configure the DBAL layer as well.
+     */
+    public function testOrmRequiresDbal()
+    {
+        $extension = new DoctrineExtension();
+
+        $extension->load(array(array('orm' => array('auto_mapping' => true))), $this->getContainer());
+    }
+
     public function getAutomappingConfigurations()
     {
         return array(
