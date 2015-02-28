@@ -1,3 +1,19 @@
+## 1.4.0 (2015-02-28)
+
+Features:
+
+* Added the ``--if-not-exists`` option in the ``doctrine:database:drop`` command
+* Added the ``--if-exists`` option in  the ``doctrine:database:create`` command
+* Add the support for the ``url`` DBAL setting
+* Added profiling ability for SQL Server
+
+Bugfix:
+
+* Fixed the cache configuration when using ``cache_provider``
+* Removed usage of deprecated DI features when using Symfony 2.6+
+* Close connections and clear managers on shutdown. This avoids leaking connections in tests.
+* Added an exception when the ORM layer is configured but not DBAL
+
 ## 1.3.0 (2014-11-28)
 
 Features:
