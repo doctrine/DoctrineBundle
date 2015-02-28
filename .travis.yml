@@ -1,5 +1,11 @@
 language: php
 
+sudo: false
+
+cache:
+    directories:
+        - $HOME/.composer/cache
+
 php:
   - 5.3
   - 5.4
@@ -20,8 +26,8 @@ before_install:
   - composer self-update
 
 install:
-  - if [ "$deps" = "no" ]; then composer --prefer-source install; fi;
-  - if [ "$deps" = "low" ]; then composer --prefer-source --prefer-lowest --prefer-stable update; fi;
+  - if [ "$deps" = "no" ]; then composer install; fi;
+  - if [ "$deps" = "low" ]; then composer --prefer-lowest --prefer-stable update; fi;
 
 script:
   - ./vendor/bin/phpunit -v --coverage-clover ./build/logs/clover.xml
