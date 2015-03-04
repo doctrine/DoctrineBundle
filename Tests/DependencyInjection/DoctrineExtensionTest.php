@@ -253,9 +253,10 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         if (version_compare(Version::VERSION, "2.3.0-DEV") >= 0) {
             $this->assertEquals('doctrine.orm.naming_strategy.default', (string) $calls[10][1][0]);
+            $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[11][1][0]);
         }
         if (version_compare(Version::VERSION, "2.4.0-DEV") >= 0) {
-            $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[11][1][0]);
+            $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
         }
 
         $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));

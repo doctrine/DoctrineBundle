@@ -454,6 +454,20 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($def2, 'setNamingStrategy', array(0 => new Reference('doctrine.orm.naming_strategy.underscore')));
     }
 
+    public function testSetQuoteStrategy()
+    {
+        if (version_compare(Version::VERSION, "2.3.0-DEV") < 0) {
+            $this->markTestSkipped('Quote Strategies are not available');
+        }
+        $container = $this->loadContainer('orm_quotestrategy');
+
+        $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
+        $def2 = $container->getDefinition('doctrine.orm.em2_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($def1, 'setQuoteStrategy', array(0 => new Reference('doctrine.orm.quote_strategy.default')));
+        $this->assertDICDefinitionMethodCallOnce($def2, 'setQuoteStrategy', array(0 => new Reference('doctrine.orm.quote_strategy.ansi')));
+    }
+
     public function testSecondLevelCache()
     {
         if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
