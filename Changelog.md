@@ -2,8 +2,8 @@
 
 Features:
 
-* Added the ``--if-not-exists`` option in the ``doctrine:database:drop`` command
-* Added the ``--if-exists`` option in  the ``doctrine:database:create`` command
+* Added the ``--if-not-exists`` option in the ``doctrine:database:create`` command
+* Added the ``--if-exists`` option in  the ``doctrine:database:drop`` command
 * Add the support for the ``url`` DBAL setting
 * Added profiling ability for SQL Server
 
