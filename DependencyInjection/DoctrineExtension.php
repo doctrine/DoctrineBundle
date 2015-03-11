@@ -166,16 +166,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if ($connection['profiling']) {
             $profilingLoggerId = 'doctrine.dbal.logger.profiling.'.$name;
             $container->setDefinition($profilingLoggerId, new DefinitionDecorator('doctrine.dbal.logger.profiling'));
-            $logger = new Reference($profilingLoggerId);
-            $container->getDefinition('data_collector.doctrine')->addMethodCall('addLogger', array($name, $logger));
+            $profilingLogger = new Reference($profilingLoggerId);
+            $container->getDefinition('data_collector.doctrine')->addMethodCall('addLogger', array($name, $profilingLogger));
 
             if (null !== $logger) {
                 $chainLogger = new DefinitionDecorator('doctrine.dbal.logger.chain');
-                $chainLogger->addMethodCall('addLogger', array($logger));
+                $chainLogger->addMethodCall('addLogger', array($profilingLogger));
 
                 $loggerId = 'doctrine.dbal.logger.chain.'.$name;
                 $container->setDefinition($loggerId, $chainLogger);
                 $logger = new Reference($loggerId);
+            } else {
+                $logger = $profilingLogger;
             }
         }
         unset($connection['profiling']);
