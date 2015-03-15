@@ -85,6 +85,7 @@ EOT
             // as some vendors do not allow dropping the database connected to.
             $connection->close();
             $connection = DriverManager::getConnection($params);
+            $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
 
             // Only quote if we don't have a path
             if (!isset($params['path'])) {
@@ -92,8 +93,6 @@ EOT
             }
 
             try {
-                $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
-
                 if ($shouldDropDatabase) {
                     $connection->getSchemaManager()->dropDatabase($name);
                     $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
