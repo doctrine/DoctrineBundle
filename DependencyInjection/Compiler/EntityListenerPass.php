@@ -71,8 +71,8 @@ class EntityListenerPass implements CompilerPassInterface
         $serviceDef = $container->getDefinition($id);
 
         $args = array(
+	        $attributes['entity'],
             $serviceDef->getClass(),
-            $attributes['entity'],
         );
 
         if (isset($attributes['type'])) {
