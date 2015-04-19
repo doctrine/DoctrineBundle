@@ -48,7 +48,7 @@ class EntityListenerPass implements CompilerPassInterface
                     continue;
                 }
 
-                if (isset($attributes['entity']) && isset($attributes['type'])) {
+                if (isset($attributes['entity']) && isset($attributes['event'])) {
                     $this->attachToListener($container, $name, $id, $attributes);
                 }
 
@@ -75,8 +75,8 @@ class EntityListenerPass implements CompilerPassInterface
             $serviceDef->getClass(),
         );
 
-        if (isset($attributes['type'])) {
-            $args[] = $attributes['type'];
+        if (isset($attributes['event'])) {
+            $args[] = $attributes['event'];
         }
 
         if (isset($attributes['method'])) {
