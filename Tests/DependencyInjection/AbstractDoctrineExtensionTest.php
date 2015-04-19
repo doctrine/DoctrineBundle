@@ -655,6 +655,34 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener2')));
     }
 
+    public function testAttachEntityListenerTag()
+    {
+        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
+            $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
+        }
+
+        $container = $this->getContainer(array());
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $container->addCompilerPass(new EntityListenerPass());
+
+        $this->loadFromFile($container, 'orm_attach_entity_listener_tag');
+
+        $this->compileContainer($container);
+
+        $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener1')));
+
+        $listener = $container->getDefinition('doctrine.orm.em2_entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener2')));
+
+        $attachListener = $container->getDefinition('doctrine.orm.em1_listeners.attach_entity_listeners');
+        $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', array('My/Entity1', 'EntityListener1', 'postLoad'));
+
+        $attachListener = $container->getDefinition('doctrine.orm.em2_listeners.attach_entity_listeners');
+        $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', array('My/Entity2', 'EntityListener2', 'preFlush', 'preFlushHandler'));
+    }
+
     public function testRepositoryFactory()
     {
         $container = $this->loadContainer('orm_repository_factory');
