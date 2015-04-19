@@ -657,6 +657,10 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testAttachEntityListenerTag()
     {
+	    if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
+		    $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
+	    }
+
         $container = $this->getContainer(array());
         $loader = new DoctrineExtension();
         $container->registerExtension($loader);
