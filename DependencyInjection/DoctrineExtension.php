@@ -501,7 +501,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         );
 
         if (isset($entityManager['entity_listeners'])) {
-            if (!$listenerDef) {
+            if (!isset($listenerDef)) {
                 throw new InvalidArgumentException('Entity listeners configuration requires doctrine-orm 2.5.0 or newer');
             }
 
