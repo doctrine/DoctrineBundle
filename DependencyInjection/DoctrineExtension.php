@@ -429,11 +429,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ));
         }
 
-	    if (version_compare(Version::VERSION, "2.5.0-DEV") < 0) {
-		    $listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
-		    $listenerDef = $container->setDefinition($listenerId, new Definition('%doctrine.orm.listeners.attach_entity_listeners.class%'));
-            $listenerDef->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
-        }
+	    if (version_compare(Version::VERSION, "2.5.0-DEV") >= 0) {
+			$listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
+			$listenerDef = $container->setDefinition($listenerId, new Definition('%doctrine.orm.listeners.attach_entity_listeners.class%'));
+			$listenerDef->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
+		}
 
         if (isset($entityManager['second_level_cache'])) {
             $this->loadOrmSecondLevelCache($entityManager, $ormConfigDef, $container);
