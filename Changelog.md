@@ -20,7 +20,7 @@ Features:
 
 * add support for bundle namespace alias in the mapping compiler pass
 * Added support for server_version connection parameter
-* Added a way to enable auto_mapping option using multipe entity managers
+* Added a way to enable auto_mapping option using multiple entity managers
 
 Bugfix:
 
