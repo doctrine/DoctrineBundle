@@ -153,6 +153,11 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey('name')
                     ->prototype('scalar')->end()
                 ->end()
+                ->arrayNode('defaultTableOptions')
+                    ->info("This option is used by the schema-tool and affects generated SQL. Possible keys include 'charset','collate', and 'engine'.")
+                    ->useAttributeAsKey('name')
+                    ->prototype('scalar')->end()
+                ->end()
             ->end()
         ;
 
