@@ -114,7 +114,11 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Doctrine\\DBAL\\Connections\\MasterSlaveConnection', $param['wrapperClass']);
         $this->assertTrue($param['keepSlave']);
         $this->assertEquals(
-            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t', 'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost', 'unix_socket' => '/path/to/mysqld.sock'),
+            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t',
+                  'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost',
+                  'unix_socket' => '/path/to/mysqld.sock',
+                  'defaultTableOptions' => array(),
+            ),
             $param['master']
         );
         $this->assertEquals(
@@ -136,7 +140,11 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Doctrine\\DBAL\\Sharding\\PoolingShardConnection', $param['wrapperClass']);
         $this->assertEquals(new Reference('foo.shard_choser'), $param['shardChoser']);
         $this->assertEquals(
-            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t', 'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost', 'unix_socket' => '/path/to/mysqld.sock'),
+            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t',
+                  'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost',
+                  'unix_socket' => '/path/to/mysqld.sock',
+                  'defaultTableOptions' => array(),
+            ),
             $param['global']
         );
         $this->assertEquals(
@@ -163,6 +171,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                 'password' => null,
                 'driver' => 'pdo_mysql',
                 'driverOptions' => array(),
+                'defaultTableOptions' => array(),
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -199,6 +208,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                 'password' => 'sqlite_s3cr3t',
                 'dbname' => 'sqlite_db',
                 'memory' => true,
+                'defaultTableOptions' => array(),
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
