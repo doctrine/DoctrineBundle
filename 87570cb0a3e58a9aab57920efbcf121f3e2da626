@@ -1,0 +1,27 @@
+---------------------------------------------------------------------------
+
+by stof at 2014-06-04T01:38:33Z
+
+this is weird. ``is defined`` should handle multiple level of keys in Twig
+
+---------------------------------------------------------------------------
+
+by covus-filipe-garcia at 2014-06-04T06:53:55Z
+
+I didn't know that, could it be a twig bug instead?
+
+---------------------------------------------------------------------------
+
+by covus-filipe-garcia at 2014-07-14T13:15:26Z
+
+I keep having this error.
+
+I have 2 Entity managers without auto mapping and only one entity manager has mapped entities, the other one is used without models.
+
+Twig is not handling the case when ```manager``` is not defined.
+
+---------------------------------------------------------------------------
+
+by stof at 2015-05-22T09:54:48Z
+
+Great to finally have an information about the case where this happens: when a manager does not have any mapped entities (actually, any loaded mapped entity). Nobody was giving this information yet when reporting the issue.
