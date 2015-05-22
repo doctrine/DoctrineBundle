@@ -208,6 +208,7 @@
         <xsd:attribute name="default-repository-class" type="xsd:string" />
         <xsd:attribute name="class-metadata-factory-name" type="xsd:string" />
         <xsd:attribute name="naming-strategy" type="xsd:string" />
+        <xsd:attribute name="quote-strategy" type="xsd:string" />
         <xsd:attribute name="entity-listener-resolver" type="xsd:string" />
         <xsd:attribute name="repository-factory" type="xsd:string" />
         <!-- deprecated attributes, use the child element instead -->
