@@ -693,14 +693,15 @@ The following example shows an overview of the caching configurations:
 
     doctrine:
         orm:
-            auto_mapping: true
-            metadata_cache_driver: apc
-            query_cache_driver: xcache
-            result_cache_driver:
-                type: memcache
-                host: localhost
-                port: 11211
-                instance_class: Memcache
+            some_em:        
+               auto_mapping: true
+               metadata_cache_driver: apc
+               query_cache_driver: xcache
+               result_cache_driver:
+                  type: memcache
+                  host: localhost
+                  port: 11211
+                  instance_class: Memcache
 
 Mapping Configuration
 ~~~~~~~~~~~~~~~~~~~~~
