@@ -421,6 +421,11 @@ Configuration Reference
                         <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
 
                         <!-- example -->
+                        <doctrine:defaultTableOption name="charset">utf8</doctrine:defaultTableOption>
+                        <doctrine:defaultTableOption name="collate">utf8_unicode_ci</doctrine:defaultTableOption>
+                        <doctrine:defaultTableOption name="engine">InnoDB</doctrine:defaultTableOption>
+
+                        <!-- example -->
                         <!-- unix-socket: The unix socket to use for MySQL -->
                         <!-- persistent: True to use as persistent connection for the ibm_db2 driver -->
                         <!-- protocol: The protocol to use for the ibm_db2 driver (default to TCPIP if omitted) -->
@@ -889,6 +894,9 @@ can configure. The following block shows all possible configuration keys:
             >
                 <doctrine:option key="foo">bar</doctrine:option>
                 <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
+                <doctrine:defaultTableOption name="charset">utf8</doctrine:defaultTableOption>
+                <doctrine:defaultTableOption name="collate">utf8_unicode_ci</doctrine:defaultTableOption>
+                <doctrine:defaultTableOption name="engine">InnoDB</doctrine:default-table-option>
                 <doctrine:type name="custom">Acme\HelloBundle\MyCustomType</doctrine:type>
             </doctrine:dbal>
         </doctrine:config>
