@@ -96,6 +96,13 @@ Configuration Reference
                             # example
                             # enum:                 string
 
+                        defaultTableOptions:
+                            # Affects schema-tool. If absent, DBAL chooses defaults
+                            # based on the platform. Examples here are for MySQL.
+                            # charset:      utf8
+                            # collate:      utf8_unicode_ci
+                            # engine:       InnoDB
+
                         slaves:
                             # A collection of named slave connections (e.g. slave1, slave2)
                             slave1:
@@ -838,6 +845,12 @@ can configure. The following block shows all possible configuration keys:
                     enum: string
                 types:
                     custom: Acme\HelloBundle\MyCustomType
+                defaultTableOptions:
+                    # Affects schema-tool. If absent, DBAL chooses defaults
+                    # based on the platform.
+                    charset:              utf8
+                    collate:              utf8_unicode_ci
+                    engine:               InnoDB
 
     .. code-block:: xml
 
