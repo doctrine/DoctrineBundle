@@ -15,7 +15,6 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
-use Doctrine\Common\Cache\ArrayCache;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -45,6 +44,12 @@ class CreateDatabaseDoctrineTest extends \PHPUnit_Framework_TestCase
         $this->assertContains("Created database \"$dbName\" for connection named $connectionName", $commandTester->getDisplay());
     }
 
+
+    /**
+     * @param $connectionName
+     * @param null $params Connection parameters
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
     private function getMockContainer($connectionName, $params=null)
     {
         // Mock the container and everything you'll need here
