@@ -38,7 +38,7 @@
         "symfony/validator": "~2.2",
         "twig/twig": "~1.10",
         "satooshi/php-coveralls": "~0.6.1",
-        "phpunit/phpunit": "~4"
+        "phpunit/phpunit": "~4.6"
     },
     "suggest": {
         "symfony/web-profiler-bundle": "to use the data collector",

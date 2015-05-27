@@ -30,7 +30,7 @@ install:
   - if [ "$deps" = "low" ]; then composer --prefer-lowest --prefer-stable update; fi;
 
 script:
-  - ./vendor/bin/phpunit -v --coverage-clover ./build/logs/clover.xml
+  - ./vendor/bin/phpunit -v
 
 after_script:
     - php ./vendor/bin/coveralls -v
