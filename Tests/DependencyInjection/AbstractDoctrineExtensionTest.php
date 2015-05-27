@@ -210,7 +210,13 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $factory = $definition->getFactory();
+        if (method_exists($definition, 'getFactory')) {
+            $factory = $definition->getFactory();
+        } else {
+            $factory[0] = $definition->getFactoryClass();
+            $factory[1] = $definition->getFactoryMethod();
+        }
+
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $factory[0]);
         $this->assertEquals('create', $factory[1]);
 
