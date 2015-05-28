@@ -1,10 +1,25 @@
+## 1.5.0 (2015-05-28)
+
+Features:
+
+* Added the possibility to configure the quote strategy in the configuration
+* Improved the rendering of the query explanation for Postgres
+* Added support for tagging entity listeners, without the need to map the listener
+
+Bugfix:
+
+* Fixed the serverVersion configuration for master slave connections
+* Fixed the enabling of the profiler to avoid automatically enabling the logger
+* Fixed the detection of existing databases when quoted names are used
+* Fixed the profiler template when having a manager without any loaded metadata
+
 ## 1.4.0 (2015-02-28)
 
 Features:
 
 * Added the ``--if-not-exists`` option in the ``doctrine:database:create`` command
 * Added the ``--if-exists`` option in  the ``doctrine:database:drop`` command
-* Add the support for the ``url`` DBAL setting
+* Added the support for the ``url`` DBAL setting
 * Added profiling ability for SQL Server
 
 Bugfix:
