@@ -59,12 +59,9 @@ class EntityListenerPass implements CompilerPassInterface
 
     private function attachToListener(ContainerBuilder $container, $name, $id, array $attributes)
     {
-        $listenerId   = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $name);
-        if ($container->hasAlias($listenerId)) {
-            $listenerId = (string)$container->getAlias($listenerId);
-        }
+        $listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $name);
 
-        if (!$container->hasDefinition($listenerId)) {
+        if (!$container->has($listenerId)) {
             return;
         }
 
@@ -73,16 +70,13 @@ class EntityListenerPass implements CompilerPassInterface
         $args = array(
             $attributes['entity'],
             $serviceDef->getClass(),
+            $attributes['event'],
         );
-
-        if (isset($attributes['event'])) {
-            $args[] = $attributes['event'];
-        }
 
         if (isset($attributes['method'])) {
             $args[] = $attributes['method'];
         }
 
-        $container->getDefinition($listenerId)->addMethodCall('addEntityListener', $args);
+        $container->findDefinition($listenerId)->addMethodCall('addEntityListener', $args);
     }
 }
