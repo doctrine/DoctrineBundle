@@ -38,13 +38,13 @@ class CreateDatabaseDoctrineCommand extends DoctrineCommand
             ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
             ->addOption('if-not-exists', null, InputOption::VALUE_NONE, 'Don\'t trigger an error, when the database already exists')
             ->setHelp(<<<EOT
-The <info>doctrine:database:create</info> command creates the default connections database:
+The <info>%command.name%</info> command creates the default connections database:
 
-    <info>php app/console doctrine:database:create</info>
+    <info>php %command.full_name%</info>
 
 You can also optionally specify the name of a connection to create the database for:
 
-    <info>php app/console doctrine:database:create --connection=default</info>
+    <info>php %command.full_name% --connection=default</info>
 EOT
         );
     }
