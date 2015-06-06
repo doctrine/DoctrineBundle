@@ -155,6 +155,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->arrayNode('defaultTableOptions')
                     ->info("This option is used by the schema-tool and affects generated SQL. Possible keys include 'charset','collate', and 'engine'.")
+                    ->fixXmlConfig('default_table_option')
                     ->useAttributeAsKey('name')
                     ->prototype('scalar')->end()
                 ->end()

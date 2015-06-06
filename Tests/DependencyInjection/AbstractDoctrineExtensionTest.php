@@ -429,6 +429,27 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function testSingleEntityManagerDefaultTableOptions()
+    {
+        $container = $this->loadContainer('orm_single_em_default_table_options', array('YamlBundle', 'AnnotationsBundle', 'XmlBundle'));
+
+        $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+
+        $this->assertArrayHasKey('defaultTableOptions',$param);
+
+        $defaults = $param['defaultTableOptions'];
+
+        $this->assertArrayHasKey('charset', $defaults);
+        $this->assertArrayHasKey('collate', $defaults);
+        $this->assertArrayHasKey('engine', $defaults);
+
+        $this->assertEquals('utf8mb4',$defaults['charset']);
+        $this->assertEquals('utf8mb4_unicode_ci',$defaults['collate']);
+        $this->assertEquals('InnoDB',$defaults['engine']);
+
+        $this->markTestIncomplete();
+    }
+
     public function testSetTypes()
     {
         $container = $this->loadContainer('dbal_types');

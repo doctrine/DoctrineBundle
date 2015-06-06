@@ -68,7 +68,7 @@
             <xsd:element name="mapping-type" type="named_scalar" />
             <xsd:element name="slave" type="slave" />
             <xsd:element name="shard" type="shard" />
-            <xsd:element name="defaultTableOption" type="named_scalar" />
+            <xsd:element name="defaultTableOptions" type="named_scalar" />
         </xsd:choice>
     </xsd:group>
 

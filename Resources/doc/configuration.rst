@@ -421,9 +421,9 @@ Configuration Reference
                         <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
 
                         <!-- example -->
-                        <doctrine:defaultTableOption name="charset">utf8</doctrine:defaultTableOption>
-                        <doctrine:defaultTableOption name="collate">utf8_unicode_ci</doctrine:defaultTableOption>
-                        <doctrine:defaultTableOption name="engine">InnoDB</doctrine:defaultTableOption>
+                        <doctrine:defaultTableOptions name="charset">utf8</doctrine:defaultTableOptions>
+                        <doctrine:defaultTableOptions name="collate">utf8_unicode_ci</doctrine:defaultTableOptions>
+                        <doctrine:defaultTableOptions name="engine">InnoDB</doctrine:defaultTableOptions>
 
                         <!-- example -->
                         <!-- unix-socket: The unix socket to use for MySQL -->
@@ -894,9 +894,9 @@ can configure. The following block shows all possible configuration keys:
             >
                 <doctrine:option key="foo">bar</doctrine:option>
                 <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
-                <doctrine:defaultTableOption name="charset">utf8</doctrine:defaultTableOption>
-                <doctrine:defaultTableOption name="collate">utf8_unicode_ci</doctrine:defaultTableOption>
-                <doctrine:defaultTableOption name="engine">InnoDB</doctrine:default-table-option>
+                <doctrine:defaultTableOptions name="charset">utf8</doctrine:defaultTableOptions>
+                <doctrine:defaultTableOptions name="collate">utf8_unicode_ci</doctrine:defaultTableOptions>
+                <doctrine:defaultTableOptions name="engine">InnoDB</doctrine:defaultTableOptions>
                 <doctrine:type name="custom">Acme\HelloBundle\MyCustomType</doctrine:type>
             </doctrine:dbal>
         </doctrine:config>
