@@ -447,7 +447,6 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('utf8mb4_unicode_ci',$defaults['collate']);
         $this->assertEquals('InnoDB',$defaults['engine']);
 
-        $this->markTestIncomplete();
     }
 
     public function testSetTypes()
