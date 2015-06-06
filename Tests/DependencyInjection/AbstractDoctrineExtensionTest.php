@@ -211,6 +211,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                     'password' => null,
                     'driver' => 'pdo_mysql',
                     'driverOptions' => array(),
+                    'defaultTableOptions' => array(),
                 ),
                 new Reference('doctrine.dbal.default_connection.configuration'),
                 new Reference('doctrine.dbal.default_connection.event_manager'),
