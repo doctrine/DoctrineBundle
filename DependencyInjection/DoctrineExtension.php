@@ -421,6 +421,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (version_compare(Version::VERSION, "2.3.0-DEV") >= 0) {
             $methods = array_merge($methods, array(
                 'setNamingStrategy' => new Reference($entityManager['naming_strategy']),
+                'setQuoteStrategy' => new Reference($entityManager['quote_strategy']),
             ));
         }
 

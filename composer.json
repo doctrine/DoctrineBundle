@@ -26,6 +26,7 @@
     "require": {
         "php": ">=5.3.2",
         "symfony/framework-bundle": "~2.3",
+        "symfony/console": "~2.3",
         "doctrine/dbal": "~2.3",
         "jdorn/sql-formatter": "~1.1",
         "symfony/doctrine-bridge": "~2.2",
@@ -46,10 +47,9 @@
     "autoload": {
         "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "" }
     },
-    "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
-            "dev-master": "1.4.x-dev"
+            "dev-master": "1.5.x-dev"
         }
     }
 }

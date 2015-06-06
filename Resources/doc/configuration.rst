@@ -248,6 +248,7 @@ Configuration Reference
                         default_repository_class:     Doctrine\ORM\EntityRepository
                         auto_mapping:                 false
                         naming_strategy:              doctrine.orm.naming_strategy.default
+                        quote_strategy:               doctrine.orm.quote_strategy.default
                         entity_listener_resolver:     ~
                         repository_factory:           ~
                         second_level_cache:
@@ -512,6 +513,7 @@ Configuration Reference
                         default-repository-class="Doctrine\ORM\EntityRepository"
                         auto-mapping="false"
                         naming-strategy="doctrine.orm.naming_strategy.default"
+                        quote-strategy="doctrine.orm.quote_strategy.default"
                         entity-listener-resolver="null"
                         repository-factory="null"
                     >

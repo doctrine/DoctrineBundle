@@ -192,6 +192,48 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    /**
+     * The PDO driver doesn't require a database name to be to set when connecting to a database server
+     */
+    public function testLoadSimpleSingleConnectionWithoutDbName()
+    {
+
+        $container = $this->loadContainer('orm_service_simple_single_entity_manager_without_dbname');
+
+        /** @var Definition $definition */
+        $definition = $container->getDefinition('doctrine.dbal.default_connection');
+
+        $this->assertDICConstructorArguments($definition, array(
+                array(
+                    'host' => 'localhost',
+                    'port' => null,
+                    'user' => 'root',
+                    'password' => null,
+                    'driver' => 'pdo_mysql',
+                    'driverOptions' => array(),
+                ),
+                new Reference('doctrine.dbal.default_connection.configuration'),
+                new Reference('doctrine.dbal.default_connection.event_manager'),
+                array(),
+            ));
+
+        $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        if (method_exists($definition, 'getFactory')) {
+            $factory = $definition->getFactory();
+        } else {
+            $factory[0] = $definition->getFactoryClass();
+            $factory[1] = $definition->getFactoryMethod();
+        }
+
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $factory[0]);
+        $this->assertEquals('create', $factory[1]);
+
+        $this->assertDICConstructorArguments($definition, array(
+                new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration')
+            ));
+    }
+
     public function testLoadSingleConnection()
     {
         $container = $this->loadContainer('orm_service_single_entity_manager');
@@ -482,6 +524,20 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertDICDefinitionMethodCallOnce($def1, 'setNamingStrategy', array(0 => new Reference('doctrine.orm.naming_strategy.default')));
         $this->assertDICDefinitionMethodCallOnce($def2, 'setNamingStrategy', array(0 => new Reference('doctrine.orm.naming_strategy.underscore')));
+    }
+
+    public function testSetQuoteStrategy()
+    {
+        if (version_compare(Version::VERSION, "2.3.0-DEV") < 0) {
+            $this->markTestSkipped('Quote Strategies are not available');
+        }
+        $container = $this->loadContainer('orm_quotestrategy');
+
+        $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
+        $def2 = $container->getDefinition('doctrine.orm.em2_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($def1, 'setQuoteStrategy', array(0 => new Reference('doctrine.orm.quote_strategy.default')));
+        $this->assertDICDefinitionMethodCallOnce($def2, 'setQuoteStrategy', array(0 => new Reference('doctrine.orm.quote_strategy.ansi')));
     }
 
     public function testSecondLevelCache()

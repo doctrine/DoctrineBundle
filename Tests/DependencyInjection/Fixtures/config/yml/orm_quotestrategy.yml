@@ -1,0 +1,18 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        default_entity_manager: em1
+        entity_managers:
+            em1:
+                mappings:
+                    YamlBundle: ~
+                quote_strategy: doctrine.orm.quote_strategy.default
+            em2:
+                mappings:
+                    YamlBundle: ~
+                quote_strategy: doctrine.orm.quote_strategy.ansi
