@@ -92,7 +92,7 @@
             </p>
         {% else %}
             <p>
-                <button type="button" class="sf-button" onclick="expandAllQueries(this);" data-action="expand">
+                <button type="button" class="sf-button" onclick="expandAllQueries(this);" data-action="expand" data-connection="{{ loop.index }}">
                     <span class="border-l">
                         <span class="border-r">
                             <span class="btn-bg">Expand all queries</span>
@@ -257,7 +257,8 @@
         }
 
         function expandAllQueries(button) {
-            var queries = document.getElementsByClassName('query-section'),
+            var conn = button.getAttribute('data-connection'),
+                queries = document.getElementById('queries-' + conn).getElementsByClassName('query-section'),
                 i = queries.length,
                 action = button.getAttribute('data-action');
 
