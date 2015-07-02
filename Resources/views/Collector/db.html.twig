@@ -258,12 +258,12 @@
 
         function expandAllQueries(button) {
             var conn = button.getAttribute('data-connection'),
-                queries = document.getElementById('queries-' + conn).getElementsByClassName('query-section'),
+                queries = document.querySelectorAll('#queries-' + conn + ' .query-section'),
                 i = queries.length,
                 action = button.getAttribute('data-action');
 
             if (action == 'expand') {
-                button.getElementsByClassName('btn-bg')[0].innerHTML = 'Collapse all queries';
+                button.querySelector('.btn-bg').innerHTML = 'Collapse all queries';
 
                 while (i--) {
                     if (queries[i].getAttribute('data-state') == 'collapsed') {
@@ -271,7 +271,7 @@
                     }
                 }
             } else {
-                button.getElementsByClassName('btn-bg')[0].innerHTML = 'Expand all queries';
+                button.querySelector('.btn-bg').innerHTML = 'Expand all queries';
 
                 while (i--) {
                     if (queries[i].getAttribute('data-state') == 'expanded') {
