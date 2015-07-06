@@ -14,6 +14,10 @@
         <service id="entity_listener2" class="EntityListener2">
             <tag name="doctrine.orm.entity_listener" entity_manager="em2" entity="My/Entity2" event="preFlush" method="preFlushHandler" />
         </service>
+
+        <service id="entity_listener3" class="EntityListener3">
+            <tag name="doctrine.orm.entity_listener" entity_manager="em2" lazy="true" />
+        </service>
     </services>
 
     <doctrine:config>

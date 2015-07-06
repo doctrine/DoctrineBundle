@@ -52,7 +52,12 @@ class EntityListenerPass implements CompilerPassInterface
                     $this->attachToListener($container, $name, $id, $attributes);
                 }
 
-                $container->getDefinition($resolver)->addMethodCall('register', array(new Reference($id)));
+                if (isset($attributes['lazy']) && $attributes['lazy']) {
+                    $listener = $container->getDefinition($id);
+                    $container->getDefinition($resolver)->addMethodCall('registerService', array($listener->getClass(), $id));
+                } else {
+                    $container->getDefinition($resolver)->addMethodCall('register', array(new Reference($id)));
+                }
             }
         }
     }
