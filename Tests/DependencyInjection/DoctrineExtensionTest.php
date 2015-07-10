@@ -39,6 +39,17 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('foo', $container->getParameter('doctrine.default_connection'), '->load() overrides existing configuration options');
     }
 
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Configuring the ORM layer requires to configure the DBAL layer as well.
+     */
+    public function testOrmRequiresDbal()
+    {
+        $extension = new DoctrineExtension();
+
+        $extension->load(array(array('orm' => array('auto_mapping' => true))), $this->getContainer());
+    }
+
     public function getAutomappingConfigurations()
     {
         return array(
@@ -217,8 +228,12 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $this->assertEquals(array('default' => 'doctrine.orm.default_entity_manager'), $container->getParameter('doctrine.entity_managers'), "Set of the existing EntityManagers names is incorrect.");
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), "Set of the existing EntityManagers names is incorrect.");
@@ -238,9 +253,10 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         if (version_compare(Version::VERSION, "2.3.0-DEV") >= 0) {
             $this->assertEquals('doctrine.orm.naming_strategy.default', (string) $calls[10][1][0]);
+            $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[11][1][0]);
         }
         if (version_compare(Version::VERSION, "2.4.0-DEV") >= 0) {
-            $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[11][1][0]);
+            $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
         }
 
         $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
@@ -284,8 +300,12 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),

@@ -26,7 +26,7 @@ class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
 
     public function testCollectEntities()
     {
-        $manager = $this->getMock('Doctrine\ORM\EntityManagerInterface');
+        $manager = $this->getMockBuilder('Doctrine\ORM\EntityManager')->disableOriginalConstructor()->getMock();
         $config = $this->getMock('Doctrine\ORM\Configuration');
         $factory = $this->getMockBuilder('Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory')
             ->setMethods(array('getLoadedMetadata'))->getMockForAbstractClass();

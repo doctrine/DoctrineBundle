@@ -171,12 +171,58 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
         ));
+    }
+
+    /**
+     * The PDO driver doesn't require a database name to be to set when connecting to a database server
+     */
+    public function testLoadSimpleSingleConnectionWithoutDbName()
+    {
+
+        $container = $this->loadContainer('orm_service_simple_single_entity_manager_without_dbname');
+
+        /** @var Definition $definition */
+        $definition = $container->getDefinition('doctrine.dbal.default_connection');
+
+        $this->assertDICConstructorArguments($definition, array(
+                array(
+                    'host' => 'localhost',
+                    'port' => null,
+                    'user' => 'root',
+                    'password' => null,
+                    'driver' => 'pdo_mysql',
+                    'driverOptions' => array(),
+                ),
+                new Reference('doctrine.dbal.default_connection.configuration'),
+                new Reference('doctrine.dbal.default_connection.event_manager'),
+                array(),
+            ));
+
+        $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        if (method_exists($definition, 'getFactory')) {
+            $factory = $definition->getFactory();
+        } else {
+            $factory[0] = $definition->getFactoryClass();
+            $factory[1] = $definition->getFactoryMethod();
+        }
+
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $factory[0]);
+        $this->assertEquals('create', $factory[1]);
+
+        $this->assertDICConstructorArguments($definition, array(
+                new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration')
+            ));
     }
 
     public function testLoadSingleConnection()
@@ -203,8 +249,12 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'setFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
@@ -231,8 +281,12 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.em1_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -251,8 +305,12 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition('doctrine.orm.em2_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-        $this->assertEquals('create', $definition->getFactoryMethod());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -278,7 +336,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger')));
 
         $definition = $container->getDefinition('doctrine.dbal.profile_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.profile')));
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.profiling.profile')));
 
         $definition = $container->getDefinition('doctrine.dbal.both_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.both')));
@@ -438,6 +496,20 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($def2, 'setNamingStrategy', array(0 => new Reference('doctrine.orm.naming_strategy.underscore')));
     }
 
+    public function testSetQuoteStrategy()
+    {
+        if (version_compare(Version::VERSION, "2.3.0-DEV") < 0) {
+            $this->markTestSkipped('Quote Strategies are not available');
+        }
+        $container = $this->loadContainer('orm_quotestrategy');
+
+        $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
+        $def2 = $container->getDefinition('doctrine.orm.em2_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($def1, 'setQuoteStrategy', array(0 => new Reference('doctrine.orm.quote_strategy.default')));
+        $this->assertDICDefinitionMethodCallOnce($def2, 'setQuoteStrategy', array(0 => new Reference('doctrine.orm.quote_strategy.ansi')));
+    }
+
     public function testSecondLevelCache()
     {
         if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
@@ -548,7 +620,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     public function testAttachEntityListeners()
     {
         if (version_compare(Version::VERSION, '2.5.0-DEV') < 0 ) {
-            $this->markTestIncomplete('This test requires ORM 2.5-dev.');
+            $this->markTestSkipped('This test requires ORM 2.5-dev.');
         }
 
         $container = $this->loadContainer('orm_attach_entity_listener');
@@ -623,16 +695,48 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->loadContainer('orm_entity_listener_resolver', array('YamlBundle'), new EntityListenerPass());
 
         $definition = $container->getDefinition('doctrine.orm.em1_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em1_entity_listener_resolver')));
+        if (version_compare(Version::VERSION, "2.4.0-DEV") >= 0) {
+            $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em1_entity_listener_resolver')));
+        }
 
         $definition = $container->getDefinition('doctrine.orm.em2_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em2_entity_listener_resolver')));
+        if (version_compare(Version::VERSION, "2.4.0-DEV") >= 0) {
+            $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', array(new Reference('doctrine.orm.em2_entity_listener_resolver')));
+        }
 
         $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener1')));
 
         $listener = $container->getDefinition('entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener2')));
+    }
+
+    public function testAttachEntityListenerTag()
+    {
+        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
+            $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
+        }
+
+        $container = $this->getContainer(array());
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $container->addCompilerPass(new EntityListenerPass());
+
+        $this->loadFromFile($container, 'orm_attach_entity_listener_tag');
+
+        $this->compileContainer($container);
+
+        $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener1')));
+
+        $listener = $container->getDefinition('doctrine.orm.em2_entity_listener_resolver');
+        $this->assertDICDefinitionMethodCallOnce($listener, 'register', array(new Reference('entity_listener2')));
+
+        $attachListener = $container->getDefinition('doctrine.orm.em1_listeners.attach_entity_listeners');
+        $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', array('My/Entity1', 'EntityListener1', 'postLoad'));
+
+        $attachListener = $container->getDefinition('doctrine.orm.em2_listeners.attach_entity_listeners');
+        $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', array('My/Entity2', 'EntityListener2', 'preFlush', 'preFlushHandler'));
     }
 
     public function testRepositoryFactory()

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:doctrine="http://symfony.com/schema/dic/doctrine"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
+                        http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
+
+    <services>
+        <service id="entity_listener1" class="EntityListener1">
+            <tag name="doctrine.orm.entity_listener" entity="My/Entity1" event="postLoad" />
+        </service>
+
+        <service id="entity_listener2" class="EntityListener2">
+            <tag name="doctrine.orm.entity_listener" entity_manager="em2" entity="My/Entity2" event="preFlush" method="preFlushHandler" />
+        </service>
+    </services>
+
+    <doctrine:config>
+        <doctrine:dbal default-connection="default">
+            <doctrine:connection name="default" dbname="db" />
+        </doctrine:dbal>
+
+        <doctrine:orm default-entity-manager="em1">
+            <doctrine:entity-manager name="em1" />
+            <doctrine:entity-manager name="em2" />
+        </doctrine:orm>
+    </doctrine:config>
+</container>

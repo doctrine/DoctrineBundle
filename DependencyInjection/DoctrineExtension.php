@@ -76,6 +76,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         if (!empty($config['orm'])) {
+            if (empty($config['dbal'])) {
+                throw new \LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
+            }
+
             $this->ormLoad($config['orm'], $container);
         }
 
@@ -128,6 +132,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setParameter('doctrine.connections', $connections);
         $container->setParameter('doctrine.default_connection', $this->defaultConnection);
 
+        $def = $container->getDefinition('doctrine.dbal.connection');
+        if (method_exists($def, 'setFactory')) {
+            // to be inlined in dbal.xml when dependency on Symfony DependencyInjection is bumped to 2.6
+            $def->setFactory(array(new Reference('doctrine.dbal.connection_factory'), 'createConnection'));
+        } else {
+            // to be removed when dependency on Symfony DependencyInjection is bumped to 2.6
+            $def->setFactoryService('doctrine.dbal.connection_factory');
+            $def->setFactoryMethod('createConnection');
+        }
+
         foreach ($config['connections'] as $name => $connection) {
             $this->loadDbalConnection($name, $connection, $container);
         }
@@ -152,16 +166,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if ($connection['profiling']) {
             $profilingLoggerId = 'doctrine.dbal.logger.profiling.'.$name;
             $container->setDefinition($profilingLoggerId, new DefinitionDecorator('doctrine.dbal.logger.profiling'));
-            $logger = new Reference($profilingLoggerId);
-            $container->getDefinition('data_collector.doctrine')->addMethodCall('addLogger', array($name, $logger));
+            $profilingLogger = new Reference($profilingLoggerId);
+            $container->getDefinition('data_collector.doctrine')->addMethodCall('addLogger', array($name, $profilingLogger));
 
             if (null !== $logger) {
                 $chainLogger = new DefinitionDecorator('doctrine.dbal.logger.chain');
-                $chainLogger->addMethodCall('addLogger', array($logger));
+                $chainLogger->addMethodCall('addLogger', array($profilingLogger));
 
                 $loggerId = 'doctrine.dbal.logger.chain.'.$name;
                 $container->setDefinition($loggerId, $chainLogger);
                 $logger = new Reference($loggerId);
+            } else {
+                $logger = $profilingLogger;
             }
         }
         unset($connection['profiling']);
@@ -254,6 +270,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'driver' => true, 'driverOptions' => true, 'driverClass' => true,
                 'wrapperClass' => true, 'keepSlave' => true, 'shardChoser' => true,
                 'platform' => true, 'slaves' => true, 'master' => true, 'shards' => true,
+                'serverVersion' => true,
                 // included by safety but should have been unset already
                 'logging' => true, 'profiling' => true, 'mapping_types' => true, 'platform_service' => true,
             );
@@ -343,6 +360,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $container->getParameter('kernel.bundles'));
         }
 
+        $def = $container->getDefinition('doctrine.orm.entity_manager.abstract');
+        if (method_exists($def, 'setFactory')) {
+            // to be inlined in dbal.xml when dependency on Symfony DependencyInjection is bumped to 2.6
+            $def->setFactory(array('%doctrine.orm.entity_manager.class%', 'create'));
+        } else {
+            // to be removed when dependency on Symfony DependencyInjection is bumped to 2.6
+            $def->setFactoryClass('%doctrine.orm.entity_manager.class%');
+            $def->setFactoryMethod('create');
+        }
+
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
@@ -394,6 +421,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (version_compare(Version::VERSION, "2.3.0-DEV") >= 0) {
             $methods = array_merge($methods, array(
                 'setNamingStrategy' => new Reference($entityManager['naming_strategy']),
+                'setQuoteStrategy' => new Reference($entityManager['quote_strategy']),
             ));
         }
 
@@ -401,6 +429,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $methods = array_merge($methods, array(
                 'setEntityListenerResolver' => new Reference(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name'])),
             ));
+        }
+
+        if (version_compare(Version::VERSION, "2.5.0-DEV") >= 0) {
+            $listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
+            $listenerDef = $container->setDefinition($listenerId, new Definition('%doctrine.orm.listeners.attach_entity_listeners.class%'));
+            $listenerDef->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
         }
 
         if (isset($entityManager['second_level_cache'])) {
@@ -469,13 +503,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
         );
 
         if (isset($entityManager['entity_listeners'])) {
-            if (version_compare(Version::VERSION, "2.5.0-DEV") < 0) {
+            if (!isset($listenerDef)) {
                 throw new InvalidArgumentException('Entity listeners configuration requires doctrine-orm 2.5.0 or newer');
             }
 
             $entities = $entityManager['entity_listeners']['entities'];
-            $listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
-            $listenerDef = $container->setDefinition($listenerId, new Definition('%doctrine.orm.listeners.attach_entity_listeners.class%'));
 
             foreach ($entities as $entityListenerClass => $entity) {
                 foreach ($entity['listeners'] as $listenerClass => $listener) {
@@ -490,7 +522,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 }
             }
 
-            $listenerDef->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
         }
     }
 

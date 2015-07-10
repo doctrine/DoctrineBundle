@@ -23,6 +23,7 @@ use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\IntrospectableContainerInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
@@ -112,6 +113,24 @@ class DoctrineBundle extends Bundle
         if (null !== $this->autoloader) {
             spl_autoload_unregister($this->autoloader);
             $this->autoloader = null;
+        }
+
+        // Clear all entity managers to clear references to entities for GC
+        if ($this->container->hasParameter('doctrine.entity_managers')) {
+            foreach ($this->container->getParameter('doctrine.entity_managers') as $id) {
+                if (!$this->container instanceof IntrospectableContainerInterface || $this->container->initialized($id)) {
+                    $this->container->get($id)->clear();
+                }
+            }
+        }
+
+        // Close all connections to avoid reaching too many connections in the process when booting again later (tests)
+        if ($this->container->hasParameter('doctrine.connections')) {
+            foreach ($this->container->getParameter('doctrine.connections') as $id) {
+                if (!$this->container instanceof IntrospectableContainerInterface || $this->container->initialized($id)) {
+                    $this->container->get($id)->close();
+                }
+            }
         }
     }
 

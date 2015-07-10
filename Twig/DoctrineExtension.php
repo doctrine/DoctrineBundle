@@ -38,8 +38,8 @@ class DoctrineExtension extends \Twig_Extension
     {
         return array(
             new \Twig_SimpleFilter('doctrine_minify_query', array($this, 'minifyQuery')),
-            new \Twig_SimpleFilter('doctrine_pretty_query', 'SqlFormatter::format'),
-            new \Twig_SimpleFilter('doctrine_replace_query_parameters', array($this, 'replaceQueryParameters')),
+            new \Twig_SimpleFilter('doctrine_pretty_query', 'SqlFormatter::format', array('is_safe' => array('html'))),
+            new \Twig_SimpleFilter('doctrine_replace_query_parameters', array($this, 'replaceQueryParameters'), array('is_safe' => array('html'))),
         );
     }
 
@@ -229,9 +229,6 @@ class DoctrineExtension extends \Twig_Extension
             $result = $this->composeMiniQuery($query, $keywords, $required);
         }
 
-        // Remove unneeded boilerplate HTML
-        $result = str_replace(array("<pre style='background:white;'", "</pre>"), array("<span", "</span>"), $result);
-
         return $result;
     }
 
@@ -310,7 +307,7 @@ class DoctrineExtension extends \Twig_Extension
 
         if ($highlight) {
             $result = \SqlFormatter::highlight($result);
-            $result = str_replace(array("<pre ", "</pre>"), array("<span ", "</span>"), $result);
+            $result = str_replace(array('<pre ', '</pre>'), array('<span ', '</span>'), $result);
         }
 
         return $result;

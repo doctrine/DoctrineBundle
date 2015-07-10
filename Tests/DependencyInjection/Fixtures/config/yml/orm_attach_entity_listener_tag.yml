@@ -1,0 +1,23 @@
+services:
+    entity_listener1:
+        class: EntityListener1
+        tags:
+            - { name: doctrine.orm.entity_listener, entity: My/Entity1, event: postLoad}
+
+    entity_listener2:
+        class: EntityListener2
+        tags:
+            - { name: doctrine.orm.entity_listener, entity_manager: em2, entity: My/Entity2, event: preFlush, method: preFlushHandler}
+
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        default_entity_manager: em1
+        entity_managers:
+            em1:
+            em2:
