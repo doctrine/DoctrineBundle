@@ -2,10 +2,7 @@
 
 {% block toolbar %}
     {% set icon %}
-        {% set is_symfony_2_8_or_higher = constant('\\Symfony\\Component\\HttpKernel\\Kernel::VERSION_ID')|default(0) >= 20800 %}
-
-        {# the HTML markup changed in Symfony 2.8, but the original one is used for previous Symfony versions #}
-        {% if is_symfony_2_8_or_higher %}
+        {% if toolbar_version|default(-1) == constant('\\Symfony\\Bundle\\WebProfilerBundle\\Controller\\ProfilerController::TOOLBAR_VERSION_2')%}
             {% if collector.querycount > 0 %}
                 {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' : '' %}
 
@@ -23,15 +20,12 @@
             {% endif %}
         {% else %}
             <img width="20" height="28" alt="Database" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAcCAYAAABh2p9gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQRJREFUeNpi/P//PwM1ARMDlcGogZQDlpMnT7pxc3NbA9nhQKxOpL5rQLwJiPeBsI6Ozl+YBOOOHTv+AOllQNwtLS39F2owKYZ/gRq8G4i3ggxEToggWzvc3d2Pk+1lNL4fFAs6ODi8JzdS7mMRVyDVoAMHDsANdAPiOCC+jCQvQKqBQB/BDbwBxK5AHA3E/kB8nKJkA8TMQBwLxaBIKQbi70AvTADSBiSadwFXpCikpKQU8PDwkGTaly9fHFigkaKIJid4584dkiMFFI6jkTJII0WVmpHCAixZQEXWYhDeuXMnyLsVlEQKI45qFBQZ8eRECi4DBaAlDqle/8A48ip6gAADANdQY88Uc0oGAAAAAElFTkSuQmCC" />
-            <span class="sf-toolbar-status{% if 50 < collector.querycount %} sf-toolbar-status-yellow{% endif %}">{{ collector.querycount }}</span>
+            <span class="sf-toolbar-value sf-toolbar-status {% if collector.querycount > 50 %}sf-toolbar-status-yellow{% endif %}">{{ collector.querycount }}</span>
             {% if collector.querycount > 0 %}
                 <span class="sf-toolbar-info-piece-additional-detail">in {{ '%0.2f'|format(collector.time * 1000) }} ms</span>
             {% endif %}
             {% if collector.invalidEntityCount > 0 %}
                 <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-red">{{ collector.invalidEntityCount }}</span>
-            {% endif %}
-            {% if collector.cacheEnabled %}
-                <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-green" title="Second level cache enabled">2l cache</span>
             {% endif %}
         {% endif %}
     {% endset %}
@@ -47,7 +41,7 @@
         </div>
         <div class="sf-toolbar-info-piece">
             <b>Invalid entities</b>
-            <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' : 'green' }}">{{ collector.invalidEntityCount }}</span>
+            <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' }}">{{ collector.invalidEntityCount }}</span>
         </div>
         {% if collector.cacheEnabled %}
             <div class="sf-toolbar-info-piece">
