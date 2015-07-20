@@ -543,7 +543,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *         MyBundle4: { type: xml, dir: Resources/config/doctrine/mapping }
      *         MyBundle5:
      *             type: yml
-     *             dir: [bundle-mappings1/, bundle-mappings2/]
+     *             dir: bundle-mappings/
      *             alias: BundleAlias
      *         arbitrary_key:
      *             type: xml
