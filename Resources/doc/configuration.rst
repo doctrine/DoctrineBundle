@@ -96,7 +96,7 @@ Configuration Reference
                             # example
                             # enum:                 string
 
-                        defaultTableOptions:
+                        default_table_options:
                             # Affects schema-tool. If absent, DBAL chooses defaults
                             # based on the platform. Examples here are for MySQL.
                             # charset:      utf8
@@ -422,9 +422,9 @@ Configuration Reference
                         <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
 
                         <!-- example -->
-                        <doctrine:defaultTableOption name="charset">utf8</doctrine:defaultTableOption>
-                        <doctrine:defaultTableOption name="collate">utf8_unicode_ci</doctrine:defaultTableOption>
-                        <doctrine:defaultTableOption name="engine">InnoDB</doctrine:defaultTableOption>
+                        <doctrine:default-table-option name="charset">utf8</doctrine:default-table-option>
+                        <doctrine:default-table-option name="collate">utf8_unicode_ci</doctrine:default-table-option>
+                        <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
 
                         <!-- example -->
                         <!-- unix-socket: The unix socket to use for MySQL -->
@@ -852,7 +852,7 @@ can configure. The following block shows all possible configuration keys:
                     enum: string
                 types:
                     custom: Acme\HelloBundle\MyCustomType
-                defaultTableOptions:
+                default_table_options:
                     # Affects schema-tool. If absent, DBAL chooses defaults
                     # based on the platform.
                     charset:              utf8
@@ -896,9 +896,9 @@ can configure. The following block shows all possible configuration keys:
             >
                 <doctrine:option key="foo">bar</doctrine:option>
                 <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
-                <doctrine:defaultTableOption name="charset">utf8</doctrine:defaultTableOption>
-                <doctrine:defaultTableOption name="collate">utf8_unicode_ci</doctrine:defaultTableOption>
-                <doctrine:defaultTableOption name="engine">InnoDB</doctrine:defaultTableOption>
+                <doctrine:default-table-option name="charset">utf8</doctrine:default-table-option>
+                <doctrine:default-table-option name="collate">utf8_unicode_ci</doctrine:default-table-option>
+                <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
                 <doctrine:type name="custom">Acme\HelloBundle\MyCustomType</doctrine:type>
             </doctrine:dbal>
         </doctrine:config>

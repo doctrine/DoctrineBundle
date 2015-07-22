@@ -9,9 +9,9 @@
     <config>
         <dbal default-connection="default">
             <connection name="default" dbname="db">
-                <defaultTableOption name="charset">utf8mb4</defaultTableOption>
-                <defaultTableOption name="collate">utf8mb4_unicode_ci</defaultTableOption>
-                <defaultTableOption name="engine">InnoDB</defaultTableOption>
+                <default-table-option name="charset">utf8mb4</default-table-option>
+                <default-table-option name="collate">utf8mb4_unicode_ci</default-table-option>
+                <default-table-option name="engine">InnoDB</default-table-option>
             </connection>
         </dbal>
 
