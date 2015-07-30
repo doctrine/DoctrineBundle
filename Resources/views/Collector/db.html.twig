@@ -47,7 +47,11 @@
         </div>
         <div class="sf-toolbar-info-piece">
             <b>Invalid entities</b>
-            <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' }}">{{ collector.invalidEntityCount }}</span>
+            {% if profiler_markup_version == 1 %}
+                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' : 'green' }}">{{ collector.invalidEntityCount }}</span>
+            {% else %}
+                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' }}">{{ collector.invalidEntityCount }}</span>
+            {% endif %}
         </div>
         {% if collector.cacheEnabled %}
             <div class="sf-toolbar-info-piece">
