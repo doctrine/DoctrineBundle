@@ -17,7 +17,7 @@
 
         {% else %}
 
-            {% if collector.querycount > 0 %}
+            {% if collector.querycount > 0 or collector.invalidEntityCount > 0 %}
                 {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' : '' %}
 
                 <svg version="1.1"xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" height="24" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
@@ -25,12 +25,17 @@
                     c-0.8,0-1.5-0.7-1.5-1.5s0.7-1.5,1.5-1.5s1.5,0.7,1.5,1.5S18.8,13.6,18,13.6z M19,16H5c-1.7,0-3,1.3-3,3s1.3,3,3,3h14c1.7,0,3-1.3,3-3S20.7,16,19,16z M18,20.6c-0.8,0-1.5-0.7-1.5-1.5s0.7-1.5,1.5-1.5s1.5,0.7,1.5,1.5S18.8,20.6,18,20.6z"/>
                 </svg>
 
-                <span class="sf-toolbar-value">{{ collector.querycount }}</span>
-                <span class="sf-toolbar-info-piece-additional-detail">
-                    <span class="sf-toolbar-label">in</span>
-                    <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.time * 1000) }}</span>
-                    <span class="sf-toolbar-label">ms</span>
-                </span>
+                {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
+                    <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
+                    <span class="sf-toolbar-label">errors</span>
+                {% else %}
+                    <span class="sf-toolbar-value">{{ collector.querycount }}</span>
+                    <span class="sf-toolbar-info-piece-additional-detail">
+                        <span class="sf-toolbar-label">in</span>
+                        <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.time * 1000) }}</span>
+                        <span class="sf-toolbar-label">ms</span>
+                    </span>
+                {% endif %}
 
             {% endif %}
         {% endif %}
@@ -47,11 +52,7 @@
         </div>
         <div class="sf-toolbar-info-piece">
             <b>Invalid entities</b>
-            {% if profiler_markup_version == 1 %}
-                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' : 'green' }}">{{ collector.invalidEntityCount }}</span>
-            {% else %}
-                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' }}">{{ collector.invalidEntityCount }}</span>
-            {% endif %}
+            <span class="sf-toolbar-status {{ collector.invalidEntityCount > 0 ? 'sf-toolbar-status-red' : '' }}">{{ collector.invalidEntityCount }}</span>
         </div>
         {% if collector.cacheEnabled %}
             <div class="sf-toolbar-info-piece">
@@ -60,16 +61,16 @@
             </div>
             <div class="sf-toolbar-info-piece">
                 <b>Cache misses</b>
-                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.cacheMissesCount > 0 ? 'yellow' : 'green' }}">{{ collector.cacheMissesCount }}</span>
+                <span class="sf-toolbar-status {{ collector.cacheMissesCount > 0 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.cacheMissesCount }}</span>
             </div>
             <div class="sf-toolbar-info-piece">
                 <b>Cache puts</b>
-                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.cachePutsCount > 0 ? 'yellow' : 'green' }}">{{ collector.cachePutsCount }}</span>
+                <span class="sf-toolbar-status {{ collector.cachePutsCount > 0 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.cachePutsCount }}</span>
             </div>
         {% else %}
             <div class="sf-toolbar-info-piece">
                 <b>Second Level Cache</b>
-                <span class="sf-toolbar-status sf-toolbar-status-red">disabled</span>
+                <span class="sf-toolbar-status">disabled</span>
             </div>
         {% endif %}
     {% endset %}
