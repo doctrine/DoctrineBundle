@@ -20,7 +20,7 @@
             {% if collector.querycount > 0 or collector.invalidEntityCount > 0 %}
                 {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' : '' %}
 
-                {{ include('@DoctrineBundle/Collector/icon.svg') }}
+                {{ include('@Doctrine/Collector/icon.svg') }}
 
                 {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
                     <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
