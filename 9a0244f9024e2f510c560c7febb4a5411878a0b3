@@ -1,0 +1,23 @@
+---------------------------------------------------------------------------
+
+by stof at 2015-05-28T11:52:56Z
+
+@ptlis it looks like you did a mess with a rebase here. You rebased some commits from master into your own branch, which is totally wrong.
+
+---------------------------------------------------------------------------
+
+by ptlis at 2015-05-28T18:22:20Z
+
+Oops, should be fixed now!
+
+---------------------------------------------------------------------------
+
+by stof at 2015-07-20T15:51:47Z
+
+@ptlis is it possible to add a test covering this ?
+
+---------------------------------------------------------------------------
+
+by ptlis at 2015-07-31T10:28:07Z
+
+@stof yep! Is there anything else I can do to help get this PR merged?
