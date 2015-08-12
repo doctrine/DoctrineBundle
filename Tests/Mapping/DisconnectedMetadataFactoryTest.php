@@ -27,7 +27,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
         }
     }
 
-    public function testFindNamespaceAndPathForMetadata()
+    public function testCannotFindNamespaceAndPathForMetadata()
     {
         $class = new ClassMetadataInfo(__CLASS__);
         $collection = new ClassMetadataCollection(array($class));
@@ -37,5 +37,18 @@ class DisconnectedMetadataFactoryTest extends TestCase
 
         $this->setExpectedException('RuntimeException', 'Can\'t find base path for "Doctrine\Bundle\DoctrineBundle\Tests\Mapping\DisconnectedMetadataFactoryTest');
         $factory->findNamespaceAndPathForMetadata($collection);
+    }
+
+    public function testFindNamespaceAndPathForMetadata()
+    {
+        $class = new ClassMetadataInfo('\Vendor\Package\Class');
+        $collection = new ClassMetadataCollection(array($class));
+
+        $registry = $this->getMock('Doctrine\Common\Persistence\ManagerRegistry');
+        $factory = new DisconnectedMetadataFactory($registry);
+
+        $factory->findNamespaceAndPathForMetadata($collection, '/path/to/code');
+
+        $this->assertEquals('\Vendor\Package', $collection->getNamespace());
     }
 }
