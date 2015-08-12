@@ -1,3 +1,11 @@
+## 1.5.1 (2015-08-12)
+
+Bugfix:
+
+* Fixed the JS expanding all queries in the profiler in case of multiple connections
+* Fixed the retrieval of the namespace in DisconnectedMetadataFactory
+* Changed the composer constraint to allow Symfony 3.0 for people wanting to do early testing
+
 ## 1.5.0 (2015-05-28)
 
 Features:
