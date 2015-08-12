@@ -1,0 +1,35 @@
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-07-20T10:17:14Z
+
+I'm about to update the collectors of other bundles. Therefore, it would be great if someone could validate that this strategy is valid to maintain BC. Thanks!
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-07-20T13:27:28Z
+
+@stof I like your last proposal. I'm trying to implement it in https://github.com/javiereguiluz/symfony/commit/44f101fac55cae40a19db21c34bd4119733c91ea and https://github.com/javiereguiluz/DoctrineBundle/commit/83d04a1614e442c96a148e3d241db514b66f5c86
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-07-27T08:02:47Z
+
+I've reverted all the recent changes made to this PR. Now we're back to the original situation:
+
+```twig
+{% set is_symfony_2_8_or_higher = constant('Symfony\\Component\\HttpKernel\\Kernel::VERSION_ID')|default(0) >= 20800 %}
+
+{% if is_symfony_2_8_or_higher %}
+    ...
+{% else %}
+    ...
+{% endif %}
+```
+
+If you release a new version of this bundle compatible with Symfony 2.3+, that code should be enough to display the appropriate toolbar depending on the Symfony version.
+
+---------------------------------------------------------------------------
+
+by stof at 2015-07-30T16:26:17Z
+
+Before merging this, I will wait until the Symfony PR gets merged, to be sure that no other changes to the template are needed based on some review
