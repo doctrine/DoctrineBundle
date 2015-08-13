@@ -67,6 +67,10 @@ Configuration Reference
 
                         # pdo_sqlsrv driver specific. Configuring MultipleActiveResultSets for the pdo_sqlsrv driver
                         MultipleActiveResultSets:  ~
+
+                        # Enable savepoints for nested transactions
+                        use_savepoints: true
+
                         driver:               pdo_mysql
                         platform_service:     ~
                         auto_commit:          ~
@@ -374,6 +378,7 @@ Configuration Reference
                     <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
                     <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                     <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
+                    <!-- use-savepoints: Enable savepoints for nested transactions -->
                     <doctrine:connection
                         name="default"
                         dbname=""
@@ -394,6 +399,7 @@ Configuration Reference
                         sslmode=""
                         pooled=""
                         MultipleActiveResultSets=""
+                        use-savepoints="true"
                         driver="pdo_mysql"
                         platform-service=""
                         auto-commit=""
