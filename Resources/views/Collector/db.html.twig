@@ -1,23 +1,47 @@
 {% extends app.request.isXmlHttpRequest ? 'WebProfilerBundle:Profiler:ajax_layout.html.twig' : 'WebProfilerBundle:Profiler:layout.html.twig' %}
 
 {% block toolbar %}
+    {% set profiler_markup_version = profiler_markup_version|default(1) %}
+
     {% set icon %}
-        <img width="20" height="28" alt="Database" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAcCAYAAABh2p9gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQRJREFUeNpi/P//PwM1ARMDlcGogZQDlpMnT7pxc3NbA9nhQKxOpL5rQLwJiPeBsI6Ozl+YBOOOHTv+AOllQNwtLS39F2owKYZ/gRq8G4i3ggxEToggWzvc3d2Pk+1lNL4fFAs6ODi8JzdS7mMRVyDVoAMHDsANdAPiOCC+jCQvQKqBQB/BDbwBxK5AHA3E/kB8nKJkA8TMQBwLxaBIKQbi70AvTADSBiSadwFXpCikpKQU8PDwkGTaly9fHFigkaKIJid4584dkiMFFI6jkTJII0WVmpHCAixZQEXWYhDeuXMnyLsVlEQKI45qFBQZ8eRECi4DBaAlDqle/8A48ip6gAADANdQY88Uc0oGAAAAAElFTkSuQmCC" />
-        <span class="sf-toolbar-status{% if 50 < collector.querycount %} sf-toolbar-status-yellow{% endif %}">{{ collector.querycount }}</span>
-        {% if collector.querycount > 0 %}
-            <span class="sf-toolbar-info-piece-additional-detail">in {{ '%0.2f'|format(collector.time * 1000) }} ms</span>
-        {% endif %}
-        {% if collector.invalidEntityCount > 0 %}
-            <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-red">{{ collector.invalidEntityCount }}</span>
-        {% endif %}
-        {% if collector.cacheEnabled %}
-            <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-green" title="Second level cache enabled">2l cache</span>
+        {% if profiler_markup_version == 1 %}
+
+            <img width="20" height="28" alt="Database" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAcCAYAAABh2p9gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQRJREFUeNpi/P//PwM1ARMDlcGogZQDlpMnT7pxc3NbA9nhQKxOpL5rQLwJiPeBsI6Ozl+YBOOOHTv+AOllQNwtLS39F2owKYZ/gRq8G4i3ggxEToggWzvc3d2Pk+1lNL4fFAs6ODi8JzdS7mMRVyDVoAMHDsANdAPiOCC+jCQvQKqBQB/BDbwBxK5AHA3E/kB8nKJkA8TMQBwLxaBIKQbi70AvTADSBiSadwFXpCikpKQU8PDwkGTaly9fHFigkaKIJid4584dkiMFFI6jkTJII0WVmpHCAixZQEXWYhDeuXMnyLsVlEQKI45qFBQZ8eRECi4DBaAlDqle/8A48ip6gAADANdQY88Uc0oGAAAAAElFTkSuQmCC" />
+                <span class="sf-toolbar-value sf-toolbar-status {% if collector.querycount > 50 %}sf-toolbar-status-yellow{% endif %}">{{ collector.querycount }}</span>
+                {% if collector.querycount > 0 %}
+                    <span class="sf-toolbar-info-piece-additional-detail">in {{ '%0.2f'|format(collector.time * 1000) }} ms</span>
+                {% endif %}
+                {% if collector.invalidEntityCount > 0 %}
+                    <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-red">{{ collector.invalidEntityCount }}</span>
+                {% endif %}
+
+        {% else %}
+
+            {% if collector.querycount > 0 or collector.invalidEntityCount > 0 %}
+                {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' : '' %}
+
+                {{ include('@Doctrine/Collector/icon.svg') }}
+
+                {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
+                    <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
+                    <span class="sf-toolbar-label">errors</span>
+                {% else %}
+                    <span class="sf-toolbar-value">{{ collector.querycount }}</span>
+                    <span class="sf-toolbar-info-piece-additional-detail">
+                        <span class="sf-toolbar-label">in</span>
+                        <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.time * 1000) }}</span>
+                        <span class="sf-toolbar-label">ms</span>
+                    </span>
+                {% endif %}
+
+            {% endif %}
         {% endif %}
     {% endset %}
+
     {% set text %}
         <div class="sf-toolbar-info-piece">
-            <b>DB Queries</b>
-            <span>{{ collector.querycount }}</span>
+            <b>Database Queries</b>
+            <span class="sf-toolbar-status">{{ collector.querycount }}</span>
         </div>
         <div class="sf-toolbar-info-piece">
             <b>Query time</b>
@@ -25,7 +49,7 @@
         </div>
         <div class="sf-toolbar-info-piece">
             <b>Invalid entities</b>
-            <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' : 'green' }}">{{ collector.invalidEntityCount }}</span>
+            <span class="sf-toolbar-status {{ collector.invalidEntityCount > 0 ? 'sf-toolbar-status-red' : '' }}">{{ collector.invalidEntityCount }}</span>
         </div>
         {% if collector.cacheEnabled %}
             <div class="sf-toolbar-info-piece">
@@ -34,15 +58,21 @@
             </div>
             <div class="sf-toolbar-info-piece">
                 <b>Cache misses</b>
-                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.cacheMissesCount > 0 ? 'yellow' : 'green' }}">{{ collector.cacheMissesCount }}</span>
+                <span class="sf-toolbar-status {{ collector.cacheMissesCount > 0 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.cacheMissesCount }}</span>
             </div>
             <div class="sf-toolbar-info-piece">
                 <b>Cache puts</b>
-                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.cachePutsCount > 0 ? 'yellow' : 'green' }}">{{ collector.cachePutsCount }}</span>
+                <span class="sf-toolbar-status {{ collector.cachePutsCount > 0 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.cachePutsCount }}</span>
+            </div>
+        {% else %}
+            <div class="sf-toolbar-info-piece">
+                <b>Second Level Cache</b>
+                <span class="sf-toolbar-status">disabled</span>
             </div>
         {% endif %}
     {% endset %}
-    {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url } %}
+
+    {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: profiler_url, status: status|default('') }) }}
 {% endblock %}
 
 {% block menu %}
