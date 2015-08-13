@@ -1,47 +1,23 @@
 {% extends app.request.isXmlHttpRequest ? 'WebProfilerBundle:Profiler:ajax_layout.html.twig' : 'WebProfilerBundle:Profiler:layout.html.twig' %}
 
 {% block toolbar %}
-    {% set profiler_markup_version = profiler_markup_version|default(1) %}
-
     {% set icon %}
-        {% if profiler_markup_version == 1 %}
-
-            <img width="20" height="28" alt="Database" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAcCAYAAABh2p9gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQRJREFUeNpi/P//PwM1ARMDlcGogZQDlpMnT7pxc3NbA9nhQKxOpL5rQLwJiPeBsI6Ozl+YBOOOHTv+AOllQNwtLS39F2owKYZ/gRq8G4i3ggxEToggWzvc3d2Pk+1lNL4fFAs6ODi8JzdS7mMRVyDVoAMHDsANdAPiOCC+jCQvQKqBQB/BDbwBxK5AHA3E/kB8nKJkA8TMQBwLxaBIKQbi70AvTADSBiSadwFXpCikpKQU8PDwkGTaly9fHFigkaKIJid4584dkiMFFI6jkTJII0WVmpHCAixZQEXWYhDeuXMnyLsVlEQKI45qFBQZ8eRECi4DBaAlDqle/8A48ip6gAADANdQY88Uc0oGAAAAAElFTkSuQmCC" />
-                <span class="sf-toolbar-value sf-toolbar-status {% if collector.querycount > 50 %}sf-toolbar-status-yellow{% endif %}">{{ collector.querycount }}</span>
-                {% if collector.querycount > 0 %}
-                    <span class="sf-toolbar-info-piece-additional-detail">in {{ '%0.2f'|format(collector.time * 1000) }} ms</span>
-                {% endif %}
-                {% if collector.invalidEntityCount > 0 %}
-                    <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-red">{{ collector.invalidEntityCount }}</span>
-                {% endif %}
-
-        {% else %}
-
-            {% if collector.querycount > 0 or collector.invalidEntityCount > 0 %}
-                {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' : '' %}
-
-                {{ include('@Doctrine/Collector/icon.svg') }}
-
-                {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
-                    <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
-                    <span class="sf-toolbar-label">errors</span>
-                {% else %}
-                    <span class="sf-toolbar-value">{{ collector.querycount }}</span>
-                    <span class="sf-toolbar-info-piece-additional-detail">
-                        <span class="sf-toolbar-label">in</span>
-                        <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.time * 1000) }}</span>
-                        <span class="sf-toolbar-label">ms</span>
-                    </span>
-                {% endif %}
-
-            {% endif %}
+        <img width="20" height="28" alt="Database" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAcCAYAAABh2p9gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQRJREFUeNpi/P//PwM1ARMDlcGogZQDlpMnT7pxc3NbA9nhQKxOpL5rQLwJiPeBsI6Ozl+YBOOOHTv+AOllQNwtLS39F2owKYZ/gRq8G4i3ggxEToggWzvc3d2Pk+1lNL4fFAs6ODi8JzdS7mMRVyDVoAMHDsANdAPiOCC+jCQvQKqBQB/BDbwBxK5AHA3E/kB8nKJkA8TMQBwLxaBIKQbi70AvTADSBiSadwFXpCikpKQU8PDwkGTaly9fHFigkaKIJid4584dkiMFFI6jkTJII0WVmpHCAixZQEXWYhDeuXMnyLsVlEQKI45qFBQZ8eRECi4DBaAlDqle/8A48ip6gAADANdQY88Uc0oGAAAAAElFTkSuQmCC" />
+        <span class="sf-toolbar-status{% if 50 < collector.querycount %} sf-toolbar-status-yellow{% endif %}">{{ collector.querycount }}</span>
+        {% if collector.querycount > 0 %}
+            <span class="sf-toolbar-info-piece-additional-detail">in {{ '%0.2f'|format(collector.time * 1000) }} ms</span>
+        {% endif %}
+        {% if collector.invalidEntityCount > 0 %}
+            <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-red">{{ collector.invalidEntityCount }}</span>
+        {% endif %}
+        {% if collector.cacheEnabled %}
+            <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-green" title="Second level cache enabled">2l cache</span>
         {% endif %}
     {% endset %}
-
     {% set text %}
         <div class="sf-toolbar-info-piece">
-            <b>Database Queries</b>
-            <span class="sf-toolbar-status">{{ collector.querycount }}</span>
+            <b>DB Queries</b>
+            <span>{{ collector.querycount }}</span>
         </div>
         <div class="sf-toolbar-info-piece">
             <b>Query time</b>
@@ -49,7 +25,7 @@
         </div>
         <div class="sf-toolbar-info-piece">
             <b>Invalid entities</b>
-            <span class="sf-toolbar-status {{ collector.invalidEntityCount > 0 ? 'sf-toolbar-status-red' : '' }}">{{ collector.invalidEntityCount }}</span>
+            <span class="sf-toolbar-status sf-toolbar-status-{{ collector.invalidEntityCount > 0 ? 'red' : 'green' }}">{{ collector.invalidEntityCount }}</span>
         </div>
         {% if collector.cacheEnabled %}
             <div class="sf-toolbar-info-piece">
@@ -58,56 +34,73 @@
             </div>
             <div class="sf-toolbar-info-piece">
                 <b>Cache misses</b>
-                <span class="sf-toolbar-status {{ collector.cacheMissesCount > 0 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.cacheMissesCount }}</span>
+                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.cacheMissesCount > 0 ? 'yellow' : 'green' }}">{{ collector.cacheMissesCount }}</span>
             </div>
             <div class="sf-toolbar-info-piece">
                 <b>Cache puts</b>
-                <span class="sf-toolbar-status {{ collector.cachePutsCount > 0 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.cachePutsCount }}</span>
-            </div>
-        {% else %}
-            <div class="sf-toolbar-info-piece">
-                <b>Second Level Cache</b>
-                <span class="sf-toolbar-status">disabled</span>
+                <span class="sf-toolbar-status sf-toolbar-status-{{ collector.cachePutsCount > 0 ? 'yellow' : 'green' }}">{{ collector.cachePutsCount }}</span>
             </div>
         {% endif %}
     {% endset %}
-
-    {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: profiler_url, status: status|default('') }) }}
+    {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url } %}
 {% endblock %}
 
 {% block menu %}
-<span class="label">
-    <span class="icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAABLUlEQVR42u3TP0vDQBiA8UK/gDiLzi0IhU4OEunk5OQUAhGSOBUCzqWfIKSzX8DRySF0URCcMjWLIJjFD9Cpk/D6HITecEPUuzhIAz8CIdyTP/f2iqI4qaqqDx8l5Ic2uIeP/bquezCokOAFF+oCN3t4gPzSEjc4NEPaCldQbzjELTYW0RJzHDchwwem+ons6ZBpLSJ7nueJC22h0V+FzmwWV0ee59vQNV67CGVZJmEYbkNjfpY6X6I0Qo4/3RMmTdDDspuQVsJvgkP3IdMbIkIjLPBoadG2646iKJI0Ta2wxm6OdnP0/Tk6DYJgHcfxpw21RtscDTDDnaVZ26474GkkSRIrrPEv5sgMTfHe+cA2O6wPH6vOBpYQNALneHb96XTEDI6dzpEZ0VzO0Rf3pP5LMLI4tAAAAABJRU5ErkJggg==" alt="" /></span>
-    <strong>Doctrine</strong>
-    <span class="count">
-        <span>{{ collector.querycount }}</span>
-        <span>{{ '%0.0f'|format(collector.time * 1000) }} ms</span>
-    </span>
-</span>
+    {% set profiler_markup_version = profiler_markup_version|default(1) %}
+
+    {% if profiler_markup_version == 1 %}
+
+        <span class="label">
+            <span class="icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAABLUlEQVR42u3TP0vDQBiA8UK/gDiLzi0IhU4OEunk5OQUAhGSOBUCzqWfIKSzX8DRySF0URCcMjWLIJjFD9Cpk/D6HITecEPUuzhIAz8CIdyTP/f2iqI4qaqqDx8l5Ic2uIeP/bquezCokOAFF+oCN3t4gPzSEjc4NEPaCldQbzjELTYW0RJzHDchwwem+ons6ZBpLSJ7nueJC22h0V+FzmwWV0ee59vQNV67CGVZJmEYbkNjfpY6X6I0Qo4/3RMmTdDDspuQVsJvgkP3IdMbIkIjLPBoadG2646iKJI0Ta2wxm6OdnP0/Tk6DYJgHcfxpw21RtscDTDDnaVZ26474GkkSRIrrPEv5sgMTfHe+cA2O6wPH6vOBpYQNALneHb96XTEDI6dzpEZ0VzO0Rf3pP5LMLI4tAAAAABJRU5ErkJggg==" alt="" /></span>
+            <strong>Doctrine</strong>
+            <span class="count">
+                <span>{{ collector.querycount }}</span>
+                <span>{{ '%0.0f'|format(collector.time * 1000) }} ms</span>
+            </span>
+        </span>
+
+    {% else %}
+
+        <span class="label {{ collector.querycount > 0 ? '' : 'disabled' }}">
+            <span class="icon">{{ include('@Doctrine/Collector/icon.svg') }}</span>
+            <strong>Doctrine</strong>
+        </span>
+
+    {% endif %}
 {% endblock %}
 
 {% block panel %}
+    {% set profiler_markup_version = profiler_markup_version|default(1) %}
+
     {% if 'explain' == page %}
         {{ render(controller('@Doctrine/Profiler/explain', {
-            'token': token,
-            'panel': 'db',
-            'connectionName': app.request.query.get('connection'),
-            'query': app.request.query.get('query')
+            token: token,
+            panel: 'db',
+            connectionName: app.request.query.get('connection'),
+            query: app.request.query.get('query')
         })) }}
     {% else %}
-        <div>
-            <style scoped="scoped">
-                h3 {
-                    margin-bottom: 0px;
-                }
+        {% if profiler_markup_version == 1 %}
 
-                pre {
-                    padding: 5px;
-                }
-            </style>
+            <div>
+                <style scoped="scoped">
+                    h3 {
+                        margin-bottom: 0px;
+                    }
 
-            {{ block('queries') }}
-        </div>
+                    pre {
+                        padding: 5px;
+                    }
+                </style>
+
+                {{ block('queries') }}
+            </div>
+
+        {% else %}
+
+            {{ block('queries_v2') }}
+
+        {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -122,7 +115,7 @@
             </p>
         {% else %}
             <p>
-                <button type="button" class="sf-button" onclick="expandAllQueries(this);" data-action="expand" data-connection="{{ loop.index }}">
+                <button type="button" class="sf-button" onclick="expandAllQueries(this);" data-action="expand">
                     <span class="border-l">
                         <span class="border-r">
                             <span class="btn-bg">Expand all queries</span>
@@ -149,18 +142,18 @@
                                 <img alt="-" src="data:image/gif;base64,R0lGODlhEgASAMQSANft94TG57Hb8GS44ez1+mC24IvK6ePx+Wa44dXs92+942e54o3L6W2844/M6dnu+P/+/l614P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABIALAAAAAASABIAQAVCoCQBTBOd6Kk4gJhGBCTPxysJb44K0qD/ER/wlxjmisZkMqBEBW5NHrMZmVKvv9hMVsO+hE0EoNAstEYGxG9heIhCADs=" style="display: none;" />
                                 <span style="display: none">Shrink query</span>
                                 <span id="smallcode-{{ i }}-{{ loop.parent.loop.index }}">
-                                    {{ query.sql|doctrine_minify_query }}
+                                    {{ query.sql|doctrine_minify_query|raw }}
                                 </span>
                             </div>
-                            <div id="code-{{ i }}-{{ loop.parent.loop.index }}" style="display: none;">
-                                {{ query.sql|doctrine_pretty_query(i, loop.parent.loop.index) }}
-                            </div>
+                            <code id="code-{{ i }}-{{ loop.parent.loop.index }}">
+                                {{ query.sql|doctrine_pretty_query(i, loop.parent.loop.index)|raw }}
+                            </code>
                             <span id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="display: none;">
-                                {{ query.sql|doctrine_replace_query_parameters(query.params) }}
+                                {{ query.sql|doctrine_replace_query_parameters(query.params)|raw }}
                             </span>
                             <small>
                                 <strong>Parameters</strong>: {{ query.params|yaml_encode }} <br />
-                                [<span id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this);" data-target-id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">Display runnable query</span>]<br/>
+                                [<span id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this);" target-data-id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">Display runnable query</span>]<br/>
                             </small>
 
                             {% if query.explainable %}
@@ -248,7 +241,7 @@
                     <tr>
                         <td>{{ class }}</td>
                         <td>
-                            {% if collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
+                            {% if collector.mappingErrors[manager][class] is defined %}
                                 <ul>
                                     {% for error in collector.mappingErrors[manager][class] %}
                                         <li>{{ error }}</li>
@@ -287,13 +280,12 @@
         }
 
         function expandAllQueries(button) {
-            var conn = button.getAttribute('data-connection'),
-                queries = document.querySelectorAll('#queries-' + conn + ' .query-section'),
+            var queries = document.getElementsByClassName('query-section'),
                 i = queries.length,
                 action = button.getAttribute('data-action');
 
             if (action == 'expand') {
-                button.querySelector('.btn-bg').innerHTML = 'Collapse all queries';
+                button.getElementsByClassName('btn-bg')[0].innerHTML = 'Collapse all queries';
 
                 while (i--) {
                     if (queries[i].getAttribute('data-state') == 'collapsed') {
@@ -301,7 +293,7 @@
                     }
                 }
             } else {
-                button.querySelector('.btn-bg').innerHTML = 'Expand all queries';
+                button.getElementsByClassName('btn-bg')[0].innerHTML = 'Expand all queries';
 
                 while (i--) {
                     if (queries[i].getAttribute('data-state') == 'expanded') {
@@ -349,8 +341,8 @@
         }
 
         function toggleRunnableQuery(target) {
-            var targetId = target.getAttribute('data-target-id').replace('original-query', ''),
-                targetElement = document.getElementById(target.getAttribute('data-target-id')),
+            var targetId = target.getAttribute('target-data-id').replace('original-query', ''),
+                targetElement = document.getElementById(target.getAttribute('target-data-id')),
                 elem;
 
             if (targetElement.style.display != 'block') {
@@ -405,6 +397,255 @@
             for (i = 0; i < items.length; ++i) {
                 Sfjs.removeClass(items[i], i % 2 ? 'even' : 'odd');
                 Sfjs.addClass(items[i], i % 2 ? 'odd' : 'even');
+                target.appendChild(items[i]);
+            }
+        }
+
+    //]]></script>
+
+    <style>
+        h3 {
+            margin-bottom: 0px;
+        }
+
+        code {
+            display: none;
+        }
+
+        code pre {
+            padding: 5px;
+        }
+    </style>
+{% endblock %}
+
+{% block queries_v2 %}
+    <h2>Database queries</h2>
+
+    {% for connection, queries in collector.queries %}
+        <h3>{{ connection }} <small>connection</small></h3>
+
+        {% if queries is empty %}
+            <div class="empty">
+                <p>No database queries were performed.</p>
+            </div>
+        {% else %}
+            <table class="auto-layout sql-queries" id="queriesPlaceholder-{{ loop.index }}">
+                <thead>
+                    <tr>
+                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;"># <span>&#9650;</span></th>
+                        <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time <span></span></th>
+                        <th>Info</th>
+                    </tr>
+                </thead>
+                <tbody id="queries-{{ loop.index }}">
+                {% for i, query in queries %}
+                    <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
+                        <td>{{ loop.index }}</td>
+                        <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }} ms</td>
+                        <td>
+                            <div class="sql-section">
+                                {{ query.sql|doctrine_highlight_sql }}
+
+                                <span class="sql-parameters newline small-text">
+                                    <strong>Parameters</strong>: {{ query.params|yaml_encode }}
+                                </span>
+                            </div>
+
+                            <div class="sql-actions">
+                                <a href="#" id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this); return false;" data-target-id="original-query-{{ i }}-{{ loop.parent.loop.index }}">View runnable query</a>
+
+                                {% if query.explainable %}
+                                    <a href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
+                                {% endif %}
+                            </div>
+
+                            <span id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable">
+                                {{ (query.sql ~ ';')|doctrine_replace_query_parameters(query.params, highlight = false)|doctrine_highlight_sql }}
+                            </span>
+
+                            {% if query.explainable %}
+                                <div id="explain-{{ i }}-{{ loop.parent.loop.index }}"></div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endfor %}
+
+    <h2>Database Connections</h2>
+
+    {% if collector.connections %}
+        {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.connections, labels: ['Name', 'Service'] }, with_context = false ) }}
+    {% else %}
+        <div class="empty">
+            <p>There are no configured database connections.</p>
+        </div>
+    {% endif %}
+
+    <h2>Entity Managers</h2>
+
+    {% if collector.managers %}
+        {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.managers, labels: ['Name', 'Service'] }, with_context = false ) }}
+    {% else %}
+        <div class="empty">
+            <p>There are no configured entity managers.</p>
+        </div>
+    {% endif %}
+
+    <h2>Second Level Cache</h2>
+
+    {% if not collector.cacheEnabled %}
+
+        <div class="empty">
+            <p>Second Level Cache is not enabled.</p>
+        </div>
+
+    {% else %}
+
+        {% if collector.cacheCounts %}
+            <div class="metrics">
+                <div class="metric">
+                    <span class="value">{{ collector.cacheCounts.hits }}</span>
+                    <span class="label">Hits</span>
+                </div>
+
+                <div class="metric">
+                    <span class="value">{{ collector.cacheCounts.misses }}</span>
+                    <span class="label">Misses</span>
+                </div>
+
+                <div class="metric">
+                    <span class="value">{{ collector.cacheCounts.puts }}</span>
+                    <span class="label">Puts</span>
+                </div>
+            </div>
+
+            {% if collector.cacheRegions.hits %}
+                <h3>Number of cache hits</h3>
+                {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.cacheRegions.hits }, with_context = false) }}
+            {% endif %}
+
+            {% if collector.cacheRegions.misses %}
+                <h3>Number of cache misses</h3>
+                {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.cacheRegions.misses }, with_context = false) }}
+            {% endif %}
+
+            {% if collector.cacheRegions.puts %}
+                <h3>Number of cache puts</h3>
+                {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.cacheRegions.puts }, with_context = false) }}
+            {% endif %}
+        {% else %}
+            <div class="empty">
+                <p>Second level cache information is not available.</p>
+            </div>
+        {% endif %}
+
+    {% endif %}
+
+    <h2>Entities Mapping</h2>
+
+    {% for manager, classes in collector.entities %}
+        <h3>{{ manager }} <small>entity manager</small></h3>
+        {% if classes is empty %}
+            <div class="empty">
+                <p>No loaded entities.</p>
+            </div>
+        {% else %}
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">Class</th>
+                    <th scope="col">Mapping errors</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for class in classes %}
+                    {% set contains_errors = (collector.mappingErrors[manager] is defined) and (collector.mappingErrors[manager][class] is defined) %}
+                    <tr>
+                        <td>{{ class }}</td>
+                        <td class="{{ contains_errors ? 'status-error' : '' }}">
+                            {% if contains_errors %}
+                                <ul>
+                                    {% for error in collector.mappingErrors[manager][class] %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                No errors.
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endfor %}
+
+    <script type="text/javascript">//<![CDATA[
+        function explain(link) {
+            "use strict";
+
+            var targetId = link.getAttribute('data-target-id');
+            var targetElement = document.getElementById(targetId);
+
+            if (targetElement.style.display != 'block') {
+                Sfjs.load(targetId, link.href, null, function(xhr, el) {
+                    el.innerHTML = 'An error occurred while loading the query explanation.';
+                });
+
+                targetElement.style.display = 'block';
+                link.innerHTML = 'Hide query explanation';
+            } else {
+                targetElement.style.display = 'none';
+                link.innerHTML = 'Explain query';
+            }
+
+            return false;
+        }
+
+        function toggleRunnableQuery(target) {
+            var targetElement = document.getElementById(target.getAttribute('data-target-id'));
+
+            if (targetElement.style.display != 'block') {
+                targetElement.style.display = 'block';
+                target.innerHTML = 'Hide runnable query';
+            } else {
+                targetElement.style.display = 'none';
+                target.innerHTML = 'View runnable query';
+            }
+        }
+
+        function sortTable(header, column, targetId) {
+            "use strict";
+
+            var direction = parseInt(header.getAttribute('data-sort-direction')) || 1,
+                items = [],
+                target = document.getElementById(targetId),
+                rows = target.children,
+                headers = header.parentElement.children,
+                i;
+
+            for (i = 0; i < rows.length; ++i) {
+                items.push(rows[i]);
+            }
+
+            for (i = 0; i < headers.length; ++i) {
+                headers[i].removeAttribute('data-sort-direction');
+                if (headers[i].children.length > 0) {
+                    headers[i].children[0].innerHTML = '';
+                }
+            }
+
+            header.setAttribute('data-sort-direction', (-1*direction).toString());
+            header.children[0].innerHTML = direction > 0 ? '<span>&#9650;</span>' : '<span>&#9660;</span>';
+
+            items.sort(function(a, b) {
+                return direction * (parseFloat(a.children[column].innerHTML) - parseFloat(b.children[column].innerHTML));
+            });
+
+            for (i = 0; i < items.length; ++i) {
                 target.appendChild(items[i]);
             }
         }

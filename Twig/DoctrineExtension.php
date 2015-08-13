@@ -40,6 +40,7 @@ class DoctrineExtension extends \Twig_Extension
             new \Twig_SimpleFilter('doctrine_minify_query', array($this, 'minifyQuery')),
             new \Twig_SimpleFilter('doctrine_pretty_query', 'SqlFormatter::format', array('is_safe' => array('html'))),
             new \Twig_SimpleFilter('doctrine_replace_query_parameters', array($this, 'replaceQueryParameters'), array('is_safe' => array('html'))),
+            new \Twig_SimpleFilter('doctrine_highlight_sql', array($this, 'highlightSqlSyntax'), array('is_safe' => array('html'))),
         );
     }
 
@@ -229,6 +230,9 @@ class DoctrineExtension extends \Twig_Extension
             $result = $this->composeMiniQuery($query, $keywords, $required);
         }
 
+        // Remove unneeded boilerplate HTML
+        $result = str_replace(array("<pre style='background:white;'", "</pre>"), array("<span", "</span>"), $result);
+
         return $result;
     }
 
@@ -307,10 +311,37 @@ class DoctrineExtension extends \Twig_Extension
 
         if ($highlight) {
             $result = \SqlFormatter::highlight($result);
-            $result = str_replace(array('<pre ', '</pre>'), array('<span ', '</span>'), $result);
+            $result = str_replace(array("<pre ", "</pre>"), array("<span ", "</span>"), $result);
         }
 
         return $result;
+    }
+
+    /**
+     * Highlights the syntax of the given SQL statement.
+     *
+     * @param  string $sql
+     * @return string
+     */
+    public function highlightSqlSyntax($sql)
+    {
+        $highlighter = new \SqlFormatter();
+
+        $highlighter::$pre_attributes = 'class="highlight highlight-sql"';
+        $highlighter::$quote_attributes = 'class="sql-string"';
+        $highlighter::$backtick_quote_attributes = 'class="sql-string"';
+        $highlighter::$reserved_attributes = 'class="sql-keyword"';
+        $highlighter::$boundary_attributes = 'class="sql-symbol"';
+        $highlighter::$number_attributes = 'class="sql-number"';
+        $highlighter::$word_attributes = 'class="sql-word"';
+        $highlighter::$error_attributes = 'class="sql-error"';
+        $highlighter::$comment_attributes = 'class="sql-comment"';
+        $highlighter::$variable_attributes = 'class="sql-variable"';
+
+        $html = $highlighter::highlight($sql);
+        $html = str_replace(array('<pre ', '</pre>'), array('<div ', '</div>'), $html);
+
+        return $html;
     }
 
     /**
