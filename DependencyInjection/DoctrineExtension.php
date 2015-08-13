@@ -232,7 +232,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         ;
 
         if (!empty($connection['use_savepoints'])) {
-            $def->addMethodCall('setNestTransactionsWithSavepoints', array(true));
+            $def->addMethodCall('setNestTransactionsWithSavepoints', array($connection['use_savepoints']));
         }
     }
 
