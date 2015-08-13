@@ -145,7 +145,7 @@
             </p>
         {% else %}
             <p>
-                <button type="button" class="sf-button" onclick="expandAllQueries(this);" data-action="expand">
+                <button type="button" class="sf-button" onclick="expandAllQueries(this);" data-action="expand" data-connection="{{ loop.index }}">
                     <span class="border-l">
                         <span class="border-r">
                             <span class="btn-bg">Expand all queries</span>
@@ -172,18 +172,18 @@
                                 <img alt="-" src="data:image/gif;base64,R0lGODlhEgASAMQSANft94TG57Hb8GS44ez1+mC24IvK6ePx+Wa44dXs92+942e54o3L6W2844/M6dnu+P/+/l614P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABIALAAAAAASABIAQAVCoCQBTBOd6Kk4gJhGBCTPxysJb44K0qD/ER/wlxjmisZkMqBEBW5NHrMZmVKvv9hMVsO+hE0EoNAstEYGxG9heIhCADs=" style="display: none;" />
                                 <span style="display: none">Shrink query</span>
                                 <span id="smallcode-{{ i }}-{{ loop.parent.loop.index }}">
-                                    {{ query.sql|doctrine_minify_query|raw }}
+                                    {{ query.sql|doctrine_minify_query }}
                                 </span>
                             </div>
-                            <code id="code-{{ i }}-{{ loop.parent.loop.index }}">
-                                {{ query.sql|doctrine_pretty_query(i, loop.parent.loop.index)|raw }}
-                            </code>
+                            <div id="code-{{ i }}-{{ loop.parent.loop.index }}" style="display: none;">
+                                {{ query.sql|doctrine_pretty_query(i, loop.parent.loop.index) }}
+                            </div>
                             <span id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="display: none;">
-                                {{ query.sql|doctrine_replace_query_parameters(query.params)|raw }}
+                                {{ query.sql|doctrine_replace_query_parameters(query.params) }}
                             </span>
                             <small>
                                 <strong>Parameters</strong>: {{ query.params|yaml_encode }} <br />
-                                [<span id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this);" target-data-id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">Display runnable query</span>]<br/>
+                                [<span id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this);" data-target-id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">Display runnable query</span>]<br/>
                             </small>
 
                             {% if query.explainable %}
@@ -271,7 +271,7 @@
                     <tr>
                         <td>{{ class }}</td>
                         <td>
-                            {% if collector.mappingErrors[manager][class] is defined %}
+                            {% if collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
                                 <ul>
                                     {% for error in collector.mappingErrors[manager][class] %}
                                         <li>{{ error }}</li>
@@ -310,12 +310,13 @@
         }
 
         function expandAllQueries(button) {
-            var queries = document.getElementsByClassName('query-section'),
+            var conn = button.getAttribute('data-connection'),
+                queries = document.querySelectorAll('#queries-' + conn + ' .query-section'),
                 i = queries.length,
                 action = button.getAttribute('data-action');
 
             if (action == 'expand') {
-                button.getElementsByClassName('btn-bg')[0].innerHTML = 'Collapse all queries';
+                button.querySelector('.btn-bg').innerHTML = 'Collapse all queries';
 
                 while (i--) {
                     if (queries[i].getAttribute('data-state') == 'collapsed') {
@@ -323,7 +324,7 @@
                     }
                 }
             } else {
-                button.getElementsByClassName('btn-bg')[0].innerHTML = 'Expand all queries';
+                button.querySelector('.btn-bg').innerHTML = 'Expand all queries';
 
                 while (i--) {
                     if (queries[i].getAttribute('data-state') == 'expanded') {
@@ -371,8 +372,8 @@
         }
 
         function toggleRunnableQuery(target) {
-            var targetId = target.getAttribute('target-data-id').replace('original-query', ''),
-                targetElement = document.getElementById(target.getAttribute('target-data-id')),
+            var targetId = target.getAttribute('data-target-id').replace('original-query', ''),
+                targetElement = document.getElementById(target.getAttribute('data-target-id')),
                 elem;
 
             if (targetElement.style.display != 'block') {
@@ -432,20 +433,6 @@
         }
 
     //]]></script>
-
-    <style>
-        h3 {
-            margin-bottom: 0px;
-        }
-
-        code {
-            display: none;
-        }
-
-        code pre {
-            padding: 5px;
-        }
-    </style>
 {% endblock %}
 
 {% block queries_v2 %}
