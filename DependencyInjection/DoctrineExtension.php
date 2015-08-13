@@ -221,7 +221,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $options = $this->getConnectionOptions($connection);
 
-        $container
+        $def = $container
             ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), new DefinitionDecorator('doctrine.dbal.connection'))
             ->setArguments(array(
                 $options,
@@ -230,6 +230,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $connection['mapping_types'],
             ))
         ;
+
+        if (!empty($connection['use_savepoints'])) {
+            $def->addMethodCall('setNestTransactionsWithSavepoints', array(true));
+        }
     }
 
     protected function getConnectionOptions($connection)

@@ -226,6 +226,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->booleanNode('pooled')->info('True to use a pooled server with the oci8/pdo_oracle driver')->end()
                 ->booleanNode('MultipleActiveResultSets')->info('Configuring MultipleActiveResultSets for the pdo_sqlsrv driver')->end()
+                ->booleanNode('use_savepoints')->info('Use savepoints for nested transactions')->end()
             ->end()
             ->beforeNormalization()
                 ->ifTrue(function ($v) {return !isset($v['sessionMode']) && isset($v['session_mode']);})
