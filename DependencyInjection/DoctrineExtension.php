@@ -111,23 +111,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('dbal.xml');
 
-       /*
-        *
-        * Convert some symfony-style naming on connection options so that we
-        * satisfy DBAL, which is expecting camelCasing.
-        *
-        */
-        $conversions = array('default_table_options' => 'defaultTableOptions');
-        foreach($conversions as $from => $to){
-            foreach(array_keys($config['connections']) as $name) {
-                if (isset($config['connections'][$name][$from])){
-                    $config['connections'][$name][$to] = $config['connections'][$name][$from];
-                    unset($config['connections'][$name][$from]);
-                }
-            }
-        }
-
-
         if (empty($config['default_connection'])) {
             $keys = array_keys($config['connections']);
             $config['default_connection'] = reset($keys);
@@ -271,6 +254,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'keep_slave' => 'keepSlave',
             'shard_choser' => 'shardChoser',
             'server_version' => 'serverVersion',
+            'default_table_options' => 'defaultTableOptions',
         ) as $old => $new) {
             if (isset($options[$old])) {
                 $options[$new] = $options[$old];
