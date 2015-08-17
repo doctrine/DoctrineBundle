@@ -304,6 +304,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $options['global'][$key] = $value;
                 unset($options[$key]);
             }
+            if (!isset($options['global']['driver'])) {
+                $options['global']['driver'] = $options['driver'];
+            }
+            foreach ($options['shards'] as $i => $shard) {
+                if (!isset($shard['driver'])) {
+                    $options['shards'][$i]['driver'] = $options['driver'];
+                }
+            }
             if (empty($options['wrapperClass'])) {
                 // Change the wrapper class only if the user does not already forced using a custom one.
                 $options['wrapperClass'] = 'Doctrine\\DBAL\\Sharding\\PoolingShardConnection';
