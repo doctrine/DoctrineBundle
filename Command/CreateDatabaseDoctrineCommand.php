@@ -35,6 +35,7 @@ class CreateDatabaseDoctrineCommand extends DoctrineCommand
         $this
             ->setName('doctrine:database:create')
             ->setDescription('Creates the configured database')
+            ->addOption('shard', null, InputOption::VALUE_OPTIONAL, 'The shard connection to use for this command')
             ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
             ->addOption('if-not-exists', null, InputOption::VALUE_NONE, 'Don\'t trigger an error, when the database already exists')
             ->setHelp(<<<EOT
@@ -65,6 +66,21 @@ EOT
         $params = $connection->getParams();
         if (isset($params['master'])) {
             $params = $params['master'];
+        }
+        if (isset($params['shards'])) {
+            $shards = $params['shards'];
+            // Default select global
+            $params = $params['global'];
+            if ($input->getOption('shard')) {
+                foreach ($shards as $shard) {
+                    if ($shard['id'] === (int)$input->getOption('shard')) {
+                        // Select sharded database
+                        $params = $shard;
+                        unset($params['id']);
+                        break;
+                    }
+                }
+            }
         }
 
         $name = isset($params['path']) ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
