@@ -325,15 +325,15 @@ class DoctrineExtension extends \Twig_Extension
         $highlighter = new \SqlFormatter();
 
         $highlighter::$pre_attributes = 'class="highlight highlight-sql"';
-        $highlighter::$quote_attributes = 'class="sql-string"';
-        $highlighter::$backtick_quote_attributes = 'class="sql-string"';
-        $highlighter::$reserved_attributes = 'class="sql-keyword"';
-        $highlighter::$boundary_attributes = 'class="sql-symbol"';
-        $highlighter::$number_attributes = 'class="sql-number"';
-        $highlighter::$word_attributes = 'class="sql-word"';
-        $highlighter::$error_attributes = 'class="sql-error"';
-        $highlighter::$comment_attributes = 'class="sql-comment"';
-        $highlighter::$variable_attributes = 'class="sql-variable"';
+        $highlighter::$quote_attributes = 'class="string"';
+        $highlighter::$backtick_quote_attributes = 'class="string"';
+        $highlighter::$reserved_attributes = 'class="keyword"';
+        $highlighter::$boundary_attributes = 'class="symbol"';
+        $highlighter::$number_attributes = 'class="number"';
+        $highlighter::$word_attributes = 'class="word"';
+        $highlighter::$error_attributes = 'class="error"';
+        $highlighter::$comment_attributes = 'class="comment"';
+        $highlighter::$variable_attributes = 'class="variable"';
 
         $html = $highlighter::highlight($sql);
         $html = str_replace(array('<pre ', '</pre>'), array('<div ', '</div>'), $html);

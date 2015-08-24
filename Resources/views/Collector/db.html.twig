@@ -18,7 +18,7 @@
         {% else %}
 
             {% if collector.querycount > 0 or collector.invalidEntityCount > 0 %}
-                {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' : '' %}
+                {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' %}
 
                 {{ include('@Doctrine/Collector/icon.svg') }}
 
@@ -33,8 +33,8 @@
                         <span class="sf-toolbar-label">ms</span>
                     </span>
                 {% endif %}
-
             {% endif %}
+
         {% endif %}
     {% endset %}
 
@@ -91,9 +91,14 @@
 
     {% else %}
 
-        <span class="label {{ collector.querycount > 0 ? '' : 'disabled' }}">
+        <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }} {{ collector.querycount == 0 ? 'disabled' }}">
             <span class="icon">{{ include('@Doctrine/Collector/icon.svg') }}</span>
             <strong>Doctrine</strong>
+            {% if collector.invalidEntityCount %}
+                <span class="count">
+                    <span>{{ collector.invalidEntityCount }}</span>
+                </span>
+            {% endif %}
         </span>
 
     {% endif %}
@@ -114,13 +119,8 @@
 
             <div>
                 <style scoped="scoped">
-                    h3 {
-                        margin-bottom: 0px;
-                    }
-
-                    pre {
-                        padding: 5px;
-                    }
+                    h3  { margin-bottom: 0px; }
+                    pre { padding: 5px; }
                 </style>
 
                 {{ block('queries') }}
@@ -436,20 +436,22 @@
 {% endblock %}
 
 {% block queries_v2 %}
-    <h2>Database queries</h2>
+    <h2>Database Queries</h2>
 
     {% for connection, queries in collector.queries %}
-        <h3>{{ connection }} <small>connection</small></h3>
+        {% if collector.connections|length > 1 %}
+            <h3>{{ connection }} <small>connection</small></h3>
+        {% endif %}
 
         {% if queries is empty %}
             <div class="empty">
                 <p>No database queries were performed.</p>
             </div>
         {% else %}
-            <table class="auto-layout sql-queries" id="queriesPlaceholder-{{ loop.index }}">
+            <table class="auto-layout" id="queriesPlaceholder-{{ loop.index }}">
                 <thead>
                     <tr>
-                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;"># <span>&#9650;</span></th>
+                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;"># <span class="muted">&#9650;</span></th>
                         <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time <span></span></th>
                         <th>Info</th>
                     </tr>
@@ -460,25 +462,24 @@
                         <td>{{ loop.index }}</td>
                         <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }} ms</td>
                         <td>
-                            <div class="sql-section">
-                                {{ query.sql|doctrine_highlight_sql }}
+                            {{ query.sql|doctrine_highlight_sql }}
 
-                                <span class="sql-parameters newline small-text">
-                                    <strong>Parameters</strong>: {{ query.params|yaml_encode }}
-                                </span>
+                            <div>
+                                <strong class="font-normal text-small">Parameters</strong>: {{ query.params|yaml_encode }}
                             </div>
 
-                            <div class="sql-actions">
-                                <a href="#" id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this); return false;" data-target-id="original-query-{{ i }}-{{ loop.parent.loop.index }}">View runnable query</a>
+                            <div class="text-small font-normal">
+                                <a href="#" id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
 
                                 {% if query.explainable %}
-                                    <a href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
+                                    &nbsp;&nbsp;
+                                    <a class="link-inverse" href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
                                 {% endif %}
                             </div>
 
-                            <span id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable">
+                            <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
                                 {{ (query.sql ~ ';')|doctrine_replace_query_parameters(query.params, highlight = false)|doctrine_highlight_sql }}
-                            </span>
+                            </div>
 
                             {% if query.explainable %}
                                 <div id="explain-{{ i }}-{{ loop.parent.loop.index }}"></div>
@@ -493,34 +494,31 @@
 
     <h2>Database Connections</h2>
 
-    {% if collector.connections %}
-        {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.connections, labels: ['Name', 'Service'] }, with_context = false ) }}
-    {% else %}
+    {% if not collector.connections %}
         <div class="empty">
             <p>There are no configured database connections.</p>
         </div>
+    {% else %}
+        {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.connections, labels: ['Name', 'Service'] }, with_context = false ) }}
     {% endif %}
 
     <h2>Entity Managers</h2>
 
-    {% if collector.managers %}
-        {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.managers, labels: ['Name', 'Service'] }, with_context = false ) }}
-    {% else %}
+    {% if not collector.managers %}
         <div class="empty">
             <p>There are no configured entity managers.</p>
         </div>
+    {% else %}
+        {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.managers, labels: ['Name', 'Service'] }, with_context = false ) }}
     {% endif %}
 
     <h2>Second Level Cache</h2>
 
     {% if not collector.cacheEnabled %}
-
         <div class="empty">
             <p>Second Level Cache is not enabled.</p>
         </div>
-
     {% else %}
-
         {% if collector.cacheCounts %}
             <div class="metrics">
                 <div class="metric">
@@ -558,13 +556,13 @@
                 <p>Second level cache information is not available.</p>
             </div>
         {% endif %}
-
     {% endif %}
 
     <h2>Entities Mapping</h2>
 
     {% for manager, classes in collector.entities %}
         <h3>{{ manager }} <small>entity manager</small></h3>
+
         {% if classes is empty %}
             <div class="empty">
                 <p>No loaded entities.</p>
@@ -582,7 +580,7 @@
                     {% set contains_errors = (collector.mappingErrors[manager] is defined) and (collector.mappingErrors[manager][class] is defined) %}
                     <tr>
                         <td>{{ class }}</td>
-                        <td class="{{ contains_errors ? 'status-error' : '' }}">
+                        <td class="font-normal {{ contains_errors ? 'status-error' }}">
                             {% if contains_errors %}
                                 <ul>
                                     {% for error in collector.mappingErrors[manager][class] %}
