@@ -199,7 +199,11 @@
             <p>Second Level Cache is not enabled.</p>
         </div>
     {% else %}
-        {% if collector.cacheCounts %}
+        {% if not collector.cacheCounts %}
+            <div class="empty">
+                <p>Second level cache information is not available.</p>
+            </div>
+        {% else %}
             {% if profiler_markup_version == 1 %}
                 {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheCounts }, with_context = false) }}
             {% else %}
@@ -235,10 +239,6 @@
                 <h3>Number of cache puts</h3>
                 {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheRegions.puts }, with_context = false) }}
             {% endif %}
-        {% else %}
-            <div class="empty">
-                <p>Second level cache information is not available.</p>
-            </div>
         {% endif %}
     {% endif %}
 
