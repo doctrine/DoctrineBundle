@@ -279,7 +279,7 @@
                     target = link.getAttribute('data-target-id');
 
             Sfjs.toggle(target, imgs[0], imgs[1])
-                    .load(
+                .load(
                     target,
                     link.href,
                     null,
@@ -287,7 +287,7 @@
                         el.innerHTML = 'An error occurred while loading the details';
                         Sfjs.removeClass(el, 'loading');
                     }
-            );
+                );
 
             return false;
         }
@@ -316,9 +316,9 @@
 
         function expandQuery(link) {
             var sections = link.children,
-                    target = link.getAttribute('data-target-id'),
-                    targetId = target.replace('code', ''),
-                    queriesParameters = document.getElementById('original-query' + targetId);
+                target = link.getAttribute('data-target-id'),
+                targetId = target.replace('code', ''),
+                queriesParameters = document.getElementById('original-query' + targetId);
 
             if (queriesParameters.style.display != 'none') {
                 queriesParameters.style.display = 'none';
@@ -351,8 +351,8 @@
 
         function toggleRunnableQuery(target) {
             var targetId = target.getAttribute('data-target-id').replace('original-query', ''),
-                    targetElement = document.getElementById(target.getAttribute('data-target-id')),
-                    elem;
+                targetElement = document.getElementById(target.getAttribute('data-target-id')),
+                elem;
 
             if (targetElement.style.display != 'block') {
                 targetElement.style.display = 'block';
@@ -379,11 +379,11 @@
             "use strict";
 
             var direction = parseInt(header.getAttribute('data-sort-direction')) || 1,
-                    items = [],
-                    target = document.getElementById(targetId),
-                    rows = target.children,
-                    headers = header.parentElement.children,
-                    i;
+                items = [],
+                target = document.getElementById(targetId),
+                rows = target.children,
+                headers = header.parentElement.children,
+                i;
 
             for (i = 0; i < rows.length; ++i) {
                 items.push(rows[i]);
