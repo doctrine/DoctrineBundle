@@ -167,7 +167,7 @@
             <p>There are no configured database connections.</p>
         </div>
     {% else %}
-        {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.connections, labels: ['Name', 'Service'] }, with_context = false ) }}
+        {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.connections, labels: ['Name', 'Service'] }, with_context = false ) }}
     {% endif %}
 
     <h2>Entity Managers</h2>
@@ -177,7 +177,7 @@
             <p>There are no configured entity managers.</p>
         </div>
     {% else %}
-        {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.managers, labels: ['Name', 'Service'] }, with_context = false ) }}
+        {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.managers, labels: ['Name', 'Service'] }, with_context = false ) }}
     {% endif %}
 
     <h2>Second Level Cache</h2>
@@ -189,7 +189,7 @@
     {% else %}
         {% if collector.cacheCounts %}
             {% if profiler_markup_version == 1 %}
-                {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.cacheCounts }, with_context = false) }}
+                {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheCounts }, with_context = false) }}
             {% else %}
                 <div class="metrics">
                     <div class="metric">
@@ -211,17 +211,17 @@
 
             {% if collector.cacheRegions.hits %}
                 <h3>Number of cache hits</h3>
-                {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.cacheRegions.hits }, with_context = false) }}
+                {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheRegions.hits }, with_context = false) }}
             {% endif %}
 
             {% if collector.cacheRegions.misses %}
                 <h3>Number of cache misses</h3>
-                {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.cacheRegions.misses }, with_context = false) }}
+                {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheRegions.misses }, with_context = false) }}
             {% endif %}
 
             {% if collector.cacheRegions.puts %}
                 <h3>Number of cache puts</h3>
-                {{ include('WebProfilerBundle:Profiler:table.html.twig', { data: collector.cacheRegions.puts }, with_context = false) }}
+                {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheRegions.puts }, with_context = false) }}
             {% endif %}
         {% else %}
             <div class="empty">
