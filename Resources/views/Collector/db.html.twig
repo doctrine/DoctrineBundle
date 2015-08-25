@@ -432,7 +432,7 @@
             }
 
             header.setAttribute('data-sort-direction', (-1*direction).toString());
-            header.children[0].innerHTML = direction > 0 ? '<span>&#9650;</span>' : '<span>&#9660;</span>';
+            header.children[0].innerHTML = direction > 0 ? '<span class="text-muted">&#9650;</span>' : '<span class="text-muted">&#9660;</span>';
 
             items.sort(function(a, b) {
                 return direction * (parseFloat(a.children[column].innerHTML) - parseFloat(b.children[column].innerHTML));
