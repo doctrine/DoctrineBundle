@@ -284,6 +284,26 @@
 
     <script type="text/javascript">//<![CDATA[
     {% if profiler_markup_version == 1 %}
+        function explain(link) {
+            "use strict";
+
+            var imgs = link.children,
+                    target = link.getAttribute('data-target-id');
+
+            Sfjs.toggle(target, imgs[0], imgs[1])
+                .load(
+                    target,
+                    link.href,
+                    null,
+                    function (xhr, el) {
+                        el.innerHTML = 'An error occurred while loading the details';
+                        Sfjs.removeClass(el, 'loading');
+                    }
+                );
+
+            return false;
+        }
+
         function expandAllQueries(button) {
             var conn = button.getAttribute('data-connection'),
                 queries = document.querySelectorAll('#queries-' + conn + ' .query-section'),
@@ -305,26 +325,6 @@
                 }
             }
             button.setAttribute('data-action', action == 'expand' ? 'collapse' : 'expand');
-        }
-
-        function explain(link) {
-            "use strict";
-
-            var imgs = link.children,
-                    target = link.getAttribute('data-target-id');
-
-            Sfjs.toggle(target, imgs[0], imgs[1])
-                .load(
-                    target,
-                    link.href,
-                    null,
-                    function (xhr, el) {
-                        el.innerHTML = 'An error occurred while loading the details';
-                        Sfjs.removeClass(el, 'loading');
-                    }
-                );
-
-            return false;
         }
     {% else %}
         function explain(link) {
