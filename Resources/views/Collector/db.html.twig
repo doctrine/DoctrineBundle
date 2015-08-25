@@ -249,7 +249,7 @@
                 </thead>
                 <tbody>
                 {% for class in classes %}
-                    {% set contains_errors = (collector.mappingErrors[manager] is defined) and (collector.mappingErrors[manager][class] is defined) %}
+                    {% set contains_errors = collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
                     <tr>
                         <td>{{ class }}</td>
                         <td class="font-normal {{ contains_errors ? 'status-error' }}">
