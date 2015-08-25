@@ -141,6 +141,18 @@
                 <p>No database queries were performed.</p>
             </div>
         {% else %}
+            {% if profiler_markup_version == 1 %}
+                <p>
+                    <button type="button" class="sf-button" onclick="expandAllQueries(this);" data-action="expand" data-connection="{{ loop.index }}">
+                        <span class="border-l">
+                            <span class="border-r">
+                                <span class="btn-bg">Expand all queries</span>
+                            </span>
+                        </span>
+                    </button>
+                </p>
+            {% endif %}
+
             <table class="alt auto-layout" id="queriesPlaceholder-{{ loop.index }}">
                 <thead>
                 <tr>
@@ -271,7 +283,30 @@
     {% endfor %}
 
     <script type="text/javascript">//<![CDATA[
-    {% if profiler_markup_version == 1%}
+    {% if profiler_markup_version == 1 %}
+        function expandAllQueries(button) {
+            var conn = button.getAttribute('data-connection'),
+                queries = document.querySelectorAll('#queries-' + conn + ' .query-section'),
+                i = queries.length,
+                action = button.getAttribute('data-action');
+            if (action == 'expand') {
+                button.querySelector('.btn-bg').innerHTML = 'Collapse all queries';
+                while (i--) {
+                    if (queries[i].getAttribute('data-state') == 'collapsed') {
+                        expandQuery(queries[i]);
+                    }
+                }
+            } else {
+                button.querySelector('.btn-bg').innerHTML = 'Expand all queries';
+                while (i--) {
+                    if (queries[i].getAttribute('data-state') == 'expanded') {
+                        expandQuery(queries[i]);
+                    }
+                }
+            }
+            button.setAttribute('data-action', action == 'expand' ? 'collapse' : 'expand');
+        }
+
         function explain(link) {
             "use strict";
 
