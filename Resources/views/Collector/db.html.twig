@@ -183,9 +183,9 @@
     <h2>Second Level Cache</h2>
 
     {% if not collector.cacheEnabled %}
-    <div class="empty">
-        <p>Second Level Cache is not enabled.</p>
-    </div>
+        <div class="empty">
+            <p>Second Level Cache is not enabled.</p>
+        </div>
     {% else %}
         {% if collector.cacheCounts %}
             {% if profiler_markup_version == 1 %}
