@@ -245,7 +245,9 @@
     <h2>Entities Mapping</h2>
 
     {% for manager, classes in collector.entities %}
-        <h3>{{ manager }} <small>entity manager</small></h3>
+        {% if collector.managers|length > 1 %}
+            <h3>{{ manager }} <small>entity manager</small></h3>
+        {% endif %}
 
         {% if classes is empty %}
             <div class="empty">
