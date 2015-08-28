@@ -328,7 +328,7 @@ class DoctrineExtension extends \Twig_Extension
         \SqlFormatter::$variable_attributes = 'class="variable"';
 
         $html = \SqlFormatter::highlight($sql);
-        $html = preg_replace('/<pre class="(.*)">(.*)<\/pre>/U', '<div class="\1"><pre>\2</pre></div>', $html);
+        $html = preg_replace('/<pre class="(.*)">(.*)<\/pre>/Us', '<div class="\1"><pre>\2</pre></div>', $html);
 
         return $html;
     }
