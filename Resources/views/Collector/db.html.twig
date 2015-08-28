@@ -1,7 +1,5 @@
 {% extends app.request.isXmlHttpRequest ? 'WebProfilerBundle:Profiler:ajax_layout.html.twig' : 'WebProfilerBundle:Profiler:layout.html.twig' %}
 
-{% block page_title 'Doctrine' %}
-
 {% block toolbar %}
     {% set profiler_markup_version = profiler_markup_version|default(1) %}
 
