@@ -48,22 +48,22 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
 The <info>doctrine:mapping:import</info> command imports mapping information
 from an existing database:
 
-<info>php app/console doctrine:mapping:import "MyCustomBundle" xml</info>
+<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml</info>
 
 You can also optionally specify which entity manager to import from with the
 <info>--em</info> option:
 
-<info>php app/console doctrine:mapping:import "MyCustomBundle" xml --em=default</info>
+<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml --em=default</info>
 
 If you don't want to map every entity that can be found in the database, use the
 <info>--filter</info> option. It will try to match the targeted mapped entity with the
 provided pattern string.
 
-<info>php app/console doctrine:mapping:import "MyCustomBundle" xml --filter=MyMatchedEntity</info>
+<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml --filter=MyMatchedEntity</info>
 
 Use the <info>--force</info> option, if you want to override existing mapping files:
 
-<info>php app/console doctrine:mapping:import "MyCustomBundle" xml --force</info>
+<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml --force</info>
 EOT
         );
     }
