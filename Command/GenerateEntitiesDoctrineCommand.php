@@ -49,28 +49,28 @@ You have to limit generation of entities:
 
 * To a bundle:
 
-  <info>php app/console doctrine:generate:entities MyCustomBundle</info>
+  <info>php %command.full_name% doctrine:generate:entities MyCustomBundle</info>
 
 * To a single entity:
 
-  <info>php app/console doctrine:generate:entities MyCustomBundle:User</info>
-  <info>php app/console doctrine:generate:entities MyCustomBundle/Entity/User</info>
+  <info>php %command.full_name% doctrine:generate:entities MyCustomBundle:User</info>
+  <info>php %command.full_name% doctrine:generate:entities MyCustomBundle/Entity/User</info>
 
 * To a namespace
 
-  <info>php app/console doctrine:generate:entities MyCustomBundle/Entity</info>
+  <info>php %command.full_name% doctrine:generate:entities MyCustomBundle/Entity</info>
 
 If the entities are not stored in a bundle, and if the classes do not exist,
 the command has no way to guess where they should be generated. In this case,
 you must provide the <comment>--path</comment> option:
 
-  <info>php app/console doctrine:generate:entities Blog/Entity --path=src/</info>
+  <info>php %command.full_name% doctrine:generate:entities Blog/Entity --path=src/</info>
 
 By default, the unmodified version of each entity is backed up and saved
 (e.g. Product.php~). To prevent this task from creating the backup file,
 pass the <comment>--no-backup</comment> option:
 
-  <info>php app/console doctrine:generate:entities Blog/Entity --no-backup</info>
+  <info>php %command.full_name% doctrine:generate:entities Blog/Entity --no-backup</info>
 
 <error>Important:</error> Even if you specified Inheritance options in your
 XML or YAML Mapping files the generator cannot generate the base and
