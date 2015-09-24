@@ -1,0 +1,24 @@
+<strong>Query results:</strong>
+
+{% if data is not empty %}
+    <table style="margin: 5px 0;">
+        <thead>
+            <tr>
+                {% for label in data[0]|keys %}
+                    <th>{{ label }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                {% for key, item in row %}
+                    <td>{{ item }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    Empty result set.
+{% endif %}

@@ -35,6 +35,49 @@ class ProfilerController extends ContainerAware
      *
      * @return Response A Response instance
      */
+    public function executeAction($token, $connectionName, $query)
+    {
+        /** @var $profiler \Symfony\Component\HttpKernel\Profiler\Profiler */
+        $profiler = $this->container->get('profiler');
+        $profiler->disable();
+
+        $profile = $profiler->loadProfile($token);
+        $queries = $profile->getCollector('db')->getQueries();
+
+        if (!isset($queries[$connectionName][$query])) {
+            return new Response('This query does not exist.');
+        }
+
+        $query = $queries[$connectionName][$query];
+        if (!$query['explainable'] || (stripos($query['sql'], 'SELECT') !== 0)) {
+            return new Response('This query cannot be executed.');
+        }
+
+        /** @var $connection \Doctrine\DBAL\Connection */
+        $connection = $this->container->get('doctrine')->getConnection($connectionName);
+
+        try {
+            $results = $connection->executeQuery($query['sql'], $query['params'], $query['types'])
+                ->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            return new Response('This query cannot be executed.');
+        }
+
+        return $this->container->get('templating')->renderResponse('DoctrineBundle:Collector:execute.html.twig', array(
+            'data' => $results,
+            'query' => $query,
+        ));
+    }
+
+    /**
+     * Renders the profiler panel for the given token.
+     *
+     * @param string  $token          The profiler token
+     * @param string  $connectionName
+     * @param integer $query
+     *
+     * @return Response A Response instance
+     */
     public function explainAction($token, $connectionName, $query)
     {
         /** @var $profiler \Symfony\Component\HttpKernel\Profiler\Profiler */
