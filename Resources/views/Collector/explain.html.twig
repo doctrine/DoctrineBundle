@@ -1,6 +1,6 @@
 {% if data[0]|length > 1 %}
     {# The platform returns a table for the explanation (e.g. MySQL), display all columns #}
-    <table class="sql-explanation" style="margin: 5px 0;">
+    <table style="margin: 5px 0;">
         <thead>
             <tr>
                 {% for label in data[0]|keys %}
@@ -20,7 +20,7 @@
     </table>
 {% else %}
     {# The Platform returns a single column for a textual explanation (e.g. PostgreSQL), display all lines #}
-    <pre class="sql-explanation" style="margin: 5px 0;">
+    <pre style="margin: 5px 0;">
         {%- for row in data -%}
             {{ row|first }}{{ "\n" }}
         {%- endfor -%}

@@ -37,7 +37,7 @@ class DoctrineExtension extends \Twig_Extension
     public function getFilters()
     {
         return array(
-            new \Twig_SimpleFilter('doctrine_minify_query', array($this, 'minifyQuery')),
+            new \Twig_SimpleFilter('doctrine_minify_query', array($this, 'minifyQuery'), array('deprecated' => true)),
             new \Twig_SimpleFilter('doctrine_pretty_query', 'SqlFormatter::format', array('is_safe' => array('html'))),
             new \Twig_SimpleFilter('doctrine_replace_query_parameters', array($this, 'replaceQueryParameters')),
             new \Twig_SimpleFilter('doctrine_highlight_sql', array($this, 'highlightSqlSyntax'), array('is_safe' => array('html'))),
@@ -328,7 +328,7 @@ class DoctrineExtension extends \Twig_Extension
         \SqlFormatter::$variable_attributes = 'class="variable"';
 
         $html = \SqlFormatter::highlight($sql);
-        $html = preg_replace('/<pre class="(.*)">(.*)<\/pre>/Us', '<div class="\1"><pre>\2</pre></div>', $html);
+        $html = preg_replace('/<pre class="(.*)">([^"]*+)<\/pre>/Us', '<div class="\1"><pre>\2</pre></div>', $html);
 
         return $html;
     }

@@ -107,7 +107,7 @@
 {% block panel %}
     {% set profiler_markup_version = profiler_markup_version|default(1) %}
 
-    {% if profiler_markup_version == 1 %}
+    {% if profiler_markup_version == 1 and page != 'explain' %}
         <style>
             .hidden { display: none; }
             .queries-table td, .queries-table th { vertical-align: top; }
