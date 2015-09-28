@@ -88,7 +88,7 @@
 
 {% block panel %}
     {% if 'explain' == page %}
-        {{ render(controller('DoctrineBundle:Profiler:explain', {
+        {{ render(controller('@Doctrine/Profiler/explain', {
             'token': token,
             'panel': 'db',
             'connectionName': app.request.query.get('connection'),

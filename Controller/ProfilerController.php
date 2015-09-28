@@ -65,7 +65,7 @@ class ProfilerController extends ContainerAware
             return new Response('This query cannot be explained.');
         }
 
-        return $this->container->get('templating')->renderResponse('DoctrineBundle:Collector:explain.html.twig', array(
+        return $this->container->get('templating')->renderResponse('@Doctrine/Collector/explain.html.twig', array(
             'data' => $results,
             'query' => $query,
         ));
