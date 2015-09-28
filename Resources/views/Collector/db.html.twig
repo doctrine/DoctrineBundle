@@ -1,4 +1,4 @@
-{% extends app.request.isXmlHttpRequest ? 'WebProfilerBundle:Profiler:ajax_layout.html.twig' : 'WebProfilerBundle:Profiler:layout.html.twig' %}
+{% extends app.request.isXmlHttpRequest ? '@WebProfiler/Profiler/ajax_layout.html.twig' : '@WebProfiler/Profiler/layout.html.twig' %}
 
 {% block toolbar %}
     {% set profiler_markup_version = profiler_markup_version|default(1) %}
@@ -18,7 +18,7 @@
         {% else %}
 
             {% if collector.querycount > 0 or collector.invalidEntityCount > 0 %}
-                {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' : '' %}
+                {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' %}
 
                 {{ include('@Doctrine/Collector/icon.svg') }}
 
@@ -33,8 +33,8 @@
                         <span class="sf-toolbar-label">ms</span>
                     </span>
                 {% endif %}
-
             {% endif %}
+
         {% endif %}
     {% endset %}
 
@@ -76,109 +76,127 @@
 {% endblock %}
 
 {% block menu %}
-<span class="label">
-    <span class="icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAABLUlEQVR42u3TP0vDQBiA8UK/gDiLzi0IhU4OEunk5OQUAhGSOBUCzqWfIKSzX8DRySF0URCcMjWLIJjFD9Cpk/D6HITecEPUuzhIAz8CIdyTP/f2iqI4qaqqDx8l5Ic2uIeP/bquezCokOAFF+oCN3t4gPzSEjc4NEPaCldQbzjELTYW0RJzHDchwwem+ons6ZBpLSJ7nueJC22h0V+FzmwWV0ee59vQNV67CGVZJmEYbkNjfpY6X6I0Qo4/3RMmTdDDspuQVsJvgkP3IdMbIkIjLPBoadG2646iKJI0Ta2wxm6OdnP0/Tk6DYJgHcfxpw21RtscDTDDnaVZ26474GkkSRIrrPEv5sgMTfHe+cA2O6wPH6vOBpYQNALneHb96XTEDI6dzpEZ0VzO0Rf3pP5LMLI4tAAAAABJRU5ErkJggg==" alt="" /></span>
-    <strong>Doctrine</strong>
-    <span class="count">
-        <span>{{ collector.querycount }}</span>
-        <span>{{ '%0.0f'|format(collector.time * 1000) }} ms</span>
-    </span>
-</span>
+    {% set profiler_markup_version = profiler_markup_version|default(1) %}
+
+    {% if profiler_markup_version == 1 %}
+
+        <span class="label">
+            <span class="icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAABLUlEQVR42u3TP0vDQBiA8UK/gDiLzi0IhU4OEunk5OQUAhGSOBUCzqWfIKSzX8DRySF0URCcMjWLIJjFD9Cpk/D6HITecEPUuzhIAz8CIdyTP/f2iqI4qaqqDx8l5Ic2uIeP/bquezCokOAFF+oCN3t4gPzSEjc4NEPaCldQbzjELTYW0RJzHDchwwem+ons6ZBpLSJ7nueJC22h0V+FzmwWV0ee59vQNV67CGVZJmEYbkNjfpY6X6I0Qo4/3RMmTdDDspuQVsJvgkP3IdMbIkIjLPBoadG2646iKJI0Ta2wxm6OdnP0/Tk6DYJgHcfxpw21RtscDTDDnaVZ26474GkkSRIrrPEv5sgMTfHe+cA2O6wPH6vOBpYQNALneHb96XTEDI6dzpEZ0VzO0Rf3pP5LMLI4tAAAAABJRU5ErkJggg==" alt="" /></span>
+            <strong>Doctrine</strong>
+            <span class="count">
+                <span>{{ collector.querycount }}</span>
+                <span>{{ '%0.0f'|format(collector.time * 1000) }} ms</span>
+            </span>
+        </span>
+
+    {% else %}
+
+        <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }} {{ collector.querycount == 0 ? 'disabled' }}">
+            <span class="icon">{{ include('@Doctrine/Collector/icon.svg') }}</span>
+            <strong>Doctrine</strong>
+            {% if collector.invalidEntityCount %}
+                <span class="count">
+                    <span>{{ collector.invalidEntityCount }}</span>
+                </span>
+            {% endif %}
+        </span>
+
+    {% endif %}
 {% endblock %}
 
 {% block panel %}
+    {% set profiler_markup_version = profiler_markup_version|default(1) %}
+
     {% if 'explain' == page %}
         {{ render(controller('@Doctrine/Profiler/explain', {
-            'token': token,
-            'panel': 'db',
-            'connectionName': app.request.query.get('connection'),
-            'query': app.request.query.get('query')
+            token: token,
+            panel: 'db',
+            connectionName: app.request.query.get('connection'),
+            query: app.request.query.get('query')
         })) }}
     {% else %}
-        <div>
-            <style scoped="scoped">
-                h3 {
-                    margin-bottom: 0px;
-                }
-
-                pre {
-                    padding: 5px;
-                }
-            </style>
-
-            {{ block('queries') }}
-        </div>
+        {{ block('queries') }}
     {% endif %}
 {% endblock %}
 
 {% block queries %}
+    {% if profiler_markup_version == 1 %}
+        <style>
+            .hidden { display: none; }
+            .queries-table td, .queries-table th { vertical-align: top; }
+            .queries-table td > div { margin-bottom: 6px; }
+            .highlight pre { margin: 0; white-space: pre-wrap; }
+            .highlight .keyword   { color: #8959A8; font-weight: bold; }
+            .highlight .word      { color: #222222; }
+            .highlight .variable  { color: #916319; }
+            .highlight .symbol    { color: #222222; }
+            .highlight .comment   { color: #999999; }
+            .highlight .backtick  { color: #718C00; }
+            .highlight .string    { color: #718C00; }
+            .highlight .number    { color: #F5871F; font-weight: bold; }
+            .highlight .error     { color: #C82829; }
+        </style>
+    {% endif %}
+
     <h2>Queries</h2>
 
     {% for connection, queries in collector.queries %}
-        <h3>Connection <em>{{ connection }}</em></h3>
+        {% if collector.connections|length > 1 %}
+            <h3>{{ connection }} <small>connection</small></h3>
+        {% endif %}
+
         {% if queries is empty %}
-            <p>
-                <em>No queries.</em>
-            </p>
+            <div class="empty">
+                <p>No database queries were performed.</p>
+            </div>
         {% else %}
-            <p>
-                <button type="button" class="sf-button" onclick="expandAllQueries(this);" data-action="expand" data-connection="{{ loop.index }}">
-                    <span class="border-l">
-                        <span class="border-r">
-                            <span class="btn-bg">Expand all queries</span>
-                        </span>
-                    </span>
-                </button>
-            </p>
-            <table class="alt" id="queriesPlaceholder-{{ loop.index }}">
+            <table class="alt queries-table">
                 <thead>
-                    <tr>
-                        <th onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;">#<span>&#9650;</span></th>
-                        <th onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time<span></span></th>
-                        <th style="width: 100%;">Info</th>
-                    </tr>
+                <tr>
+                    <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;">#<span class="text-muted">&#9650;</span></th>
+                    <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time<span></span></th>
+                    <th style="width: 100%;">Info</th>
+                </tr>
                 </thead>
                 <tbody id="queries-{{ loop.index }}">
-                {% for i, query in queries %}
-                    <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}" class="{{ cycle(['odd', 'even'], i) }}">
-                        <td>{{ loop.index }}</td>
-                        <td>{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
-                        <td>
-                            <div class="query-section" data-state="collapsed" onclick="return expandQuery(this);" title="Expand query" data-target-id="code-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">
-                                <img alt="+" src="data:image/gif;base64,R0lGODlhEgASAMQTANft99/v+Ga44bHb8ITG52S44dXs9+z1+uPx+YvK6WC24G+944/M6W28443L6dnu+Ge54v/+/l614P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABMALAAAAAASABIAQAVS4DQBTiOd6LkwgJgeUSzHSDoNaZ4PU6FLgYBA5/vFID/DbylRGiNIZu74I0h1hNsVxbNuUV4d9SsZM2EzWe1qThVzwWFOAFCQFa1RQq6DJB4iIQA7" style="display: inline;" />
-                                <img alt="-" src="data:image/gif;base64,R0lGODlhEgASAMQSANft94TG57Hb8GS44ez1+mC24IvK6ePx+Wa44dXs92+942e54o3L6W2844/M6dnu+P/+/l614P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABIALAAAAAASABIAQAVCoCQBTBOd6Kk4gJhGBCTPxysJb44K0qD/ER/wlxjmisZkMqBEBW5NHrMZmVKvv9hMVsO+hE0EoNAstEYGxG9heIhCADs=" style="display: none;" />
-                                <span style="display: none">Shrink query</span>
-                                <span id="smallcode-{{ i }}-{{ loop.parent.loop.index }}">
-                                    {{ query.sql|doctrine_minify_query }}
-                                </span>
-                            </div>
-                            <div id="code-{{ i }}-{{ loop.parent.loop.index }}" style="display: none;">
-                                {{ query.sql|doctrine_pretty_query(i, loop.parent.loop.index) }}
-                            </div>
-                            <span id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="display: none;">
-                                {{ query.sql|doctrine_replace_query_parameters(query.params) }}
-                            </span>
-                            <small>
-                                <strong>Parameters</strong>: {{ query.params|yaml_encode }} <br />
-                                [<span id="expandParams-{{ i }}-{{ loop.parent.loop.index }}" onclick="javascript:toggleRunnableQuery(this);" data-target-id="original-query-{{ i }}-{{ loop.parent.loop.index }}" style="cursor: pointer;">Display runnable query</span>]<br/>
-                            </small>
+                    {% for i, query in queries %}
+                        <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
+                            <td>{{ loop.index }}</td>
+                            <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                            <td>
+                                {{ query.sql|doctrine_highlight_sql }}
 
-                            {% if query.explainable %}
-                                [<a href="{{ path('_profiler', {'panel': 'db', 'token': token, 'page': 'explain', 'connection': connection, 'query': i}) }}" onclick="return explain(this);" style="text-decoration: none;" title="Explains the query" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}" >
-                                    <img alt="+" src="data:image/gif;base64,R0lGODlhEgASAMQTANft99/v+Ga44bHb8ITG52S44dXs9+z1+uPx+YvK6WC24G+944/M6W28443L6dnu+Ge54v/+/l614P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABMALAAAAAASABIAQAVS4DQBTiOd6LkwgJgeUSzHSDoNaZ4PU6FLgYBA5/vFID/DbylRGiNIZu74I0h1hNsVxbNuUV4d9SsZM2EzWe1qThVzwWFOAFCQFa1RQq6DJB4iIQA7" style="display: inline; width: 12px; height: 12px;" />
-                                    <img alt="-" src="data:image/gif;base64,R0lGODlhEgASAMQSANft94TG57Hb8GS44ez1+mC24IvK6ePx+Wa44dXs92+942e54o3L6W2844/M6dnu+P/+/l614P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABIALAAAAAASABIAQAVCoCQBTBOd6Kk4gJhGBCTPxysJb44K0qD/ER/wlxjmisZkMqBEBW5NHrMZmVKvv9hMVsO+hE0EoNAstEYGxG9heIhCADs=" style="display: none; width: 12px; height: 12px;" />
-                                    <span style="vertical-align:top">Explain query</span>
-                                </a>]
-                            {% else %}
-                                This query cannot be explained
-                            {% endif %}
+                                <div>
+                                    <strong class="font-normal text-small">Parameters</strong>: {{ query.params|yaml_encode }}
+                                </div>
 
-                            {% if query.explainable %}
-                                <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="loading"></div>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
+                                <div class="text-small font-normal">
+                                    <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return toggleRunnableQuery(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
+
+                                    &nbsp;&nbsp;
+
+                                    <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return toggleRunnableQuery(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
+
+                                    {% if query.explainable %}
+                                        &nbsp;&nbsp;
+                                        <a class="link-inverse" href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
+                                    {% endif %}
+                                </div>
+
+                                <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                    {{ query.sql|doctrine_pretty_query }}
+                                </div>
+
+                                <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                    {{ (query.sql ~ ';')|doctrine_replace_query_parameters(query.params)|doctrine_highlight_sql }}
+                                </div>
+
+                                {% if query.explainable %}
+                                    <div id="explain-{{ i }}-{{ loop.parent.loop.index }}"></div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         {% endif %}
@@ -186,55 +204,85 @@
 
     <h2>Database Connections</h2>
 
-    {% if collector.connections %}
-        {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.connections} only %}
+    {% if not collector.connections %}
+        <div class="empty">
+            <p>There are no configured database connections.</p>
+        </div>
     {% else %}
-        <p>
-            <em>No connections.</em>
-        </p>
+        {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.connections, labels: ['Name', 'Service'] }, with_context = false ) }}
     {% endif %}
 
     <h2>Entity Managers</h2>
 
-    {% if collector.managers %}
-        {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.managers} only %}
+    {% if not collector.managers %}
+        <div class="empty">
+            <p>There are no configured entity managers.</p>
+        </div>
     {% else %}
-        <p>
-            <em>No entity managers.</em>
-        </p>
+        {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.managers, labels: ['Name', 'Service'] }, with_context = false ) }}
     {% endif %}
 
     <h2>Second Level Cache</h2>
 
-    {% if collector.cacheCounts %}
-        {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.cacheCounts} only %}
-
-        {% if collector.cacheRegions.hits %}
-            <h3>Number of cache hits</h3>
-            {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.cacheRegions.hits} only %}
-        {% endif %}
-
-        {% if collector.cacheRegions.misses %}
-            <h3>Number of cache misses</h3>
-            {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.cacheRegions.misses} only %}
-        {% endif %}
-
-        {% if collector.cacheRegions.puts %}
-            <h3>Number of cache puts</h3>
-            {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.cacheRegions.puts} only %}
-        {% endif %}
+    {% if not collector.cacheEnabled %}
+        <div class="empty">
+            <p>Second Level Cache is not enabled.</p>
+        </div>
     {% else %}
-        <p>
-            <em>No cache.</em>
-        </p>
+        {% if not collector.cacheCounts %}
+            <div class="empty">
+                <p>Second level cache information is not available.</p>
+            </div>
+        {% else %}
+            {% if profiler_markup_version == 1 %}
+                {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheCounts }, with_context = false) }}
+            {% else %}
+                <div class="metrics">
+                    <div class="metric">
+                        <span class="value">{{ collector.cacheCounts.hits }}</span>
+                        <span class="label">Hits</span>
+                    </div>
+
+                    <div class="metric">
+                        <span class="value">{{ collector.cacheCounts.misses }}</span>
+                        <span class="label">Misses</span>
+                    </div>
+
+                    <div class="metric">
+                        <span class="value">{{ collector.cacheCounts.puts }}</span>
+                        <span class="label">Puts</span>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if collector.cacheRegions.hits %}
+                <h3>Number of cache hits</h3>
+                {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheRegions.hits }, with_context = false) }}
+            {% endif %}
+
+            {% if collector.cacheRegions.misses %}
+                <h3>Number of cache misses</h3>
+                {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheRegions.misses }, with_context = false) }}
+            {% endif %}
+
+            {% if collector.cacheRegions.puts %}
+                <h3>Number of cache puts</h3>
+                {{ include('@WebProfiler/Profiler/table.html.twig', { data: collector.cacheRegions.puts }, with_context = false) }}
+            {% endif %}
+        {% endif %}
     {% endif %}
 
-    <h2>Mapping</h2>
+    <h2>Entities Mapping</h2>
 
     {% for manager, classes in collector.entities %}
-        <h3>Manager <em>{{ manager }}</em></h3>
+        {% if collector.managers|length > 1 %}
+            <h3>{{ manager }} <small>entity manager</small></h3>
+        {% endif %}
+
         {% if classes is empty %}
-            <p><em>No loaded entities.</em></p>
+            <div class="empty">
+                <p>No loaded entities.</p>
+            </div>
         {% else %}
             <table>
                 <thead>
@@ -245,17 +293,18 @@
                 </thead>
                 <tbody>
                 {% for class in classes %}
-                    <tr>
+                    {% set contains_errors = collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
+                    <tr class="{{ contains_errors ? 'status-error' }}">
                         <td>{{ class }}</td>
-                        <td>
-                            {% if collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
+                        <td class="font-normal">
+                            {% if contains_errors %}
                                 <ul>
                                     {% for error in collector.mappingErrors[manager][class] %}
                                         <li>{{ error }}</li>
                                     {% endfor %}
                                 </ul>
                             {% else %}
-                                Valid
+                                No errors.
                             {% endif %}
                         </td>
                     </tr>
@@ -269,109 +318,22 @@
         function explain(link) {
             "use strict";
 
-            var imgs = link.children,
-                target = link.getAttribute('data-target-id');
-
-            Sfjs.toggle(target, imgs[0], imgs[1])
-                .load(
-                    target,
-                    link.href,
-                    null,
-                    function(xhr, el) {
-                        el.innerHTML = 'An error occurred while loading the details';
-                        Sfjs.removeClass(el, 'loading');
-                    }
-                );
-
-            return false;
-        }
-
-        function expandAllQueries(button) {
-            var conn = button.getAttribute('data-connection'),
-                queries = document.querySelectorAll('#queries-' + conn + ' .query-section'),
-                i = queries.length,
-                action = button.getAttribute('data-action');
-
-            if (action == 'expand') {
-                button.querySelector('.btn-bg').innerHTML = 'Collapse all queries';
-
-                while (i--) {
-                    if (queries[i].getAttribute('data-state') == 'collapsed') {
-                        expandQuery(queries[i]);
-                    }
-                }
-            } else {
-                button.querySelector('.btn-bg').innerHTML = 'Expand all queries';
-
-                while (i--) {
-                    if (queries[i].getAttribute('data-state') == 'expanded') {
-                        expandQuery(queries[i]);
-                    }
-                }
-            }
-
-            button.setAttribute('data-action', action == 'expand' ? 'collapse' : 'expand');
-        }
-
-        function expandQuery(link) {
-            var sections = link.children,
-                target = link.getAttribute('data-target-id'),
-                targetId = target.replace('code', ''),
-                queriesParameters = document.getElementById('original-query' + targetId);
-
-            if (queriesParameters.style.display != 'none') {
-                queriesParameters.style.display = 'none';
-                document.getElementById('small' + target).style.display = 'inline';
-                document.getElementById('expandParams' + targetId).innerHTML = 'Display runnable query';
-            }
-
-            if (document.getElementById('small' + target).style.display != 'none') {
-                document.getElementById('small' + target).style.display = 'none';
-                document.getElementById(target).style.display = 'inline';
-
-                sections[0].style.display = 'none';
-                sections[1].style.display = 'inline';
-                sections[2].style.display = 'inline';
-
-                link.setAttribute('data-state', 'expanded');
-            } else {
-                document.getElementById('small' + target).style.display = 'inline';
-                document.getElementById(target).style.display = 'none';
-
-                sections[0].style.display = 'inline';
-                sections[1].style.display = 'none';
-                sections[2].style.display = 'none';
-
-                link.setAttribute('data-state', 'collapsed');
-            }
-
-            return false;
-        }
-
-        function toggleRunnableQuery(target) {
-            var targetId = target.getAttribute('data-target-id').replace('original-query', ''),
-                targetElement = document.getElementById(target.getAttribute('data-target-id')),
-                elem;
+            var targetId = link.getAttribute('data-target-id');
+            var targetElement = document.getElementById(targetId);
 
             if (targetElement.style.display != 'block') {
+                Sfjs.load(targetId, link.href, null, function(xhr, el) {
+                    el.innerHTML = 'An error occurred while loading the query explanation.';
+                });
+
                 targetElement.style.display = 'block';
-                target.innerHTML = 'Hide runnable query';
-
-                document.getElementById('smallcode' + targetId).style.display = 'none';
-                document.getElementById('code' + targetId).style.display = 'none';
-
-                elem = document.getElementById('code' + targetId).parentElement.children[0];
-
-                elem.children[0].style.display = 'inline';
-                elem.children[1].style.display = 'none';
-                elem.children[2].style.display = 'none';
-
+                link.innerHTML = 'Hide query explanation';
             } else {
                 targetElement.style.display = 'none';
-                target.innerHTML = 'Display runnable query';
-
-                document.getElementById('smallcode' + targetId).style.display = 'inline';
+                link.innerHTML = 'Explain query';
             }
+
+            return false;
         }
 
         function sortTable(header, column, targetId) {
@@ -396,10 +358,10 @@
             }
 
             header.setAttribute('data-sort-direction', (-1*direction).toString());
-            header.children[0].innerHTML = direction > 0 ? '&#9650;' : '&#9660;';
+            header.children[0].innerHTML = direction > 0 ? '<span class="text-muted">&#9650;</span>' : '<span class="text-muted">&#9660;</span>';
 
             items.sort(function(a, b) {
-                return direction*(parseFloat(a.children[column].innerHTML) - parseFloat(b.children[column].innerHTML));
+                return direction * (parseFloat(a.children[column].innerHTML) - parseFloat(b.children[column].innerHTML));
             });
 
             for (i = 0; i < items.length; ++i) {
@@ -409,5 +371,22 @@
             }
         }
 
-    //]]></script>
+        {% if profiler_markup_version == 1 %}
+            function toggleRunnableQuery(target) {
+                var targetSelector = target.getAttribute('data-toggle-selector');
+                var targetElement = document.querySelector(targetSelector);
+
+                if (targetElement.style.display != 'block') {
+                    targetElement.style.display = 'block';
+                    target.innerHTML = 'Hide runnable query';
+                } else {
+                    targetElement.style.display = 'none';
+                    target.innerHTML = 'View runnable query';
+                }
+
+                return false;
+            }
+        {% endif %}
+
+        //]]></script>
 {% endblock %}
