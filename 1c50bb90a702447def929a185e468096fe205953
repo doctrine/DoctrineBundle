@@ -1,0 +1,231 @@
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-08-25T13:18:25Z
+
+In 6333063 I've removed most of the duplicated code.
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-08-25T14:12:54Z
+
+Regarding this comment:
+
+```
+>      {% endif %}
+>
+>      <h2>Second Level Cache</h2>
+>
+> -    {% if collector.cacheCounts %}
+> -        {% include 'WebProfilerBundle:Profiler:table.html.twig' with {data: collector.cacheCounts} only %}
+> +    {% if not collector.cacheEnabled %}
+> +    <div class="empty">
+> +        <p>Second Level Cache is not enabled.</p>
+> +    </div>
+> +    {% else %}
+> +        {% if collector.cacheCounts %}
+
+you should add an info saying that profiling was not enabled for the SLC in the else clause
+(in the current version of the code, this case also shows No cache. for that case, which was
+crappy (it was not checking collector.cacheEnabled)
+```
+
+I'm afraid don't know which of the following two comments are you referring to:
+
+```
+Second Level Cache is not enabled.
+Second level cache information is not available.
+```
+
+---------------------------------------------------------------------------
+
+by stof at 2015-08-25T14:14:12Z
+
+hmm, I missed the message ``Second level cache information is not available.`` when reviewing
+
+---------------------------------------------------------------------------
+
+by stof at 2015-08-26T09:40:06Z
+
+@javiereguiluz do you actually need to keep the query shrinking for the old design if we drop it in the new design ? Or could we drop it everywhere ? The more we keep content similar between versions the better IMO.
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-08-27T09:17:14Z
+
+In cee5319 I've deduplicated all code. In fact, this pull request now removes more than it adds:
+
+![removed_added_lines](https://cloud.githubusercontent.com/assets/73419/9517016/eefde5ac-4cac-11e5-8421-a5deb9a69333.png)
+
+The panel keeps looking the same in the new profiler, but in the old profiler it now looks and behaves as follows:
+
+![old_profiler_doctrine_panel](https://cloud.githubusercontent.com/assets/73419/9517027/04cc3316-4cad-11e5-9f3e-adbf1081b753.gif)
+
+---------------------------------------------------------------------------
+
+by kimhemsoe at 2015-09-21T21:54:33Z
+
+What is the status for this ?
+
+---------------------------------------------------------------------------
+
+by stof at 2015-09-22T07:59:43Z
+
+@javiereguiluz can you show how it looks like for very long queries ?
+
+---------------------------------------------------------------------------
+
+by stof at 2015-09-22T08:30:18Z
+
+@javiereguiluz I like the way the panel looks like in the Symfony 2.7 profiler now. Getting rid of the query shrinking makes it much easier to identify queries, especially for complex ones where the shrinking was not behaving well.
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-09-23T15:47:05Z
+
+I don't know if this query is long enough, but here it is a more real example:
+
+![long_queries](https://cloud.githubusercontent.com/assets/73419/10050114/07bfd806-621b-11e5-861a-278b0291432b.png)
+
+---------------------------------------------------------------------------
+
+by guilhermeblanco at 2015-09-23T16:07:23Z
+
+@javiereguiluz I'm more fan if we could line break between certain keywords, like (FROM, LEFT [OUTER] JOIN, RIGHT [OUTER] JOIN, ON, WHERE, AND, OR, ORDER BY, GROUP BY, HAVING, LIMIT, OFFSET, VALUES, SET).
+That should be easy by adding a line break if it matches space + keyword + space. Nothing else should have that or any RDBMS engine would crash.
+Here is an example how the same query you posted would look like:
+
+```sql
+SELECT b0_.id AS id0, b9_.title AS title1, b0_.body AS body2, b0_.html_body AS html_body3, b0_.excerpt AS excerpt4, b0_.allow_comments AS allow_comments5, b0_.published AS published6, b0_.published_at AS published_at7, b0_.created_at AS created_at8, b0_.updated_at AS updated_at9, b0_.slug AS slug10, b0_.format AS format11, s1_.id AS id12, s1_.uuid AS uuid13, s1_.name AS name14, s1_.username AS username15, s1_.email AS email16, s1_.access_token AS access_token17, s1_.created_at AS created_at18, s1_.updated_at AS updated_at19, s1_.commenter_badge AS commenter_badge20, b2_.id AS id21, b2_.name AS name22, b2_.slug AS slug23, b0_.user_id AS user_id24, b0_.author_id AS author_id25
+FROM blog_post b0_
+LEFT JOIN user s1_
+ON b0_.user_id = s1_.id
+LEFT JOIN blog_post_category b3_
+ON b0_.id = b3_.post_id
+LEFT JOIN blog_category b2_
+ON b2_.id = b3_.category_id
+WHERE b0_.published = ?
+AND b0_.published_at <= ?
+ORDER BY b0_.published_at DESC
+LIMIT 3
+```
+
+Also with some initial spacing, we could even make it similar to this:
+
+```sql
+SELECT b0_.id AS id0, b9_.title AS title1, b0_.body AS body2, b0_.html_body AS html_body3, b0_.excerpt AS excerpt4, b0_.allow_comments AS allow_comments5, b0_.published AS published6, b0_.published_at AS published_at7, b0_.created_at AS created_at8, b0_.updated_at AS updated_at9, b0_.slug AS slug10, b0_.format AS format11, s1_.id AS id12, s1_.uuid AS uuid13, s1_.name AS name14, s1_.username AS username15, s1_.email AS email16, s1_.access_token AS access_token17, s1_.created_at AS created_at18, s1_.updated_at AS updated_at19, s1_.commenter_badge AS commenter_badge20, b2_.id AS id21, b2_.name AS name22, b2_.slug AS slug23, b0_.user_id AS user_id24, b0_.author_id AS author_id25
+  FROM blog_post b0_
+  LEFT JOIN user s1_
+       ON b0_.user_id = s1_.id
+  LEFT JOIN blog_post_category b3_
+       ON b0_.id = b3_.post_id
+  LEFT JOIN blog_category b2_
+       ON b2_.id = b3_.category_id
+ WHERE b0_.published = ?
+   AND b0_.published_at <= ?
+ ORDER BY b0_.published_at DESC
+ LIMIT 3
+```
+
+If we remove ON, AND and OR from line break list, we'd have:
+
+```sql
+SELECT b0_.id AS id0, b9_.title AS title1, b0_.body AS body2, b0_.html_body AS html_body3, b0_.excerpt AS excerpt4, b0_.allow_comments AS allow_comments5, b0_.published AS published6, b0_.published_at AS published_at7, b0_.created_at AS created_at8, b0_.updated_at AS updated_at9, b0_.slug AS slug10, b0_.format AS format11, s1_.id AS id12, s1_.uuid AS uuid13, s1_.name AS name14, s1_.username AS username15, s1_.email AS email16, s1_.access_token AS access_token17, s1_.created_at AS created_at18, s1_.updated_at AS updated_at19, s1_.commenter_badge AS commenter_badge20, b2_.id AS id21, b2_.name AS name22, b2_.slug AS slug23, b0_.user_id AS user_id24, b0_.author_id AS author_id25
+  FROM blog_post b0_
+  LEFT JOIN user s1_ ON b0_.user_id = s1_.id
+  LEFT JOIN blog_post_category b3_ ON b0_.id = b3_.post_id
+  LEFT JOIN blog_category b2_ ON b2_.id = b3_.category_id
+ WHERE b0_.published = ? AND b0_.published_at <= ?
+ ORDER BY b0_.published_at DESC
+ LIMIT 3
+```
+
+---------------------------------------------------------------------------
+
+by stof at 2015-09-23T16:41:50Z
+
+@guilhermeblanco how would this work when you have a query using CTEs or subqueries ? These are cases where the query display is currently really weird in the profiler (even worse with query shrinking)
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-09-24T08:08:03Z
+
+I agree with most of what you are saying. I have two questions:
+
+1) Can someone paste here a really long and complex (but real) SQL query so we can use it as edge case for the design? Thanks!
+
+2) I like @guilhermeblanco's ideas about formatting long queries. Before doing those changes, does anyone know a good example of formatting SQL queries for readability? Maybe you use a desktop application that solves this problem right and you can paste a screenshot here. Thanks!
+
+---------------------------------------------------------------------------
+
+by stof at 2015-09-24T08:12:38Z
+
+@javiereguiluz I can give you some queries coming from my work project if you want (they rely on Postgres-specific features, but you may not need to execute them)
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-09-24T08:15:04Z
+
+@stof thanks! That would be great. If they cannot be displayed in public, please send them to javier.eguiluz@sensiolabs.com and tell me that so I don't paste a screenshot of them. Thanks!
+
+---------------------------------------------------------------------------
+
+by stof at 2015-09-24T08:55:03Z
+
+email sent
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-09-24T10:08:02Z
+
+@stof has kindly provided me some long and complex queries and after playing a bit with them, I'd like to propose the following change.
+
+This is how the profiler shows these complex queries:
+
+![profiler-long-query](https://cloud.githubusercontent.com/assets/73419/10070328/fedc9994-62b1-11e5-9ef8-7eacb98c1e96.png)
+
+I propose to add a new link action called `View formatted query` which displays the result of applying the
+SqlFormatter filter to the original query. Example for this very complex query:
+
+![profiler-long-query-formatted](https://cloud.githubusercontent.com/assets/73419/10070717/9e1965c6-62b4-11e5-801b-b5ec608e3a74.png)
+
+And the runnable query would remain the same because you just want to copy+paste it to execute it:
+
+![profiler-long-query-runnable](https://cloud.githubusercontent.com/assets/73419/10070451/d510f5dc-62b2-11e5-847c-8c6fca111312.png)
+
+And this is how it works when you combine everything:
+
+![profiler-queries](https://cloud.githubusercontent.com/assets/73419/10070728/b406bcc6-62b4-11e5-85ef-d8480bc76a6f.gif)
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-09-24T11:47:13Z
+
+I've just fixed all the issues reported by @stof, so before merging this PR, we just need to decide if the new "View formatted query" is the way to go or not. Thanks!
+
+---------------------------------------------------------------------------
+
+by fabpot at 2015-09-28T14:25:06Z
+
+@javiereguiluz Can you update the first line to read like this:
+
+```jinja
+{% extends app.request.isXmlHttpRequest ? '@WebProfiler/Profiler/ajax_layout.html.twig' : '@WebProfiler/Profiler/layout.html.twig' %}
+```
+
+---------------------------------------------------------------------------
+
+by stof at 2015-09-28T14:28:26Z
+
+this needs to be rebased as there is a conflict
+
+---------------------------------------------------------------------------
+
+by fabpot at 2015-09-28T14:56:51Z
+
+I'd love to have this one merged ASAP... and then having a release in a couple of days would be awesome as well.
+
+---------------------------------------------------------------------------
+
+by javiereguiluz at 2015-09-28T14:59:04Z
+
+Rebased and ready to be merged. @stof I propose you to solve the issue with the duplicated Twig filter in another pull request. That way we can merge this ASAP. Thanks.
