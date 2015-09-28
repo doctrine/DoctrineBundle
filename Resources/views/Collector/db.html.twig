@@ -108,7 +108,7 @@
     {% set profiler_markup_version = profiler_markup_version|default(1) %}
 
     {% if 'explain' == page %}
-        {{ render(controller('DoctrineBundle:Profiler:explain', {
+        {{ render(controller('@Doctrine/Profiler/explain', {
             token: token,
             panel: 'db',
             connectionName: app.request.query.get('connection'),
@@ -138,19 +138,6 @@
         </style>
     {% endif %}
 
-    {% if 'explain' == page %}
-        {{ render(controller('@Doctrine/Profiler/explain', {
-            token: token,
-            panel: 'db',
-            connectionName: app.request.query.get('connection'),
-            query: app.request.query.get('query')
-        })) }}
-    {% else %}
-        {{ block('queries') }}
-    {% endif %}
-{% endblock %}
-
-{% block queries %}
     <h2>Queries</h2>
 
     {% for connection, queries in collector.queries %}
