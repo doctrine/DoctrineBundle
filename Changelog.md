@@ -1,3 +1,9 @@
+## 1.5.2 (2015-08-31)
+
+Security:
+
+* Fix Security Misconfiguration Vulnerability, allowing potential local arbitrary code execution.
+
 ## 1.5.1 (2015-08-12)
 
 Bugfix:
