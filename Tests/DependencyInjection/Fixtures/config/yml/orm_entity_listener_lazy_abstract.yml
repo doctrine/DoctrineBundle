@@ -1,0 +1,18 @@
+services:
+    entity_listener:
+        abstract: true
+        class: EntityListener
+        tags:
+            - { name: doctrine.orm.entity_listener, lazy: true }
+
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        default_entity_manager: em1
+        entity_managers:
+            em1:
