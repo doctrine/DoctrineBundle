@@ -617,6 +617,15 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('doctrine.event_listener' => array( array('event' => 'loadClassMetadata') ) ), $definition->getTags());
     }
 
+    public function testResolveDiscriminationMap()
+    {
+        $container = $this->loadContainer('orm_resolve_target_entity');
+
+        $definition = $container->getDefinition('doctrine.orm.listeners.resolve_discriminator_map');
+        $this->assertDICConstructorArguments($definition, array(array('Symfony\Component\Security\Core\User\UserInterface' => 'MyUserClass')));
+        $this->assertEquals(array('doctrine.event_listener' => array( array('event' => 'loadClassMetadata') ) ), $definition->getTags());
+    }
+
     public function testAttachEntityListeners()
     {
         if (version_compare(Version::VERSION, '2.5.0-DEV') < 0 ) {

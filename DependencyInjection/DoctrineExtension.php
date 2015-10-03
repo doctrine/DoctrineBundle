@@ -384,7 +384,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
 
             $def->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
+
+            /**
+             * We also must create the resolve DiscriminatorMap listener
+             */
+            $resolveDiscriminatorMapListenerDef = $container->findDefinition('doctrine.orm.listeners.resolve_discriminator_map');
+            $resolveDiscriminatorMapListenerDef->setArguments(array($config['resolve_target_entities']));
+            $resolveDiscriminatorMapListenerDef->addTag(
+                'doctrine.event_listener',
+                array('event' => 'loadClassMetadata')
+            );
         }
+
     }
 
     /**
