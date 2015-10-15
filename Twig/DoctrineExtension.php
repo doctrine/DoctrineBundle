@@ -303,6 +303,8 @@ class DoctrineExtension extends \Twig_Extension
             },
             $query
         );
+
+        return $result;
     }
 
     /**
