@@ -330,11 +330,11 @@ class DoctrineExtension extends \Twig_Extension
 
         if ($highlightOnly) {
             $html = \SqlFormatter::highlight($sql);
+            $html = preg_replace('/<pre class=".*">([^"]*+)<\/pre>/Us', '\1', $html);
         } else {
             $html = \SqlFormatter::format($sql);
+            $html = preg_replace('/<pre class="(.*)">([^"]*+)<\/pre>/Us', '<div class="\1"><pre>\2</pre></div>', $html);
         }
-
-        $html = preg_replace('/<pre class="(.*)">([^"]*+)<\/pre>/Us', '<div class="\1"><pre>\2</pre></div>', $html);
 
         return $html;
     }
