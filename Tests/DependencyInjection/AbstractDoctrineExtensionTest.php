@@ -114,7 +114,11 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Doctrine\\DBAL\\Connections\\MasterSlaveConnection', $param['wrapperClass']);
         $this->assertTrue($param['keepSlave']);
         $this->assertEquals(
-            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t', 'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost', 'unix_socket' => '/path/to/mysqld.sock'),
+            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t',
+                  'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost',
+                  'unix_socket' => '/path/to/mysqld.sock',
+                  'defaultTableOptions' => array(),
+            ),
             $param['master']
         );
         $this->assertEquals(
@@ -136,7 +140,11 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Doctrine\\DBAL\\Sharding\\PoolingShardConnection', $param['wrapperClass']);
         $this->assertEquals(new Reference('foo.shard_choser'), $param['shardChoser']);
         $this->assertEquals(
-            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t', 'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost', 'unix_socket' => '/path/to/mysqld.sock'),
+            array('user' => 'mysql_user', 'password' => 'mysql_s3cr3t',
+                  'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost',
+                  'unix_socket' => '/path/to/mysqld.sock',
+                  'defaultTableOptions' => array(),
+            ),
             $param['global']
         );
         $this->assertEquals(
@@ -179,6 +187,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                 'password' => null,
                 'driver' => 'pdo_mysql',
                 'driverOptions' => array(),
+                'defaultTableOptions' => array(),
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -218,6 +227,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                     'password' => null,
                     'driver' => 'pdo_mysql',
                     'driverOptions' => array(),
+                    'defaultTableOptions' => array(),
                 ),
                 new Reference('doctrine.dbal.default_connection.configuration'),
                 new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -257,6 +267,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
                 'password' => 'sqlite_s3cr3t',
                 'dbname' => 'sqlite_db',
                 'memory' => true,
+                'defaultTableOptions' => array(),
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -475,6 +486,26 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICConstructorArguments($xmlDef, array(
             array(__DIR__.DIRECTORY_SEPARATOR.'Fixtures'.DIRECTORY_SEPARATOR.'Bundles'.DIRECTORY_SEPARATOR.'XmlBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'doctrine' => 'Fixtures\Bundles\XmlBundle'),
         ));
+    }
+
+    public function testSingleEntityManagerDefaultTableOptions()
+    {
+        $container = $this->loadContainer('orm_single_em_default_table_options', array('YamlBundle', 'AnnotationsBundle', 'XmlBundle'));
+
+        $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+
+        $this->assertArrayHasKey('defaultTableOptions',$param);
+
+        $defaults = $param['defaultTableOptions'];
+
+        $this->assertArrayHasKey('charset', $defaults);
+        $this->assertArrayHasKey('collate', $defaults);
+        $this->assertArrayHasKey('engine', $defaults);
+
+        $this->assertEquals('utf8mb4',$defaults['charset']);
+        $this->assertEquals('utf8mb4_unicode_ci',$defaults['collate']);
+        $this->assertEquals('InnoDB',$defaults['engine']);
+
     }
 
     public function testSetTypes()

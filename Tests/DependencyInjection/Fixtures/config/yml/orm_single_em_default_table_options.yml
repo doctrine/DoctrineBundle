@@ -1,0 +1,22 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+                default_table_options:
+                  charset:      utf8mb4
+                  collate:      utf8mb4_unicode_ci
+                  engine:       InnoDB
+
+    orm:
+        mappings:
+            AnnotationsBundle: ~
+            YamlBundle:
+                dir: Resources/config/doctrine
+                alias: yml
+            manual:
+                type: xml
+                prefix: Fixtures\Bundles\XmlBundle
+                dir: %kernel.root_dir%/Tests/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine
+                alias: TestAlias

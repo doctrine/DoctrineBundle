@@ -258,6 +258,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'keep_slave' => 'keepSlave',
             'shard_choser' => 'shardChoser',
             'server_version' => 'serverVersion',
+            'default_table_options' => 'defaultTableOptions',
         ) as $old => $new) {
             if (isset($options[$old])) {
                 $options[$new] = $options[$old];
