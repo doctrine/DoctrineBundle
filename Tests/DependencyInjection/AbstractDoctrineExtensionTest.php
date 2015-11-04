@@ -148,6 +148,22 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testDbalLoadSavepointsForNestedTransactions()
+    {
+        $container = $this->loadContainer('dbal_savepoints');
+
+        $calls = $container->getDefinition('doctrine.dbal.savepoints_connection')->getMethodCalls();
+        $this->assertCount(1, $calls);
+        $this->assertEquals('setNestTransactionsWithSavepoints', $calls[0][0]);
+        $this->assertTrue($calls[0][1][0]);
+
+        $calls = $container->getDefinition('doctrine.dbal.nosavepoints_connection')->getMethodCalls();
+        $this->assertCount(0, $calls);
+
+        $calls = $container->getDefinition('doctrine.dbal.notset_connection')->getMethodCalls();
+        $this->assertCount(0, $calls);
+    }
+
     public function testLoadSimpleSingleConnection()
     {
         $container = $this->loadContainer('orm_service_simple_single_entity_manager');
