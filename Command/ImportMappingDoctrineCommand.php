@@ -45,25 +45,25 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force to overwrite existing mapping files.')
             ->setDescription('Imports mapping information from an existing database')
             ->setHelp(<<<EOT
-The <info>doctrine:mapping:import</info> command imports mapping information
+The <info>%command.name%</info> command imports mapping information
 from an existing database:
 
-<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml</info>
+<info>php %command.full_name% "MyCustomBundle" xml</info>
 
 You can also optionally specify which entity manager to import from with the
 <info>--em</info> option:
 
-<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml --em=default</info>
+<info>php %command.full_name% "MyCustomBundle" xml --em=default</info>
 
 If you don't want to map every entity that can be found in the database, use the
 <info>--filter</info> option. It will try to match the targeted mapped entity with the
 provided pattern string.
 
-<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml --filter=MyMatchedEntity</info>
+<info>php %command.full_name% "MyCustomBundle" xml --filter=MyMatchedEntity</info>
 
 Use the <info>--force</info> option, if you want to override existing mapping files:
 
-<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml --force</info>
+<info>php %command.full_name% "MyCustomBundle" xml --force</info>
 EOT
         );
     }
