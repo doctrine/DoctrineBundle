@@ -387,7 +387,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 ));
             }
 
-            $def->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
+            // BC: ResolveTargetEntityListener implements the subscriber interface since
+            // v2.5.0-beta1 (Commit 437f812)
+            if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
+                $def->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
+            } else {
+                $def->addTag('doctrine.event_subscriber');
+            }
         }
     }
 
