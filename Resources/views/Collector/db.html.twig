@@ -164,7 +164,7 @@
                             <td>{{ loop.index }}</td>
                             <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
                             <td>
-                                {{ query.sql|doctrine_highlight_sql }}
+                                {{ query.sql|doctrine_pretty_query(highlight_only = true) }}
 
                                 <div>
                                     <strong class="font-normal text-small">Parameters</strong>: {{ query.params|yaml_encode }}
@@ -188,7 +188,7 @@
                                 </div>
 
                                 <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
-                                    {{ (query.sql ~ ';')|doctrine_replace_query_parameters(query.params)|doctrine_highlight_sql }}
+                                    {{ (query.sql ~ ';')|doctrine_replace_query_parameters(query.params)|doctrine_pretty_query(highlight_only = true) }}
                                 </div>
 
                                 {% if query.explainable %}

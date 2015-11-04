@@ -38,9 +38,8 @@ class DoctrineExtension extends \Twig_Extension
     {
         return array(
             new \Twig_SimpleFilter('doctrine_minify_query', array($this, 'minifyQuery'), array('deprecated' => true)),
-            new \Twig_SimpleFilter('doctrine_pretty_query', 'SqlFormatter::format', array('is_safe' => array('html'))),
+            new \Twig_SimpleFilter('doctrine_pretty_query', array($this, 'formatQuery'), array('is_safe' => array('html'))),
             new \Twig_SimpleFilter('doctrine_replace_query_parameters', array($this, 'replaceQueryParameters')),
-            new \Twig_SimpleFilter('doctrine_highlight_sql', array($this, 'highlightSqlSyntax'), array('is_safe' => array('html'))),
         );
     }
 
@@ -309,12 +308,14 @@ class DoctrineExtension extends \Twig_Extension
     }
 
     /**
-     * Highlights the syntax of the given SQL statement.
+     * Formats and/or highlights the given SQL statement.
      *
      * @param  string $sql
+     * @param  bool   $highlightOnly If true the query is not formatted, just highlighted
+     *
      * @return string
      */
-    public function highlightSqlSyntax($sql)
+    public function formatQuery($sql, $highlightOnly = false)
     {
         \SqlFormatter::$pre_attributes = 'class="highlight highlight-sql"';
         \SqlFormatter::$quote_attributes = 'class="string"';
@@ -327,8 +328,13 @@ class DoctrineExtension extends \Twig_Extension
         \SqlFormatter::$comment_attributes = 'class="comment"';
         \SqlFormatter::$variable_attributes = 'class="variable"';
 
-        $html = \SqlFormatter::highlight($sql);
-        $html = preg_replace('/<pre class="(.*)">([^"]*+)<\/pre>/Us', '<div class="\1"><pre>\2</pre></div>', $html);
+        if ($highlightOnly) {
+            $html = \SqlFormatter::highlight($sql);
+            $html = preg_replace('/<pre class=".*">([^"]*+)<\/pre>/Us', '\1', $html);
+        } else {
+            $html = \SqlFormatter::format($sql);
+            $html = preg_replace('/<pre class="(.*)">([^"]*+)<\/pre>/Us', '<div class="\1"><pre>\2</pre></div>', $html);
+        }
 
         return $html;
     }
