@@ -67,7 +67,8 @@ EOT
             $params = $params['master'];
         }
 
-        $name = isset($params['path']) ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
+        $isSetPath = isset($params['path']);
+        $name = $isSetPath ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
         if (!$name) {
             throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
@@ -78,7 +79,7 @@ EOT
         $shouldNotCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
 
         // Only quote if we don't have a path
-        if (!isset($params['path'])) {
+        if (!$isSetPath) {
             $name = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
         }
 
