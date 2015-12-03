@@ -75,6 +75,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('pgsql_user', $config['user']);
         $this->assertSame('pgsql_s3cr3t', $config['password']);
         $this->assertSame('require', $config['sslmode']);
+        $this->assertSame('postgresql-ca.pem', $config['sslrootcert']);
         $this->assertSame('utf8', $config['charset']);
 
         // doctrine.dbal.sqlanywhere_connection

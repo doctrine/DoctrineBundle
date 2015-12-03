@@ -62,6 +62,11 @@ Configuration Reference
                         # Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
                         sslmode:              ~
 
+                        # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT).
+                        # The name of a file containing SSL certificate authority (CA) certificate(s).
+                        # If the file exists, the server's certificate will be verified to be signed by one of these authorities.
+                        sslrootcert:          ~
+
                         # Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
                         pooled:               ~
 
@@ -145,6 +150,11 @@ Configuration Reference
                                 # Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
                                 sslmode:              ~
 
+                                # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT).
+                                # The name of a file containing SSL certificate authority (CA) certificate(s).
+                                # If the file exists, the server's certificate will be verified to be signed by one of these authorities.
+                                sslrootcert:          ~
+
                                 # Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
                                 pooled:               ~
 
@@ -187,6 +197,11 @@ Configuration Reference
                             # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE).
                             # Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
                             sslmode:              ~
+
+                            # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT).
+                            # The name of a file containing SSL certificate authority (CA) certificate(s).
+                            # If the file exists, the server's certificate will be verified to be signed by one of these authorities.
+                            sslrootcert:          ~
 
                             # Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
                             pooled:               ~
@@ -383,6 +398,7 @@ Configuration Reference
                     <!-- sessionMode: The session mode to use for the oci8 driver -->
                     <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
                     <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
+                    <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                     <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                     <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
                     <!-- use-savepoints: Enable savepoints for nested transactions -->
@@ -404,6 +420,7 @@ Configuration Reference
                         sessionMode=""
                         server=""
                         sslmode=""
+                        sslrootcert=""
                         pooled=""
                         MultipleActiveResultSets=""
                         use-savepoints="true"
@@ -441,6 +458,7 @@ Configuration Reference
                         <!-- sessionMode: The session mode to use for the oci8 driver -->
                         <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
                         <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
+                        <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                         <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                         <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
                         <doctrine:slave
@@ -461,6 +479,7 @@ Configuration Reference
                             sessionMode=""
                             server=""
                             sslmode=""
+                            sslrootcert=""
                             pooled=""
                             MultipleActiveResultSets=""
                         />
@@ -475,6 +494,7 @@ Configuration Reference
                         <!-- sessionMode: The session mode to use for the oci8 driver -->
                         <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
                         <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
+                        <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                         <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                         <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
                         <doctrine:shard
@@ -495,6 +515,7 @@ Configuration Reference
                             sessionMode=""
                             server=""
                             sslmode=""
+                            sslrootcert=""
                             pooled=""
                             MultipleActiveResultSets=""
                         />
@@ -848,6 +869,7 @@ can configure. The following block shows all possible configuration keys:
                 servicename:              MyOracleServiceName # Oracle specific (SERVICE_NAME)
                 sessionMode:              2                   # oci8 driver specific (session_mode)
                 sslmode:                  require             # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE)
+                sslrootcert:              postgresql-ca.pem   # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT)
                 wrapper_class:            MyDoctrineDbalConnectionWrapper
                 charset:                  UTF8
                 logging:                  %kernel.debug%
@@ -893,6 +915,7 @@ can configure. The following block shows all possible configuration keys:
                 servicename="MyOracleServiceName"  <!-- Oracle specific (SERVICE_NAME) -->
                 sessionMode"2"                     <!-- oci8 driver specific (session_mode) -->
                 sslmode="require"                  <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLMODE) -->
+                sslrootcert="postgresql-ca.pem"    <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT) -->
                 wrapper-class="MyDoctrineDbalConnectionWrapper"
                 charset="UTF8"
                 logging="%kernel.debug%"
