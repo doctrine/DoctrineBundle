@@ -64,7 +64,7 @@ class ConnectionFactory
             }
         }
         if (!empty($this->commentedTypes)) {
-            if (!$platform) {
+            if (empty($platform)) {
                 $platform = $connection->getDatabasePlatform();
             }
             foreach ($this->commentedTypes as $type) {
