@@ -513,7 +513,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->loadContainer('dbal_types');
 
         $this->assertEquals(
-            array('test' => array('class' => 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType', 'commented' => true)),
+            array('test' => array('class' => 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType', 'commented' => true)),
             $container->getParameter('doctrine.dbal.connection_factory.types')
         );
         $this->assertEquals('%doctrine.dbal.connection_factory.types%', $container->getDefinition('doctrine.dbal.connection_factory')->getArgument(0));
