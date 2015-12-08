@@ -144,7 +144,7 @@ class Registry extends ManagerRegistry implements RegistryInterface
      */
     public function getAliasNamespace($alias)
     {
-        foreach (array_keys($this->getManagers()) as $name) {
+        foreach ($this->getManagerNames() as $name => $id) {
             try {
                 return $this->getManager($name)->getConfiguration()->getEntityNamespace($alias);
             } catch (ORMException $e) {
