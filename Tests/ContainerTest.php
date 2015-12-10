@@ -50,6 +50,8 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf('Symfony\Bridge\Doctrine\CacheWarmer\ProxyCacheWarmer', $container->get('doctrine.orm.proxy_cache_warmer'));
         $this->assertInstanceOf('Doctrine\Common\Persistence\ManagerRegistry', $container->get('doctrine'));
         $this->assertInstanceOf('Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator', $container->get('doctrine.orm.validator.unique'));
+        $this->assertInstanceOf('Doctrine\Common\Persistence\Mapping\ClassMetadataFactory', $container->get('doctrine.orm.default_entity_manager.metadata_factory'));
+        $this->assertInstanceOf('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor', $container->get('doctrine.orm.default_entity_manager.property_info_extractor'));
 
         $this->assertSame($container->get('my.platform'), $container->get('doctrine.dbal.default_connection')->getDatabasePlatform());
 
