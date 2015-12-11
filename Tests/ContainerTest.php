@@ -50,8 +50,6 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf('Symfony\Bridge\Doctrine\CacheWarmer\ProxyCacheWarmer', $container->get('doctrine.orm.proxy_cache_warmer'));
         $this->assertInstanceOf('Doctrine\Common\Persistence\ManagerRegistry', $container->get('doctrine'));
         $this->assertInstanceOf('Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator', $container->get('doctrine.orm.validator.unique'));
-        $this->assertInstanceOf('Doctrine\Common\Persistence\Mapping\ClassMetadataFactory', $container->get('doctrine.orm.default_entity_manager.metadata_factory'));
-        $this->assertInstanceOf('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor', $container->get('doctrine.orm.default_entity_manager.property_info_extractor'));
 
         $this->assertSame($container->get('my.platform'), $container->get('doctrine.dbal.default_connection')->getDatabasePlatform());
 
@@ -61,6 +59,14 @@ class ContainerTest extends TestCase
             $this->assertInstanceOf('Doctrine\DBAL\Event\Listeners\MysqlSessionInit', $container->get('doctrine.dbal.default_connection.events.mysqlsessioninit'));
         } else {
             $this->assertFalse($container->has('doctrine.dbal.default_connection.events.mysqlsessioninit'));
+        }
+
+        if (interface_exists('Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface') && class_exists('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor')) {
+            $this->assertInstanceOf('Doctrine\Common\Persistence\Mapping\ClassMetadataFactory', $container->get('doctrine.orm.default_entity_manager.metadata_factory'));
+            $this->assertInstanceOf('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor', $container->get('doctrine.orm.default_entity_manager.property_info_extractor'));
+        } else {
+            $this->assertFalse($container->has('doctrine.orm.default_entity_manager.metadata_factory'));
+            $this->assertFalse($container->has('doctrine.orm.default_entity_manager.property_info_extractor'));
         }
     }
 }

@@ -375,9 +375,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $def->setFactoryMethod('create');
         }
 
+        $loadPropertyInfoExtractor = interface_exists('Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface')
+            && class_exists('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor');
+
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
+
+            if ($loadPropertyInfoExtractor) {
+                $this->loadPropertyInfoExtractor($name, $container);
+            }
         }
 
         if ($config['resolve_target_entities']) {
@@ -395,14 +402,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
             } else {
                 $def->addTag('doctrine.event_subscriber');
             }
-        }
-
-        if (!class_exists('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor')) {
-            return;
-        }
-
-        foreach ($config['entity_managers'] as $name => $entityManager) {
-            $this->loadPropertyInfoExtractor($name, $container);
         }
     }
 
