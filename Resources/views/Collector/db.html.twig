@@ -72,7 +72,10 @@
             {% endif %}
         {% endset %}
 
-        {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: profiler_url, status: status|default('') }) }}
+        {# the new version of the toolbar panel is only displayed when there are queries or errors #}
+        {% if profiler_markup_version == 1 or (collector.querycount > 0 or collector.invalidEntityCount > 0) %}
+            {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: profiler_url, status: status|default('') }) }}
+        {% endif %}
 
     {% endif %}
 {% endblock %}
