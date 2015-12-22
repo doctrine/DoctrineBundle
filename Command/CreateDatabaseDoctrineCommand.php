@@ -67,17 +67,19 @@ EOT
             $params = $params['master'];
         }
 
-        $name = isset($params['path']) ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
+        $hasPath = isset($params['path']);
+        $name = $hasPath ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
         if (!$name) {
             throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
-        unset($params['dbname']);
+        // Need to get rid of _every_ occurrence of dbname from connection configuration and we have already extracted all relevant info from url
+        unset($params['dbname'], $params['path'], $params['url']);
 
         $tmpConnection = DriverManager::getConnection($params);
         $shouldNotCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
 
         // Only quote if we don't have a path
-        if (!isset($params['path'])) {
+        if (!$hasPath) {
             $name = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
         }
 

@@ -37,6 +37,7 @@
         <xsd:attribute name="logging" type="xsd:string" default="false" />
         <xsd:attribute name="profiling" type="xsd:string" default="false" />
         <xsd:attribute name="server-version" type="xsd:string" />
+        <xsd:attribute name="use-savepoints" type="xsd:boolean" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:attributeGroup>
 
@@ -68,6 +69,7 @@
             <xsd:element name="mapping-type" type="named_scalar" />
             <xsd:element name="slave" type="slave" />
             <xsd:element name="shard" type="shard" />
+            <xsd:element name="default-table-option" type="named_scalar" />
         </xsd:choice>
     </xsd:group>
 

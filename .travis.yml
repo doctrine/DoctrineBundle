@@ -3,8 +3,8 @@ language: php
 sudo: false
 
 cache:
-    directories:
-        - $HOME/.composer/cache
+  directories:
+    - $HOME/.composer/cache
 
 php:
   - 5.3
@@ -17,7 +17,13 @@ php:
 matrix:
   include:
     - php: 5.3
-      env: deps=low
+      env: deps=low SYMFONY_DEPRECATIONS_HELPER=weak
+    - php: 5.6
+      env: SYMFONY_VERSION="2.3.*"
+    - php: 5.6
+      env: SYMFONY_VERSION="2.8.*@dev"
+    - php: 5.6
+      env: SYMFONY_VERSION="3.0.*@dev"
 
 env:
   global:
@@ -25,9 +31,10 @@ env:
 
 before_install:
   - composer self-update
+  - if [ "$SYMFONY_VERSION" != "" ]; then composer require --no-update symfony/symfony:${SYMFONY_VERSION}; fi;
 
 install:
-  - if [ "$deps" = "no" ]; then composer install; fi;
+  - if [ "$deps" = "no" ]; then composer update; fi;
   - if [ "$deps" = "low" ]; then composer --prefer-lowest --prefer-stable update; fi;
 
 script:

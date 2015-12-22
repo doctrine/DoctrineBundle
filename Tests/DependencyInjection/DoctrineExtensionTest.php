@@ -225,6 +225,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('root', $args[0]['user']);
         $this->assertEquals('doctrine.dbal.default_connection.configuration', (string) $args[1]);
         $this->assertEquals('doctrine.dbal.default_connection.event_manager', (string) $args[2]);
+        $this->assertCount(0, $definition->getMethodCalls());
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
@@ -267,6 +268,21 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_result_cache'));
         $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
+    }
+
+    public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $extension->load(array(array('dbal' => array('connections' => array(
+            'default' => array('password' => 'foo', 'use_savepoints' => true)
+        )))), $container);
+
+        $calls = $container->getDefinition('doctrine.dbal.default_connection')->getMethodCalls();
+        $this->assertCount(1, $calls);
+        $this->assertEquals('setNestTransactionsWithSavepoints', $calls[0][0]);
+        $this->assertTrue($calls[0][1][0]);
     }
 
     public function testAutoGenerateProxyClasses()
