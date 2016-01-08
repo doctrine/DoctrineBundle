@@ -59,6 +59,7 @@
         <xsd:attribute name="servicename" type="xsd:string" />
         <xsd:attribute name="session-mode" type="xsd:string" />
         <xsd:attribute name="sslmode" type="xsd:string" />
+        <xsd:attribute name="sslrootcert" type="xsd:string" />
         <xsd:attribute name="pooled" type="xsd:string" />
         <xsd:attribute name="multiple-active-result-sets" type="xsd:string" />
     </xsd:attributeGroup>

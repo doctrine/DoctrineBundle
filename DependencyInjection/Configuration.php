@@ -230,6 +230,12 @@ class Configuration implements ConfigurationInterface
                         'the server for PostgreSQL.'
                     )
                 ->end()
+                ->scalarNode('sslrootcert')
+                    ->info(
+                        'The name of a file containing SSL certificate authority (CA) certificate(s). '.
+                        'If the file exists, the server\'s certificate will be verified to be signed by one of these authorities.'
+                    )
+                ->end()
                 ->booleanNode('pooled')->info('True to use a pooled server with the oci8/pdo_oracle driver')->end()
                 ->booleanNode('MultipleActiveResultSets')->info('Configuring MultipleActiveResultSets for the pdo_sqlsrv driver')->end()
                 ->booleanNode('use_savepoints')->info('Use savepoints for nested transactions')->end()
