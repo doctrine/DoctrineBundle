@@ -203,6 +203,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('port')->defaultNull()->end()
                 ->scalarNode('user')->defaultValue('root')->end()
                 ->scalarNode('password')->defaultNull()->end()
+                ->scalarNode('database')->defaultNull()->end()
                 ->scalarNode('charset')->end()
                 ->scalarNode('path')->end()
                 ->booleanNode('memory')->end()
@@ -622,6 +623,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('id')->end()
                 ->scalarNode('namespace')->defaultNull()->end()
                 ->scalarNode('cache_provider')->defaultNull()->end()
+                ->scalarNode('database')->end()
             ->end()
         ;
 
