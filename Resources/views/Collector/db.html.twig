@@ -376,14 +376,16 @@
         {% if profiler_markup_version == 1 %}
             function toggleRunnableQuery(target) {
                 var targetSelector = target.getAttribute('data-toggle-selector');
+                var targetDataAltContent = target.getAttribute('data-toggle-alt-content');
                 var targetElement = document.querySelector(targetSelector);
+                target.setAttribute('data-toggle-alt-content', target.innerHTML);
 
                 if (targetElement.style.display != 'block') {
                     targetElement.style.display = 'block';
-                    target.innerHTML = 'Hide runnable query';
+                    target.innerHTML = targetDataAltContent;
                 } else {
                     targetElement.style.display = 'none';
-                    target.innerHTML = 'View runnable query';
+                    target.innerHTML = targetDataAltContent;
                 }
 
                 return false;
