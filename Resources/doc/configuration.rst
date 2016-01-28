@@ -80,7 +80,7 @@ Configuration Reference
                         platform_service:     ~
                         auto_commit:          ~
 
-                        # If set to "^sf2_" all tables not prefixed with "sf2_" will be ignored by the schema
+                        # If set to "^sf3_" all tables not prefixed with "sf3_" will be ignored by the schema
                         # tool. This is for custom tables which should not be altered automatically.
                         schema_filter:        ~
 
@@ -875,7 +875,7 @@ can configure. The following block shows all possible configuration keys:
                 logging:                  %kernel.debug%
                 platform_service:         MyOwnDatabasePlatformService
                 auto_commit:              false
-                schema_filter:            ^sf2_
+                schema_filter:            ^sf3_
                 mapping_types:
                     enum: string
                 types:
@@ -921,7 +921,7 @@ can configure. The following block shows all possible configuration keys:
                 logging="%kernel.debug%"
                 platform-service="MyOwnDatabasePlatformService"
                 auto-commit="false"
-                schema-filter="^sf2_"
+                schema-filter="^sf3_"
             >
                 <doctrine:option key="foo">bar</doctrine:option>
                 <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
