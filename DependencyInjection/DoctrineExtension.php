@@ -771,7 +771,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * @param string           $entityManagerName
      * @param ContainerBuilder $container
      */
-    protected function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
+    private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
     {
         $metadataFactoryService = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
 
