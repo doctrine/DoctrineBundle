@@ -44,8 +44,7 @@
     },
     "suggest": {
         "symfony/web-profiler-bundle": "To use the data collector.",
-        "doctrine/orm": "The Doctrine ORM integration is optional in the bundle.",
-        "symfony/property-info": "To use the PropertyInfo integration."
+        "doctrine/orm": "The Doctrine ORM integration is optional in the bundle."
     },
     "autoload": {
         "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "" }
