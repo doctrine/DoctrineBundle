@@ -163,7 +163,7 @@
                 <tbody id="queries-{{ loop.index }}">
                     {% for i, query in queries %}
                         <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
-                            <td>{{ loop.index }}</td>
+                            <td class="nowrap">{{ loop.index }}</td>
                             <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
                             <td>
                                 {{ query.sql|doctrine_pretty_query(highlight_only = true) }}
