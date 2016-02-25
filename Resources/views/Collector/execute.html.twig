@@ -1,0 +1,43 @@
+{% set nbVisibleCols = 6 %}
+<p>
+{% for label in data[0]|keys %}
+    <a class="btn btn-sm" style="padding: 3px; margin-bottom: 3px;" onclick="toggleColumn(this, 'query-results-{{ id }}', '{{ loop.index }}')">
+        <span class="{{ loop.index <= nbVisibleCols ? "" : "text-muted" }}">
+            {{ label }}
+        </span>
+    </a>
+{% endfor %}
+</p>
+
+{% if data[0]|length > 1 %}
+    <table style="margin: 5px 0;" id="query-results-{{ id }}">
+        <thead>
+        <tr>
+            {% for label in data[0]|keys %}
+                <th class="col col{{ loop.index }} {{ loop.index <= nbVisibleCols ? "" : "hidden" }}">{{ label }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in data %}
+            <tr>
+                {% for key, item in row %}
+                    <td class="col col{{ loop.index }} {{ loop.index <= nbVisibleCols ? "" : "hidden" }}">{{ item }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <pre style="margin: 5px 0;">
+        {%- for row in data -%}
+            {{ row|first }}{{ "\n" }}
+        {%- endfor -%}
+    </pre>
+{% endif %}
+
+{% if not app.request.isXmlHttpRequest %}
+    {% include '@Doctrine/Collector/_toggle_column.html.twig' %}
+{% endif %}
+
+

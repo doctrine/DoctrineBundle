@@ -1,0 +1,12 @@
+<script>
+    function toggleColumn(button, tableId, n) {
+        Sfjs.toggleClass(button.getElementsByTagName("span")[0], "text-muted")
+        var rows = document.getElementById(tableId).getElementsByClassName("col" + n)
+        if (rows && rows.length > 0) {
+            for (var i = 0; i < rows.length; i++) {
+                Sfjs.toggleClass(rows[i], "hidden")
+            }
+        }
+    }
+</script>
+

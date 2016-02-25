@@ -109,8 +109,8 @@
 {% block panel %}
     {% set profiler_markup_version = profiler_markup_version|default(1) %}
 
-    {% if 'explain' == page %}
-        {{ render(controller('DoctrineBundle:Profiler:explain', {
+    {% if ('explain' == page or 'execute' == page) %}
+        {{ render(controller(('DoctrineBundle:Profiler:' ~ page), {
             token: token,
             panel: 'db',
             connectionName: app.request.query.get('connection'),
@@ -173,15 +173,19 @@
                                 </div>
 
                                 <div class="text-small font-normal">
-                                    <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return toggleRunnableQuery(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
+                                    <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return expand(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
 
                                     &nbsp;&nbsp;
 
-                                    <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return toggleRunnableQuery(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
+                                    <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return expand(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
+
+                                    &nbsp;&nbsp;
+
+                                    <a href="{{ path('_profiler', { panel: 'db', token: token, page: 'execute', connection: connection, query: i }) }}" class="link-inverse" onclick="return expand(this);" data-toggle-selector="#execute-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide results">Show results</a>
 
                                     {% if query.explainable %}
                                         &nbsp;&nbsp;
-                                        <a class="link-inverse" href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
+                                        <a href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" class="link-inverse" onclick="return expand(this);" data-toggle-selector="#explain-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide explain query">Explain query</a>
                                     {% endif %}
                                 </div>
 
@@ -193,8 +197,14 @@
                                     {{ (query.sql ~ ';')|doctrine_replace_query_parameters(query.params)|doctrine_pretty_query(highlight_only = true) }}
                                 </div>
 
+                                <div id="execute-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                    Loading ...
+                                </div>
+
                                 {% if query.explainable %}
-                                    <div id="explain-{{ i }}-{{ loop.parent.loop.index }}"></div>
+                                    <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                        Loading ...
+                                    </div>
                                 {% endif %}
                             </td>
                         </tr>
@@ -317,27 +327,6 @@
     {% endfor %}
 
     <script type="text/javascript">//<![CDATA[
-        function explain(link) {
-            "use strict";
-
-            var targetId = link.getAttribute('data-target-id');
-            var targetElement = document.getElementById(targetId);
-
-            if (targetElement.style.display != 'block') {
-                Sfjs.load(targetId, link.href, null, function(xhr, el) {
-                    el.innerHTML = 'An error occurred while loading the query explanation.';
-                });
-
-                targetElement.style.display = 'block';
-                link.innerHTML = 'Hide query explanation';
-            } else {
-                targetElement.style.display = 'none';
-                link.innerHTML = 'Explain query';
-            }
-
-            return false;
-        }
-
         function sortTable(header, column, targetId) {
             "use strict";
 
@@ -373,24 +362,30 @@
             }
         }
 
-        {% if profiler_markup_version == 1 %}
-            function toggleRunnableQuery(target) {
-                var targetSelector = target.getAttribute('data-toggle-selector');
-                var targetDataAltContent = target.getAttribute('data-toggle-alt-content');
-                var targetElement = document.querySelector(targetSelector);
-                target.setAttribute('data-toggle-alt-content', target.innerHTML);
+        function expand(target) {
+            var targetSelector = target.getAttribute('data-toggle-selector');
+            var targetDataAltContent = target.getAttribute('data-toggle-alt-content');
+            var targetElement = document.querySelector(targetSelector);
+            target.setAttribute('data-toggle-alt-content', target.innerHTML);
 
-                if (targetElement.style.display != 'block') {
-                    targetElement.style.display = 'block';
-                    target.innerHTML = targetDataAltContent;
-                } else {
-                    targetElement.style.display = 'none';
-                    target.innerHTML = targetDataAltContent;
+            if (targetElement.style.display != 'block') {
+
+                if(target.href != "#") {
+                    Sfjs.load(targetElement.id, target.href, null, function (xhr, el) {
+                        el.innerHTML = 'An error occurred while loading the data.';
+                    });
                 }
 
-                return false;
+                targetElement.style.display = 'block';
+                target.innerHTML = targetDataAltContent;
+            } else {
+                targetElement.style.display = 'none';
+                target.innerHTML = targetDataAltContent;
             }
-        {% endif %}
+
+            return false;
+        }
 
         //]]></script>
+    {% include '@Doctrine/Collector/_toggle_column.html.twig' %}
 {% endblock %}
