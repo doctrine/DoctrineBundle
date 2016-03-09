@@ -15,6 +15,8 @@
 namespace Doctrine\Bundle\DoctrineBundle\Controller;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\ASE\ASEStatement;
+use Doctrine\DBAL\Platforms\ASEPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -72,6 +74,8 @@ class ProfilerController implements ContainerAwareInterface
         try {
             if ($connection->getDatabasePlatform() instanceof SQLServerPlatform) {
                 $results = $this->explainSQLServerPlatform($connection, $query);
+            } else if ($connection->getDatabasePlatform() instanceof ASEPlatform) {
+                $results = $this->explainASEServerPlatform($connection, $query);
             } else {
                 $results = $this->explainOtherPlatform($connection, $query);
             }
@@ -95,6 +99,20 @@ class ProfilerController implements ContainerAwareInterface
         $stmt = $connection->executeQuery($sql, $query['params'], $query['types']);
         $stmt->nextRowset();
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    private function explainASEServerPlatform(Connection $connection, $query)
+    {
+        $sql = 'SET SHOWPLAN ON SET NOEXEC ON ' . $query['sql'] .' SET NOEXEC OFF SET SHOWPLAN OFF';
+        $stmt = $connection->executeQuery($sql, $query['params'], $query['types']);
+
+        if ($stmt instanceof ASEStatement) {
+            $data = $stmt->getMessages();
+            $data = implode("\n", $data);
+            return array(array($data));
+        }
+
+        return array();
     }
 
     private function explainOtherPlatform(Connection $connection, $query)
