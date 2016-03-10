@@ -108,7 +108,7 @@ class ProfilerController implements ContainerAwareInterface
 
         if ($stmt instanceof ASEStatement) {
             $data = $stmt->getMessages();
-            $data = implode("\n", $data);
+            $data = implode("", $data);
             return array(array($data));
         }
 
