@@ -96,7 +96,9 @@ EOT
                 } else {
                     $output->writeln(sprintf('<info>Database for connection named <comment>%s</comment> doesn\'t exist. Skipped.</info>', $name));
                 }
+                $connection->close();
             } catch (\Exception $e) {
+                $connection->close();
                 $output->writeln(sprintf('<error>Could not drop database for connection named <comment>%s</comment></error>', $name));
                 $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
 
