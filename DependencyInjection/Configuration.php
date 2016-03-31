@@ -240,6 +240,21 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('pooled')->info('True to use a pooled server with the oci8/pdo_oracle driver')->end()
                 ->booleanNode('MultipleActiveResultSets')->info('Configuring MultipleActiveResultSets for the pdo_sqlsrv driver')->end()
                 ->booleanNode('use_savepoints')->info('Use savepoints for nested transactions')->end()
+                ->scalarNode('instancename')
+                ->info(
+                    'Optional parameter, complete whether to add the INSTANCE_NAME parameter in the connection.'.
+                    ' It is generally used to connect to an Oracle RAC server to select the name'.
+                    ' of a particular instance.'
+                )
+                ->end()
+                ->scalarNode('connectstring')
+                ->info(
+                    'Complete Easy Connect connection descriptor, see https://docs.oracle.com/database/121/NETAG/naming.htm.'.
+                    'When using this option, you will still need to provide the user and password parameters, but the other '.
+                    'parameters will no longer be used. Note that when using this parameter, the getHost and getPort methods'.
+                    ' from Doctrine\DBAL\Connection will no longer function as expected.'
+                )
+                ->end()
             ->end()
             ->beforeNormalization()
                 ->ifTrue(function ($v) {return !isset($v['sessionMode']) && isset($v['session_mode']);})

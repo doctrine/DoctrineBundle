@@ -735,6 +735,22 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setAutoCommit', array(false));
     }
 
+    public function testDbalOracleConnectstring()
+    {
+        $container = $this->loadContainer('dbal_oracle_connectstring');
+
+        $config = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+        $this->assertSame('scott@sales-server:1521/sales.us.example.com', $config['connectstring']);
+    }
+
+    public function testDbalOracleInstancename()
+    {
+        $container = $this->loadContainer('dbal_oracle_instancename');
+
+        $config = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+        $this->assertSame('mySuperInstance', $config['instancename']);
+    }
+
     public function testDbalSchemaFilter()
     {
         $container = $this->loadContainer('dbal_schema_filter');

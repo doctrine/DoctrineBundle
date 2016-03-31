@@ -63,6 +63,8 @@
         <xsd:attribute name="sslrootcert" type="xsd:string" />
         <xsd:attribute name="pooled" type="xsd:string" />
         <xsd:attribute name="multiple-active-result-sets" type="xsd:string" />
+        <xsd:attribute name="connectstring" type="xsd:string" />
+        <xsd:attribute name="instancename" type="xsd:string" />
     </xsd:attributeGroup>
 
     <xsd:group name="connection-child-config">
