@@ -140,6 +140,40 @@
         </style>
     {% endif %}
 
+    <h2>Query Metrics</h2>
+
+    <div class="metrics">
+        <div class="metric">
+            <span class="value">{{ collector.querycount }}</span>
+            <span class="label">Database Queries</span>
+        </div>
+
+        <div class="metric">
+            <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
+            <span class="label">Query time</span>
+        </div>
+
+        <div class="metric">
+            <span class="value">{{ collector.invalidEntityCount }}</span>
+            <span class="label">Invalid entities</span>
+        </div>
+
+        {% if collector.cacheEnabled %}
+            <div class="metric">
+            	<span class="value">{{ collector.cacheHitsCount }}</span>
+            	<span class="label">Cache hits</span>
+            </div>
+            <div class="metric">
+            	<span class="value">{{ collector.cacheMissesCount }}</span>
+            	<span class="label">Cache misses</span>
+            </div>
+            <div class="metric">
+            	<span class="value">{{ collector.cachePutsCount }}</span>
+            	<span class="label">Cache puts</span>
+            </div>
+        {% endif %}
+    </div>
+
     <h2>Queries</h2>
 
     {% for connection, queries in collector.queries %}
