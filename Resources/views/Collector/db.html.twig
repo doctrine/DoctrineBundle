@@ -41,7 +41,7 @@
         {% set text %}
             <div class="sf-toolbar-info-piece">
                 <b>Database Queries</b>
-                <span class="sf-toolbar-status">{{ collector.querycount }}</span>
+                <span class="sf-toolbar-status {{ collector.querycount > 50 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.querycount }}</span>
             </div>
             <div class="sf-toolbar-info-piece">
                 <b>Query time</b>
