@@ -375,9 +375,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $def->setFactoryMethod('create');
         }
 
+        $loadPropertyInfoExtractor = interface_exists('Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface')
+            && class_exists('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor');
+
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
+
+            if ($loadPropertyInfoExtractor) {
+                $this->loadPropertyInfoExtractor($name, $container);
+            }
         }
 
         if ($config['resolve_target_entities']) {
@@ -756,6 +763,29 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container);
         $this->loadCacheDriver('result_cache', $entityManager['name'], $entityManager['result_cache_driver'], $container);
         $this->loadCacheDriver('query_cache', $entityManager['name'], $entityManager['query_cache_driver'], $container);
+    }
+
+    /**
+     * Loads a property info extractor for each defined entity manager.
+     *
+     * @param string           $entityManagerName
+     * @param ContainerBuilder $container
+     */
+    private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
+    {
+        $metadataFactoryService = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
+
+        $metadataFactoryDefinition = $container->register($metadataFactoryService, 'Doctrine\Common\Persistence\Mapping\ClassMetadataFactory');
+        $metadataFactoryDefinition->setFactory(array(
+            new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)),
+            'getMetadataFactory'
+        ));
+        $metadataFactoryDefinition->setPublic(false);
+
+        $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), 'Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor');
+        $propertyExtractorDefinition->addArgument(new Reference($metadataFactoryService));
+        $propertyExtractorDefinition->addTag('property_info.list_extractor', array('priority' => -1001));
+        $propertyExtractorDefinition->addTag('property_info.type_extractor', array('priority' => -999));
     }
 
     /**

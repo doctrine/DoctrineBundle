@@ -36,13 +36,14 @@
         "doctrine/orm": "~2.3",
         "symfony/yaml": "~2.2|~3.0",
         "symfony/validator": "~2.2|~3.0",
+        "symfony/property-info": "~2.8|~3.0",
         "symfony/phpunit-bridge": "~2.7|~3.0",
         "twig/twig": "~1.10",
         "satooshi/php-coveralls": "~0.6.1",
         "phpunit/phpunit": "~4"
     },
     "suggest": {
-        "symfony/web-profiler-bundle": "to use the data collector",
+        "symfony/web-profiler-bundle": "To use the data collector.",
         "doctrine/orm": "The Doctrine ORM integration is optional in the bundle."
     },
     "autoload": {
