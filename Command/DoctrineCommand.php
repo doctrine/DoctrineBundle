@@ -16,6 +16,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Doctrine\ORM\Tools\EntityGenerator;
+use Doctrine\ORM\Tools\EntityRepositoryGenerator;
 
 /**
  * Base class for Doctrine console commands to extend from.
@@ -40,6 +41,20 @@ abstract class DoctrineCommand extends ContainerAwareCommand
         $entityGenerator->setAnnotationPrefix('ORM\\');
 
         return $entityGenerator;
+    }
+
+    /**
+     * get a doctrine entity repository generator
+     *
+     * @return EntityRepositoryGenerator
+     */
+    protected function getEntityRepositoryGenerator()
+    {
+        // @TODO: use Default Repository Class Name
+        // @SEE http://www.doctrine-project.org/jira/browse/DDC-3231
+        $repositoryGenerator = new EntityRepositoryGenerator();
+
+        return $repositoryGenerator;
     }
 
     /**
