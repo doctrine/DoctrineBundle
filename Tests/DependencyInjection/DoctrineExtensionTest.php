@@ -498,6 +498,29 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('doctrine_cache.providers.result_cache', (string) $alias);
     }
 
+    public function testShardManager()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = $this->getConnectionConfig();
+        $config['dbal'] = array(
+            'connections' => array(
+                'foo' => array(
+                    'shards' => array(
+                        'test' => array('id' => 1)
+                    ),
+                ),
+                'bar' => array(),
+            ),
+        );
+
+        $extension->load(array($config), $container);
+
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.foo_shard_manager'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.bar_shard_manager'));
+    }
+
     private function getContainer($bundles = 'YamlBundle', $vendor = null)
     {
         $bundles = (array) $bundles;

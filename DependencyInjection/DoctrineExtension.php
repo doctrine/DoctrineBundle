@@ -234,6 +234,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (!empty($connection['use_savepoints'])) {
             $def->addMethodCall('setNestTransactionsWithSavepoints', array($connection['use_savepoints']));
         }
+
+        // Create a shard_manager for this connection
+        if (isset($options['shards'])) {
+            $shardManagerDefinition = new Definition($options['shardManagerClass'], array(
+                new Reference(sprintf('doctrine.dbal.%s_connection', $name))
+            ));
+            $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
+        }
     }
 
     protected function getConnectionOptions($connection)
@@ -257,6 +265,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'wrapper_class' => 'wrapperClass',
             'keep_slave' => 'keepSlave',
             'shard_choser' => 'shardChoser',
+            'shard_manager_class' => 'shardManagerClass',
             'server_version' => 'serverVersion',
             'default_table_options' => 'defaultTableOptions',
         ) as $old => $new) {
@@ -299,6 +308,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'driver' => true, 'driverOptions' => true, 'driverClass' => true,
                 'wrapperClass' => true, 'keepSlave' => true, 'shardChoser' => true,
                 'platform' => true, 'slaves' => true, 'global' => true, 'shards' => true,
+                'serverVersion' => true,
                 // included by safety but should have been unset already
                 'logging' => true, 'profiling' => true, 'mapping_types' => true, 'platform_service' => true,
             );
@@ -312,6 +322,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
             if (empty($options['wrapperClass'])) {
                 // Change the wrapper class only if the user does not already forced using a custom one.
                 $options['wrapperClass'] = 'Doctrine\\DBAL\\Sharding\\PoolingShardConnection';
+            }
+            if (empty($options['shardManagerClass'])) {
+                // Change the shard manager class only if the user does not already forced using a custom one.
+                $options['shardManagerClass'] = 'Doctrine\\DBAL\\Sharding\\PoolingShardManager';
             }
         } else {
             unset($options['shards']);

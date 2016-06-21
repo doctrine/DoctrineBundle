@@ -40,6 +40,7 @@ class DropDatabaseDoctrineCommand extends DoctrineCommand
             ->setName('doctrine:database:drop')
             ->setDescription('Drops the configured database')
             ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
+            ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('if-exists', null, InputOption::VALUE_NONE, 'Don\'t trigger an error, when the database doesn\'t exist')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action')
             ->setHelp(<<<EOT
@@ -69,6 +70,22 @@ EOT
         $params = $connection->getParams();
         if (isset($params['master'])) {
             $params = $params['master'];
+        }
+
+        if (isset($params['shards'])) {
+            $shards = $params['shards'];
+            // Default select global
+            $params = array_merge($params, $params['global']);
+            if ($input->getOption('shard')) {
+                foreach ($shards as $shard) {
+                    if ($shard['id'] === (int)$input->getOption('shard')) {
+                        // Select sharded database
+                        $params = $shard;
+                        unset($params['id']);
+                        break;
+                    }
+                }
+            }
         }
 
         $name = isset($params['path']) ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);

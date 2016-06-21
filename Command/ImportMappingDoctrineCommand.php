@@ -41,6 +41,7 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
             ->addArgument('bundle', InputArgument::REQUIRED, 'The bundle to import the mapping information to')
             ->addArgument('mapping-type', InputArgument::OPTIONAL, 'The mapping type to export the imported mapping information to')
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
+            ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('filter', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'A string pattern used to match entities that should be mapped.')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force to overwrite existing mapping files.')
             ->setDescription('Imports mapping information from an existing database')
@@ -95,7 +96,7 @@ EOT
             $exporter->setEntityGenerator($entityGenerator);
         }
 
-        $em = $this->getEntityManager($input->getOption('em'));
+        $em = $this->getEntityManager($input->getOption('em'), $input->getOption('shard'));
 
         $databaseDriver = new DatabaseDriver($em->getConnection()->getSchemaManager());
         $em->getConfiguration()->setMetadataDriverImpl($databaseDriver);
