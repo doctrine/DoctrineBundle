@@ -725,7 +725,7 @@ certain classes, but those are for very advanced use-cases only.
 Caching Drivers
 ~~~~~~~~~~~~~~~
 
-For the caching drivers you can specify the values ``array``, ``apc``, ``memcache``,
+For the caching drivers you can specify the values ``array``, ``apc``, ``apcu``, ``memcache``,
 ``memcached`` or ``xcache``.
 
 The following example shows an overview of the caching configurations:
@@ -735,7 +735,7 @@ The following example shows an overview of the caching configurations:
     doctrine:
         orm:
             auto_mapping: true
-            metadata_cache_driver: apc
+            metadata_cache_driver: apcu
             query_cache_driver: xcache
             result_cache_driver:
                 type: memcache
