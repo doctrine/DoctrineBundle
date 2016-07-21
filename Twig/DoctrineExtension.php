@@ -287,6 +287,10 @@ class DoctrineExtension extends \Twig_Extension
     {
         $i = 0;
 
+        if (!array_key_exists(0, $parameters) && array_key_exists(1, $parameters)) {
+            $i = 1;
+        }
+
         $result = preg_replace_callback(
             '/\?|((?<!:):[a-z0-9_]+)/i',
             function ($matches) use ($parameters, &$i) {
