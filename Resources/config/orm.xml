@@ -95,7 +95,7 @@
 
         <service id="doctrine.orm.configuration" class="%doctrine.orm.configuration.class%" abstract="true" public="false" />
 
-        <service id="doctrine.orm.entity_manager.abstract" class="%doctrine.orm.entity_manager.class%" abstract="true" />
+        <service id="doctrine.orm.entity_manager.abstract" class="%doctrine.orm.entity_manager.class%" abstract="true" lazy="true" />
 
         <!-- The configurator cannot be a private service -->
         <service id="doctrine.orm.manager_configurator.abstract" class="%doctrine.orm.manager_configurator.class%" abstract="true">
