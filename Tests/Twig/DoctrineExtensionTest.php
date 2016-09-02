@@ -23,7 +23,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $query = 'a=? OR (1)::string OR b=?';
         $parameters = array(1, 2);
 
-        $result = $extension->replaceQueryParameters($query, $parameters, false);
+        $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('a=1 OR (1)::string OR b=2', $result);
     }
 
@@ -36,7 +36,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             2 => 2
         );
 
-        $result = $extension->replaceQueryParameters($query, $parameters, false);
+        $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('a=1 OR b=2', $result);
     }
 
@@ -49,7 +49,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             2
         );
 
-        $result = $extension->replaceQueryParameters($query, $parameters, false);
+        $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('a=1 OR b=2', $result);
     }
 
@@ -62,7 +62,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             'b' => 2
         );
 
-        $result = $extension->replaceQueryParameters($query, $parameters, false);
+        $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('a=1 OR b=2', $result);
     }
 }
