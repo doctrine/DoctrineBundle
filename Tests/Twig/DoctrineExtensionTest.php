@@ -23,7 +23,46 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $query = 'a=? OR (1)::string OR b=?';
         $parameters = array(1, 2);
 
-        $result = $extension->replaceQueryParameters($query, $parameters, false);
+        $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('a=1 OR (1)::string OR b=2', $result);
+    }
+
+    public function testReplaceQueryParametersWithStartingIndexAtOne()
+    {
+        $extension = new DoctrineExtension();
+        $query = 'a=? OR b=?';
+        $parameters = array(
+            1 => 1,
+            2 => 2
+        );
+
+        $result = $extension->replaceQueryParameters($query, $parameters);
+        $this->assertEquals('a=1 OR b=2', $result);
+    }
+
+    public function testReplaceQueryParameters()
+    {
+        $extension = new DoctrineExtension();
+        $query = 'a=? OR b=?';
+        $parameters = array(
+            1,
+            2
+        );
+
+        $result = $extension->replaceQueryParameters($query, $parameters);
+        $this->assertEquals('a=1 OR b=2', $result);
+    }
+
+    public function testReplaceQueryParametersWithNamedIndex()
+    {
+        $extension = new DoctrineExtension();
+        $query = 'a=:a OR b=:b';
+        $parameters = array(
+            'a' => 1,
+            'b' => 2
+        );
+
+        $result = $extension->replaceQueryParameters($query, $parameters);
+        $this->assertEquals('a=1 OR b=2', $result);
     }
 }
