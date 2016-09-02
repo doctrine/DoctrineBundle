@@ -32,7 +32,7 @@ class DoctrineExtension extends \Twig_Extension
     /**
      * Define our functions
      *
-     * @return array
+     * @return \Twig_SimpleFilter[]
      */
     public function getFilters()
     {
