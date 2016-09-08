@@ -41,7 +41,7 @@ class RunSqlDoctrineCommand extends RunSqlCommand
 The <info>%command.name%</info> command executes the given SQL query and
 outputs the results:
 
-<info>php %command.full_name% "SELECT * from user"</info>
+<info>php %command.full_name% "SELECT * FROM users"</info>
 EOT
         );
     }
