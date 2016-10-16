@@ -80,6 +80,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 throw new \LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
             }
 
+            if (!class_exists('Doctrine\ORM\Version')) {
+                throw new \LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
+            }
+
             $this->ormLoad($config['orm'], $container);
         }
 
