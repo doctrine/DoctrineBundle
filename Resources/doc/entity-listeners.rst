@@ -32,7 +32,7 @@ entity manager it should be registered with. Example:
             </services>
         </container>
 
-But remember you have to register the entity listener in your entity as well:
+If you use a version of doctrine/orm < 2.5 you have to register the entity listener in your entity as well:
 
 .. code-block:: php
 
