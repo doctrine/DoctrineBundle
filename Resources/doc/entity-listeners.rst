@@ -31,3 +31,24 @@ entity manager it should be registered with. Example:
                 </service>
             </services>
         </container>
+
+If you use a version of doctrine/orm < 2.5 you have to register the entity listener in your entity as well:
+
+.. code-block:: php
+
+    <?php
+    // User.php
+
+    use Doctrine\ORM\Mapping as ORM;
+
+    /**
+     * @ORM\Entity
+     * @ORM\EntityListeners({"UserListener"})
+     */
+    class User
+    {
+        // ....
+    }
+
+See also http://doctrine-orm.readthedocs.org/en/latest/reference/events.html#entity-listeners for more info on entity listeners.
+
