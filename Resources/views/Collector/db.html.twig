@@ -188,19 +188,40 @@
                 <p>No database queries were performed.</p>
             </div>
         {% else %}
+            {% set group_queries = false %}
+            {% if collector.groupedQueries[connection]|length < queries|length %}
+                {% set group_queries = request.query.has('group') %}
+                {% if group_queries %}
+                    {% set queries = collector.groupedQueries[connection] %}
+                    <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Ungroup similar queries</a></p>
+                {% else %}
+                    <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar queries</a> ({{ collector.groupedQueries[connection]|length }} different)</p>
+                {% endif %}
+            {% endif %}
             <table class="alt queries-table">
                 <thead>
                 <tr>
-                    <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;">#<span class="text-muted">&#9650;</span></th>
-                    <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time<span></span></th>
+                    {% if group_queries %}
+                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="1" style="cursor: pointer;">Time<span class="text-muted">&#9660;</span></th>
+                        <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Count<span></span></th>
+                    {% else %}
+                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;">#<span class="text-muted">&#9650;</span></th>
+                        <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time<span></span></th>
+                    {% endif %}
                     <th style="width: 100%;">Info</th>
                 </tr>
                 </thead>
                 <tbody id="queries-{{ loop.index }}">
                     {% for i, query in queries %}
+                        {% set i = group_queries ? query.i : i %}
                         <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
-                            <td class="nowrap">{{ loop.index }}</td>
-                            <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                            {% if group_queries %}
+                                <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                                <td class="nowrap">{{ query.count }}</td>
+                            {% else %}
+                                <td class="nowrap">{{ loop.index }}</td>
+                                <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                            {% endif %}
                             <td>
                                 {{ query.sql|doctrine_pretty_query(highlight_only = true) }}
 
