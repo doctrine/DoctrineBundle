@@ -39,21 +39,24 @@ class EntityListenerPass implements CompilerPassInterface
                     continue;
                 }
 
-                $resolver = sprintf('doctrine.orm.%s_entity_listener_resolver', $name);
-                if ($container->hasAlias($resolver)) {
-                    $resolver = (string) $container->getAlias($resolver);
+                $resolverId = sprintf('doctrine.orm.%s_entity_listener_resolver', $name);
+                if ($container->hasAlias($resolverId)) {
+                    $resolverId = (string) $container->getAlias($resolverId);
                 }
 
-                if (!$container->hasDefinition($resolver)) {
+                if (!$container->hasDefinition($resolverId)) {
                     continue;
                 }
+
+                $resolver = $container->getDefinition($resolverId);
 
                 if (isset($attributes['entity']) && isset($attributes['event'])) {
                     $this->attachToListener($container, $name, $id, $attributes);
                 }
 
                 if (isset($attributes['lazy']) && $attributes['lazy']) {
-                    $listener = $container->getDefinition($id);
+                    $listener = $container->findDefinition($id);
+
                     if (!$listener->isPublic()) {
                         throw new \InvalidArgumentException(sprintf('The service "%s" must be public as this entity listener is lazy-loaded.', $id));
                     }
@@ -62,9 +65,23 @@ class EntityListenerPass implements CompilerPassInterface
                         throw new \InvalidArgumentException(sprintf('The service "%s" must not be abstract as this entity listener is lazy-loaded.', $id));
                     }
 
-                    $container->getDefinition($resolver)->addMethodCall('registerService', array($listener->getClass(), $id));
+                    $interface = 'Doctrine\\Bundle\\DoctrineBundle\\Mapping\\EntityListenerServiceResolver';
+                    $class = $resolver->getClass();
+
+                    if (substr($class, 0, 1) === '%') {
+                        // resolve container parameter first
+                        $class = $container->getParameter(trim($class, '%'));
+                    }
+
+                    if (!is_a($class, $interface, true)) {
+                        throw new \InvalidArgumentException(
+                            sprintf('Lazy-loaded entity listeners can only be resolved by a resolver implementing %s.', $interface)
+                        );
+                    }
+
+                    $resolver->addMethodCall('registerService', array($listener->getClass(), $id));
                 } else {
-                    $container->getDefinition($resolver)->addMethodCall('register', array(new Reference($id)));
+                    $resolver->addMethodCall('register', array(new Reference($id)));
                 }
             }
         }

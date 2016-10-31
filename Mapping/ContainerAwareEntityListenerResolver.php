@@ -2,10 +2,9 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Mapping;
 
-use Doctrine\ORM\Mapping\EntityListenerResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class ContainerAwareEntityListenerResolver implements EntityListenerResolver
+class ContainerAwareEntityListenerResolver implements EntityListenerServiceResolver
 {
     /**
      * @var ContainerInterface
@@ -63,8 +62,7 @@ class ContainerAwareEntityListenerResolver implements EntityListenerResolver
     }
 
     /**
-     * @param string $className
-     * @param string $serviceId
+     * {@inheritdoc}
      */
     public function registerService($className, $serviceId)
     {
