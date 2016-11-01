@@ -14,6 +14,7 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
@@ -40,15 +41,12 @@ class EntityListenerPass implements CompilerPassInterface
                 }
 
                 $resolverId = sprintf('doctrine.orm.%s_entity_listener_resolver', $name);
-                if ($container->hasAlias($resolverId)) {
-                    $resolverId = (string) $container->getAlias($resolverId);
-                }
 
-                if (!$container->hasDefinition($resolverId)) {
+                if (!$container->has($resolverId)) {
                     continue;
                 }
 
-                $resolver = $container->getDefinition($resolverId);
+                $resolver = $container->findDefinition($resolverId);
 
                 if (isset($attributes['entity']) && isset($attributes['event'])) {
                     $this->attachToListener($container, $name, $id, $attributes);
@@ -58,11 +56,11 @@ class EntityListenerPass implements CompilerPassInterface
                     $listener = $container->findDefinition($id);
 
                     if (!$listener->isPublic()) {
-                        throw new \InvalidArgumentException(sprintf('The service "%s" must be public as this entity listener is lazy-loaded.', $id));
+                        throw new InvalidArgumentException(sprintf('The service "%s" must be public as this entity listener is lazy-loaded.', $id));
                     }
 
                     if ($listener->isAbstract()) {
-                        throw new \InvalidArgumentException(sprintf('The service "%s" must not be abstract as this entity listener is lazy-loaded.', $id));
+                        throw new InvalidArgumentException(sprintf('The service "%s" must not be abstract as this entity listener is lazy-loaded.', $id));
                     }
 
                     $interface = 'Doctrine\\Bundle\\DoctrineBundle\\Mapping\\EntityListenerServiceResolver';
@@ -70,11 +68,11 @@ class EntityListenerPass implements CompilerPassInterface
 
                     if (substr($class, 0, 1) === '%') {
                         // resolve container parameter first
-                        $class = $container->getParameter(trim($class, '%'));
+                        $class = $container->getParameterBag()->resolveValue($resolver->getClass());
                     }
 
                     if (!is_a($class, $interface, true)) {
-                        throw new \InvalidArgumentException(
+                        throw new InvalidArgumentException(
                             sprintf('Lazy-loaded entity listeners can only be resolved by a resolver implementing %s.', $interface)
                         );
                     }
