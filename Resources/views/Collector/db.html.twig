@@ -205,7 +205,7 @@
                                 {{ query.sql|doctrine_pretty_query(highlight_only = true) }}
 
                                 <div>
-                                    <strong class="font-normal text-small">Parameters</strong>: {{ query.params|yaml_encode }}
+                                    <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(query.params) }}
                                 </div>
 
                                 <div class="text-small font-normal">
