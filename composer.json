@@ -25,19 +25,18 @@
     ],
     "require": {
         "php": ">=5.3.2",
-        "symfony/framework-bundle": "~2.3|~3.0",
-        "symfony/console": "~2.3|~3.0",
-        "symfony/dependency-injection": "~2.3|~3.0",
+        "symfony/framework-bundle": "~2.7|~3.0",
+        "symfony/console": "~2.7|~3.0",
+        "symfony/dependency-injection": "~2.7|~3.0",
         "doctrine/dbal": "~2.3",
         "jdorn/sql-formatter": "~1.1",
-        "symfony/doctrine-bridge": "~2.2|~3.0",
-        "doctrine/doctrine-cache-bundle": "~1.0",
-        "symfony/web-profiler-bundle": "~2.7|~3.0"
+        "symfony/doctrine-bridge": "~2.7|~3.0",
+        "doctrine/doctrine-cache-bundle": "~1.0"
     },
     "require-dev": {
         "doctrine/orm": "~2.3",
-        "symfony/yaml": "~2.2|~3.0",
-        "symfony/validator": "~2.2|~3.0",
+        "symfony/yaml": "~2.7|~3.0",
+        "symfony/validator": "~2.7|~3.0",
         "symfony/property-info": "~2.8|~3.0",
         "symfony/phpunit-bridge": "~2.7|~3.0",
         "twig/twig": "~1.10",
