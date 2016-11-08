@@ -247,6 +247,7 @@ class DoctrineExtension extends \Twig_Extension
         $result = $parameter;
 
         switch (true) {
+            // Check if result is non-unicode string using PCRE_UTF8 modifier
             case !preg_match('//u', $result):
                 $result = '0x'. strtoupper(bin2hex($result));
                 break;
