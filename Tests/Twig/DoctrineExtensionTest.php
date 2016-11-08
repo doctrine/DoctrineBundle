@@ -97,6 +97,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals('1', DoctrineExtension::escapeFunction(true));
     }
+
+    public function testEscapeIntegerParameter()
+    {
+        $this->assertEquals(3, DoctrineExtension::escapeFunction(3));
+    }
 }
 
 class DummyClass
