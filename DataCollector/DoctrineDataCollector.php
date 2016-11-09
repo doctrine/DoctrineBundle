@@ -139,7 +139,6 @@ class DoctrineDataCollector extends BaseCollector
         $this->data['entities'] = $entities;
         $this->data['errors'] = $errors;
         $this->data['caches'] = $caches;
-        $this->data['groupedQueries'] = $this->getGroupedQueries();
     }
 
     public function getEntities()
