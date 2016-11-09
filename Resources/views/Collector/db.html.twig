@@ -186,15 +186,11 @@
     {% endif %}
 
     <h2>Queries</h2>
-    {% set group_queries = false %}
-    {% set can_group_queries = collector.groupedQueryCount < collector.queryCount %}
-    {% if can_group_queries %}
-        {% set group_queries = request.query.getBoolean('group') %}
-        {% if group_queries %}
-            <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Ungroup similar queries</a></p>
-        {% else %}
-            <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar queries</a></p>
-        {% endif %}
+    {% set group_queries = request.query.getBoolean('group') %}
+    {% if group_queries %}
+        <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Ungroup similar queries</a></p>
+    {% else %}
+        <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar queries</a></p>
     {% endif %}
 
     {% for connection, queries in collector.queries %}
