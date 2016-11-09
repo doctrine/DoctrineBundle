@@ -193,6 +193,7 @@ class DoctrineDataCollector extends BaseCollector
     public function getGroupedQueries()
     {
         $groupedQueries = array();
+        $totalExecutionMS = 0;
         foreach ($this->data['queries'] as $connection => $queries) {
             $connectionGroupedQueries = array();
             foreach ($queries as $i => $query) {
@@ -205,6 +206,7 @@ class DoctrineDataCollector extends BaseCollector
                 }
                 $connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
                 $connectionGroupedQueries[$key]['count']++;
+                $totalExecutionMS += $query['executionMS'];
             }
             usort($connectionGroupedQueries, function ($a, $b) {
                 if ($a['executionMS'] === $b['executionMS']) {
@@ -213,6 +215,11 @@ class DoctrineDataCollector extends BaseCollector
                 return ($a['executionMS'] < $b['executionMS']) ? 1 : -1;
             });
             $groupedQueries[$connection] = $connectionGroupedQueries;
+        }
+        foreach ($groupedQueries as $connection => $queries) {
+            foreach ($queries as $i => $query) {
+                $groupedQueries[$connection][$i]['executionPercent'] = $query['executionMS'] / $totalExecutionMS * 100;
+            }
         }
 
         return $groupedQueries;

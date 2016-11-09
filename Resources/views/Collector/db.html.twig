@@ -122,8 +122,8 @@
 {% endblock %}
 
 {% block queries %}
-    {% if profiler_markup_version == 1 %}
-        <style>
+    <style>
+        {% if profiler_markup_version == 1 %}
             .hidden { display: none; }
             .queries-table td, .queries-table th { vertical-align: top; }
             .queries-table td > div { margin-bottom: 6px; }
@@ -137,8 +137,12 @@
             .highlight .string    { color: #718C00; }
             .highlight .number    { color: #F5871F; font-weight: bold; }
             .highlight .error     { color: #C82829; }
-        </style>
-    {% endif %}
+        {% endif %}
+
+        .time-container { position: relative; }
+        .time-container .nowrap { position: relative; z-index: 1; text-shadow: 0 0 2px #fff; }
+        .time-bar { display: block; position: absolute; top: 0; left: 0; bottom: 0; background: #e0e0e0; }
+    </style>
 
     {% if profiler_markup_version > 1 %}
         <h2>Query Metrics</h2>
@@ -148,7 +152,7 @@
                 <span class="value">{{ collector.querycount }}</span>
                 <span class="label">Database Queries</span>
             </div>
-    
+
             <div class="metric">
                 <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
                 <span class="label">Query time</span>
@@ -217,7 +221,10 @@
                         {% set i = group_queries ? query.index : i %}
                         <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
                             {% if group_queries %}
-                                <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                                <td class="time-container">
+                                    <span class="time-bar" style="width:{{ '%0.2f'|format(query.executionPercent) }}%"></span>
+                                    <span class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms<br />({{ '%0.2f'|format(query.executionPercent) }}%)</span>
+                                </td>
                                 <td class="nowrap">{{ query.count }}</td>
                             {% else %}
                                 <td class="nowrap">{{ loop.index }}</td>
