@@ -191,7 +191,7 @@
             {% set group_queries = false %}
             {% set grouped_queries = collector.groupedQueries[connection] %}
             {% if grouped_queries|length < queries|length %}
-                {% set group_queries = request.query.has('group') %}
+                {% set group_queries = request.query.getBoolean('group') %}
                 {% if group_queries %}
                     {% set queries = grouped_queries %}
                     <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Ungroup similar queries</a></p>
