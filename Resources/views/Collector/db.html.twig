@@ -155,7 +155,7 @@
 
             <div class="metric">
                 <span class="value">{{ collector.groupedQueryCount }}</span>
-                <span class="label">Different queries</span>
+                <span class="label">Different statements</span>
             </div>
     
             <div class="metric">
@@ -185,12 +185,13 @@
         </div>
     {% endif %}
 
-    <h2>Queries</h2>
     {% set group_queries = request.query.getBoolean('group') %}
     {% if group_queries %}
-        <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Ungroup similar queries</a></p>
+        <h2>Grouped Statements</h2>
+        <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Show all queries</a></p>
     {% else %}
-        <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar queries</a></p>
+        <h2>Queries</h2>
+        <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar statements</a></p>
     {% endif %}
 
     {% for connection, queries in collector.queries %}
