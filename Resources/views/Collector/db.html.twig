@@ -189,13 +189,14 @@
             </div>
         {% else %}
             {% set group_queries = false %}
-            {% if collector.groupedQueries[connection]|length < queries|length %}
+            {% set grouped_queries = collector.groupedQueries[connection] %}
+            {% if grouped_queries|length < queries|length %}
                 {% set group_queries = request.query.has('group') %}
                 {% if group_queries %}
-                    {% set queries = collector.groupedQueries[connection] %}
+                    {% set queries = grouped_queries %}
                     <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Ungroup similar queries</a></p>
                 {% else %}
-                    <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar queries</a> ({{ collector.groupedQueries[connection]|length }} different)</p>
+                    <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar queries</a> ({{ grouped_queries|length }} different)</p>
                 {% endif %}
             {% endif %}
             <table class="alt queries-table">
