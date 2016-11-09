@@ -192,6 +192,12 @@ class DoctrineDataCollector extends BaseCollector
 
     public function getGroupedQueries()
     {
+        static $groupedQueries = null;
+
+        if ($groupedQueries !== null) {
+            return $groupedQueries;
+        }
+
         $groupedQueries = array();
         $totalExecutionMS = 0;
         foreach ($this->data['queries'] as $connection => $queries) {
@@ -223,5 +229,15 @@ class DoctrineDataCollector extends BaseCollector
         }
 
         return $groupedQueries;
+    }
+
+    public function getGroupedQueryCount()
+    {
+        $count = 0;
+        foreach ($this->getGroupedQueries() as $connectionGroupedQueries) {
+            $count += count($connectionGroupedQueries);
+        }
+
+        return $count;
     }
 }

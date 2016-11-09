@@ -154,6 +154,11 @@
             </div>
 
             <div class="metric">
+                <span class="value">{{ collector.groupedQueryCount }}</span>
+                <span class="label">Different queries</span>
+            </div>
+    
+            <div class="metric">
                 <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
                 <span class="label">Query time</span>
             </div>
