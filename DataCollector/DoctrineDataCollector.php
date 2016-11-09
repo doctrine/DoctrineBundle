@@ -136,33 +136,10 @@ class DoctrineDataCollector extends BaseCollector
             }
         }
 
-        $groupedQueries = array();
-        foreach ($this->data['queries'] as $connection => $queries) {
-            $connectionGroupedQueries = array();
-            foreach ($queries as $i => $query) {
-                $key = $query['sql'];
-                if (!isset($connectionGroupedQueries[$key])) {
-                    $connectionGroupedQueries[$key] = $query;
-                    $connectionGroupedQueries[$key]['executionMS'] = 0;
-                    $connectionGroupedQueries[$key]['count'] = 0;
-                    $connectionGroupedQueries[$key]['index'] = $i; // "Explain query" relies on query index in 'queries'.
-                }
-                $connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
-                $connectionGroupedQueries[$key]['count']++;
-            }
-            usort($connectionGroupedQueries, function ($a, $b) {
-                if ($a['executionMS'] === $b['executionMS']) {
-                    return 0;
-                }
-                return ($a['executionMS'] < $b['executionMS']) ? 1 : -1;
-            });
-            $groupedQueries[$connection] = $connectionGroupedQueries;
-        }
-
         $this->data['entities'] = $entities;
         $this->data['errors'] = $errors;
         $this->data['caches'] = $caches;
-        $this->data['groupedQueries'] = $groupedQueries;
+        $this->data['groupedQueries'] = $this->getGroupedQueries();
     }
 
     public function getEntities()
@@ -216,6 +193,29 @@ class DoctrineDataCollector extends BaseCollector
 
     public function getGroupedQueries()
     {
-        return $this->data['groupedQueries'];
+        $groupedQueries = array();
+        foreach ($this->data['queries'] as $connection => $queries) {
+            $connectionGroupedQueries = array();
+            foreach ($queries as $i => $query) {
+                $key = $query['sql'];
+                if (!isset($connectionGroupedQueries[$key])) {
+                    $connectionGroupedQueries[$key] = $query;
+                    $connectionGroupedQueries[$key]['executionMS'] = 0;
+                    $connectionGroupedQueries[$key]['count'] = 0;
+                    $connectionGroupedQueries[$key]['index'] = $i; // "Explain query" relies on query index in 'queries'.
+                }
+                $connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
+                $connectionGroupedQueries[$key]['count']++;
+            }
+            usort($connectionGroupedQueries, function ($a, $b) {
+                if ($a['executionMS'] === $b['executionMS']) {
+                    return 0;
+                }
+                return ($a['executionMS'] < $b['executionMS']) ? 1 : -1;
+            });
+            $groupedQueries[$connection] = $connectionGroupedQueries;
+        }
+
+        return $groupedQueries;
     }
 }
