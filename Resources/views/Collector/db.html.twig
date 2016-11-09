@@ -213,7 +213,7 @@
                 </thead>
                 <tbody id="queries-{{ loop.index }}">
                     {% for i, query in queries %}
-                        {% set i = group_queries ? query.i : i %}
+                        {% set i = group_queries ? query.index : i %}
                         <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
                             {% if group_queries %}
                                 <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>

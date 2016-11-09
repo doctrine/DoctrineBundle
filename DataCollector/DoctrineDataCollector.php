@@ -145,7 +145,7 @@ class DoctrineDataCollector extends BaseCollector
                     $connectionGroupedQueries[$key] = $query;
                     $connectionGroupedQueries[$key]['executionMS'] = 0;
                     $connectionGroupedQueries[$key]['count'] = 0;
-                    $connectionGroupedQueries[$key]['i'] = $i; // "Explain query" relies on query index in 'queries'.
+                    $connectionGroupedQueries[$key]['index'] = $i; // "Explain query" relies on query index in 'queries'.
                 }
                 $connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
                 $connectionGroupedQueries[$key]['count']++;
