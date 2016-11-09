@@ -186,6 +186,16 @@
     {% endif %}
 
     <h2>Queries</h2>
+    {% set group_queries = false %}
+    {% set can_group_queries = collector.groupedQueryCount < collector.queryCount %}
+    {% if can_group_queries %}
+        {% set group_queries = request.query.getBoolean('group') %}
+        {% if group_queries %}
+            <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Ungroup similar queries</a></p>
+        {% else %}
+            <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar queries</a></p>
+        {% endif %}
+    {% endif %}
 
     {% for connection, queries in collector.queries %}
         {% if collector.connections|length > 1 %}
@@ -197,16 +207,8 @@
                 <p>No database queries were performed.</p>
             </div>
         {% else %}
-            {% set group_queries = false %}
-            {% set grouped_queries = collector.groupedQueries[connection] %}
-            {% if grouped_queries|length < queries|length %}
-                {% set group_queries = request.query.getBoolean('group') %}
-                {% if group_queries %}
-                    {% set queries = grouped_queries %}
-                    <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Ungroup similar queries</a></p>
-                {% else %}
-                    <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar queries</a> ({{ grouped_queries|length }} different)</p>
-                {% endif %}
+            {% if group_queries %}
+                {% set queries = collector.groupedQueries[connection] %}
             {% endif %}
             <table class="alt queries-table">
                 <thead>
