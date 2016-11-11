@@ -122,8 +122,8 @@
 {% endblock %}
 
 {% block queries %}
-    {% if profiler_markup_version == 1 %}
-        <style>
+    <style>
+        {% if profiler_markup_version == 1 %}
             .hidden { display: none; }
             .queries-table td, .queries-table th { vertical-align: top; }
             .queries-table td > div { margin-bottom: 6px; }
@@ -137,8 +137,12 @@
             .highlight .string    { color: #718C00; }
             .highlight .number    { color: #F5871F; font-weight: bold; }
             .highlight .error     { color: #C82829; }
-        </style>
-    {% endif %}
+        {% endif %}
+
+        .time-container { position: relative; }
+        .time-container .nowrap { position: relative; z-index: 1; text-shadow: 0 0 2px #fff; }
+        .time-bar { display: block; position: absolute; top: 0; left: 0; bottom: 0; background: #e0e0e0; }
+    </style>
 
     {% if profiler_markup_version > 1 %}
         <h2>Query Metrics</h2>
@@ -147,6 +151,11 @@
             <div class="metric">
                 <span class="value">{{ collector.querycount }}</span>
                 <span class="label">Database Queries</span>
+            </div>
+
+            <div class="metric">
+                <span class="value">{{ collector.groupedQueryCount }}</span>
+                <span class="label">Different statements</span>
             </div>
     
             <div class="metric">
@@ -176,7 +185,14 @@
         </div>
     {% endif %}
 
-    <h2>Queries</h2>
+    {% set group_queries = request.query.getBoolean('group') %}
+    {% if group_queries %}
+        <h2>Grouped Statements</h2>
+        <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Show all queries</a></p>
+    {% else %}
+        <h2>Queries</h2>
+        <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar statements</a></p>
+    {% endif %}
 
     {% for connection, queries in collector.queries %}
         {% if collector.connections|length > 1 %}
@@ -188,19 +204,36 @@
                 <p>No database queries were performed.</p>
             </div>
         {% else %}
+            {% if group_queries %}
+                {% set queries = collector.groupedQueries[connection] %}
+            {% endif %}
             <table class="alt queries-table">
                 <thead>
                 <tr>
-                    <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;">#<span class="text-muted">&#9650;</span></th>
-                    <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time<span></span></th>
+                    {% if group_queries %}
+                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="1" style="cursor: pointer;">Time<span class="text-muted">&#9660;</span></th>
+                        <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Count<span></span></th>
+                    {% else %}
+                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;">#<span class="text-muted">&#9650;</span></th>
+                        <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time<span></span></th>
+                    {% endif %}
                     <th style="width: 100%;">Info</th>
                 </tr>
                 </thead>
                 <tbody id="queries-{{ loop.index }}">
                     {% for i, query in queries %}
+                        {% set i = group_queries ? query.index : i %}
                         <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
-                            <td class="nowrap">{{ loop.index }}</td>
-                            <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                            {% if group_queries %}
+                                <td class="time-container">
+                                    <span class="time-bar" style="width:{{ '%0.2f'|format(query.executionPercent) }}%"></span>
+                                    <span class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms<br />({{ '%0.2f'|format(query.executionPercent) }}%)</span>
+                                </td>
+                                <td class="nowrap">{{ query.count }}</td>
+                            {% else %}
+                                <td class="nowrap">{{ loop.index }}</td>
+                                <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                            {% endif %}
                             <td>
                                 {{ query.sql|doctrine_pretty_query(highlight_only = true) }}
 

@@ -189,4 +189,55 @@ class DoctrineDataCollector extends BaseCollector
 
         return $this->invalidEntityCount;
     }
+
+    public function getGroupedQueries()
+    {
+        static $groupedQueries = null;
+
+        if ($groupedQueries !== null) {
+            return $groupedQueries;
+        }
+
+        $groupedQueries = array();
+        $totalExecutionMS = 0;
+        foreach ($this->data['queries'] as $connection => $queries) {
+            $connectionGroupedQueries = array();
+            foreach ($queries as $i => $query) {
+                $key = $query['sql'];
+                if (!isset($connectionGroupedQueries[$key])) {
+                    $connectionGroupedQueries[$key] = $query;
+                    $connectionGroupedQueries[$key]['executionMS'] = 0;
+                    $connectionGroupedQueries[$key]['count'] = 0;
+                    $connectionGroupedQueries[$key]['index'] = $i; // "Explain query" relies on query index in 'queries'.
+                }
+                $connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
+                $connectionGroupedQueries[$key]['count']++;
+                $totalExecutionMS += $query['executionMS'];
+            }
+            usort($connectionGroupedQueries, function ($a, $b) {
+                if ($a['executionMS'] === $b['executionMS']) {
+                    return 0;
+                }
+                return ($a['executionMS'] < $b['executionMS']) ? 1 : -1;
+            });
+            $groupedQueries[$connection] = $connectionGroupedQueries;
+        }
+        foreach ($groupedQueries as $connection => $queries) {
+            foreach ($queries as $i => $query) {
+                $groupedQueries[$connection][$i]['executionPercent'] = $query['executionMS'] / $totalExecutionMS * 100;
+            }
+        }
+
+        return $groupedQueries;
+    }
+
+    public function getGroupedQueryCount()
+    {
+        $count = 0;
+        foreach ($this->getGroupedQueries() as $connectionGroupedQueries) {
+            $count += count($connectionGroupedQueries);
+        }
+
+        return $count;
+    }
 }
