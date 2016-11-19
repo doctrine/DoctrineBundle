@@ -1,0 +1,29 @@
+services:
+    custom_entity_listener_resolver:
+        class: Doctrine\Bundle\DoctrineBundle\Mapping\ContainerAwareEntityListenerResolver
+        arguments:
+            - '@service_container'
+
+    entity_listener1:
+        class: EntityListener1
+        tags:
+            - { name: doctrine.orm.entity_listener, lazy: true }
+
+    entity_listener2:
+        class: EntityListener2
+        tags:
+            - { name: doctrine.orm.entity_listener, entity_manager: em2, lazy: true }
+
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        default_entity_manager: em1
+        entity_managers:
+            em1:
+            em2:
+              entity_listener_resolver: custom_entity_listener_resolver

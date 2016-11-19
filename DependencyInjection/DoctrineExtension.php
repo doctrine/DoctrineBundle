@@ -439,7 +439,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (isset($entityManager['entity_listener_resolver']) && $entityManager['entity_listener_resolver']) {
             $container->setAlias(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name']), $entityManager['entity_listener_resolver']);
         } else {
-            $container->setDefinition(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name']), new Definition('%doctrine.orm.entity_listener_resolver.class%'));
+            $definition = new Definition('%doctrine.orm.entity_listener_resolver.class%');
+            $definition->addArgument(new Reference('service_container'));
+            $container->setDefinition(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name']), $definition);
         }
 
         $methods = array(
