@@ -40,7 +40,7 @@
         "symfony/property-info": "~2.8|~3.0",
         "symfony/phpunit-bridge": "~2.7|~3.0",
         "twig/twig": "~1.10",
-        "satooshi/php-coveralls": "~0.6.1",
+        "satooshi/php-coveralls": "^1.0",
         "phpunit/phpunit": "~4"
     },
     "suggest": {
