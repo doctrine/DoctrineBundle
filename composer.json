@@ -7,6 +7,10 @@
     "license": "MIT",
     "authors": [
         {
+            "name": "Ilya Konstantinov",
+            "email": "alertiu5@gmail.com"
+        },
+        {
             "name": "Fabien Potencier",
             "email": "fabien@symfony.com"
         },
