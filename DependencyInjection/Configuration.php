@@ -350,9 +350,56 @@ class Configuration implements ConfigurationInterface
                     ->append($this->getOrmEntityManagersNode())
                     ->fixXmlConfig('resolve_target_entity', 'resolve_target_entities')
                     ->append($this->getOrmTargetEntityResolverNode())
+                    ->append($this->getOrmSecondLevelCacheNode())
                 ->end()
             ->end()
         ;
+    }
+    
+    /**
+     * Return ORM second level node
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\NodeDefinition
+     */
+    private function getOrmSecondLevelCacheNode()
+    {
+        $treeBuilder = new TreeBuilder();
+        $node = $treeBuilder->root('second_level_cache');
+
+        $node
+            ->children()
+                ->arrayNode('default_cache_factory')
+                    ->children()
+                        ->scalarNode('class')->defaultValue('Doctrine\ORM\Cache\DefaultCacheFactory')
+                    ->end()
+                ->arrayNode('default_region')
+                    ->children()
+                        ->scalarNode('class')->defaultValue('Doctrine\ORM\Cache\Region\DefaultRegion')
+                    ->end()
+                ->arrayNode('filelock_region')
+                    ->children()
+                        ->scalarNode('class')->defaultValue('Doctrine\ORM\Cache\Region\FileLockRegion')
+                    ->end()
+                ->arrayNode('logger_chain')
+                    ->children()
+                        ->scalarNode('class')->defaultValue('Doctrine\ORM\Cache\Logging\CacheLoggerChain')
+                    ->end()
+                ->arrayNode('logger_statistics')
+                    ->children()
+                        ->scalarNode('class')->defaultValue('Doctrine\ORM\Cache\Logging\StatisticsCacheLogger')
+                    ->end()
+                ->arrayNode('cache_configuration')
+                    ->children()
+                        ->scalarNode('class')->defaultValue('Doctrine\ORM\Cache\CacheConfiguration')
+                    ->end()
+                ->arrayNode('regions_configuration')
+                    ->children()
+                        ->scalarNode('class')->defaultValue('Doctrine\ORM\Cache\RegionsConfiguration')
+                    ->end()
+            ->end()
+        ;
+
+        return $node;
     }
 
     /**
