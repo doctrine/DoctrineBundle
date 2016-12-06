@@ -1,5 +1,5 @@
 {
-    "name": "doctrine/doctrine-bundle",
+    "name": "alertiu5/doctrine-bundle",
     "type": "symfony-bundle",
     "description": "Symfony DoctrineBundle",
     "keywords": ["DBAL", "ORM", "Database", "Persistence"],
@@ -58,6 +58,9 @@
     },
     "autoload": {
         "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "" }
+    },
+    "replace": {
+        "doctrine/doctrine-bundle": "^1.6"
     },
     "extra": {
         "branch-alias": {
