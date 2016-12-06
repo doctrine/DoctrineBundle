@@ -5,6 +5,11 @@
     "keywords": ["DBAL", "ORM", "Database", "Persistence"],
     "homepage": "http://www.doctrine-project.org",
     "license": "MIT",
+    "repositories": [
+        {
+            "packagist": false
+        }
+    ],
     "authors": [
         {
             "name": "Ilya Konstantinov",
