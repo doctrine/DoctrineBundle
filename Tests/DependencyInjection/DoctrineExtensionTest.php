@@ -330,7 +330,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         
         if (version_compare(Version::VERSION, "2.5.0-DEV") >= 0) {
             // default factory
-            $configurationArray['orm']['entity_managers']['default']['second_level_cache'] = array('region_cache_driver' => array('type' => 'memcache'), 'regions' => array('hour_region' => array('lifetime' => 3600)));
+            $configurationArray[0]['orm']['entity_managers']['default']['second_level_cache'] = array('region_cache_driver' => array('type' => 'memcache'), 'regions' => array('hour_region' => array('lifetime' => 3600)));
             $extension->load($configurationArray, $container);
             $this->compileContainer($container);
             $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
@@ -338,7 +338,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
             // custom factory
             $customCacheFactory = 'AppBundle\Cache\MyCacheFactory';
-            $configurationArray['orm']['entity_managers']['default']['second_level_cache']['factory'] = $customCacheFactory;
+            $configurationArray[0]['orm']['entity_managers']['default']['second_level_cache']['factory'] = $customCacheFactory;
             $extension->load($configurationArray, $container);
             $this->compileContainer($container);
             $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
