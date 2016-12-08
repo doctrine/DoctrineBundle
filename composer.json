@@ -1,20 +1,11 @@
 {
-    "name": "alertiu5/doctrine-bundle",
+    "name": "doctrine/doctrine-bundle",
     "type": "symfony-bundle",
     "description": "Symfony DoctrineBundle",
     "keywords": ["DBAL", "ORM", "Database", "Persistence"],
     "homepage": "http://www.doctrine-project.org",
     "license": "MIT",
-    "repositories": [
-        {
-            "packagist": false
-        }
-    ],
     "authors": [
-        {
-            "name": "Ilya Konstantinov",
-            "email": "alertiu5@gmail.com"
-        },
         {
             "name": "Fabien Potencier",
             "email": "fabien@symfony.com"
@@ -58,9 +49,6 @@
     },
     "autoload": {
         "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "" }
-    },
-    "replace": {
-        "doctrine/doctrine-bundle": "^1.6"
     },
     "extra": {
         "branch-alias": {
