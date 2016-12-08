@@ -422,7 +422,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         }
 
-        if ($slcConfig = $config['second_level_cache']) {
+        if (isset($config['second_level_cache']) && $slcConfig = $config['second_level_cache']) {
             $this->loadOrmSecondLevelCache($slcConfig, $container);
         }
     }
