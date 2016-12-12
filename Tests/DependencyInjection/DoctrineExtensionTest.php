@@ -306,7 +306,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(AbstractProxyFactory::AUTOGENERATE_EVAL, $container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
     }
 
-    public function testSingleEntityManagerConfiguration()
+    public function testSingleEntityManagerWithDefaultConfiguration()
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -327,7 +327,80 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
         ));
-        
+    }
+
+    public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration()
+    {
+        if (version_compare(Version::VERSION, "2.5.0-DEV") >= 0) {
+            $this->markTestSkipped(sprintf('Second Level cache not supported by this version of the ORM : %s', Version::VERSION));
+        }
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $configurationArray = [
+            [
+                'dbal' => [
+                    'connections' => [
+                        'default' => [
+                            'password' => 'foo'
+                        ]
+                    ]
+                ],
+                'orm' => [
+                    'default_entity_manager' => 'default',
+                    'entity_managers' => [
+                        'default' => [
+                            'second_level_cache' => array('region_cache_driver' => array('type' => 'memcache'), 'regions' => array('hour_region' => array('lifetime' => 3600))),
+                            'mappings' => [
+                                'YamlBundle' => []
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $extension->load($configurationArray, $container);
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
+
+        $this->assertDICConstructorArguments($definition, array(
+            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
+        ));
+
+        $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
+        $this->assertEquals('%doctrine.orm.second_level_cache.default_cache_factory.class%', $slcDefinition->getClass());
+    }
+
+    public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $configurationArray = array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array()))))));
+        $extension->load($configurationArray, $container);
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
+
+        $this->assertDICConstructorArguments($definition, array(
+            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
+        ));
+
         if (version_compare(Version::VERSION, "2.5.0-DEV") >= 0) {
             // default factory
             $container = $this->getContainer();
@@ -346,8 +419,6 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
             $this->assertEquals($customCacheFactory, $slcDefinition->getClass());
         }
-
-
     }
 
     public function testBundleEntityAliases()
