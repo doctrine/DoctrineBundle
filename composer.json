@@ -24,7 +24,7 @@
         }
     ],
     "require": {
-        "php": ">=5.3.9",
+        "php": ">=5.5.9",
         "symfony/framework-bundle": "~2.7|~3.0",
         "symfony/console": "~2.7|~3.0",
         "symfony/dependency-injection": "~2.7|~3.0",
