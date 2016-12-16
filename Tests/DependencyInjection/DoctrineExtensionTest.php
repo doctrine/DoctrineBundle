@@ -311,7 +311,8 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array())))))), $container);
+        $configurationArray = array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array()))))));
+        $extension->load($configurationArray, $container);
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
@@ -326,6 +327,27 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICConstructorArguments($definition, array(
             new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
         ));
+        
+        if (version_compare(Version::VERSION, "2.5.0-DEV") >= 0) {
+            // default factory
+            $container = $this->getContainer();
+            $configurationArray[0]['orm']['entity_managers']['default']['second_level_cache'] = array('region_cache_driver' => array('type' => 'memcache'), 'regions' => array('hour_region' => array('lifetime' => 3600)));
+            $extension->load($configurationArray, $container);
+            $this->compileContainer($container);
+            $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
+            $this->assertEquals('%doctrine.orm.second_level_cache.default_cache_factory.class%', $slcDefinition->getClass());
+
+            // custom factory
+            $container = $this->getContainer();
+            $customCacheFactory = 'YamlBundle\Cache\MyCacheFactory';
+            $configurationArray[0]['orm']['entity_managers']['default']['second_level_cache']['factory'] = $customCacheFactory;
+            $extension->load($configurationArray, $container);
+            $this->compileContainer($container);
+            $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
+            $this->assertEquals($customCacheFactory, $slcDefinition->getClass());
+        }
+
+
     }
 
     public function testBundleEntityAliases()
