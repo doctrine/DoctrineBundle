@@ -26,6 +26,27 @@ use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPas
 
 class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 {
+
+    public function testDbalGenerateDefaultConnectionConfiguration()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $container->registerExtension($extension);
+
+        $extension->load(array(array('dbal' => array())), $container);
+
+        // doctrine.dbal.default_connection
+        $this->assertEquals('%doctrine.default_connection%', $container->getDefinition('doctrine')->getArgument(3));
+        $this->assertEquals('default', $container->getParameter('doctrine.default_connection'));
+        $this->assertEquals('root', $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['user']);
+        $this->assertNull($container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['password']);
+        $this->assertEquals('localhost', $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['host']);
+        $this->assertNull($container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['port']);
+        $this->assertEquals('pdo_mysql', $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['driver']);
+        $this->assertEquals(array(), $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['driverOptions']);
+    }
+
     public function testDbalOverrideDefaultConnection()
     {
         $container = $this->getContainer();
