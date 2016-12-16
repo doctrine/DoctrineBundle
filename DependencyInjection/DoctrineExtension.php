@@ -658,9 +658,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $regionsDef = $container->setDefinition($regionsId, new Definition('%doctrine.orm.second_level_cache.regions_configuration.class%'));
 
         $slcFactoryId = sprintf('doctrine.orm.%s_second_level_cache.default_cache_factory', $entityManager['name']);
+        $factoryClass = isset($entityManager['second_level_cache']['factory']) ? $entityManager['second_level_cache']['factory'] : '%doctrine.orm.second_level_cache.default_cache_factory.class%';
+
+        $definition = new Definition($factoryClass, array(new Reference($regionsId), new Reference($driverId)));
+
         $slcFactoryDef = $container
-            ->setDefinition($slcFactoryId, new Definition('%doctrine.orm.second_level_cache.default_cache_factory.class%'))
-            ->setArguments(array(new Reference($regionsId), new Reference($driverId)));
+            ->setDefinition($slcFactoryId, $definition);
 
         if (isset($entityManager['second_level_cache']['regions'])) {
             foreach ($entityManager['second_level_cache']['regions'] as $name => $region) {

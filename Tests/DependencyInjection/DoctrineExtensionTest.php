@@ -15,6 +15,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -25,6 +26,27 @@ use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPas
 
 class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 {
+
+    public function testDbalGenerateDefaultConnectionConfiguration()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $container->registerExtension($extension);
+
+        $extension->load(array(array('dbal' => array())), $container);
+
+        // doctrine.dbal.default_connection
+        $this->assertEquals('%doctrine.default_connection%', $container->getDefinition('doctrine')->getArgument(3));
+        $this->assertEquals('default', $container->getParameter('doctrine.default_connection'));
+        $this->assertEquals('root', $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['user']);
+        $this->assertNull($container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['password']);
+        $this->assertEquals('localhost', $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['host']);
+        $this->assertNull($container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['port']);
+        $this->assertEquals('pdo_mysql', $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['driver']);
+        $this->assertEquals(array(), $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['driverOptions']);
+    }
+
     public function testDbalOverrideDefaultConnection()
     {
         $container = $this->getContainer();
@@ -162,7 +184,11 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo')))), array(), array('dbal' => array('default_connection' => 'foo')), array()), $container);
+        $extension->load(array(
+            array('dbal' => array('connections' => array('default' => array('password' => 'foo')))),
+            array(),
+            array('dbal' => array('default_connection' => 'foo')),
+            array()), $container);
 
         $config = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
@@ -174,8 +200,9 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
 
-        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array())))))), $container);
+        $extension->load(array($config), $container);
 
         $this->assertFalse($container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
         $this->assertEquals('Doctrine\ORM\Configuration', $container->getParameter('doctrine.orm.configuration.class'));
@@ -202,19 +229,23 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Doctrine\ORM\Cache\CacheConfiguration', $container->getParameter('doctrine.orm.second_level_cache.cache_configuration.class'));
         $this->assertEquals('Doctrine\ORM\Cache\RegionsConfiguration', $container->getParameter('doctrine.orm.second_level_cache.regions_configuration.class'));
 
-        $config = array(
-            'proxy_namespace' => 'MyProxies',
-            'auto_generate_proxy_classes' => true,
-            'default_entity_manager' => 'default',
-            'entity_managers' => array(
-                'default' => array(
-                    'mappings' => array('YamlBundle' => array()),
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager(array(
+                'proxy_namespace' => 'MyProxies',
+                'auto_generate_proxy_classes' => true,
+                'default_entity_manager' => 'default',
+                'entity_managers' => array(
+                    'default' => array(
+                        'mappings' => array('YamlBundle' => array()),
                     ),
                 ),
-        );
+            ))
+            ->build();
 
         $container = $this->getContainer();
-        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => $config)), $container);
+        $extension->load(array($config), $container);
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.dbal.default_connection');
@@ -290,28 +321,33 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $config = array(
-            'proxy_namespace' => 'MyProxies',
-            'auto_generate_proxy_classes' => 'eval',
-            'default_entity_manager' => 'default',
-            'entity_managers' => array(
-                'default' => array(
-                    'mappings' => array('YamlBundle' => array()),
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager(array(
+                'proxy_namespace' => 'MyProxies',
+                'auto_generate_proxy_classes' => 'eval',
+                'default_entity_manager' => 'default',
+                'entity_managers' => array(
+                    'default' => array(
+                        'mappings' => array('YamlBundle' => array()),
+                    ),
                 ),
-            ),
-        );
+            ))
+            ->build();
 
-        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => $config)), $container);
+        $extension->load(array($config), $container);
 
         $this->assertEquals(AbstractProxyFactory::AUTOGENERATE_EVAL, $container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
     }
 
-    public function testSingleEntityManagerConfiguration()
+    public function testSingleEntityManagerWithDefaultConfiguration()
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $extension->load(array(array('dbal' => array('connections' => array('default' => array('password' => 'foo'))), 'orm' => array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array())))))), $container);
+        $configurationArray = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+
+        $extension->load(array($configurationArray), $container);
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
@@ -328,12 +364,81 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $configurationArray = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addBaseSecondLevelCache()
+            ->build();
+
+        $extension->load(array($configurationArray), $container);
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
+
+        $this->assertDICConstructorArguments($definition, array(
+            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
+        ));
+
+        $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
+        $this->assertEquals('%doctrine.orm.second_level_cache.default_cache_factory.class%', $slcDefinition->getClass());
+    }
+
+    public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $configurationArray = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addSecondLevelCache([
+                'region_cache_driver' => [
+                    'type' => 'memcache'],
+                'regions' => [
+                    'hour_region' => [
+                        'lifetime' => 3600
+                    ]
+                ],
+                'factory' => 'YamlBundle\Cache\MyCacheFactory',
+            ])
+            ->build();
+
+        $extension->load(array($configurationArray), $container);
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
+        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        if (method_exists($definition, 'getFactory')) {
+            $this->assertEquals(array('%doctrine.orm.entity_manager.class%', 'create'), $definition->getFactory());
+        } else {
+            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
+            $this->assertEquals('create', $definition->getFactoryMethod());
+        }
+
+        $this->assertDICConstructorArguments($definition, array(
+            new Reference('doctrine.dbal.default_connection'), new Reference('doctrine.orm.default_configuration'),
+        ));
+
+        $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
+        $this->assertEquals('YamlBundle\Cache\MyCacheFactory', $slcDefinition->getClass());
+    }
+
     public function testBundleEntityAliases()
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $config = $this->getConnectionConfig();
+        $config = BundleConfigurationBuilder::createBuilder()
+             ->addBaseConnection()
+             ->build();
         $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array()))));
         $extension->load(array($config), $container);
 
@@ -348,7 +453,9 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $config = $this->getConnectionConfig();
+        $config = BundleConfigurationBuilder::createBuilder()
+             ->addBaseConnection()
+             ->build();
         $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array('alias' => 'yml')))));
         $extension->load(array($config), $container);
 
@@ -363,8 +470,10 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer('YamlBundle');
         $extension = new DoctrineExtension();
 
-        $config = $this->getConnectionConfig();
-        $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('YamlBundle' => array()))));
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addBaseEntityManager()
+            ->build();
         $extension->load(array($config), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
@@ -379,8 +488,19 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer('XmlBundle');
         $extension = new DoctrineExtension();
 
-        $config = $this->getConnectionConfig();
-        $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('XmlBundle' => array()))));
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager(array(
+                'default_entity_manager' => 'default',
+                'entity_managers' => array(
+                    'default' => array(
+                        'mappings' => array(
+                            'XmlBundle' => array()
+                        )
+                    )
+                )
+            ))
+            ->build();
         $extension->load(array($config), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
@@ -395,8 +515,19 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer('AnnotationsBundle');
         $extension = new DoctrineExtension();
 
-        $config = $this->getConnectionConfig();
-        $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('AnnotationsBundle' => array()))));
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager(array(
+                'default_entity_manager' => 'default',
+                'entity_managers' => array(
+                    'default' => array(
+                        'mappings' => array(
+                            'AnnotationsBundle' => array()
+                        )
+                    )
+                )
+            ))
+            ->build();
         $extension->load(array($config), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
@@ -411,22 +542,34 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer(array('XmlBundle', 'AnnotationsBundle'));
         $extension = new DoctrineExtension();
 
-        $config1 = $this->getConnectionConfig();
-        $config1['orm'] = array(
-            'auto_generate_proxy_classes' => true,
-            'default_entity_manager' => 'default',
-            'entity_managers' => array(
-                'default' => array('mappings' => array('AnnotationsBundle' => array())),
-            ),
-        );
-        $config2 = $this->getConnectionConfig();
-        $config2['orm'] = array(
-            'auto_generate_proxy_classes' => false,
-            'default_entity_manager' => 'default',
-            'entity_managers' => array(
-                'default' => array('mappings' => array('XmlBundle' => array())),
-            ),
-        );
+        $config1 = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager(array(
+                'auto_generate_proxy_classes' => true,
+                'default_entity_manager' => 'default',
+                'entity_managers' => array(
+                    'default' => array(
+                        'mappings' => array(
+                            'AnnotationsBundle' => array()
+                        )
+                    ),
+                ),
+            ))
+            ->build();
+        $config2 = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager(array(
+                'auto_generate_proxy_classes' => false,
+                'default_entity_manager' => 'default',
+                'entity_managers' => array(
+                    'default' => array(
+                        'mappings' => array(
+                            'XmlBundle' => array()
+                        )
+                    ),
+                ),
+            ))
+            ->build();
         $extension->load(array($config1, $config2), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
@@ -456,8 +599,19 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer('AnnotationsBundle', 'Vendor');
         $extension = new DoctrineExtension();
 
-        $config = $this->getConnectionConfig();
-        $config['orm'] = array('default_entity_manager' => 'default', 'entity_managers' => array('default' => array('mappings' => array('AnnotationsBundle' => array()))));
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager(array(
+                'default_entity_manager' => 'default',
+                'entity_managers' => array(
+                    'default' => array(
+                        'mappings' => array(
+                            'AnnotationsBundle' => array()
+                        )
+                    )
+                )
+            ))
+            ->build();
         $extension->load(array($config), $container);
 
         $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
@@ -470,18 +624,20 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $config = $this->getConnectionConfig();
-        $config['orm'] = array(
-            'metadata_cache_driver' => array(
-                'cache_provider' => 'metadata_cache',
-            ),
-            'query_cache_driver' => array(
-                'cache_provider' => 'query_cache',
-            ),
-            'result_cache_driver' => array(
-                'cache_provider' => 'result_cache',
-            ),
-        );
+        $config = BundleConfigurationBuilder::createBuilder()
+             ->addBaseConnection()
+             ->addEntityManager(array(
+                 'metadata_cache_driver' => array(
+                     'cache_provider' => 'metadata_cache',
+                 ),
+                 'query_cache_driver' => array(
+                     'cache_provider' => 'query_cache',
+                 ),
+                 'result_cache_driver' => array(
+                     'cache_provider' => 'result_cache',
+                 ),
+             ))
+            ->build();
 
         $extension->load(array($config), $container);
 
@@ -503,17 +659,18 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $config = $this->getConnectionConfig();
-        $config['dbal'] = array(
-            'connections' => array(
-                'foo' => array(
-                    'shards' => array(
-                        'test' => array('id' => 1)
-                    ),
-                ),
-                'bar' => array(),
-            ),
-        );
+        $config = BundleConfigurationBuilder::createBuilder()
+             ->addConnection(array(
+                 'connections' => array(
+                     'foo' => array(
+                         'shards' => array(
+                             'test' => array('id' => 1)
+                         ),
+                     ),
+                     'bar' => array(),
+                 ),
+             ))
+            ->build();
 
         $extension->load(array($config), $container);
 
@@ -593,8 +750,4 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container->compile();
     }
 
-    private function getConnectionConfig()
-    {
-        return array('dbal' => array('connections' => array('default' => array('password' => 'foo'))));
-    }
 }
