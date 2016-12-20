@@ -366,7 +366,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration()
     {
-        if (version_compare(Version::VERSION, "2.5.0-DEV") >= 0) {
+        if (version_compare(Version::VERSION, "2.5.0-DEV") < 0) {
             $this->markTestSkipped(sprintf('Second Level cache not supported by this version of the ORM : %s', Version::VERSION));
         }
         $container = $this->getContainer();
@@ -398,7 +398,7 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration()
     {
-        if (version_compare(Version::VERSION, "2.5.0-DEV") >= 0) {
+        if (version_compare(Version::VERSION, "2.5.0-DEV") < 0) {
             $this->markTestSkipped(sprintf('Second Level cache not supported by this version of the ORM : %s', Version::VERSION));
         }
         $container = $this->getContainer();
