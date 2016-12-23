@@ -41,29 +41,30 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
             ->addArgument('bundle', InputArgument::REQUIRED, 'The bundle to import the mapping information to')
             ->addArgument('mapping-type', InputArgument::OPTIONAL, 'The mapping type to export the imported mapping information to')
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
+            ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('filter', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'A string pattern used to match entities that should be mapped.')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force to overwrite existing mapping files.')
             ->setDescription('Imports mapping information from an existing database')
             ->setHelp(<<<EOT
-The <info>doctrine:mapping:import</info> command imports mapping information
+The <info>%command.name%</info> command imports mapping information
 from an existing database:
 
-<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml</info>
+<info>php %command.full_name% "MyCustomBundle" xml</info>
 
 You can also optionally specify which entity manager to import from with the
 <info>--em</info> option:
 
-<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml --em=default</info>
+<info>php %command.full_name% "MyCustomBundle" xml --em=default</info>
 
 If you don't want to map every entity that can be found in the database, use the
 <info>--filter</info> option. It will try to match the targeted mapped entity with the
 provided pattern string.
 
-<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml --filter=MyMatchedEntity</info>
+<info>php %command.full_name% "MyCustomBundle" xml --filter=MyMatchedEntity</info>
 
 Use the <info>--force</info> option, if you want to override existing mapping files:
 
-<info>php %command.full_name% doctrine:mapping:import "MyCustomBundle" xml --force</info>
+<info>php %command.full_name% "MyCustomBundle" xml --force</info>
 EOT
         );
     }
@@ -95,7 +96,7 @@ EOT
             $exporter->setEntityGenerator($entityGenerator);
         }
 
-        $em = $this->getEntityManager($input->getOption('em'));
+        $em = $this->getEntityManager($input->getOption('em'), $input->getOption('shard'));
 
         $databaseDriver = new DatabaseDriver($em->getConnection()->getSchemaManager());
         $em->getConfiguration()->setMetadataDriverImpl($databaseDriver);

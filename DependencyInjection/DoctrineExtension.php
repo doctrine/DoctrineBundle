@@ -221,7 +221,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $options = $this->getConnectionOptions($connection);
 
-        $container
+        $def = $container
             ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), new DefinitionDecorator('doctrine.dbal.connection'))
             ->setArguments(array(
                 $options,
@@ -230,6 +230,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $connection['mapping_types'],
             ))
         ;
+
+        if (!empty($connection['use_savepoints'])) {
+            $def->addMethodCall('setNestTransactionsWithSavepoints', array($connection['use_savepoints']));
+        }
+
+        // Create a shard_manager for this connection
+        if (isset($options['shards'])) {
+            $shardManagerDefinition = new Definition($options['shardManagerClass'], array(
+                new Reference(sprintf('doctrine.dbal.%s_connection', $name))
+            ));
+            $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
+        }
     }
 
     protected function getConnectionOptions($connection)
@@ -253,7 +265,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'wrapper_class' => 'wrapperClass',
             'keep_slave' => 'keepSlave',
             'shard_choser' => 'shardChoser',
+            'shard_manager_class' => 'shardManagerClass',
             'server_version' => 'serverVersion',
+            'default_table_options' => 'defaultTableOptions',
         ) as $old => $new) {
             if (isset($options[$old])) {
                 $options[$new] = $options[$old];
@@ -294,6 +308,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'driver' => true, 'driverOptions' => true, 'driverClass' => true,
                 'wrapperClass' => true, 'keepSlave' => true, 'shardChoser' => true,
                 'platform' => true, 'slaves' => true, 'global' => true, 'shards' => true,
+                'serverVersion' => true,
                 // included by safety but should have been unset already
                 'logging' => true, 'profiling' => true, 'mapping_types' => true, 'platform_service' => true,
             );
@@ -307,6 +322,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
             if (empty($options['wrapperClass'])) {
                 // Change the wrapper class only if the user does not already forced using a custom one.
                 $options['wrapperClass'] = 'Doctrine\\DBAL\\Sharding\\PoolingShardConnection';
+            }
+            if (empty($options['shardManagerClass'])) {
+                // Change the shard manager class only if the user does not already forced using a custom one.
+                $options['shardManagerClass'] = 'Doctrine\\DBAL\\Sharding\\PoolingShardManager';
             }
         } else {
             unset($options['shards']);
@@ -370,9 +389,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $def->setFactoryMethod('create');
         }
 
+        $loadPropertyInfoExtractor = interface_exists('Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface')
+            && class_exists('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor');
+
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
+
+            if ($loadPropertyInfoExtractor) {
+                $this->loadPropertyInfoExtractor($name, $container);
+            }
         }
 
         if ($config['resolve_target_entities']) {
@@ -383,7 +409,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 ));
             }
 
-            $def->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
+            // BC: ResolveTargetEntityListener implements the subscriber interface since
+            // v2.5.0-beta1 (Commit 437f812)
+            if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
+                $def->addTag('doctrine.event_listener', array('event' => 'loadClassMetadata'));
+            } else {
+                $def->addTag('doctrine.event_subscriber');
+            }
         }
     }
 
@@ -745,6 +777,29 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container);
         $this->loadCacheDriver('result_cache', $entityManager['name'], $entityManager['result_cache_driver'], $container);
         $this->loadCacheDriver('query_cache', $entityManager['name'], $entityManager['query_cache_driver'], $container);
+    }
+
+    /**
+     * Loads a property info extractor for each defined entity manager.
+     *
+     * @param string           $entityManagerName
+     * @param ContainerBuilder $container
+     */
+    private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
+    {
+        $metadataFactoryService = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
+
+        $metadataFactoryDefinition = $container->register($metadataFactoryService, 'Doctrine\Common\Persistence\Mapping\ClassMetadataFactory');
+        $metadataFactoryDefinition->setFactory(array(
+            new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)),
+            'getMetadataFactory'
+        ));
+        $metadataFactoryDefinition->setPublic(false);
+
+        $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), 'Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor');
+        $propertyExtractorDefinition->addArgument(new Reference($metadataFactoryService));
+        $propertyExtractorDefinition->addTag('property_info.list_extractor', array('priority' => -1001));
+        $propertyExtractorDefinition->addTag('property_info.type_extractor', array('priority' => -999));
     }
 
     /**

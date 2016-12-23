@@ -35,6 +35,7 @@ class CreateDatabaseDoctrineCommand extends DoctrineCommand
         $this
             ->setName('doctrine:database:create')
             ->setDescription('Creates the configured database')
+            ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
             ->addOption('if-not-exists', null, InputOption::VALUE_NONE, 'Don\'t trigger an error, when the database already exists')
             ->setHelp(<<<EOT
@@ -67,17 +68,38 @@ EOT
             $params = $params['master'];
         }
 
-        $name = isset($params['path']) ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
+        // Cannot inject `shard` option in parent::getDoctrineConnection
+        // cause it will try to connect to a non-existing database
+        if (isset($params['shards'])) {
+            $shards = $params['shards'];
+            // Default select global
+            $params = array_merge($params, $params['global']);
+            unset($params['global']['dbname']);
+            if ($input->getOption('shard')) {
+                foreach ($shards as $i => $shard) {
+                    if ($shard['id'] === (int)$input->getOption('shard')) {
+                        // Select sharded database
+                        $params = array_merge($params, $shard);
+                        unset($params['shards'][$i]['dbname'], $params['id']);
+                        break;
+                    }
+                }
+            }
+        }
+
+        $hasPath = isset($params['path']);
+        $name = $hasPath ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
         if (!$name) {
             throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
-        unset($params['dbname']);
+        // Need to get rid of _every_ occurrence of dbname from connection configuration and we have already extracted all relevant info from url
+        unset($params['dbname'], $params['path'], $params['url']);
 
         $tmpConnection = DriverManager::getConnection($params);
         $shouldNotCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
 
         // Only quote if we don't have a path
-        if (!isset($params['path'])) {
+        if (!$hasPath) {
             $name = $tmpConnection->getDatabasePlatform()->quoteSingleIdentifier($name);
         }
 

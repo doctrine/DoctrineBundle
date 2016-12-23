@@ -42,35 +42,35 @@ class GenerateEntitiesDoctrineCommand extends DoctrineCommand
             ->addOption('path', null, InputOption::VALUE_REQUIRED, 'The path where to generate entities when it cannot be guessed')
             ->addOption('no-backup', null, InputOption::VALUE_NONE, 'Do not backup existing entities files.')
             ->setHelp(<<<EOT
-The <info>doctrine:generate:entities</info> command generates entity classes
+The <info>%command.name%</info> command generates entity classes
 and method stubs from your mapping information:
 
 You have to limit generation of entities:
 
 * To a bundle:
 
-  <info>php %command.full_name% doctrine:generate:entities MyCustomBundle</info>
+  <info>php %command.full_name% MyCustomBundle</info>
 
 * To a single entity:
 
-  <info>php %command.full_name% doctrine:generate:entities MyCustomBundle:User</info>
-  <info>php %command.full_name% doctrine:generate:entities MyCustomBundle/Entity/User</info>
+  <info>php %command.full_name% MyCustomBundle:User</info>
+  <info>php %command.full_name% MyCustomBundle/Entity/User</info>
 
 * To a namespace
 
-  <info>php %command.full_name% doctrine:generate:entities MyCustomBundle/Entity</info>
+  <info>php %command.full_name% MyCustomBundle/Entity</info>
 
 If the entities are not stored in a bundle, and if the classes do not exist,
 the command has no way to guess where they should be generated. In this case,
 you must provide the <comment>--path</comment> option:
 
-  <info>php %command.full_name% doctrine:generate:entities Blog/Entity --path=src/</info>
+  <info>php %command.full_name% Blog/Entity --path=src/</info>
 
 By default, the unmodified version of each entity is backed up and saved
 (e.g. Product.php~). To prevent this task from creating the backup file,
 pass the <comment>--no-backup</comment> option:
 
-  <info>php %command.full_name% doctrine:generate:entities Blog/Entity --no-backup</info>
+  <info>php %command.full_name% Blog/Entity --no-backup</info>
 
 <error>Important:</error> Even if you specified Inheritance options in your
 XML or YAML Mapping files the generator cannot generate the base and

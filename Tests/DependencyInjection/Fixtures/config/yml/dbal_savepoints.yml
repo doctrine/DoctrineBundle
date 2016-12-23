@@ -1,0 +1,10 @@
+doctrine:
+    dbal:
+        default_connection: savepoints
+        connections:
+            savepoints:
+                use_savepoints: true
+            nosavepoints:
+                use_savepoints: false
+            notset:
+                user: root

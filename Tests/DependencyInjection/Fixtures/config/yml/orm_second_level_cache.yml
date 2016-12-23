@@ -57,7 +57,7 @@ doctrine:
                         lifetime: 300
                         cache_driver: array
                         type: filelock
-                        lock_path: %kernel.cache_dir%/doctrine/orm/slc/filelock
+                        lock_path: "%kernel.cache_dir%/doctrine/orm/slc/filelock"
 
                       my_entity_region:
                           lifetime: 600

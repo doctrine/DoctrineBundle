@@ -46,6 +46,7 @@
                 user="pgsql_user"
                 password="pgsql_s3cr3t"
                 sslmode="require"
+                sslrootcert="postgresql-ca.pem"
                 charset="utf8" />
             <connection
                 name="sqlanywhere"

@@ -62,11 +62,20 @@ Configuration Reference
                         # Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
                         sslmode:              ~
 
+                        # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT).
+                        # The name of a file containing SSL certificate authority (CA) certificate(s).
+                        # If the file exists, the server's certificate will be verified to be signed by one of these authorities.
+                        sslrootcert:          ~
+
                         # Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
                         pooled:               ~
 
                         # pdo_sqlsrv driver specific. Configuring MultipleActiveResultSets for the pdo_sqlsrv driver
                         MultipleActiveResultSets:  ~
+
+                        # Enable savepoints for nested transactions
+                        use_savepoints: true
+
                         driver:               pdo_mysql
                         platform_service:     ~
                         auto_commit:          ~
@@ -95,6 +104,13 @@ Configuration Reference
                         mapping_types:
                             # example
                             # enum:                 string
+
+                        default_table_options:
+                            # Affects schema-tool. If absent, DBAL chooses defaults
+                            # based on the platform. Examples here are for MySQL.
+                            # charset:      utf8
+                            # collate:      utf8_unicode_ci
+                            # engine:       InnoDB
 
                         slaves:
                             # A collection of named slave connections (e.g. slave1, slave2)
@@ -133,6 +149,11 @@ Configuration Reference
                                 # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE).
                                 # Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
                                 sslmode:              ~
+
+                                # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT).
+                                # The name of a file containing SSL certificate authority (CA) certificate(s).
+                                # If the file exists, the server's certificate will be verified to be signed by one of these authorities.
+                                sslrootcert:          ~
 
                                 # Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
                                 pooled:               ~
@@ -176,6 +197,11 @@ Configuration Reference
                             # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE).
                             # Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
                             sslmode:              ~
+
+                            # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT).
+                            # The name of a file containing SSL certificate authority (CA) certificate(s).
+                            # If the file exists, the server's certificate will be verified to be signed by one of these authorities.
+                            sslrootcert:          ~
 
                             # Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
                             pooled:               ~
@@ -372,8 +398,10 @@ Configuration Reference
                     <!-- sessionMode: The session mode to use for the oci8 driver -->
                     <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
                     <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
+                    <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                     <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                     <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
+                    <!-- use-savepoints: Enable savepoints for nested transactions -->
                     <doctrine:connection
                         name="default"
                         dbname=""
@@ -392,8 +420,10 @@ Configuration Reference
                         sessionMode=""
                         server=""
                         sslmode=""
+                        sslrootcert=""
                         pooled=""
                         MultipleActiveResultSets=""
+                        use-savepoints="true"
                         driver="pdo_mysql"
                         platform-service=""
                         auto-commit=""
@@ -415,6 +445,11 @@ Configuration Reference
                         <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
 
                         <!-- example -->
+                        <doctrine:default-table-option name="charset">utf8</doctrine:default-table-option>
+                        <doctrine:default-table-option name="collate">utf8_unicode_ci</doctrine:default-table-option>
+                        <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
+
+                        <!-- example -->
                         <!-- unix-socket: The unix socket to use for MySQL -->
                         <!-- persistent: True to use as persistent connection for the ibm_db2 driver -->
                         <!-- protocol: The protocol to use for the ibm_db2 driver (default to TCPIP if omitted) -->
@@ -423,6 +458,7 @@ Configuration Reference
                         <!-- sessionMode: The session mode to use for the oci8 driver -->
                         <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
                         <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
+                        <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                         <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                         <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
                         <doctrine:slave
@@ -443,6 +479,7 @@ Configuration Reference
                             sessionMode=""
                             server=""
                             sslmode=""
+                            sslrootcert=""
                             pooled=""
                             MultipleActiveResultSets=""
                         />
@@ -457,6 +494,7 @@ Configuration Reference
                         <!-- sessionMode: The session mode to use for the oci8 driver -->
                         <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
                         <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
+                        <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                         <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                         <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
                         <doctrine:shard
@@ -477,6 +515,7 @@ Configuration Reference
                             sessionMode=""
                             server=""
                             sslmode=""
+                            sslrootcert=""
                             pooled=""
                             MultipleActiveResultSets=""
                         />
@@ -686,7 +725,7 @@ certain classes, but those are for very advanced use-cases only.
 Caching Drivers
 ~~~~~~~~~~~~~~~
 
-For the caching drivers you can specify the values ``array``, ``apc``, ``memcache``,
+For the caching drivers you can specify the values ``array``, ``apc``, ``apcu``, ``memcache``,
 ``memcached`` or ``xcache``.
 
 The following example shows an overview of the caching configurations:
@@ -696,7 +735,7 @@ The following example shows an overview of the caching configurations:
     doctrine:
         orm:
             auto_mapping: true
-            metadata_cache_driver: apc
+            metadata_cache_driver: apcu
             query_cache_driver: xcache
             result_cache_driver:
                 type: memcache
@@ -830,6 +869,7 @@ can configure. The following block shows all possible configuration keys:
                 servicename:              MyOracleServiceName # Oracle specific (SERVICE_NAME)
                 sessionMode:              2                   # oci8 driver specific (session_mode)
                 sslmode:                  require             # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE)
+                sslrootcert:              postgresql-ca.pem   # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT)
                 wrapper_class:            MyDoctrineDbalConnectionWrapper
                 charset:                  UTF8
                 logging:                  %kernel.debug%
@@ -840,6 +880,12 @@ can configure. The following block shows all possible configuration keys:
                     enum: string
                 types:
                     custom: Acme\HelloBundle\MyCustomType
+                default_table_options:
+                    # Affects schema-tool. If absent, DBAL chooses defaults
+                    # based on the platform.
+                    charset:              utf8
+                    collate:              utf8_unicode_ci
+                    engine:               InnoDB
 
     .. code-block:: xml
 
@@ -869,6 +915,7 @@ can configure. The following block shows all possible configuration keys:
                 servicename="MyOracleServiceName"  <!-- Oracle specific (SERVICE_NAME) -->
                 sessionMode"2"                     <!-- oci8 driver specific (session_mode) -->
                 sslmode="require"                  <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLMODE) -->
+                sslrootcert="postgresql-ca.pem"    <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT) -->
                 wrapper-class="MyDoctrineDbalConnectionWrapper"
                 charset="UTF8"
                 logging="%kernel.debug%"
@@ -878,6 +925,9 @@ can configure. The following block shows all possible configuration keys:
             >
                 <doctrine:option key="foo">bar</doctrine:option>
                 <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
+                <doctrine:default-table-option name="charset">utf8</doctrine:default-table-option>
+                <doctrine:default-table-option name="collate">utf8_unicode_ci</doctrine:default-table-option>
+                <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
                 <doctrine:type name="custom">Acme\HelloBundle\MyCustomType</doctrine:type>
             </doctrine:dbal>
         </doctrine:config>

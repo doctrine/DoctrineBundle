@@ -37,6 +37,7 @@
         <xsd:attribute name="logging" type="xsd:string" default="false" />
         <xsd:attribute name="profiling" type="xsd:string" default="false" />
         <xsd:attribute name="server-version" type="xsd:string" />
+        <xsd:attribute name="use-savepoints" type="xsd:boolean" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:attributeGroup>
 
@@ -47,6 +48,7 @@
         <xsd:attribute name="port" type="xsd:string" />
         <xsd:attribute name="user" type="xsd:string" />
         <xsd:attribute name="password" type="xsd:string" />
+        <xsd:attribute name="application-name" type="xsd:string" />
         <xsd:attribute name="path" type="xsd:string" />
         <xsd:attribute name="unix-socket" type="xsd:string" />
         <xsd:attribute name="memory" type="xsd:string" />
@@ -58,8 +60,11 @@
         <xsd:attribute name="servicename" type="xsd:string" />
         <xsd:attribute name="session-mode" type="xsd:string" />
         <xsd:attribute name="sslmode" type="xsd:string" />
+        <xsd:attribute name="sslrootcert" type="xsd:string" />
         <xsd:attribute name="pooled" type="xsd:string" />
         <xsd:attribute name="multiple-active-result-sets" type="xsd:string" />
+        <xsd:attribute name="connectstring" type="xsd:string" />
+        <xsd:attribute name="instancename" type="xsd:string" />
     </xsd:attributeGroup>
 
     <xsd:group name="connection-child-config">
@@ -68,6 +73,7 @@
             <xsd:element name="mapping-type" type="named_scalar" />
             <xsd:element name="slave" type="slave" />
             <xsd:element name="shard" type="shard" />
+            <xsd:element name="default-table-option" type="named_scalar" />
         </xsd:choice>
     </xsd:group>
 
@@ -256,7 +262,7 @@
         <xsd:attribute name="region-lifetime" type="xsd:integer" />
         <xsd:attribute name="region-lock-lifetime" type="xsd:integer" />
     </xsd:complexType>
-    
+
     <xsd:complexType name="dql">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="string-function" type="named_scalar" />
