@@ -883,8 +883,8 @@ can configure. The following block shows all possible configuration keys:
                 driver_class:             MyNamespace\MyDriverImpl
                 options:
                     foo: bar
-                path:                     %kernel.data_dir%/data.sqlite # SQLite specific
-                memory:                   true                          # SQLite specific
+                path:                     "%kernel.data_dir%/data.sqlite" # SQLite specific
+                memory:                   true                            # SQLite specific
                 unix_socket:              /tmp/mysql.sock
                 persistent:               true
                 MultipleActiveResultSets: true                # pdo_sqlsrv driver specific
@@ -898,7 +898,7 @@ can configure. The following block shows all possible configuration keys:
                 sslrootcert:              postgresql-ca.pem   # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT)
                 wrapper_class:            MyDoctrineDbalConnectionWrapper
                 charset:                  UTF8
-                logging:                  %kernel.debug%
+                logging:                  "%kernel.debug%"
                 platform_service:         MyOwnDatabasePlatformService
                 auto_commit:              false
                 schema_filter:            ^sf2_
