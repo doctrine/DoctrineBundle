@@ -87,17 +87,19 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->ormLoad($config['orm'], $container);
         }
 
-        $this->addClassesToCompile(array(
-            'Doctrine\\Common\\Annotations\\DocLexer',
-            'Doctrine\\Common\\Annotations\\FileCacheReader',
-            'Doctrine\\Common\\Annotations\\PhpParser',
-            'Doctrine\\Common\\Annotations\\Reader',
-            'Doctrine\\Common\\Lexer',
-            'Doctrine\\Common\\Persistence\\ConnectionRegistry',
-            'Doctrine\\Common\\Persistence\\Proxy',
-            'Doctrine\\Common\\Util\\ClassUtils',
-            'Doctrine\\Bundle\\DoctrineBundle\\Registry',
-        ));
+        if (PHP_VERSION_ID < 70000) {
+            $this->addClassesToCompile(array(
+                'Doctrine\\Common\\Annotations\\DocLexer',
+                'Doctrine\\Common\\Annotations\\FileCacheReader',
+                'Doctrine\\Common\\Annotations\\PhpParser',
+                'Doctrine\\Common\\Annotations\\Reader',
+                'Doctrine\\Common\\Lexer',
+                'Doctrine\\Common\\Persistence\\ConnectionRegistry',
+                'Doctrine\\Common\\Persistence\\Proxy',
+                'Doctrine\\Common\\Util\\ClassUtils',
+                'Doctrine\\Bundle\\DoctrineBundle\\Registry',
+            ));
+        }
     }
 
     /**
