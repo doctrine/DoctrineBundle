@@ -884,7 +884,7 @@ can configure. The following block shows all possible configuration keys:
                 options:
                     foo: bar
                 path:                     "%kernel.data_dir%/data.sqlite" # SQLite specific
-                memory:                   true                          # SQLite specific
+                memory:                   true                            # SQLite specific
                 unix_socket:              /tmp/mysql.sock
                 persistent:               true
                 MultipleActiveResultSets: true                # pdo_sqlsrv driver specific
