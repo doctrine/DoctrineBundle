@@ -1,0 +1,16 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+            foobar:
+                dbname: foobar
+
+    orm:
+        default_entity_manager: em1
+        entity_managers:
+            em1:
+                connection: default
+            em2:
+                connection: foobar

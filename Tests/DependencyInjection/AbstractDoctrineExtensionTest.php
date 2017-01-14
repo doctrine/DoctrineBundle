@@ -17,6 +17,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\Version;
+use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -808,6 +809,30 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', array('My/Entity2', 'EntityListener2', 'preFlush', 'preFlushHandler'));
     }
 
+    public function testAttachEntityListenersTwoConnections()
+    {
+        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
+            $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
+        }
+
+        $container = $this->getContainer(['YamlBundle']);
+        $loader = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $container->addCompilerPass(new RegisterEventListenersAndSubscribersPass('doctrine.connections', 'doctrine.dbal.%s_connection.event_manager', 'doctrine'));
+
+        $this->loadFromFile($container, 'orm_attach_entity_listeners_two_connections');
+
+        $this->compileContainer($container);
+
+        $defaultEventManager = $container->getDefinition('doctrine.dbal.default_connection.event_manager');
+        $this->assertDICDefinitionNoMethodCall($defaultEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em2_listeners.attach_entity_listeners')]);
+        $this->assertDICDefinitionMethodCallOnce($defaultEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em1_listeners.attach_entity_listeners')]);
+
+        $foobarEventManager = $container->getDefinition('doctrine.dbal.foobar_connection.event_manager');
+        $this->assertDICDefinitionNoMethodCall($foobarEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em1_listeners.attach_entity_listeners')]);
+        $this->assertDICDefinitionMethodCallOnce($foobarEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em2_listeners.attach_entity_listeners')]);
+    }
+
     public function testAttachLazyEntityListener()
     {
         if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
@@ -1006,6 +1031,27 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->assertEquals($nbCalls, $called, sprintf('The method "%s" should be called %d times', $methodName, $nbCalls));
+    }
+
+    /**
+     * Assertion for the DI Container, check if the given definition does not contain a method call with the given parameters.
+     *
+     * @param Definition $definition
+     * @param string     $methodName
+     * @param array      $params
+     */
+    private function assertDICDefinitionNoMethodCall(Definition $definition, $methodName, array $params = null)
+    {
+        $calls = $definition->getMethodCalls();
+        foreach ($calls as $call) {
+            if ($call[0] == $methodName) {
+                if ($params !== null) {
+                    $this->assertNotEquals($params, $call[1], "Method '" . $methodName . "' is not expected to be called with the given parameters.");
+                } else {
+                    $this->fail("Method '" . $methodName . "' is not expected to be called");
+                }
+            }
+        }
     }
 
     private function compileContainer(ContainerBuilder $container)
