@@ -47,6 +47,6 @@ class DropSchemaDoctrineCommand extends DropCommand
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
 
-        parent::execute($input, $output);
+        return parent::execute($input, $output);
     }
 }
