@@ -31,7 +31,7 @@
         "doctrine/dbal": "~2.3",
         "jdorn/sql-formatter": "~1.1",
         "symfony/doctrine-bridge": "~2.7|~3.0",
-        "doctrine/doctrine-cache-bundle": "~1.0"
+        "doctrine/doctrine-cache-bundle": "~1.2"
     },
     "require-dev": {
         "doctrine/orm": "~2.3",

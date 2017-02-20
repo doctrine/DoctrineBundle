@@ -640,6 +640,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('type')->defaultValue('array')->end()
                 ->scalarNode('host')->end()
                 ->scalarNode('port')->end()
+                ->scalarNode('database')->end()
                 ->scalarNode('instance_class')->end()
                 ->scalarNode('class')->end()
                 ->scalarNode('id')->end()
