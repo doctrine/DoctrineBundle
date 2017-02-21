@@ -399,6 +399,22 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function testEntityManagerRedisMetadataCacheDriverConfigurationWithDatabaseKey()
+    {
+        $container = $this->loadContainer('orm_service_simple_single_entity_manager_redis');
+
+        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
+        $this->assertDICDefinitionClass($definition, '%doctrine_cache.redis.class%');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setRedis',
+            array(new Reference('doctrine_cache.services.doctrine.orm.default_metadata_cache_redis.connection'))
+        );
+
+        $definition = $container->getDefinition('doctrine_cache.services.doctrine.orm.default_metadata_cache_redis.connection');
+        $this->assertDICDefinitionClass($definition, '%doctrine_cache.redis.connection.class%');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'connect', array('localhost', '6379'));
+        $this->assertDICDefinitionMethodCallOnce($definition, 'select', array(1));
+    }
+
     public function testDependencyInjectionImportsOverrideDefaults()
     {
         $container = $this->loadContainer('orm_imports');

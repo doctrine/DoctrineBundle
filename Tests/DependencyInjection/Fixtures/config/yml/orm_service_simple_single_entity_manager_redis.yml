@@ -1,0 +1,20 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        default_entity_manager: default
+        entity_managers:
+            default:
+                mappings:
+                    YamlBundle: ~
+                metadata_cache_driver:
+                    type: redis
+                    class: Doctrine\Common\Cache\RedisCache
+                    host: localhost
+                    port: 6379
+                    database: 1
+                    instance_class: Redis
