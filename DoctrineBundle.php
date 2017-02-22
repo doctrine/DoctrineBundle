@@ -17,6 +17,7 @@ namespace Doctrine\Bundle\DoctrineBundle;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
+use Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\ORM\Proxy\Autoloader;
@@ -151,5 +152,6 @@ class DoctrineBundle extends Bundle
         $application->add(new CreateDatabaseDoctrineCommand());
         $application->add(new DropDatabaseDoctrineCommand());
         $application->add(new RunSqlDoctrineCommand());
+        $application->add(new ImportDoctrineCommand());
     }
 }
