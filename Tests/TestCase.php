@@ -53,7 +53,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
                 ),
                 'default_connection' => 'default',
                 'types' => array(
-                    'test' => 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType',
+                    'test' => 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType',
                 ),
             ), 'orm' => array(
                 'default_entity_manager' => 'default',
