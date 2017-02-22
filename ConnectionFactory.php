@@ -52,7 +52,6 @@ class ConnectionFactory
     {
         if (!$this->initialized) {
             $this->initializeTypes();
-            $this->initialized = true;
         }
 
         $connection = DriverManager::getConnection($params, $config, $eventManager);
@@ -85,5 +84,6 @@ class ConnectionFactory
                 $this->commentedTypes[] = $type;
             }
         }
+        $this->initialized = true;
     }
 }
