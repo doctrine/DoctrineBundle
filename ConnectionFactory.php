@@ -84,6 +84,9 @@ class ConnectionFactory
                 Type::addType($type, $typeConfig['class']);
             }
             if ($typeConfig['commented']) {
+                @trigger_error(
+                    sprintf('The commented option of the type configuration is deprecated since DoctrineBundle 1.7.' .
+                    'Use the feature of the Type class instead. (in %s)', $type), E_USER_DEPRECATED);
                 $this->commentedTypes[] = $type;
             }
         }
