@@ -85,8 +85,10 @@ class ConnectionFactory
             }
             if ($typeConfig['commented']) {
                 @trigger_error(
-                    'The commented option of the type configuration is deprecated since DoctrineBundle 1.7.
-                    Use the feature of the Type class Instead', E_USER_DEPRECATED);
+                    'The commented option of the type configuration is deprecated since DoctrineBundle 1.7.' .
+                    'Use the feature of the Type class Instead',
+                    E_USER_DEPRECATED
+                );
                 $this->commentedTypes[] = $type;
             }
         }
