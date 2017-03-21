@@ -20,6 +20,8 @@
     </parameters>
 
     <services>
+        <service id="Doctrine\DBAL\Driver\Connection" alias="database_connection" public="false" />
+
         <service id="doctrine.dbal.logger.chain" class="%doctrine.dbal.logger.chain.class%" public="false" abstract="true">
             <call method="addLogger">
                 <argument type="service" id="doctrine.dbal.logger" />
@@ -58,6 +60,7 @@
             <argument>%doctrine.default_connection%</argument>
             <argument>%doctrine.default_entity_manager%</argument>
         </service>
+        <service id="Doctrine\Common\Persistence\ManagerRegistry" alias="doctrine" public="false" />
 
         <service id="doctrine.twig.doctrine_extension" class="Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension" public="false">
             <tag name="twig.extension" />
