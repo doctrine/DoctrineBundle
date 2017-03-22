@@ -119,8 +119,10 @@ class DoctrineBundle extends Bundle
         // Clear all entity managers to clear references to entities for GC
         if ($this->container->hasParameter('doctrine.entity_managers')) {
             foreach ($this->container->getParameter('doctrine.entity_managers') as $id) {
-                if (!$this->container instanceof IntrospectableContainerInterface || $this->container->initialized($id)) {
-                    $this->container->get($id)->clear();
+                if ($this->container->getParameter('doctrine.orm.entity_managers.' . $id . '.clear_on_shutdown') === true) {
+                    if (!$this->container instanceof IntrospectableContainerInterface || $this->container->initialized($id)) {
+                        $this->container->get($id)->clear();
+                    }
                 }
             }
         }
@@ -128,8 +130,10 @@ class DoctrineBundle extends Bundle
         // Close all connections to avoid reaching too many connections in the process when booting again later (tests)
         if ($this->container->hasParameter('doctrine.connections')) {
             foreach ($this->container->getParameter('doctrine.connections') as $id) {
-                if (!$this->container instanceof IntrospectableContainerInterface || $this->container->initialized($id)) {
-                    $this->container->get($id)->close();
+                if ($this->container->getParameter('doctrine.dbal.connections.' . $id . '.close_on_shutdown') === true) {
+                    if (!$this->container instanceof IntrospectableContainerInterface || $this->container->initialized($id)) {
+                        $this->container->get($id)->close();
+                    }
                 }
             }
         }
