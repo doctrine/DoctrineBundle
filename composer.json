@@ -48,7 +48,10 @@
         "doctrine/orm": "The Doctrine ORM integration is optional in the bundle."
     },
     "autoload": {
-        "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "" }
+        "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "src" }
+    },
+    "autoload-dev": {
+        "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\Tests\\": "tests" }
     },
     "extra": {
         "branch-alias": {
