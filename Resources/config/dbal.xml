@@ -45,7 +45,9 @@
             <argument>%doctrine.dbal.connection_factory.types%</argument>
         </service>
 
-        <service id="doctrine.dbal.connection" class="Doctrine\DBAL\Connection" abstract="true" />
+        <service id="doctrine.dbal.connection" class="Doctrine\DBAL\Connection" abstract="true">
+            <factory service="doctrine.dbal.connection_factory" method="createConnection" />
+        </service>
 
         <service id="doctrine.dbal.connection.event_manager" class="%doctrine.dbal.connection.event_manager.class%" public="false" abstract="true">
             <argument type="service" id="service_container" />

@@ -138,16 +138,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setParameter('doctrine.connections', $connections);
         $container->setParameter('doctrine.default_connection', $this->defaultConnection);
 
-        $def = $container->getDefinition('doctrine.dbal.connection');
-        if (method_exists($def, 'setFactory')) {
-            // to be inlined in dbal.xml when dependency on Symfony DependencyInjection is bumped to 2.6
-            $def->setFactory(array(new Reference('doctrine.dbal.connection_factory'), 'createConnection'));
-        } else {
-            // to be removed when dependency on Symfony DependencyInjection is bumped to 2.6
-            $def->setFactoryService('doctrine.dbal.connection_factory');
-            $def->setFactoryMethod('createConnection');
-        }
-
         foreach ($config['connections'] as $name => $connection) {
             $this->loadDbalConnection($name, $connection, $container);
         }
@@ -374,26 +364,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->setAlias('doctrine.orm.entity_manager', sprintf('doctrine.orm.%s_entity_manager', $config['default_entity_manager']));
 
-        // BC logic to handle DoctrineBridge < 2.6
-        if (!method_exists($this, 'fixManagersAutoMappings')) {
-            foreach ($config['entity_managers'] as $entityManager) {
-                if ($entityManager['auto_mapping'] && count($config['entity_managers']) > 1) {
-                    throw new \LogicException('You cannot enable "auto_mapping" when several entity managers are defined.');
-                }
-            }
-        } else {
-            $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $container->getParameter('kernel.bundles'));
-        }
-
-        $def = $container->getDefinition('doctrine.orm.entity_manager.abstract');
-        if (method_exists($def, 'setFactory')) {
-            // to be inlined in dbal.xml when dependency on Symfony DependencyInjection is bumped to 2.6
-            $def->setFactory(array('%doctrine.orm.entity_manager.class%', 'create'));
-        } else {
-            // to be removed when dependency on Symfony DependencyInjection is bumped to 2.6
-            $def->setFactoryClass('%doctrine.orm.entity_manager.class%');
-            $def->setFactoryMethod('create');
-        }
+        $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $container->getParameter('kernel.bundles'));
 
         $loadPropertyInfoExtractor = interface_exists('Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface')
             && class_exists('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor');
