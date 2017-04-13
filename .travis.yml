@@ -20,8 +20,11 @@ matrix:
       env: deps=low SYMFONY_DEPRECATIONS_HELPER=weak
     - php: 5.6
       env: SYMFONY_VERSION="2.8.*@dev"
+    - php: 5.6
+      env: deps=dev
   allow_failures:
     - php: nightly
+    - env: deps=dev
 
 env:
   global:
@@ -30,10 +33,10 @@ env:
 before_install:
   - composer self-update
   - if [ "$SYMFONY_VERSION" != "" ]; then composer require --no-update symfony/symfony:${SYMFONY_VERSION}; fi;
+  - if [ "$deps" = "dev" ]; then perl -pi -e 's/^}$/,"minimum-stability":"dev"}/' composer.json; fi;
 
 install:
-  - if [ "$deps" = "no" ]; then composer update; fi;
-  - if [ "$deps" = "low" ]; then composer --prefer-lowest --prefer-stable update; fi;
+  - if [ "$deps" = "low" ]; then composer --prefer-lowest --prefer-stable update; else composer update; fi;
 
 script:
   - ./vendor/bin/phpunit -v --coverage-clover ./build/logs/clover.xml
