@@ -214,8 +214,19 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 unset($connection['charset']);
             }
         }
-
         $options = $this->getConnectionOptions($connection);
+
+        // oracle session init
+        // the init listener has to be used for oracle.
+        if (isset($connection['driver']) && stripos($connection['driver'], 'oracle') !== false) {
+            $oracleSessionInit = new Definition('%doctrine.dbal.events.oracle_session_init.class%');
+            $oracleSessionInit->addTag('doctrine.event_listener', array('event' => 'postConnect'));
+
+            $container->setDefinition(
+                sprintf('doctrine.dbal.%s_connection.events.oraclesessioninit', $name),
+                $oracleSessionInit
+            );
+        }
 
         $def = $container
             ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), new DefinitionDecorator('doctrine.dbal.connection'))
