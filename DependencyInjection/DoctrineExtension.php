@@ -198,23 +198,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), new DefinitionDecorator('doctrine.dbal.connection.event_manager'));
 
         // connection
-        // PDO ignores the charset property before 5.3.6 so the init listener has to be used instead.
-        if (isset($connection['charset']) && version_compare(PHP_VERSION, '5.3.6', '<')) {
-            if ((isset($connection['driver']) && stripos($connection['driver'], 'mysql') !== false) ||
-                 (isset($connection['driver_class']) && stripos($connection['driver_class'], 'mysql') !== false)) {
-                $mysqlSessionInit = new Definition('%doctrine.dbal.events.mysql_session_init.class%');
-                $mysqlSessionInit->setArguments(array($connection['charset']));
-                $mysqlSessionInit->setPublic(false);
-                $mysqlSessionInit->addTag('doctrine.event_subscriber', array('connection' => $name));
-
-                $container->setDefinition(
-                    sprintf('doctrine.dbal.%s_connection.events.mysqlsessioninit', $name),
-                    $mysqlSessionInit
-                );
-                unset($connection['charset']);
-            }
-        }
-
         $options = $this->getConnectionOptions($connection);
 
         $def = $container
