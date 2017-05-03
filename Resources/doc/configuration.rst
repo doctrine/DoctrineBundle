@@ -90,6 +90,8 @@ Configuration Reference
                         profiling:            "%kernel.debug%"
                         server_version:       ~
                         driver_class:         ~
+                        # Allows to specify a custom wrapper implementation to use.                       
+                        # Must be a subclass of Doctrine\DBAL\Connection
                         wrapper_class:        ~
                         shard_choser:         ~
                         shard_choser_service: ~
