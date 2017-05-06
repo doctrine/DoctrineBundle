@@ -47,6 +47,10 @@ class RepositoryAliasPass implements CompilerPassInterface
             }
 
             foreach ($customRepositories as $repositoryClass => $entities) {
+                if ($container->has($repositoryClass)) {
+                    continue;
+                }
+
                 if (count($entities) === 1) {
                     $definition = new Definition($repositoryClass);
                     $definition->setFactory(array(
