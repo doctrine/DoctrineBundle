@@ -52,15 +52,11 @@ class RepositoryAliasPass implements CompilerPassInterface
                 }
 
                 if (count($entities) === 1) {
-                    $definition = new Definition($repositoryClass);
-                    $definition->setFactory(array(
-                        new Reference('doctrine'),
-                        'getRepository'
-                    ));
-                    $definition->setArguments($entities[0]);
-                    $definition->setShared(false);
-
-                    $container->setDefinition($repositoryClass, $definition);
+                    $container->register($repositoryClass, $repositoryClass)
+                        ->setFactory([new Reference('doctrine'), 'getRepository'])
+                        ->setArguments($entities[0])
+                        ->setShared(false)
+                    ;
                 }
             }
         }
