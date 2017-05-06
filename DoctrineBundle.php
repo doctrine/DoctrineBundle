@@ -20,6 +20,7 @@ use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RepositoryAliasPass;
 use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
@@ -55,6 +56,7 @@ class DoctrineBundle extends Bundle
 
         $container->addCompilerPass(new DoctrineValidationPass('orm'));
         $container->addCompilerPass(new EntityListenerPass());
+        $container->addCompilerPass(new RepositoryAliasPass());
     }
 
     /**
