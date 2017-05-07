@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\HttpKernel\Kernel;
 
 class RepositoryAliasPass implements CompilerPassInterface
 {
@@ -46,19 +47,73 @@ class RepositoryAliasPass implements CompilerPassInterface
                 }
             }
 
+            $rootConflicts = [];
+            foreach ($customRepositories as $repositoryClass => $entities) {
+                $repoConflicts = $this->findConflictingServices($container, $repositoryClass);
+
+                if (count($repoConflicts)) {
+                    $rootConflicts[$repositoryClass] = $repoConflicts;
+                }
+            }
+
             foreach ($customRepositories as $repositoryClass => $entities) {
                 if ($container->has($repositoryClass)) {
                     continue;
                 }
 
-                if (count($entities) === 1) {
-                    $container->register($repositoryClass, $repositoryClass)
-                        ->setFactory([new Reference('doctrine'), 'getRepository'])
-                        ->setArguments($entities[0])
-                        ->setShared(false)
-                    ;
+                if (count($entities) !== 1) {
+                    $this->log($container, "Cannot auto-register repository \"".$repositoryClass."\": Entity belongs to multiple entity managers.");
+                    continue;
                 }
+
+                if (isset($rootConflicts[$repositoryClass])) {
+                    $this->log($container, "Cannot auto-register repository \"".$repositoryClass."\": There are already services for the repository class.");
+                    continue;
+                }
+
+                foreach ($rootConflicts as $conflictingRepo => $conflicts) {
+                    if (is_subclass_of($repositoryClass, $conflictingRepo, true)) {
+                        $this->log($container, "Cannot auto-register repository \"".$repositoryClass."\": There are already services for a superclass of the repository class.");
+                        continue 2;
+                    }
+                }
+
+                $container->register($repositoryClass, $repositoryClass)
+                    ->setFactory([new Reference('doctrine'), 'getRepository'])
+                    ->setArguments($entities[0])
+                    ->setShared(false)
+                    ->setPublic(false)
+                ;
             }
+        }
+    }
+
+    private function findConflictingServices(ContainerBuilder $container, $repositoryClass)
+    {
+        if (Kernel::MAJOR_VERSION >= 4) {
+            return [];
+        }
+
+        $conflictingServices = [];
+        $parameterBag = $container->getParameterBag();
+
+        foreach ($container->getDefinitions() as $id => $definition) {
+            $defClass = $parameterBag->resolveValue($definition->getClass());
+
+            if ($defClass != $repositoryClass) {
+                continue;
+            }
+
+            $conflictingServices[] = $id;
+        }
+
+        return $conflictingServices;
+    }
+
+    private function log(ContainerBuilder $container, $message)
+    {
+        if (method_exists($container, 'log')) {
+            $container->log($this, $message);
         }
     }
 }
