@@ -14,6 +14,8 @@
         <parameter key="doctrine.dbal.connection_factory.class">Doctrine\Bundle\DoctrineBundle\ConnectionFactory</parameter>
         <parameter key="doctrine.dbal.events.mysql_session_init.class">Doctrine\DBAL\Event\Listeners\MysqlSessionInit</parameter>
         <parameter key="doctrine.dbal.events.oracle_session_init.class">Doctrine\DBAL\Event\Listeners\OracleSessionInit</parameter>
+        <parameter key="doctrine.dbal.session.schema.class">Symfony\Bridge\Doctrine\HttpFoundation\DbalSessionHandlerSchema</parameter>
+        <parameter key="doctrine.dbal.session.schema_listener.class">Doctrine\Bundle\DoctrineBundle\EventListener\SessionSchemaListener</parameter>
         <parameter key="doctrine.class">Doctrine\Bundle\DoctrineBundle\Registry</parameter>
         <parameter key="doctrine.entity_managers" type="collection"></parameter>
         <parameter key="doctrine.default_entity_manager"></parameter>
@@ -68,5 +70,11 @@
             <tag name="twig.extension" />
         </service>
 
+        <service id="doctrine.dbal.session.schema" class="%doctrine.dbal.session.schema.class%" />
+
+        <service id="doctrine.dbal.session.schema_listener" class="%doctrine.dbal.session.schema_listener.class%" public="false">
+            <tag name="doctrine.event_listener" event="postGenerateSchema" lazy="true" />
+            <argument type="service" id="doctrine.dbal.session.schema" />
+        </service>
     </services>
 </container>
