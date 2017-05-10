@@ -61,6 +61,9 @@ class ConnectionFactory
             foreach ($mappingTypes as $dbType => $doctrineType) {
                 $platform->registerDoctrineTypeMapping($dbType, $doctrineType);
             }
+            foreach ($this->typesConfig as $type => $className) {
+                $platform->markDoctrineTypeCommented(Type::getType($type));
+            }
         }
         if (!empty($this->commentedTypes)) {
             $platform = $connection->getDatabasePlatform();
