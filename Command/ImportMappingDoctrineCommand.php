@@ -40,6 +40,7 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
             ->setName('doctrine:mapping:import')
             ->addArgument('bundle', InputArgument::REQUIRED, 'The bundle to import the mapping information to')
             ->addArgument('mapping-type', InputArgument::OPTIONAL, 'The mapping type to export the imported mapping information to')
+            ->addOption('prefix', null, InputOption::VALUE_OPTIONAL, 'Prefix entity with name. For entity subdirectory use name with backslash e.g "Db1\\"')
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
             ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('filter', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'A string pattern used to match entities that should be mapped.')
@@ -50,6 +51,10 @@ The <info>%command.name%</info> command imports mapping information
 from an existing database:
 
 <info>php %command.full_name% "MyCustomBundle" xml</info>
+
+<info>--prefix</info> option:
+If you would like to move entities to subdirectory, use prefix name with backslash.
+<info>php app/console doctrine:mapping:import "MyCustomBundle" xml --prefix="Db1\\"</info>
 
 You can also optionally specify which entity manager to import from with the
 <info>--em</info> option:
@@ -99,6 +104,7 @@ EOT
         $em = $this->getEntityManager($input->getOption('em'), $input->getOption('shard'));
 
         $databaseDriver = new DatabaseDriver($em->getConnection()->getSchemaManager());
+        $databaseDriver->setNamespace($input->getOption('prefix'));
         $em->getConfiguration()->setMetadataDriverImpl($databaseDriver);
 
         $emName = $input->getOption('em');
