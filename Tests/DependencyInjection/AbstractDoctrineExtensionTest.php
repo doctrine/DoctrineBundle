@@ -773,7 +773,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         $container = $this->loadContainer('dbal_schema_filter');
 
         $definition = $container->getDefinition('doctrine.dbal.default_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setFilterSchemaAssetsExpression', array('^sf2_'));
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setFilterSchemaAssetsExpression', array('^sf3_'));
     }
 
     public function testEntityListenerResolver()

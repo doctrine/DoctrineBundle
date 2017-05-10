@@ -7,6 +7,6 @@
                         http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
 
     <config>
-        <dbal schema-filter="^sf2_" />
+        <dbal schema-filter="^sf3_" />
     </config>
 </srv:container>
