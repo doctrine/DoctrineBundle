@@ -210,6 +210,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ));
             $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
         }
+
+        // Set class in case "wrapper_class" option was used to assist IDEs
+        if (isset($options['wrapperClass'])) {
+            $def->setClass($options['wrapperClass']);
+        }
     }
 
     protected function getConnectionOptions($connection)
