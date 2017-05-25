@@ -217,7 +217,7 @@ class DoctrineExtensionTest extends TestCase
         );
 
         $this->assertEquals(TestWrapperClass::class, $container->getDefinition('doctrine.dbal.default_connection')->getClass());
-        $this->assertEquals(null, $container->getDefinition('doctrine.dbal.second_connection')->getClass());
+        $this->assertNull($container->getDefinition('doctrine.dbal.second_connection')->getClass());
     }
 
     public function testDependencyInjectionConfigurationDefaults()
