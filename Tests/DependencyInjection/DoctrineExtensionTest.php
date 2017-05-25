@@ -17,12 +17,13 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Version;
+use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 
 class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 {
@@ -194,6 +195,28 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('foo', $config['password']);
         $this->assertEquals('root', $config['user']);
+    }
+
+    public function testDbalWrapperClass()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $extension->load(
+            array(
+                array('dbal' => array('connections' => array(
+                    'default' => array('password' => 'foo', 'wrapper_class' => TestWrapperClass::class),
+                    'second' => array('password' => 'boo'),
+                ))),
+                array(),
+                array('dbal' => array('default_connection' => 'foo')),
+                array()
+            ),
+            $container
+        );
+
+        $this->assertEquals(TestWrapperClass::class, $container->getDefinition('doctrine.dbal.default_connection')->getClass());
+        $this->assertEquals(null, $container->getDefinition('doctrine.dbal.second_connection')->getClass());
     }
 
     public function testDependencyInjectionConfigurationDefaults()
@@ -757,3 +780,5 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
     }
 
 }
+
+class TestWrapperClass extends Connection {}
