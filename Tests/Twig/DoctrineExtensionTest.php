@@ -14,8 +14,9 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Twig;
 
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
+use PHPUnit\Framework\TestCase;
 
-class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
+class DoctrineExtensionTest extends TestCase
 {
     public function testReplaceQueryParametersWithPostgresCasting()
     {

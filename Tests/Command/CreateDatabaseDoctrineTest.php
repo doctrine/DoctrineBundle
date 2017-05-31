@@ -15,10 +15,11 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class CreateDatabaseDoctrineTest extends \PHPUnit_Framework_TestCase
+class CreateDatabaseDoctrineTest extends TestCase
 {
     public function testExecute()
     {

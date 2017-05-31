@@ -14,12 +14,13 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 
-class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
+class DoctrineDataCollectorTest extends TestCase
 {
     const FIRST_ENTITY = 'TestBundle\Test\Entity\Test1';
     const SECOND_ENTITY = 'TestBundle\Test\Entity\Test2';
@@ -27,7 +28,7 @@ class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
     public function testCollectEntities()
     {
         $manager = $this->getMockBuilder('Doctrine\ORM\EntityManager')->disableOriginalConstructor()->getMock();
-        $config = $this->getMock('Doctrine\ORM\Configuration');
+        $config = $this->createMock('Doctrine\ORM\Configuration');
         $factory = $this->getMockBuilder('Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory')
             ->setMethods(array('getLoadedMetadata'))->getMockForAbstractClass();
         $collector = $this->createCollector(array('default' => $manager));
@@ -82,7 +83,7 @@ class DoctrineDataCollectorTest extends \PHPUnit_Framework_TestCase
      */
     private function createCollector(array $managers)
     {
-        $registry = $this->getMock('Doctrine\Common\Persistence\ManagerRegistry');
+        $registry = $this->createMock('Doctrine\Common\Persistence\ManagerRegistry');
         $registry
             ->expects($this->any())
             ->method('getConnectionNames')
