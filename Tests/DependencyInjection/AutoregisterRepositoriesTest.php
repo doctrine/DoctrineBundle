@@ -60,8 +60,8 @@ class AutoregisterRepositoriesTest extends TestCase
 
     public function testSingleEmRepoAlreadyRegisteredVanillaServiceOnSymfony3()
     {
-        if (Kernel::MAJOR_VERSION !== 3) {
-            $this->markTestSkipped("This test is only run with Symfony 3");
+        if (Kernel::MAJOR_VERSION > 3) {
+            $this->markTestSkipped("This test is only run with Symfony 3 or lower");
         }
 
         $pass = new RepositoryAliasPass();
