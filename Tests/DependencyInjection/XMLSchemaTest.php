@@ -14,7 +14,9 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
-class XMLSchemaTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class XMLSchemaTest extends TestCase
 {
     public static function dataValidateSchemaFiles()
     {
