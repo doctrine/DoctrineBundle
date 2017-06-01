@@ -7,15 +7,14 @@ cache:
     - $HOME/.composer/cache
 
 php:
-  - 7.0
   - 7.1
   - nightly
 
 matrix:
   include:
-    - php: 7.0
+    - php: 7.1
       env: deps=low SYMFONY_DEPRECATIONS_HELPER=weak
-    - php: 7.0
+    - php: 7.1
       env: deps=dev
   allow_failures:
     - php: nightly
