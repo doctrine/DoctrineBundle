@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RepositoryAliasPass;
@@ -12,7 +13,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\HttpKernel\Kernel;
 
 
-class AutoregisterRepositoriesTest extends \PHPUnit_Framework_TestCase
+class AutoregisterRepositoriesTest extends TestCase
 {
     public function testSingleEmNoRegisteredRepositories()
     {
@@ -51,6 +52,7 @@ class AutoregisterRepositoriesTest extends \PHPUnit_Framework_TestCase
 
         $containerBuilder->getDefinitions()->willReturn([]);
         $containerBuilder->has(ClassARepository::class)->willReturn(true);
+        $containerBuilder->register(Argument::any(), Argument::any())->shouldNotBeCalled();
 
         $pass = new RepositoryAliasPass();
         $pass->process($containerBuilder->reveal());
@@ -79,6 +81,7 @@ class AutoregisterRepositoriesTest extends \PHPUnit_Framework_TestCase
         if (method_exists(ContainerBuilder::class, 'log')) {
             $containerBuilder->log($pass, Argument::any())->shouldBeCalled();
         }
+        $containerBuilder->register(Argument::any(), Argument::any())->shouldNotBeCalled();
 
         $pass->process($containerBuilder->reveal());
     }
@@ -128,6 +131,7 @@ class AutoregisterRepositoriesTest extends \PHPUnit_Framework_TestCase
         if (method_exists(ContainerBuilder::class, 'log')) {
             $containerBuilder->log($pass, Argument::any())->shouldBeCalled();
         }
+        $containerBuilder->register(Argument::any(), Argument::any())->shouldNotBeCalled();
 
         $pass->process($containerBuilder->reveal());
     }

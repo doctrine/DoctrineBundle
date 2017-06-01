@@ -81,7 +81,7 @@ class RepositoryAliasPass implements CompilerPassInterface
             if (Kernel::MAJOR_VERSION <= 2 && Kernel::MINOR_VERSION <= 7) {
                 $definition->setScope('prototype');
             } else {
-                $definition->setShared(true);
+                $definition->setShared(false);
             }
         }
 
