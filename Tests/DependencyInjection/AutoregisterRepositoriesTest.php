@@ -1,7 +1,16 @@
 <?php
 
-namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
+/*
+ * This file is part of the Doctrine Bundle
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ * (c) Doctrine Project, Benjamin Eberlei <kontakt@beberlei.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
+namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -11,7 +20,6 @@ use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\HttpKernel\Kernel;
-
 
 class AutoregisterRepositoriesTest extends TestCase
 {
@@ -136,7 +144,7 @@ class AutoregisterRepositoriesTest extends TestCase
         $pass->process($containerBuilder->reveal());
     }
 
-    protected function prepPropheciesForOneEmAndClassA($containerBuilder, $metadataDriver, $parameterBag)
+    private function prepPropheciesForOneEmAndClassA($containerBuilder, $metadataDriver, $parameterBag)
     {
         $containerBuilder->hasParameter('doctrine.entity_managers')->willReturn(true);
         $containerBuilder->getParameter('doctrine.entity_managers')->willReturn([

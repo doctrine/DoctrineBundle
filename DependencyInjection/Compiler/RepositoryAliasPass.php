@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * This file is part of the Doctrine Bundle
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ * (c) Doctrine Project, Benjamin Eberlei <kontakt@beberlei.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
@@ -10,6 +20,11 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Kernel;
 
+/**
+ * Class to register repositories as services
+ *
+ * @author Magnus Nordlander <magnus@fervo.se>
+ */
 class RepositoryAliasPass implements CompilerPassInterface
 {
     /**
@@ -48,15 +63,6 @@ class RepositoryAliasPass implements CompilerPassInterface
             }
         }
 
-        $rootConflicts = [];
-        foreach ($customRepositories as $repositoryClass => $entities) {
-            $repoConflicts = $this->findConflictingServices($container, $repositoryClass);
-
-            if (count($repoConflicts)) {
-                $rootConflicts[$repositoryClass] = $repoConflicts;
-            }
-        }
-
         foreach ($customRepositories as $repositoryClass => $entities) {
             if ($container->has($repositoryClass)) {
                 continue;
@@ -67,9 +73,10 @@ class RepositoryAliasPass implements CompilerPassInterface
                 continue;
             }
 
-            if (isset($rootConflicts[$repositoryClass])) {
+            if ($this->hasConflictingServices($container, $repositoryClass)) {
                 $this->log($container, "Cannot auto-register repository \"".$repositoryClass."\": There are already services for the repository class.");
                 continue;
+
             }
 
             $definition = $container->register($repositoryClass, $repositoryClass)
@@ -87,26 +94,23 @@ class RepositoryAliasPass implements CompilerPassInterface
 
     }
 
-    private function findConflictingServices(ContainerBuilder $container, $repositoryClass)
+    private function hasConflictingServices(ContainerBuilder $container, $repositoryClass)
     {
         if (Kernel::MAJOR_VERSION >= 4) {
-            return [];
+            return false;
         }
 
-        $conflictingServices = [];
         $parameterBag = $container->getParameterBag();
 
         foreach ($container->getDefinitions() as $id => $definition) {
             $defClass = $parameterBag->resolveValue($definition->getClass());
 
-            if ($defClass != $repositoryClass) {
-                continue;
+            if ($defClass == $repositoryClass) {
+                return true;
             }
-
-            $conflictingServices[] = $id;
         }
 
-        return $conflictingServices;
+        return false;
     }
 
     private function log(ContainerBuilder $container, $message)
