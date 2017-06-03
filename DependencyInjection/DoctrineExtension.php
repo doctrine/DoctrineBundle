@@ -199,6 +199,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ))
         ;
 
+        // Set class in case "wrapper_class" option was used to assist IDEs
+        if (isset($options['wrapperClass'])) {
+            $def->setClass($options['wrapperClass']);
+        }
+
         if (!empty($connection['use_savepoints'])) {
             $def->addMethodCall('setNestTransactionsWithSavepoints', array($connection['use_savepoints']));
         }
@@ -209,11 +214,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 new Reference(sprintf('doctrine.dbal.%s_connection', $name))
             ));
             $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
-        }
-
-        // Set class in case "wrapper_class" option was used to assist IDEs
-        if (isset($options['wrapperClass'])) {
-            $def->setClass($options['wrapperClass']);
         }
     }
 
