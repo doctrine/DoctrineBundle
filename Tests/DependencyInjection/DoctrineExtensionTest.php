@@ -20,12 +20,13 @@ use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 
-class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
+class DoctrineExtensionTest extends TestCase
 {
 
     public function testDbalGenerateDefaultConnectionConfiguration()
