@@ -199,6 +199,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ))
         ;
 
+        // Set class in case "wrapper_class" option was used to assist IDEs
+        if (isset($options['wrapperClass'])) {
+            $def->setClass($options['wrapperClass']);
+        }
+
         if (!empty($connection['use_savepoints'])) {
             $def->addMethodCall('setNestTransactionsWithSavepoints', array($connection['use_savepoints']));
         }
