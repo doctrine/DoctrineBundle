@@ -224,7 +224,7 @@ class DoctrineDataCollector extends BaseCollector
         }
         foreach ($groupedQueries as $connection => $queries) {
             foreach ($queries as $i => $query) {
-                $groupedQueries[$connection][$i]['executionPercent'] = $query['executionMS'] / $totalExecutionMS * 100;
+                $groupedQueries[$connection][$i]['executionPercent'] = $totalExecutionMS === 0 ? 100 : $query['executionMS'] / $totalExecutionMS * 100;
             }
         }
 
