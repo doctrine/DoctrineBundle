@@ -106,8 +106,11 @@ EOT
 
         $cmf = new DisconnectedClassMetadataFactory();
         $cmf->setEntityManager($em);
+        if($filters = $input->getOption('filter')){
+        	$regExpFilter = '/'.implode('|',$filters).'/';
+        	$em->getConnection()->getConfiguration()->setFilterSchemaAssetsExpression($regExpFilter);
+        }
         $metadata = $cmf->getAllMetadata();
-        $metadata = MetadataFilter::filter($metadata, $input->getOption('filter'));
         if ($metadata) {
             $output->writeln(sprintf('Importing mapping information from "<info>%s</info>" entity manager', $emName));
             foreach ($metadata as $class) {
