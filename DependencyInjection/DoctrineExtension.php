@@ -371,6 +371,23 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $def->addTag('doctrine.event_subscriber');
             }
         }
+
+        if ($slcConfig = $config['second_level_cache']) {
+            $this->loadOrmSecondLevelCache($slcConfig, $container);
+        }
+    }
+
+    /**
+     * Loads second level cache config for orm section
+     *
+     * @param array $config
+     * @param ContainerBuilder $container     A ContainerBuilder instance
+     */
+    protected function loadOrmSecondLevelCache($config, ContainerBuilder $container)
+    {
+        foreach ($config as $key => $value) {
+            $container->setParameter("doctrine.orm.second_level_cache.$key.class", $value['class']);
+        }
     }
 
     /**
@@ -431,7 +448,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         if (isset($entityManager['second_level_cache'])) {
-            $this->loadOrmSecondLevelCache($entityManager, $ormConfigDef, $container);
+            $this->loadEntityManagerSecondLevelCache($entityManager, $ormConfigDef, $container);
         }
 
         if ($entityManager['repository_factory']) {
@@ -591,7 +608,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * @param Definition       $ormConfigDef  A Definition instance
      * @param ContainerBuilder $container     A ContainerBuilder instance
      */
-    protected function loadOrmSecondLevelCache(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container)
+    protected function loadEntityManagerSecondLevelCache(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container)
     {
         if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
             throw new \InvalidArgumentException('Second-level cache requires doctrine-orm 2.5.0 or newer');
