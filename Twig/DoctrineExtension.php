@@ -246,35 +246,32 @@ class DoctrineExtension extends \Twig_Extension
     {
         $result = $parameter;
 
-        switch (true) {
-            // Check if result is non-unicode string using PCRE_UTF8 modifier
-            case is_string($result) && !preg_match('//u', $result):
-                $result = '0x'. strtoupper(bin2hex($result));
-                break;
+        // Check if result is non-unicode string using PCRE_UTF8 modifier
+        if (is_string($result) && !preg_match('//u', $result)) {
+            return '0x'. strtoupper(bin2hex($result));
+        }
 
-            case is_string($result):
-                $result = "'".addslashes($result)."'";
-                break;
+        if (is_string($result)) {
+            return "'".addslashes($result)."'";
+        }
 
-            case is_array($result):
-                foreach ($result as &$value) {
-                    $value = static::escapeFunction($value);
-                }
+        if (is_array($result)) {
+            foreach ($result as &$value) {
+                $value = static::escapeFunction($value);
+            }
+            return implode(', ', $result);
+        }
 
-                $result = implode(', ', $result);
-                break;
+        if (is_object($result)) {
+            return addslashes((string)$result);
+        }
 
-            case is_object($result):
-                $result = addslashes((string) $result);
-                break;
+        if (null === $result) {
+            return 'NULL';
+        }
 
-            case null === $result:
-                $result = 'NULL';
-                break;
-
-            case is_bool($result):
-                $result = $result ? '1' : '0';
-                break;
+        if (is_bool($result)) {
+            return $result ? '1' : '0';
         }
 
         return $result;
