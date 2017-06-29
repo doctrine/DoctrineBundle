@@ -14,7 +14,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
-use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use PHPUnit\Framework\TestCase as BaseTestCase;
@@ -55,7 +54,7 @@ class TestCase extends BaseTestCase
                 ),
                 'default_connection' => 'default',
                 'types' => array(
-                    'test' => TestType::class,
+                    'test' => 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType',
                 ),
             ), 'orm' => array(
                 'default_entity_manager' => 'default',
