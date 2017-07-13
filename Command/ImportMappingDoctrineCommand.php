@@ -111,7 +111,7 @@ EOT
         if ($metadata) {
             $output->writeln(sprintf('Importing mapping information from "<info>%s</info>" entity manager', $emName));
             foreach ($metadata as $class) {
-                $className = $class->name;
+                $className = trim($class->name, '"\'');
                 $class->name = $bundle->getNamespace().'\\Entity\\'.$className;
                 if ('annotation' === $type) {
                     $path = $destPath.'/'.str_replace('\\', '.', $className).'.php';
