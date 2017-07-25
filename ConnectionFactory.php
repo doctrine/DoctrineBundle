@@ -16,7 +16,10 @@ namespace Doctrine\Bundle\DoctrineBundle;
 
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Types\Type;
 
 /**
@@ -57,19 +60,50 @@ class ConnectionFactory
         $connection = DriverManager::getConnection($params, $config, $eventManager);
 
         if (!empty($mappingTypes)) {
-            $platform = $connection->getDatabasePlatform();
+            $platform = $this->getDatabasePlatform($connection);
             foreach ($mappingTypes as $dbType => $doctrineType) {
                 $platform->registerDoctrineTypeMapping($dbType, $doctrineType);
             }
         }
         if (!empty($this->commentedTypes)) {
-            $platform = $connection->getDatabasePlatform();
+            $platform = $this->getDatabasePlatform($connection);
             foreach ($this->commentedTypes as $type) {
                 $platform->markDoctrineTypeCommented(Type::getType($type));
             }
         }
 
         return $connection;
+    }
+
+    /**
+     * Try to get the database platform.
+     *
+     * This could fail if types should be registered to an predefined/unused connection
+     * and the platform version is unknown.
+     * For details have a look at DoctrineBundle issue #673.
+     *
+     * @param  \Doctrine\DBAL\Connection $connection
+     *
+     * @return \Doctrine\DBAL\Platforms\AbstractPlatform
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    private function getDatabasePlatform(Connection $connection)
+    {
+        try {
+            return $connection->getDatabasePlatform();
+        } catch (DBALException $driverException) {
+            if ($driverException instanceof DriverException) {
+                throw new DBALException(
+                    "An exception occured while establishing a connection to figure out your platform version." . PHP_EOL .
+                    "You can circumvent this by setting a 'server_version' configuration value" . PHP_EOL . PHP_EOL .
+                    "For further information have a look at:" . PHP_EOL .
+                    "https://github.com/doctrine/DoctrineBundle/issues/673",
+                    0,
+                    $driverException
+                );
+            }
+            throw $driverException;
+        }
     }
 
     /**
