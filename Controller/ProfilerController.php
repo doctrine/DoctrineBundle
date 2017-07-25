@@ -85,6 +85,35 @@ class ProfilerController implements ContainerAwareInterface
         ));
     }
 
+    public function executeAction($token, $connectionName, $query)
+    {
+        $queryId = $query;
+
+        /** @var $profiler \Symfony\Component\HttpKernel\Profiler\Profiler */
+        $profiler = $this->container->get('profiler');
+        $profiler->disable();
+
+        $profile = $profiler->loadProfile($token);
+        $queries = $profile->getCollector('db')->getQueries();
+
+        if (!isset($queries[$connectionName][$query])) {
+            return new Response('This query does not exist.');
+        }
+
+        /** @var $connection \Doctrine\DBAL\Connection */
+        $connection = $this->container->get('doctrine')->getConnection($connectionName);
+        $query = $queries[$connectionName][$query];
+
+        $results = $connection
+            ->executeQuery($query['sql'], $query['params'], $query['types'])
+            ->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $this->container->get('templating')->renderResponse('@Doctrine/Collector/execute.html.twig', array(
+            'data' => $results,
+            'id'   => $queryId
+        ));
+    }
+
     private function explainSQLServerPlatform(Connection $connection, $query)
     {
         if (stripos($query['sql'], 'SELECT') === 0) {
