@@ -72,6 +72,20 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $this->adapter->loadServicesConfiguration($container);
 
+        // Use a prototype when the ORM is available.
+        // This avoids listing all ORM commands by hand.
+        if (class_exists(Version::class)) {
+            $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+
+            $prototype = new Definition();
+            $prototype
+                ->setPublic(false)
+                ->addTag('console.command')
+            ;
+
+            $loader->registerClasses($prototype, 'Doctrine\Bundle\DoctrineBundle\Command\\', __DIR__.'/../Command/*');
+        }
+
         if (!empty($config['dbal'])) {
             $this->dbalLoad($config['dbal'], $container);
         }
