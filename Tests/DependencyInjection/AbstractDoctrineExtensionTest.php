@@ -538,6 +538,14 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('%doctrine.dbal.connection_factory.types%', $container->getDefinition('doctrine.dbal.connection_factory')->getArgument(0));
     }
 
+    public function testDefaultConnectionWithTypes()
+    {
+        $container = $this->loadContainer('dbal_default_connection_with_types');
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.default_connection'));
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.pgsql'));
+    }
+
     public function testSetCustomFunctions()
     {
         $container = $this->loadContainer('orm_functions');
