@@ -16,7 +16,12 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Connection as DriverConnection;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -26,6 +31,30 @@ use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPas
 
 class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 {
+    public function testAutowiringAlias()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+
+        $extension->load(array($config), $container);
+
+        $expectedAliases = array(
+            DriverConnection::class => 'database_connection',
+            Connection::class => 'database_connection',
+            ManagerRegistry::class => 'doctrine',
+            ObjectManager::class => 'doctrine.orm.entity_manager',
+            EntityManagerInterface::class => 'doctrine.orm.entity_manager',
+        );
+
+        foreach ($expectedAliases as $id => $target) {
+            $this->assertTrue($container->hasAlias($id), sprintf('The container should have a `%s` alias for autowiring support.', $id));
+
+            $alias = $container->getAlias($id);
+            $this->assertEquals($target, (string) $alias, sprintf('The autowiring for `%s` should use `%s`.', $id, $target));
+            $this->assertFalse($alias->isPublic(), sprintf('The autowiring alias for `%s` should be private.', $id, $target));
+        }
+    }
 
     public function testDbalGenerateDefaultConnectionConfiguration()
     {
