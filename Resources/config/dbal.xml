@@ -21,6 +21,7 @@
 
     <services>
         <service id="Doctrine\DBAL\Driver\Connection" alias="database_connection" public="false" />
+        <service id="Doctrine\DBAL\Connection" alias="database_connection" public="false" />
 
         <service id="doctrine.dbal.logger.chain" class="%doctrine.dbal.logger.chain.class%" public="false" abstract="true">
             <call method="addLogger">
