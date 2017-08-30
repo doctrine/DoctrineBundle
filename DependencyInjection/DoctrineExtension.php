@@ -143,35 +143,29 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $defitionClassname = $this->getDefinitionClassname();
 
         $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new $defitionClassname('doctrine.dbal.connection.configuration'));
-
-        $loggers = [];
+        $logger = null;
         if ($connection['logging']) {
-            $loggers[] = new Reference('doctrine.dbal.logger');
+            $logger = new Reference('doctrine.dbal.logger');
         }
-        unset($connection['logging']);
-
+        unset ($connection['logging']);
         if ($connection['profiling']) {
             $profilingLoggerId = 'doctrine.dbal.logger.profiling.'.$name;
             $container->setDefinition($profilingLoggerId, new $defitionClassname('doctrine.dbal.logger.profiling'));
-
             $profilingLogger = new Reference($profilingLoggerId);
             $container->getDefinition('data_collector.doctrine')->addMethodCall('addLogger', array($name, $profilingLogger));
 
-            $loggers[] = new Reference($profilingLoggerId);
+            if (null !== $logger) {
+                $chainLogger = new $defitionClassname('doctrine.dbal.logger.chain');
+                $chainLogger->addMethodCall('addLogger', array($profilingLogger));
+
+                $loggerId = 'doctrine.dbal.logger.chain.'.$name;
+                $container->setDefinition($loggerId, $chainLogger);
+                $logger = new Reference($loggerId);
+            } else {
+                $logger = $profilingLogger;
+            }
         }
         unset($connection['profiling']);
-
-        if (!empty($loggers)) {
-            $chainLogger = new $defitionClassname('doctrine.dbal.logger.chain');
-            foreach ($loggers as $logger) {
-                $chainLogger->addMethodCall('addLogger', array($logger));
-            }
-
-            $loggerId = 'doctrine.dbal.logger.chain.'.$name;
-            $container->setDefinition($loggerId, $chainLogger);
-
-            $configuration->addMethodCall('setSQLLogger', array(new Reference($loggerId)));
-        }
 
         if (isset($connection['auto_commit'])) {
             $configuration->addMethodCall('setAutoCommit', array($connection['auto_commit']));
@@ -184,6 +178,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         unset($connection['schema_filter']);
+
+        if ($logger) {
+            $configuration->addMethodCall('setSQLLogger', array($logger));
+        }
 
         // event manager
         $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), new $defitionClassname('doctrine.dbal.connection.event_manager'));

@@ -363,27 +363,14 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     {
         $container = $this->loadContainer('dbal_logging');
 
-        // Log
         $definition = $container->getDefinition('doctrine.dbal.log_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.log')));
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger')));
 
-        $definition = $container->getDefinition('doctrine.dbal.logger.chain.log');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addLogger', array(new Reference('doctrine.dbal.logger')));
-
-        // Profile
         $definition = $container->getDefinition('doctrine.dbal.profile_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.profile')));
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.profiling.profile')));
 
-        $definition = $container->getDefinition('doctrine.dbal.logger.chain.profile');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addLogger', array(new Reference('doctrine.dbal.logger.profiling.profile')));
-
-        // Both
         $definition = $container->getDefinition('doctrine.dbal.both_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.both')));
-
-        $definition = $container->getDefinition('doctrine.dbal.logger.chain.both');
-        $this->assertDICDefinitionMethodCallAt(0, $definition, 'addLogger', array(new Reference('doctrine.dbal.logger')));
-        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addLogger', array(new Reference('doctrine.dbal.logger.profiling.both')));
     }
 
     public function testLoadLoggingTag()
