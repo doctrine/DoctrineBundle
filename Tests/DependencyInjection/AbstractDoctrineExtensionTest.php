@@ -361,7 +361,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testLoadLogging()
     {
-        $container = $this->loadContainer('dbal_logging');
+        $container = $this->loadContainer('dbal_logging', ['YamlBundle'], new DoctrineDBALLoggerPass());
 
         $definition = $container->getDefinition('doctrine.dbal.log_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger')));

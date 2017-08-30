@@ -19,9 +19,24 @@ final class DoctrineDBALLoggerPass implements CompilerPassInterface
         $serviceList = $container->findTaggedServiceIds(self::TAG_NAME, true);
         $serviceList = array_keys($serviceList);
 
+        if (empty($serviceList)) {
+            return;
+        }
+
         foreach ($serviceList as $serviceId) {
             $this->ensureIsValidServiceDefinition($container, $serviceId);
-            $this->attachServiceToAllConnections($container, $serviceId);
+        }
+
+        $connectionList = $container->getParameter('doctrine.connections');
+
+        foreach ($connectionList as $connectionName => $connectionId) {
+            $configurationDefinition = $container->getDefinition($connectionId . '.configuration');
+            $chainDefinition = $this->createChainDefinitionAttachedToConnection($container, $connectionName, $configurationDefinition);
+
+            foreach ($serviceList as $serviceId) {
+                $serviceReference = new Reference($serviceId);
+                $chainDefinition->addMethodCall('addLogger', [$serviceReference]);
+            }
         }
     }
 
@@ -60,31 +75,72 @@ final class DoctrineDBALLoggerPass implements CompilerPassInterface
         }
     }
 
-    private function attachServiceToAllConnections(ContainerBuilder $container, string $serviceId): void
-    {
-        $serviceReference = new Reference($serviceId);
+    private function createChainDefinitionAttachedToConnection(
+        ContainerBuilder $container,
+        string $connectionName,
+        $configurationDefinition
+    ): Definition {
+        $configuredLoggerReference = $this->getSQLLoggerFromConnection($configurationDefinition);
 
-        $connectionList = $container->getParameter('doctrine.connections');
-
-        foreach ($connectionList as $connectionName => $connectionId) {
-            $chainId = self::BASE_CHAIN_NAME . '.' . $connectionName;
-
-            if (!$container->hasDefinition($chainId)) {
-                $this->createEmptyChain($container, $chainId, $connectionId);
-            }
-
-            $chainDefinition = $container->getDefinition($chainId);
-            $chainDefinition->addMethodCall('addLogger', array($serviceReference));
+        if ($configuredLoggerReference === null) {
+            return $this->createChainAndAttachToConnection($container, $connectionName, $configurationDefinition);
         }
+
+        $configuredLoggerDefinition = $container->getDefinition((string)$configuredLoggerReference);
+
+        if ($this->isChainLogger($configuredLoggerDefinition)) {
+            return $configuredLoggerDefinition;
+        }
+
+        $chainDefinition = $this->createChainAndAttachToConnection($container, $connectionName, $configurationDefinition);
+        $chainDefinition->addMethodCall('addLogger', [$configuredLoggerReference]);
+
+        return $chainDefinition;
     }
 
-    private function createEmptyChain(ContainerBuilder $container, string $chainId, string $connectionId): void
+    private function getSQLLoggerFromConnection(Definition $configurationDefinition): ?Reference
     {
+        $methodCallList = $configurationDefinition->getMethodCalls();
+
+        foreach ($methodCallList as $methodCall) {
+            if ($methodCall[0] !== 'setSQLLogger') {
+                continue;
+            }
+
+            return $methodCall[1][0];
+        }
+
+        return null;
+    }
+
+    private function isChainLogger(Definition $serviceDefinition): bool
+    {
+        $methodCallList = $serviceDefinition->getMethodCalls();
+
+        foreach ($methodCallList as $methodCall) {
+            if ($methodCall[0] === 'addLogger') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function createChainAndAttachToConnection(
+        ContainerBuilder $container,
+        string $connectionName,
+        Definition $configurationDefinition
+    ): Definition {
+        $chainId = self::BASE_CHAIN_NAME . '.' . $connectionName;
+
         $chainReference = new Reference($chainId);
+        $chainDefinition = new Definition(self::BASE_CHAIN_NAME);
 
-        $container->setDefinition($chainId, new Definition(self::BASE_CHAIN_NAME));
+        $container->setDefinition($chainId, $chainDefinition);
 
-        $configurationDefinition = $container->getDefinition($connectionId . '.configuration');
-        $configurationDefinition->addMethodCall('setSQLLogger', array($chainReference));
+        $configurationDefinition->removeMethodCall('setSQLLogger');
+        $configurationDefinition->addMethodCall('setSQLLogger', [$chainReference]);
+
+        return $chainDefinition;
     }
 }
