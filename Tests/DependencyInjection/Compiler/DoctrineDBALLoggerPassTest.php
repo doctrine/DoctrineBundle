@@ -39,7 +39,7 @@ final class DoctrineDBALLoggerPassTest extends TestCase
 
     /**
      * @expectedException \Symfony\Component\DependencyInjection\Exception\InvalidArgumentException
-     * @expectedExceptionMessage The service "abstract-logger" tagged "doctrine.dbal.logger" must not be abstract.
+     * @expectedExceptionMessage The service "abstract-logger" tagged "doctrine.dbal.logger" cannot be abstract.
      */
     public function testProcessWithAbstractLogger()
     {

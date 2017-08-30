@@ -53,7 +53,7 @@ final class DoctrineDBALLoggerPass implements CompilerPassInterface
 
         if ($reflectionClass->isAbstract()) {
             throw new InvalidArgumentException(sprintf(
-                'The service "%s" tagged "%s" must not be abstract.',
+                'The service "%s" tagged "%s" cannot be abstract.',
                 $serviceId,
                 self::TAG_NAME
             ));
