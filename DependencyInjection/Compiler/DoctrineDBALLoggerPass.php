@@ -12,7 +12,6 @@ use Symfony\Component\DependencyInjection\Reference;
 final class DoctrineDBALLoggerPass implements CompilerPassInterface
 {
     private const TAG_NAME = 'doctrine.dbal.logger';
-    private const LOGGER_INTERFACE = SQLLogger::class;
     private const BASE_CHAIN_NAME = 'doctrine.dbal.logger.chain';
 
     public function process(ContainerBuilder $container)
@@ -43,12 +42,12 @@ final class DoctrineDBALLoggerPass implements CompilerPassInterface
             ));
         }
 
-        if (!$reflectionClass->implementsInterface(self::LOGGER_INTERFACE)) {
+        if (!$reflectionClass->implementsInterface(SQLLogger::class)) {
             throw new InvalidArgumentException(sprintf(
                 'The service "%s" tagged "%s" must implement "%s".',
                 $serviceId,
                 self::TAG_NAME,
-                self::LOGGER_INTERFACE
+                SQLLogger::class
             ));
         }
 
