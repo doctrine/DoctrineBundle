@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:doctrine="http://symfony.com/schema/dic/doctrine"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
+                               http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
+
+    <services>
+        <service id="logger.echo" class="\Doctrine\DBAL\Logging\EchoSQLLogger" public="false">
+            <tag name="doctrine.dbal.logger" />
+        </service>
+
+        <service id="logger.debug" class="\Doctrine\DBAL\Logging\DebugStack" public="false">
+            <tag name="doctrine.dbal.logger" />
+        </service>
+    </services>
+
+    <doctrine:config>
+        <doctrine:dbal default-connection="mysql">
+            <doctrine:connection
+                name="tag"
+                logging="false"
+                profiling="false" />
+        </doctrine:dbal>
+    </doctrine:config>
+</container>

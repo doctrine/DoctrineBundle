@@ -1,0 +1,18 @@
+services:
+    logger.echo:
+        class: \Doctrine\DBAL\Logging\EchoSQLLogger
+        tags:
+            - { name: doctrine.dbal.logger }
+
+    logger.debug:
+        class: \Doctrine\DBAL\Logging\DebugStack
+        tags:
+            - { name: doctrine.dbal.logger }
+
+doctrine:
+    dbal:
+        default_connection: mysql
+        connections:
+            tag:
+                logging: false
+                profiling: false

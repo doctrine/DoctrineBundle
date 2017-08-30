@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DoctrineDBALLoggerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\Version;
@@ -383,6 +384,48 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.dbal.logger.chain.both');
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addLogger', array(new Reference('doctrine.dbal.logger')));
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addLogger', array(new Reference('doctrine.dbal.logger.profiling.both')));
+    }
+
+    public function testLoadLoggingTag()
+    {
+        $container = $this->loadContainer('dbal_logging_tag', ['YamlBundle'], new DoctrineDBALLoggerPass());
+
+        $definition = $container->getDefinition('doctrine.dbal.tag_connection.configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.tag')));
+
+        $definition = $container->getDefinition('doctrine.dbal.logger.chain.tag');
+        $this->assertDICDefinitionMethodCallAt(0, $definition, 'addLogger', array(new Reference('logger.echo')));
+        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addLogger', array(new Reference('logger.debug')));
+    }
+
+    public function testLoadLoggingAndTag()
+    {
+        $container = $this->loadContainer('dbal_logging_and_tag', ['YamlBundle'], new DoctrineDBALLoggerPass());
+
+        // Log
+        $definition = $container->getDefinition('doctrine.dbal.log_connection.configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.log')));
+
+        $definition = $container->getDefinition('doctrine.dbal.logger.chain.log');
+        $this->assertDICDefinitionMethodCallAt(0, $definition, 'addLogger', array(new Reference('doctrine.dbal.logger')));
+        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addLogger', array(new Reference('logger.echo')));
+
+        // Profile
+        $definition = $container->getDefinition('doctrine.dbal.profile_connection.configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.profile')));
+
+        $definition = $container->getDefinition('doctrine.dbal.logger.chain.profile');
+        $this->assertDICDefinitionMethodCallAt(0, $definition, 'addLogger', array(new Reference('doctrine.dbal.logger.profiling.profile')));
+        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addLogger', array(new Reference('logger.echo')));
+
+        // Both
+        $definition = $container->getDefinition('doctrine.dbal.both_connection.configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', array(new Reference('doctrine.dbal.logger.chain.both')));
+
+        $definition = $container->getDefinition('doctrine.dbal.logger.chain.both');
+        $this->assertDICDefinitionMethodCallAt(0, $definition, 'addLogger', array(new Reference('doctrine.dbal.logger')));
+        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addLogger', array(new Reference('doctrine.dbal.logger.profiling.both')));
+        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addLogger', array(new Reference('logger.echo')));
     }
 
     public function testEntityManagerMetadataCacheDriverConfiguration()
