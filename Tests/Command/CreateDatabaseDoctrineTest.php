@@ -20,13 +20,19 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class CreateDatabaseDoctrineTest extends \PHPUnit_Framework_TestCase
 {
+    public function tearDown()
+    {
+        @unlink(sys_get_temp_dir() . "/test");
+        @unlink(sys_get_temp_dir() . "/shard_1");
+        @unlink(sys_get_temp_dir() . "/shard_2");
+    }
+
     public function testExecute()
     {
         $connectionName = 'default';
         $dbName = 'test';
         $params = array(
-            'dbname' => $dbName,
-            'memory' => true,
+            'path' => sys_get_temp_dir() . "/" . $dbName,
             'driver' => 'pdo_sqlite',
         );
 
@@ -41,7 +47,7 @@ class CreateDatabaseDoctrineTest extends \PHPUnit_Framework_TestCase
             array_merge(array('command' => $command->getName()))
         );
 
-        $this->assertContains("Created database \"$dbName\" for connection named $connectionName", $commandTester->getDisplay());
+        $this->assertContains("Created database " . sys_get_temp_dir() . "/" . $dbName . " for connection named $connectionName", $commandTester->getDisplay());
     }
 
     public function testExecuteWithShardOption()
@@ -58,9 +64,14 @@ class CreateDatabaseDoctrineTest extends \PHPUnit_Framework_TestCase
             'shards' => array(
                 'foo' => array(
                     'id' => 1,
-                    'dbname' => 'shard_1',
+                    'path' => sys_get_temp_dir() . '/shard_1',
                     'driver' => 'pdo_sqlite',
-                )
+                ),
+                'bar' => array(
+                    'id' => 2,
+                    'path' => sys_get_temp_dir() . '/shard_2',
+                    'driver' => 'pdo_sqlite',
+                ),
             )
         );
 
@@ -73,7 +84,12 @@ class CreateDatabaseDoctrineTest extends \PHPUnit_Framework_TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(array('command' => $command->getName(), '--shard' => 1));
 
-        $this->assertContains("Created database \"shard_1\" for connection named $connectionName", $commandTester->getDisplay());
+        $this->assertContains("Created database " . sys_get_temp_dir() ."/shard_1 for connection named $connectionName", $commandTester->getDisplay());
+
+        $commandTester = new CommandTester($command);
+        $commandTester->execute(array('command' => $command->getName(), '--shard' => 2));
+
+        $this->assertContains("Created database " . sys_get_temp_dir() ."/shard_2 for connection named $connectionName", $commandTester->getDisplay());
     }
 
     /**
