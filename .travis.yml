@@ -7,11 +7,16 @@ cache:
     - $HOME/.composer/cache
 
 php:
+  - 5.5
+  - 5.6
+  - 7.0
   - 7.1
   - nightly
 
 matrix:
   include:
+    - php: 5.6
+      env: SYMFONY_VERSION="2.8.*@dev"
     - php: 7.1
       env: deps=low SYMFONY_DEPRECATIONS_HELPER=weak
     - php: 7.1
@@ -33,7 +38,7 @@ install:
   - if [ "$deps" = "low" ]; then composer --prefer-lowest --prefer-stable update; else composer update; fi;
 
 script:
-  - ./vendor/bin/phpunit -v --coverage-clover ./build/logs/clover.xml
+  - ./vendor/bin/simple-phpunit -v --coverage-clover ./build/logs/clover.xml
 
 after_script:
     - php ./vendor/bin/coveralls -v
