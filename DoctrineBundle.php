@@ -21,6 +21,7 @@ use Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\ORM\Proxy\Autoloader;
+use Doctrine\ORM\Version;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -140,11 +141,8 @@ class DoctrineBundle extends Bundle
      */
     public function registerCommands(Application $application)
     {
-        // Use the default logic when the ORM is available.
-        // This avoids listing all ORM commands by hand.
-        if (class_exists('Doctrine\\ORM\\Version')) {
-            parent::registerCommands($application);
-
+        if (class_exists(Version::class)) {
+            // Commands are registered in the extension
             return;
         }
 
