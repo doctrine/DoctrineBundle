@@ -222,13 +222,24 @@ class DoctrineDataCollector extends BaseCollector
             });
             $groupedQueries[$connection] = $connectionGroupedQueries;
         }
+
         foreach ($groupedQueries as $connection => $queries) {
             foreach ($queries as $i => $query) {
-                $groupedQueries[$connection][$i]['executionPercent'] = $query['executionMS'] / $totalExecutionMS * 100;
+                $groupedQueries[$connection][$i]['executionPercent'] =
+                    $this->executionTimePercentage($query['executionMS'], $totalExecutionMS);
             }
         }
 
         return $groupedQueries;
+    }
+
+    private function executionTimePercentage($executionTimeMS, $totalExecutionTimeMS)
+    {
+        if ($totalExecutionTimeMS === 0.0 || $totalExecutionTimeMS === 0) {
+            return 0;
+        }
+
+        return $executionTimeMS / $totalExecutionTimeMS * 100;
     }
 
     public function getGroupedQueryCount()
