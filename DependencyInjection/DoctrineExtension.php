@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\DefinitionDecorator;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Form\Type\DoctrineType;
 use Symfony\Component\Config\FileLocator;
@@ -332,7 +333,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('orm.xml');
 
-        if (method_exists(DoctrineType::class, 'reset')) {
+        if (class_exists(AbstractType::class) && method_exists(DoctrineType::class, 'reset')) {
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', array('method' => 'reset'));
         }
 
