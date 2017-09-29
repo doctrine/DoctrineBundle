@@ -820,7 +820,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * @return string
      */
-    private function getDefinitionClassname(): string
+    private function getDefinitionClassname()
     {
         return class_exists(ChildDefinition::class) ? ChildDefinition::class : DefinitionDecorator::class;
     }
