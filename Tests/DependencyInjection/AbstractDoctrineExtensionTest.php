@@ -121,6 +121,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                   'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost',
                   'unix_socket' => '/path/to/mysqld.sock',
                   'defaultTableOptions' => array(),
+                  'close_on_shutdown' => true,
             ),
             $param['master']
         );
@@ -147,6 +148,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                   'port' => null, 'dbname' => 'mysql_db', 'host' => 'localhost',
                   'unix_socket' => '/path/to/mysqld.sock',
                   'defaultTableOptions' => array(),
+                  'close_on_shutdown' => true,
             ),
             $param['global']
         );
@@ -191,6 +193,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => array(),
                 'defaultTableOptions' => array(),
+                'close_on_shutdown' => true,
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -231,6 +234,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                     'driver' => 'pdo_mysql',
                     'driverOptions' => array(),
                     'defaultTableOptions' => array(),
+                    'close_on_shutdown' => true,
                 ),
                 new Reference('doctrine.dbal.default_connection.configuration'),
                 new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -271,6 +275,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'sqlite_db',
                 'memory' => true,
                 'defaultTableOptions' => array(),
+                'close_on_shutdown' => true,
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -513,7 +518,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
-        $this->assertArrayHasKey('defaultTableOptions',$param);
+        $this->assertArrayHasKey('close_on_shutdown', $param);
+        $this->assertArrayHasKey('defaultTableOptions', $param);
 
         $defaults = $param['defaultTableOptions'];
 

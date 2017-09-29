@@ -120,8 +120,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $connections = array();
 
-        foreach (array_keys($config['connections']) as $name) {
+        foreach ($config['connections'] as $name => $connection) {
             $connections[$name] = sprintf('doctrine.dbal.%s_connection', $name);
+            $container->setParameter($connections[$name] . '.close_on_shutdown', $connection['close_on_shutdown']);
         }
 
         $container->setParameter('doctrine.connections', $connections);
@@ -330,8 +331,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         $this->entityManagers = array();
-        foreach (array_keys($config['entity_managers']) as $name) {
+        foreach ($config['entity_managers'] as $name => $manager) {
             $this->entityManagers[$name] = sprintf('doctrine.orm.%s_entity_manager', $name);
+            $container->setParameter($this->entityManagers[$name] . '.clear_on_shutdown', $manager['clear_on_shutdown']);
         }
         $container->setParameter('doctrine.entity_managers', $this->entityManagers);
 

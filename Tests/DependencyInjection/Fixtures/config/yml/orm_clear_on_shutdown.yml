@@ -1,0 +1,3 @@
+doctrine:
+    orm:
+        clear_on_shutdown: false

@@ -33,6 +33,7 @@
         <xsd:attribute name="shard-choser" type="xsd:string" />
         <xsd:attribute name="shard-choser-service" type="xsd:string" />
         <xsd:attribute name="auto-commit" type="xsd:string" />
+        <xsd:attribute name="close-on-shutdown" type="xsd:string" default="true" />
         <xsd:attribute name="schema-filter" type="xsd:string" />
         <xsd:attribute name="logging" type="xsd:string" default="false" />
         <xsd:attribute name="profiling" type="xsd:string" default="false" />
@@ -218,6 +219,7 @@
         <xsd:attribute name="quote-strategy" type="xsd:string" />
         <xsd:attribute name="entity-listener-resolver" type="xsd:string" />
         <xsd:attribute name="repository-factory" type="xsd:string" />
+        <xsd:attribute name="clear-on-shutdown" type="xsd:string" default="true" />
         <!-- deprecated attributes, use the child element instead -->
         <xsd:attribute name="result-cache-driver" type="xsd:string" />
         <xsd:attribute name="metadata-cache-driver" type="xsd:string" />
