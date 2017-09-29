@@ -193,6 +193,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $def = $container
             ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), new $defitionClassname('doctrine.dbal.connection'))
+            ->setPublic(true)
             ->setArguments(array(
                 $options,
                 new Reference(sprintf('doctrine.dbal.%s_connection.configuration', $name)),
@@ -489,6 +490,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container
             ->setDefinition(sprintf('doctrine.orm.%s_entity_manager', $entityManager['name']), new $definitionClassname('doctrine.orm.entity_manager.abstract'))
+            ->setPublic(true)
             ->setArguments(array(
                 new Reference(sprintf('doctrine.dbal.%s_connection', $entityManager['connection'])),
                 new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager['name'])),
