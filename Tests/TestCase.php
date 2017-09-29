@@ -35,6 +35,7 @@ class TestCase extends BaseTestCase
     public function createYamlBundleTestContainer()
     {
         $container = new ContainerBuilder(new ParameterBag(array(
+            'kernel.name' => 'app',
             'kernel.debug' => false,
             'kernel.bundles' => array('YamlBundle' => 'Fixtures\Bundles\YamlBundle\YamlBundle'),
             'kernel.cache_dir' => sys_get_temp_dir(),

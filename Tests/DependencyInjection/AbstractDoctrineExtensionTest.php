@@ -966,6 +966,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         }
 
         return new ContainerBuilder(new ParameterBag(array(
+            'kernel.name' => 'app',
             'kernel.debug' => false,
             'kernel.bundles' => $map,
             'kernel.cache_dir' => sys_get_temp_dir(),
