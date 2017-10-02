@@ -79,10 +79,10 @@ class ProfilerController implements ContainerAwareInterface
             return new Response('This query cannot be explained.');
         }
 
-        return $this->container->get('templating')->renderResponse('@Doctrine/Collector/explain.html.twig', array(
+        return new Response($this->container->get('twig')->render('@Doctrine/Collector/explain.html.twig', array(
             'data' => $results,
             'query' => $query,
-        ));
+        )));
     }
 
     private function explainSQLServerPlatform(Connection $connection, $query)
