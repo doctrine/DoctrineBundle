@@ -79,10 +79,21 @@ class ProfilerController implements ContainerAwareInterface
             return new Response('This query cannot be explained.');
         }
 
-        return $this->container->get('templating')->renderResponse('@Doctrine/Collector/explain.html.twig', array(
+        $template = '@Doctrine/Collector/explain.html.twig';
+        $templateParams = array(
             'data' => $results,
             'query' => $query,
-        ));
+        );
+
+        if ($this->container->has('templating')) {
+            return $this->container->get('templating')->renderResponse($template, $templateParams);
+        }
+
+        if ($this->container->has('twig')) {
+            return new Response($this->container->get('twig')->render($template, $templateParams));
+        }
+
+        throw new \LogicException('You can not use the "explainAction" method if the Templating Component or the Twig Bundle are not available.');
     }
 
     private function explainSQLServerPlatform(Connection $connection, $query)
