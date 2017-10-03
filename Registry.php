@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
@@ -38,7 +39,14 @@ class Registry extends ManagerRegistry implements RegistryInterface
      */
     public function __construct(ContainerInterface $container, array $connections, array $entityManagers, $defaultConnection, $defaultEntityManager)
     {
-        $this->setContainer($container);
+        $parentTraits = class_uses(parent::class);
+        if (isset($parentTraits[ContainerAwareTrait::class])) {
+            // this case should be removed when Symfony 3.4 becomes the lowest supported version
+            // and then also, the constructor should type-hint Psr\Container\ContainerInterface
+            $this->setContainer($container);
+        } else {
+            $this->container = $container;
+        }
 
         parent::__construct('ORM', $connections, $entityManagers, $defaultConnection, $defaultEntityManager, 'Doctrine\ORM\Proxy\Proxy');
     }

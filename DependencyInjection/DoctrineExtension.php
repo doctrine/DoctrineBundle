@@ -47,11 +47,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
     private $defaultConnection;
 
     /**
-     * @var array
-     */
-    private $entityManagers;
-
-    /**
      * @var SymfonyBridgeAdapter
      */
     private $adapter;
@@ -338,14 +333,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', array('method' => 'reset'));
         }
 
-        $this->entityManagers = array();
+        $entityManagers = array();
         foreach (array_keys($config['entity_managers']) as $name) {
-            $this->entityManagers[$name] = sprintf('doctrine.orm.%s_entity_manager', $name);
+            $entityManagers[$name] = sprintf('doctrine.orm.%s_entity_manager', $name);
         }
-        $container->setParameter('doctrine.entity_managers', $this->entityManagers);
+        $container->setParameter('doctrine.entity_managers', $entityManagers);
 
         if (empty($config['default_entity_manager'])) {
-            $tmp = array_keys($this->entityManagers);
+            $tmp = array_keys($entityManagers);
             $config['default_entity_manager'] = reset($tmp);
         }
         $container->setParameter('doctrine.default_entity_manager', $config['default_entity_manager']);
