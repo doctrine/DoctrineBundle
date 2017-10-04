@@ -55,10 +55,6 @@ class EntityListenerPass implements CompilerPassInterface
                 if (isset($attributes['lazy']) && $attributes['lazy']) {
                     $listener = $container->findDefinition($id);
 
-                    if (!$listener->isPublic()) {
-                        throw new InvalidArgumentException(sprintf('The service "%s" must be public as this entity listener is lazy-loaded.', $id));
-                    }
-
                     if ($listener->isAbstract()) {
                         throw new InvalidArgumentException(sprintf('The service "%s" must not be abstract as this entity listener is lazy-loaded.', $id));
                     }
@@ -76,6 +72,8 @@ class EntityListenerPass implements CompilerPassInterface
                             sprintf('Lazy-loaded entity listeners can only be resolved by a resolver implementing %s.', $interface)
                         );
                     }
+
+                    $listener->setPublic(true);
 
                     $resolver->addMethodCall('registerService', array($listener->getClass(), $id));
                 } else {
