@@ -892,10 +892,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessageRegExp /The service ".*" must be public as this entity listener is lazy-loaded/
-     */
     public function testPrivateLazyEntityListener()
     {
         if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
@@ -910,6 +906,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->loadFromFile($container, 'orm_entity_listener_lazy_private');
 
         $this->compileContainer($container);
+
+        $this->assertTrue($container->getDefinition('doctrine.orm.em1_entity_listener_resolver')->isPublic());
     }
 
     /**
