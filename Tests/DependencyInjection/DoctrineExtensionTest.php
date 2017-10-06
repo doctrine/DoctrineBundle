@@ -56,6 +56,19 @@ class DoctrineExtensionTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testPublicServicesAndAliases()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+
+        $extension->load(array($config), $container);
+
+        $this->assertTrue($container->getDefinition('doctrine')->isPublic());
+        $this->assertTrue($container->getAlias('doctrine.orm.entity_manager')->isPublic());
+        $this->assertTrue($container->getAlias('database_connection')->isPublic());
+    }
+
     public function testDbalGenerateDefaultConnectionConfiguration()
     {
         $container = $this->getContainer();
