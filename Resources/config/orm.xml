@@ -72,6 +72,10 @@
         <parameter key="doctrine.orm.second_level_cache.logger_statistics.class">Doctrine\ORM\Cache\Logging\StatisticsCacheLogger</parameter>
         <parameter key="doctrine.orm.second_level_cache.cache_configuration.class">Doctrine\ORM\Cache\CacheConfiguration</parameter>
         <parameter key="doctrine.orm.second_level_cache.regions_configuration.class">Doctrine\ORM\Cache\RegionsConfiguration</parameter>
+
+        <!-- repository factory that handle dependency injection -->
+        <parameter key="doctrine.orm.di_repository_factory.class">Doctrine\Repository\DIRepositoryFactory</parameter>
+
     </parameters>
 
     <services>
@@ -134,5 +138,8 @@
         <!-- quote strategy -->
         <service id="doctrine.orm.quote_strategy.default" class="%doctrine.orm.quote_strategy.default.class%" public="false" />
         <service id="doctrine.orm.quote_strategy.ansi" class="%doctrine.orm.quote_strategy.ansi.class%" public="false" />
+
+        <!-- repository factory that handle dependency injection -->
+        <service id="doctrine.orm.di_repository_factory" class="%doctrine.orm.di_repository_factory.class%" public="false" />
     </services>
 </container>
