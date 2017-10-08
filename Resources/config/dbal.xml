@@ -56,7 +56,7 @@
 
         <service id="doctrine.dbal.connection.configuration" class="%doctrine.dbal.configuration.class%" public="false" abstract="true" />
 
-        <service id="doctrine" class="%doctrine.class%">
+        <service id="doctrine" class="%doctrine.class%" public="true">
             <argument type="service" id="service_container" />
             <argument>%doctrine.connections%</argument>
             <argument>%doctrine.entity_managers%</argument>
