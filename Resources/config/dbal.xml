@@ -70,19 +70,19 @@
         </service>
 
         <!-- commands -->
-        <service id="Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand">
+        <service id="doctrine.database_create_command" class="Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand">
             <tag name="console.command" command="doctrine:database:create" />
         </service>
 
-        <service id="Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand">
+        <service id="doctrine.database_drop_command" class="Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand">
             <tag name="console.command" command="doctrine:database:drop" />
         </service>
 
-        <service id="Doctrine\Bundle\DoctrineBundle\Command\GenerateEntitiesDoctrineCommand">
+        <service id="doctrine.generate_entities_command" class="Doctrine\Bundle\DoctrineBundle\Command\GenerateEntitiesDoctrineCommand">
             <tag name="console.command" command="doctrine:generate:entities" />
         </service>
 
-        <service id="Doctrine\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand">
+        <service id="doctrine.mapping_import_command" class="Doctrine\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand">
             <tag name="console.command" command="doctrine:mapping:import" />
         </service>
 
