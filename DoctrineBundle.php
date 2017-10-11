@@ -133,4 +133,11 @@ class DoctrineBundle extends Bundle
             }
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function registerCommands(Application $application)
+    {
+    }
 }
