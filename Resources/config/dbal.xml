@@ -69,5 +69,22 @@
             <tag name="twig.extension" />
         </service>
 
+        <!-- commands -->
+        <service id="Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand">
+            <tag name="console.command" command="doctrine:database:create" />
+        </service>
+
+        <service id="Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand">
+            <tag name="console.command" command="doctrine:database:drop" />
+        </service>
+
+        <service id="Doctrine\Bundle\DoctrineBundle\Command\GenerateEntitiesDoctrineCommand">
+            <tag name="console.command" command="doctrine:generate:entities" />
+        </service>
+
+        <service id="Doctrine\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand">
+            <tag name="console.command" command="doctrine:mapping:import" />
+        </service>
+
     </services>
 </container>
