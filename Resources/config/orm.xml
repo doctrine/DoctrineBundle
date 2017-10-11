@@ -134,5 +134,71 @@
         <!-- quote strategy -->
         <service id="doctrine.orm.quote_strategy.default" class="%doctrine.orm.quote_strategy.default.class%" public="false" />
         <service id="doctrine.orm.quote_strategy.ansi" class="%doctrine.orm.quote_strategy.ansi.class%" public="false" />
+
+        <!-- commands -->
+        <service id="doctrine.cache_clear_metadata_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ClearMetadataCacheDoctrineCommand">
+            <tag name="console.command" command="doctrine:cache:clear-metadata" />
+        </service>
+
+        <service id="doctrine.cache_clear_query_cache_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ClearQueryCacheDoctrineCommand">
+            <tag name="console.command" command="doctrine:cache:clear-query" />
+        </service>
+
+        <service id="doctrine.cache_clear_result_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ClearResultCacheDoctrineCommand">
+            <tag name="console.command" command="doctrine:cache:clear-result" />
+        </service>
+
+        <service id="doctrine.cache_collection_region_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\CollectionRegionDoctrineCommand">
+            <tag name="console.command" command="doctrine:cache:clear-collection-region" />
+        </service>
+
+        <service id="doctrine.mapping_convert_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ConvertMappingDoctrineCommand">
+            <tag name="console.command" command="doctrine:mapping:convert" />
+        </service>
+
+        <service id="doctrine.schema_create_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\CreateSchemaDoctrineCommand">
+            <tag name="console.command" command="doctrine:schema:create" />
+        </service>
+
+        <service id="doctrine.schema_drop_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\DropSchemaDoctrineCommand">
+            <tag name="console.command" command="doctrine:schema:drop" />
+        </service>
+
+        <service id="doctrine.ensure_production_settings_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\EnsureProductionSettingsDoctrineCommand">
+            <tag name="console.command" command="doctrine:ensure-production-settings" />
+        </service>
+
+        <service id="doctrine.clear_entity_region_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\EntityRegionCacheDoctrineCommand">
+            <tag name="console.command" command="doctrine:cache:clear-entity-region" />
+        </service>
+
+        <service id="doctrine.database_import_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand">
+            <tag name="console.command" command="doctrine:database:import" />
+        </service>
+
+        <service id="doctrine.mapping_info_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\InfoDoctrineCommand">
+            <tag name="console.command" command="doctrine:mapping:info" />
+        </service>
+
+        <service id="doctrine.clear_query_region_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\QueryRegionCacheDoctrineCommand">
+            <tag name="console.command" command="doctrine:cache:clear-query-region" />
+        </service>
+
+        <service id="doctrine.query_dql_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunDqlDoctrineCommand">
+            <tag name="console.command" command="doctrine:query:dql" />
+        </service>
+
+        <service id="doctrine.query_sql_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand">
+            <tag name="console.command" command="doctrine:query:sql" />
+        </service>
+
+        <service id="doctrine.schema_update_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand">
+            <tag name="console.command" command="doctrine:schema:update" />
+        </service>
+
+        <service id="doctrine.schema_validate_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ValidateSchemaCommand">
+            <tag name="console.command" command="doctrine:schema:validate" />
+        </service>
+
     </services>
 </container>
