@@ -14,6 +14,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
+use Doctrine\Bundle\DoctrineBundle\Repository\EntityRepositoryInterface;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Alias;
@@ -375,6 +377,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $def->addTag('doctrine.event_subscriber');
             }
         }
+
+        $container->registerForAutoconfiguration(EntityRepositoryInterface::class)
+            ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
     }
 
     /**
@@ -438,8 +443,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->loadOrmSecondLevelCache($entityManager, $ormConfigDef, $container);
         }
 
-        if ($entityManager['repository_factory']) {
-            $methods['setRepositoryFactory'] = new Reference($entityManager['repository_factory']);
+        if ($entityManager['use_service_repositories']) {
+            if ($entityManager['repository_factory']) {
+                throw new InvalidArgumentException('The "repository_factory" option cannot be set when "use_service_repositories" is set to true.');
+            }
+
+            $methods['setRepositoryFactory'] = new Reference('doctrine.orm.container_repository_factory');
+        } else {
+            $container->removeDefinition('doctrine.orm.container_repository_factory');
+
+            if ($entityManager['repository_factory']) {
+                $methods['setRepositoryFactory'] = new Reference($entityManager['repository_factory']);
+            }
         }
 
         foreach ($methods as $method => $arg) {

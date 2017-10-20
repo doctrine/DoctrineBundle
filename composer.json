@@ -50,6 +50,9 @@
     "autoload": {
         "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "" }
     },
+    "autoload-dev": {
+        "psr-4": { "": "Tests/DependencyInjection" }
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "1.7.x-dev"
