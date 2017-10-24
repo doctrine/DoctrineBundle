@@ -18,6 +18,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositor
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Repository\DefaultServiceRepository;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\ORM\EntityRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
@@ -67,8 +68,6 @@ class ServiceRepositoryTest extends TestCase
         $container->register(TestCustomRepoRepository::class)
             ->addTag('doctrine.repository_service');
 
-        $container->getDefinition('doctrine.orm.container_repository_factory')
-            ->setPublic(true);
         $container->getCompilerPassConfig()->addPass(new ServiceRepositoryCompilerPass());
         $container->compile();
 

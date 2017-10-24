@@ -17,8 +17,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Repository;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Repository\RepositoryFactory;
+use Symfony\Component\DependencyInjection\ContainerInterface as SymfonyContainerInterface;
 use Psr\Container\ContainerInterface;
-use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Returns repositories that are registered in the container, or a default implementation.
@@ -31,8 +31,24 @@ final class ContainerRepositoryFactory implements RepositoryFactory
 
     private $genericRepositories = array();
 
-    public function __construct(ContainerInterface $container)
+    /**
+     * @var ContainerInterface|SymfonyContainerInterface $container
+     */
+    public function __construct(/* ContainerInterface */ $container)
     {
+        /*
+         * Compatibility layer for Symfony 3.2 and lower.
+         * When DoctrineBundle requires 3.3 or higher, this can
+         * be removed and the above type-hint added.
+         */
+        if (interface_exists(ContainerInterface::class)) {
+            if (!$container instanceof ContainerInterface) {
+                throw new \InvalidArgumentException(sprintf('Argument 1 passed to %s::__construct() must be an instance of "%s"', self::class, ContainerInterface::class));
+            }
+        } elseif (!$container instanceof SymfonyContainerInterface) {
+            throw new \InvalidArgumentException(sprintf('Argument 1 passed to %s::__construct() must be an instance of "%s"', self::class, SymfonyContainerInterface::class));
+        }
+
         $this->container = $container;
     }
 
