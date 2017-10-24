@@ -19,12 +19,14 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Repository\DefaultServiceRepository;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomRepoRepository;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\Reference;
 
 class ServiceRepositoryTest extends TestCase
 {
@@ -66,6 +68,7 @@ class ServiceRepositoryTest extends TestCase
         )), $container);
 
         $container->register(TestCustomRepoRepository::class)
+            ->addArgument(new Reference('doctrine'))
             ->addTag('doctrine.repository_service');
 
         $container->getCompilerPassConfig()->addPass(new ServiceRepositoryCompilerPass());
@@ -74,9 +77,14 @@ class ServiceRepositoryTest extends TestCase
         $em = $container->get('doctrine.orm.default_entity_manager');
         $customRepo = $em->getRepository(TestCustomRepoEntity::class);
         $this->assertSame($customRepo, $container->get(TestCustomRepoRepository::class));
+        // a smoke test, trying some methods
+        $this->assertSame(TestCustomRepoEntity::class, $customRepo->getClassName());
+        $this->assertInstanceOf(QueryBuilder::class, $customRepo->createQueryBuilder('tc'));
 
         $genericRepository = $em->getRepository(TestDefaultRepoEntity::class);
         $this->assertInstanceOf(DefaultServiceRepository::class, $genericRepository);
         $this->assertSame($genericRepository, $genericRepository = $em->getRepository(TestDefaultRepoEntity::class));
+        // a smoke test, trying one of the methods
+        $this->assertSame(TestDefaultRepoEntity::class, $genericRepository->getClassName());
     }
 }

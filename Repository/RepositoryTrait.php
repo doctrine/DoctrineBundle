@@ -102,9 +102,4 @@ trait RepositoryTrait
     {
         return $this->getEntityRepository()->findOneBy($criteria);
     }
-
-    public function getClassName()
-    {
-        return $this->getEntityRepository()->getClassName();
-    }
 }

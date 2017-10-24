@@ -14,11 +14,26 @@
 
 namespace Fixtures\Bundles\RepositoryServiceBundle\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\Bundle\DoctrineBundle\Repository\AbstractServiceRepository;
+use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomRepoEntity;
 
 class TestCustomRepoRepository extends AbstractServiceRepository
 {
+    private $registry;
+
+    public function __construct(Registry $registry)
+    {
+        $this->registry = $registry;
+    }
+
     protected function getEntityRepository()
     {
+        return $this->registry->getManager();
+    }
+
+    public function getClassName()
+    {
+        return TestCustomRepoEntity::class;
     }
 }
