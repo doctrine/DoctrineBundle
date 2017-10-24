@@ -32,7 +32,7 @@ class ServiceRepositoryCompilerPass implements CompilerPassInterface
         }
 
         $locatorDef = $container->findDefinition($container->getDefinition('doctrine.orm.container_repository_factory')->getArgument(0));
-        $repoServiceIds = array_keys($container->findTaggedServiceIds('doctrine.repository_service'));
+        $repoServiceIds = array_keys($container->findTaggedServiceIds(self::REPOSITORY_SERVICE_TAG));
         $repoReferences = array_map(function($id) {
             return new Reference($id);
         }, $repoServiceIds);

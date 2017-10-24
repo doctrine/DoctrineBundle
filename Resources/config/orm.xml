@@ -110,7 +110,6 @@
                     <argument type="collection" />
                 </service>
             </argument>
-            <argument type="service" id="doctrine" />
         </service>
 
         <!-- The configurator cannot be a private service -->

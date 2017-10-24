@@ -29,14 +29,11 @@ class ContainerRepositoryFactory implements RepositoryFactory
 {
     public $container;
 
-    private $registry;
-
     private $genericRepositories = array();
 
-    public function __construct(ContainerInterface $container, RegistryInterface $registry)
+    public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        $this->registry = $registry;
     }
 
     public function getRepository(EntityManagerInterface $entityManager, $entityName)
