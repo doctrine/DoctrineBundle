@@ -14,8 +14,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Repository;
 
-use Doctrine\ORM\EntityRepository;
-
 /**
  * Abstract helper class for creating custom service repository classes.
  *
@@ -24,9 +22,4 @@ use Doctrine\ORM\EntityRepository;
 abstract class AbstractServiceRepository implements EntityRepositoryInterface
 {
     use RepositoryTrait;
-
-    /**
-     * @return EntityRepository
-     */
-    abstract protected function getEntityRepository();
 }

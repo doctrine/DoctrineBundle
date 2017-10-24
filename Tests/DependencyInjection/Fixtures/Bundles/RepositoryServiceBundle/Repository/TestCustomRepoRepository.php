@@ -27,7 +27,7 @@ class TestCustomRepoRepository extends AbstractServiceRepository
         $this->registry = $registry;
     }
 
-    protected function getEntityRepository()
+    protected function getEntityManager()
     {
         return $this->registry->getManager();
     }

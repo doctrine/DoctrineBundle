@@ -37,13 +37,16 @@ class DefaultServiceRepository implements EntityRepositoryInterface
     }
 
     /**
-     * @return EntityRepository
+     * {@inheritDoc}
      */
-    private function getEntityRepository()
+    protected function getEntityManager()
     {
-        return $this->entityManager->getRepository($this->className);
+        return $this->entityManager;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getClassName()
     {
         return $this->className;
