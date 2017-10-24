@@ -14,6 +14,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
@@ -54,6 +55,7 @@ class DoctrineBundle extends Bundle
 
         $container->addCompilerPass(new DoctrineValidationPass('orm'));
         $container->addCompilerPass(new EntityListenerPass());
+        $container->addCompilerPass(new ServiceRepositoryCompilerPass());
     }
 
     /**
