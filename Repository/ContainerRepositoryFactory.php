@@ -25,7 +25,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  *
  * @author Ryan Weaver <ryan@knpuniversity.com>
  */
-class ContainerRepositoryFactory implements RepositoryFactory
+final class ContainerRepositoryFactory implements RepositoryFactory
 {
     public $container;
 

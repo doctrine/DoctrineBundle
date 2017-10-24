@@ -17,6 +17,7 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\Repository\EntityRepositoryInterface;
 use Doctrine\ORM\Version;
+use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -446,6 +447,15 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if ($entityManager['use_service_repositories']) {
             if ($entityManager['repository_factory']) {
                 throw new InvalidArgumentException('The "repository_factory" option cannot be set when "use_service_repositories" is set to true.');
+            }
+
+            $serviceRepoFactoryDef = $container->getDefinition('doctrine.orm.container_repository_factory');
+            if (class_exists(ServiceLocatorTagPass::class)) {
+
+                $serviceRepoFactoryDef->replaceArgument(0, new Reference('service_container'));
+            } else {
+                // Symfony 3.2 and lower support
+                $serviceRepoFactoryDef->replaceArgument(0, new Reference('service_container'));
             }
 
             $methods['setRepositoryFactory'] = new Reference('doctrine.orm.container_repository_factory');
