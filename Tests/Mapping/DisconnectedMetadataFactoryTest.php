@@ -27,16 +27,18 @@ class DisconnectedMetadataFactoryTest extends TestCase
         }
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Can't find base path for "Doctrine\Bundle\DoctrineBundle\Tests\Mapping\DisconnectedMetadataFactoryTest
+     */
     public function testCannotFindNamespaceAndPathForMetadata()
     {
         $class = new ClassMetadataInfo(__CLASS__);
         $collection = new ClassMetadataCollection(array($class));
 
-        $registry = $this->createMock('Doctrine\Common\Persistence\ManagerRegistry');
+        $registry = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')->getMock();
         $factory = new DisconnectedMetadataFactory($registry);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Can\'t find base path for "Doctrine\Bundle\DoctrineBundle\Tests\Mapping\DisconnectedMetadataFactoryTest');
         $factory->findNamespaceAndPathForMetadata($collection);
     }
 
@@ -45,7 +47,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
         $class = new ClassMetadataInfo('\Vendor\Package\Class');
         $collection = new ClassMetadataCollection(array($class));
 
-        $registry = $this->createMock('Doctrine\Common\Persistence\ManagerRegistry');
+        $registry = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')->getMock();
         $factory = new DisconnectedMetadataFactory($registry);
 
         $factory->findNamespaceAndPathForMetadata($collection, '/path/to/code');

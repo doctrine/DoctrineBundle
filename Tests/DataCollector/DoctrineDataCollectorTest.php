@@ -28,7 +28,7 @@ class DoctrineDataCollectorTest extends TestCase
     public function testCollectEntities()
     {
         $manager = $this->getMockBuilder('Doctrine\ORM\EntityManager')->disableOriginalConstructor()->getMock();
-        $config = $this->createMock('Doctrine\ORM\Configuration');
+        $config = $this->getMockBuilder('Doctrine\ORM\Configuration')->getMock();
         $factory = $this->getMockBuilder('Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory')
             ->setMethods(array('getLoadedMetadata'))->getMockForAbstractClass();
         $collector = $this->createCollector(array('default' => $manager));
@@ -83,7 +83,7 @@ class DoctrineDataCollectorTest extends TestCase
      */
     private function createCollector(array $managers)
     {
-        $registry = $this->createMock('Doctrine\Common\Persistence\ManagerRegistry');
+        $registry = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')->getMock();
         $registry
             ->expects($this->any())
             ->method('getConnectionNames')
