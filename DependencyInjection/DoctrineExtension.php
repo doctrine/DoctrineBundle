@@ -14,7 +14,10 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Version;
+use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -375,6 +378,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $def->addTag('doctrine.event_subscriber');
             }
         }
+
+        if (method_exists($container, 'registerForAutoconfiguration')) {
+            $container->registerForAutoconfiguration(EntityRepository::class)
+                ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
+        }
     }
 
     /**
@@ -438,8 +446,21 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->loadOrmSecondLevelCache($entityManager, $ormConfigDef, $container);
         }
 
-        if ($entityManager['repository_factory']) {
-            $methods['setRepositoryFactory'] = new Reference($entityManager['repository_factory']);
+        if ($entityManager['use_service_repositories']) {
+            if (!class_exists(ServiceLocatorTagPass::class)) {
+                throw new InvalidArgumentException('The "repository_factory" can only be used with Symfony 3.3 or higher.');
+            }
+
+            if ($entityManager['repository_factory']) {
+                throw new InvalidArgumentException('The "repository_factory" option cannot be set when "use_service_repositories" is set to true.');
+            }
+            $methods['setRepositoryFactory'] = new Reference('doctrine.orm.container_repository_factory');
+        } else {
+            // simply to avoid the compiler pass from being called
+            $container->removeDefinition('doctrine.orm.container_repository_factory');
+            if ($entityManager['repository_factory']) {
+                $methods['setRepositoryFactory'] = new Reference($entityManager['repository_factory']);
+            }
         }
 
         foreach ($methods as $method => $arg) {

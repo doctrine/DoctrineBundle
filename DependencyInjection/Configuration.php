@@ -487,6 +487,7 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('quote_strategy')->defaultValue('doctrine.orm.quote_strategy.default')->end()
                     ->scalarNode('entity_listener_resolver')->defaultNull()->end()
                     ->scalarNode('repository_factory')->defaultNull()->end()
+                    ->booleanNode('use_service_repositories')->defaultFalse()->end()
                 ->end()
                 ->children()
                     ->arrayNode('second_level_cache')
