@@ -12,19 +12,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Fixtures\Bundles\RepositoryServiceBundle\Entity;
+namespace Fixtures\Bundles\RepositoryServiceBundle\Repository;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityRepository;
+use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomServiceRepoEntity;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
-/**
- * @ORM\Entity(repositoryClass="Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomRepoRepository")
- */
-class TestCustomRepoEntity
+class TestCustomClassRepoRepository extends EntityRepository
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     * @ORM\Column(type="integer")
-     */
-    private $id;
 }

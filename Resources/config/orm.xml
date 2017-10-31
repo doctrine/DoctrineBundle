@@ -103,7 +103,7 @@
         </service>
 
         <service id="doctrine.orm.container_repository_factory" class="Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory" public="false">
-            <argument /> <!-- repository locator -->
+            <argument>null</argument> <!-- repository locator -->
         </service>
 
         <!-- The configurator cannot be a private service -->

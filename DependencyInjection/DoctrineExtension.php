@@ -15,9 +15,8 @@
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\ORM\Version;
-use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -26,6 +25,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\DefinitionDecorator;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Form\Type\DoctrineType;
@@ -379,9 +379,23 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         }
 
+        // if is for Symfony 3.2 and lower compat
         if (method_exists($container, 'registerForAutoconfiguration')) {
-            $container->registerForAutoconfiguration(EntityRepository::class)
+            $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
                 ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
+        }
+
+        /*
+         * Compatibility for Symfony 3.2 and lower: gives the service a default argument.
+         * When DoctrineBundle requires 3.3 or higher, this can be moved to an anonymous
+         * service in orm.xml.
+         *
+         * This is replaced with a true locator by ServiceRepositoryCompilerPass.
+         * This makes that pass technically optional (good for tests).
+         */
+        if (class_exists(ServiceLocator::class)) {
+            $container->getDefinition('doctrine.orm.container_repository_factory')
+                ->replaceArgument(0, (new Definition(ServiceLocator::class))->setArgument(0, []));
         }
     }
 
@@ -446,21 +460,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->loadOrmSecondLevelCache($entityManager, $ormConfigDef, $container);
         }
 
-        if ($entityManager['use_service_repositories']) {
-            if (!class_exists(ServiceLocatorTagPass::class)) {
-                throw new InvalidArgumentException('The "repository_factory" can only be used with Symfony 3.3 or higher.');
-            }
-
-            if ($entityManager['repository_factory']) {
-                throw new InvalidArgumentException('The "repository_factory" option cannot be set when "use_service_repositories" is set to true.');
-            }
-            $methods['setRepositoryFactory'] = new Reference('doctrine.orm.container_repository_factory');
-        } else {
-            // simply to avoid the compiler pass from being called
-            $container->removeDefinition('doctrine.orm.container_repository_factory');
-            if ($entityManager['repository_factory']) {
-                $methods['setRepositoryFactory'] = new Reference($entityManager['repository_factory']);
-            }
+        if ($entityManager['repository_factory']) {
+            $methods['setRepositoryFactory'] = new Reference($entityManager['repository_factory']);
         }
 
         foreach ($methods as $method => $arg) {

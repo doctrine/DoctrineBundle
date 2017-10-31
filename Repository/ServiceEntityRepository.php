@@ -18,7 +18,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityRepository;
 
 /**
- * Optional EntityRepository base class with a simplified constructor (for autowiring)
+ * Optional EntityRepository base class with a simplified constructor (for autowiring).
  *
  * To use in your class, inject the "registry" service and call
  * the parent constructor. For example:
@@ -33,17 +33,14 @@ use Doctrine\ORM\EntityRepository;
  *
  * @author Ryan Weaver <ryan@knpuniversity.com>
  */
-class ServiceEntityRepository extends EntityRepository
+class ServiceEntityRepository extends EntityRepository implements ServiceEntityRepositoryInterface
 {
-    private $registry;
-
     /**
      * @param ManagerRegistry $registry
-     * @param string $entityClass The class name of the entity this repository manages
+     * @param string          $entityClass The class name of the entity this repository manages
      */
     public function __construct(ManagerRegistry $registry, $entityClass)
     {
-        $this->registry = $registry;
         $manager = $registry->getManagerForClass($entityClass);
 
         parent::__construct($manager, $manager->getClassMetadata($entityClass));
