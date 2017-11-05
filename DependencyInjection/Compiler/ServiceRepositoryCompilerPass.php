@@ -29,6 +29,11 @@ final class ServiceRepositoryCompilerPass implements CompilerPassInterface
 
     public function process(ContainerBuilder $container)
     {
+        // when ORM is not enabled
+        if (!$container->hasDefinition('doctrine.orm.container_repository_factory')) {
+            return;
+        }
+
         $locatorDef = $container->getDefinition('doctrine.orm.container_repository_factory');
 
         $repoServiceIds = array_keys($container->findTaggedServiceIds(self::REPOSITORY_SERVICE_TAG));
