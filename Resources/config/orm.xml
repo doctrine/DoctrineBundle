@@ -102,6 +102,10 @@
             <factory class="%doctrine.orm.entity_manager.class%" method="create" />
         </service>
 
+        <service id="doctrine.orm.container_repository_factory" class="Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory" public="false">
+            <argument>null</argument> <!-- repository locator -->
+        </service>
+
         <!-- The configurator cannot be a private service -->
         <service id="doctrine.orm.manager_configurator.abstract" class="%doctrine.orm.manager_configurator.class%" abstract="true">
             <argument type="collection" />

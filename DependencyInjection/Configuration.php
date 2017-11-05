@@ -486,7 +486,7 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('naming_strategy')->defaultValue('doctrine.orm.naming_strategy.default')->end()
                     ->scalarNode('quote_strategy')->defaultValue('doctrine.orm.quote_strategy.default')->end()
                     ->scalarNode('entity_listener_resolver')->defaultNull()->end()
-                    ->scalarNode('repository_factory')->defaultNull()->end()
+                    ->scalarNode('repository_factory')->defaultValue('doctrine.orm.container_repository_factory')->end()
                 ->end()
                 ->children()
                     ->arrayNode('second_level_cache')

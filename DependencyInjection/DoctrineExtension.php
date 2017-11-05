@@ -14,6 +14,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Alias;
@@ -23,6 +25,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\DefinitionDecorator;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Form\Type\DoctrineType;
@@ -374,6 +377,25 @@ class DoctrineExtension extends AbstractDoctrineExtension
             } else {
                 $def->addTag('doctrine.event_subscriber');
             }
+        }
+
+        // if is for Symfony 3.2 and lower compat
+        if (method_exists($container, 'registerForAutoconfiguration')) {
+            $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
+                ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
+        }
+
+        /*
+         * Compatibility for Symfony 3.2 and lower: gives the service a default argument.
+         * When DoctrineBundle requires 3.3 or higher, this can be moved to an anonymous
+         * service in orm.xml.
+         *
+         * This is replaced with a true locator by ServiceRepositoryCompilerPass.
+         * This makes that pass technically optional (good for tests).
+         */
+        if (class_exists(ServiceLocator::class)) {
+            $container->getDefinition('doctrine.orm.container_repository_factory')
+                ->replaceArgument(0, (new Definition(ServiceLocator::class))->setArgument(0, []));
         }
     }
 
