@@ -141,9 +141,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
     protected function loadDbalConnection($name, array $connection, ContainerBuilder $container)
     {
         // configuration
-        $defitionClassname = $this->getDefinitionClassname();
+        $definitionClassname = $this->getDefinitionClassname();
 
-        $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new $defitionClassname('doctrine.dbal.connection.configuration'));
+        $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new $definitionClassname('doctrine.dbal.connection.configuration'));
         $logger = null;
         if ($connection['logging']) {
             $logger = new Reference('doctrine.dbal.logger');
@@ -151,12 +151,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         unset ($connection['logging']);
         if ($connection['profiling']) {
             $profilingLoggerId = 'doctrine.dbal.logger.profiling.'.$name;
-            $container->setDefinition($profilingLoggerId, new $defitionClassname('doctrine.dbal.logger.profiling'));
+            $container->setDefinition($profilingLoggerId, new $definitionClassname('doctrine.dbal.logger.profiling'));
             $profilingLogger = new Reference($profilingLoggerId);
             $container->getDefinition('data_collector.doctrine')->addMethodCall('addLogger', array($name, $profilingLogger));
 
             if (null !== $logger) {
-                $chainLogger = new $defitionClassname('doctrine.dbal.logger.chain');
+                $chainLogger = new $definitionClassname('doctrine.dbal.logger.chain');
                 $chainLogger->addMethodCall('addLogger', array($profilingLogger));
 
                 $loggerId = 'doctrine.dbal.logger.chain.'.$name;
@@ -185,13 +185,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         // event manager
-        $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), new $defitionClassname('doctrine.dbal.connection.event_manager'));
+        $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), new $definitionClassname('doctrine.dbal.connection.event_manager'));
 
         // connection
         $options = $this->getConnectionOptions($connection);
 
         $def = $container
-            ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), new $defitionClassname('doctrine.dbal.connection'))
+            ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), new $definitionClassname('doctrine.dbal.connection'))
             ->setPublic(true)
             ->setArguments(array(
                 $options,
