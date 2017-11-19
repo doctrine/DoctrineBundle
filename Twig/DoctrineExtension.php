@@ -286,7 +286,7 @@ class DoctrineExtension extends \Twig_Extension
      * Return a query with the parameters replaced
      *
      * @param string $query
-     * @param array|\Data  $parameters
+     * @param array|Data  $parameters
      *
      * @return string
      */
@@ -294,7 +294,7 @@ class DoctrineExtension extends \Twig_Extension
     {
         if ($parameters instanceof Data) {
             // VarDumper < 3.3 compatibility layer
-            $parameters = method_exists($parameters, 'getRawData') ? $parameters->getRawData() : $parameters->getValue(true);
+            $parameters = method_exists($parameters, 'getValue') ? $parameters->getValue(true) : $parameters->getRawData();
         }
 
         $i = 0;
