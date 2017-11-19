@@ -15,7 +15,6 @@ use Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Fragment\FragmentHandler;
-use Symfony\Component\HttpKernel\Profiler\FileProfilerStorage;
 use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -30,14 +29,11 @@ class ProfilerTest extends \PHPUnit\Framework\TestCase
 
     public function setUp()
     {
-        $storage = new FileProfilerStorage('file:'.sys_get_temp_dir().'/sf2_profiler_file_storage');
-        $storage->purge();
-
         $this->logger = new DebugStack();
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $registry->expects($this->once())->method('getManagers')->willReturn([]);
         $this->collector = new DoctrineDataCollector($registry);
-        $this->collector->addLogger('test', $this->logger);
+        $this->collector->addLogger('foo', $this->logger);
 
         $twigLoaderFilesystem = new \Twig_Loader_Filesystem(__DIR__.'/../Resources/views/Collector');
         $twigLoaderFilesystem->addPath(__DIR__.'/../vendor/symfony/web-profiler-bundle/Resources/views', 'WebProfiler');
@@ -54,7 +50,7 @@ class ProfilerTest extends \PHPUnit\Framework\TestCase
         $this->twig->addRuntimeLoader($loader);
     }
 
-    public function testStuff()
+    public function testRender()
     {
         $this->logger->queries = [
             [

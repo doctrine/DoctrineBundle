@@ -285,7 +285,7 @@ class DoctrineExtension extends \Twig_Extension
     /**
      * Return a query with the parameters replaced
      *
-     * @param string $query
+     * @param string      $query
      * @param array|Data  $parameters
      *
      * @return string

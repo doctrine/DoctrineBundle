@@ -21,7 +21,6 @@ matrix:
       env: deps=dev
   allow_failures:
     - php: nightly
-    - env: deps=dev
 
 env:
   global:

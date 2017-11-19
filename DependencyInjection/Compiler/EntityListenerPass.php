@@ -47,6 +47,7 @@ class EntityListenerPass implements CompilerPassInterface
                 }
 
                 $resolver = $container->findDefinition($resolverId);
+                $resolver->setPublic(true);
 
                 if (isset($attributes['entity']) && isset($attributes['event'])) {
                     $this->attachToListener($container, $name, $id, $attributes);
