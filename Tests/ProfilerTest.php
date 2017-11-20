@@ -14,6 +14,7 @@ use Symfony\Bridge\Twig\Extension\RoutingExtension;
 use Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\DataCollector\RequestDataCollector;
 use Symfony\Component\HttpKernel\Fragment\FragmentHandler;
 use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -60,13 +61,20 @@ class ProfilerTest extends \PHPUnit\Framework\TestCase
             ],
         ];
 
-        $this->collector->collect($request = new Request(['group' => false]), new Response());
+        $this->collector->collect($request = new Request(['group' => '0']), $response = new Response());
+
+        $profile = new Profile('foo');
+
+        // This is only needed for WebProfilerBundle=3.2, remove when support for it is dropped
+        $requestCollector = new RequestDataCollector();
+        $requestCollector->collect($request, $response);
+        $profile->addCollector($requestCollector);
 
         $output = $this->twig->render('db.html.twig', [
             'request' => $request,
             'token' => 'foo',
             'page' => 'foo',
-            'profile' => new Profile('foo'),
+            'profile' => $profile,
             'collector' => $this->collector,
             'queries' => $this->logger->queries,
         ]);
