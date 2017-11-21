@@ -137,16 +137,14 @@ class DoctrineDataCollector extends BaseCollector
             }
         }
 
-        // Might be good idea to replicate this block in doctrine bridge so we can drop this from here after some time.
-        // This code is compatible with such change, because cloneVar is supposed to check if input is already cloned.
-        foreach ($this->data['queries'] as &$queries) {
-            foreach ($queries as &$query) {
-                // HttpKernel < 3.2 compatibility layer
-                if (!method_exists($this, 'cloneVar')) {
-                    continue;
+        // HttpKernel < 3.2 compatibility layer
+        if (method_exists($this, 'cloneVar')) {
+            // Might be good idea to replicate this block in doctrine bridge so we can drop this from here after some time.
+            // This code is compatible with such change, because cloneVar is supposed to check if input is already cloned.
+            foreach ($this->data['queries'] as &$queries) {
+                foreach ($queries as &$query) {
+                    $query['params'] = $this->cloneVar($query['params']);
                 }
-
-                $query['params'] = $this->cloneVar($query['params']);
             }
         }
 
