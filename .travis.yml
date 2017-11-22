@@ -23,11 +23,9 @@ matrix:
     - php: 7.0
       env: SYMFONY_VERSION="3.2.*"
     - php: 7.1
-      env: SYMFONY_VERSION="3.4.*@beta"
+      env: stability=RC SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="3.4.*"
     - php: 7.2
-      env: SYMFONY_VERSION="4.0.*@beta"
-    - php: nightly
-      env: deps=dev
+      env: stability=alpha
   allow_failures:
     - php: nightly
 
@@ -38,7 +36,7 @@ env:
 before_install:
   - composer self-update
   - if [ "$SYMFONY_VERSION" != "" ]; then jq "(.require, .\"require-dev\")|=(with_entries(if .key|test(\"^symfony/\") then .value|=\"${SYMFONY_VERSION}\" else . end))" composer.json|ex -sc 'wq!composer.json' /dev/stdin; fi;
-  - if [ "$deps" = "dev" ]; then perl -pi -e 's/^}$/,"minimum-stability":"dev"}/' composer.json; fi;
+  - if [ ! -z "$stability" ]; then perl -pi -e "s/^}$/,\"minimum-stability\":\"$stability\"}/" composer.json; fi;
 
 install:
   - if [ "$deps" = "low" ]; then composer --prefer-lowest --prefer-stable update; else composer update; fi;

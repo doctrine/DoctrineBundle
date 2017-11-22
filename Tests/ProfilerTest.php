@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Logging\DebugStack;
+use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Bridge\Twig\Extension\CodeExtension;
 use Symfony\Bridge\Twig\Extension\HttpKernelExtension;
 use Symfony\Bridge\Twig\Extension\HttpKernelRuntime;
@@ -19,7 +20,7 @@ use Symfony\Component\HttpKernel\Fragment\FragmentHandler;
 use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class ProfilerTest extends \PHPUnit\Framework\TestCase
+class ProfilerTest extends BaseTestCase
 {
     /** @var DebugStack */
     private $logger;
