@@ -20,6 +20,7 @@ use Doctrine\ORM\Version;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -348,13 +349,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[1]);
         $this->assertEquals('doctrine.orm.em2_configuration', (string) $arguments[1]);
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em1_metadata_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
         $this->assertEquals('%doctrine_cache.xcache.class%', $definition->getClass());
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em1_query_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_query_cache'));
         $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em1_result_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_result_cache'));
         $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
     }
 
@@ -376,10 +377,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     {
         $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em1_metadata_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
         $this->assertDICDefinitionClass($definition, '%doctrine_cache.xcache.class%');
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.em2_metadata_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em2_metadata_cache'));
         $this->assertDICDefinitionClass($definition, '%doctrine_cache.apc.class%');
     }
 
@@ -387,7 +388,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     {
         $container = $this->loadContainer('orm_service_simple_single_entity_manager');
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertDICDefinitionClass($definition, '%doctrine_cache.memcache.class%');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setMemcache',
             array(new Reference('doctrine_cache.services.doctrine.orm.default_metadata_cache.connection'))
@@ -404,7 +405,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     {
         $container = $this->loadContainer('orm_service_simple_single_entity_manager_redis');
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertDICDefinitionClass($definition, '%doctrine_cache.redis.class%');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setRedis',
             array(new Reference('doctrine_cache.services.doctrine.orm.default_metadata_cache_redis.connection'))
@@ -420,7 +421,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     {
         $container = $this->loadContainer('orm_imports');
 
-        $cacheDefinition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
+        $cacheDefinition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertEquals('%doctrine_cache.apc.class%', $cacheDefinition->getClass());
 
         $configDefinition = $container->getDefinition('doctrine.orm.default_configuration');
@@ -604,7 +605,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $loggerChainDef = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_chain');
         $loggerStatisticsDef = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_statistics');
         $myQueryRegionDef = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_query_region_filelock');
-        $cacheDriverDef = $container->getDefinition($container->getAlias('doctrine.orm.default_second_level_cache.region_cache_driver'));
+        $cacheDriverDef = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_second_level_cache.region_cache_driver'));
         $configDef = $container->getDefinition('doctrine.orm.default_configuration');
         $myEntityRegionArgs = $myEntityRegionDef->getArguments();
         $myQueryRegionArgs = $myQueryRegionDef->getArguments();
@@ -1072,7 +1073,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     private function compileContainer(ContainerBuilder $container)
     {
-        $container->getCompilerPassConfig()->setOptimizationPasses(array(new ResolveDefinitionTemplatesPass()));
+        $container->getCompilerPassConfig()->setOptimizationPasses(array(class_exists(ResolveChildDefinitionsPass::class) ? new ResolveChildDefinitionsPass() : new ResolveDefinitionTemplatesPass()));
         $container->getCompilerPassConfig()->setRemovingPasses(array());
         $container->compile();
     }

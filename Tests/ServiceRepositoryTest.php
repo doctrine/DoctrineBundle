@@ -112,8 +112,7 @@ class ServiceRepositoryTest extends TestCase
                 $this->expectExceptionMessageRegExp($message);
             } else {
                 // PHPUnit 4 compat
-                $this->setExpectedException(\RuntimeException::class);
-                $this->setExpectedExceptionMessage($message);
+                $this->setExpectedExceptionRegExp(\RuntimeException::class, $message);
             }
         }
 

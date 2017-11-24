@@ -20,6 +20,7 @@ use Doctrine\ORM\Version;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\VarDumper\Cloner\Data;
 
 /**
  * DoctrineDataCollector.
@@ -133,6 +134,17 @@ class DoctrineDataCollector extends BaseCollector
                 }
 
                 $caches['regions']['misses'][$key] += $value;
+            }
+        }
+
+        // HttpKernel < 3.2 compatibility layer
+        if (method_exists($this, 'cloneVar')) {
+            // Might be good idea to replicate this block in doctrine bridge so we can drop this from here after some time.
+            // This code is compatible with such change, because cloneVar is supposed to check if input is already cloned.
+            foreach ($this->data['queries'] as &$queries) {
+                foreach ($queries as &$query) {
+                    $query['params'] = $this->cloneVar($query['params']);
+                }
             }
         }
 

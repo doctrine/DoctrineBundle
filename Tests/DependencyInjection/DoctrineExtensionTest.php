@@ -24,6 +24,7 @@ use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Version;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -356,13 +357,13 @@ class DoctrineExtensionTest extends TestCase
             $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
         }
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_metadata_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_query_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_query_cache'));
         $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
 
-        $definition = $container->getDefinition($container->getAlias('doctrine.orm.default_result_cache'));
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_result_cache'));
         $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
     }
 
@@ -817,7 +818,7 @@ class DoctrineExtensionTest extends TestCase
 
     private function compileContainer(ContainerBuilder $container)
     {
-        $container->getCompilerPassConfig()->setOptimizationPasses(array(new ResolveDefinitionTemplatesPass()));
+        $container->getCompilerPassConfig()->setOptimizationPasses(array(class_exists(ResolveChildDefinitionsPass::class) ? new ResolveChildDefinitionsPass() : new ResolveDefinitionTemplatesPass()));
         $container->getCompilerPassConfig()->setRemovingPasses(array());
         $container->compile();
     }

@@ -14,6 +14,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Twig;
 
+use Symfony\Component\VarDumper\Cloner\Data;
+
 /**
  * This class contains the needed functions in order to do the query highlighting
  *
@@ -283,13 +285,18 @@ class DoctrineExtension extends \Twig_Extension
     /**
      * Return a query with the parameters replaced
      *
-     * @param string $query
-     * @param array  $parameters
+     * @param string      $query
+     * @param array|Data  $parameters
      *
      * @return string
      */
-    public function replaceQueryParameters($query, array $parameters)
+    public function replaceQueryParameters($query, $parameters)
     {
+        if ($parameters instanceof Data) {
+            // VarDumper < 3.3 compatibility layer
+            $parameters = method_exists($parameters, 'getValue') ? $parameters->getValue(true) : $parameters->getRawData();
+        }
+
         $i = 0;
 
         if (!array_key_exists(0, $parameters) && array_key_exists(1, $parameters)) {
