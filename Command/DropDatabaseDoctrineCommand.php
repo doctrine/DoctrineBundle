@@ -99,6 +99,13 @@ EOT
             // as some vendors do not allow dropping the database connected to.
             $connection->close();
             $connection = DriverManager::getConnection($params);
+            
+            if (isset($connection->getParams()['dbname'])) {
+                $output->writeln('<error>To use this command make sure that dbname is configured as separate parameter and not in the url.</error>');
+
+                return self::RETURN_CODE_NOT_DROP;
+            }
+            
             $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
 
             // Only quote if we don't have a path
