@@ -75,7 +75,6 @@
     </parameters>
 
     <services>
-        <service id="Doctrine\Common\Persistence\ObjectManager" alias="doctrine.orm.entity_manager" public="false" />
         <service id="Doctrine\ORM\EntityManagerInterface" alias="doctrine.orm.entity_manager" public="false" />
 
         <!--- Deprecated Annotation Metadata Reader Service alias, use annotation_reader service -->
