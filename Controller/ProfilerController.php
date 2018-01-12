@@ -88,7 +88,9 @@ class ProfilerController implements ContainerAwareInterface
 
     private function explainOtherPlatform(Connection $connection, $query)
     {
-        return $connection->executeQuery('EXPLAIN '.$query['sql'], $query['params'], $query['types'])
+        $params = $query['params'] instanceof Data ? $query['params']->getValue(true) : $query['params'];
+
+        return $connection->executeQuery('EXPLAIN '.$query['sql'], $params, $query['types'])
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
