@@ -8,6 +8,7 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\VarDumper\Cloner\Data;
 
 /**
  * ProfilerController.
