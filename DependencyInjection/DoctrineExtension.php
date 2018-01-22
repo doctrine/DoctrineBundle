@@ -59,6 +59,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $configuration = $this->getConfiguration($configs, $container);
         $config = $this->processConfiguration($configuration, $configs);
 
+        if (method_exists($container, 'resolveEnvPlaceholders')) {
+            $config = $container->resolveEnvPlaceholders($config, true);
+        }
+        
         $this->adapter->loadServicesConfiguration($container);
 
         if (!empty($config['dbal'])) {
