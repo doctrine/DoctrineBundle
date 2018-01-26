@@ -65,12 +65,13 @@ EOT
             $shards = $params['shards'];
             // Default select global
             $params = array_merge($params, $params['global']);
+            unset($params['global']['dbname']);
             if ($input->getOption('shard')) {
-                foreach ($shards as $shard) {
+                foreach ($shards as $i => $shard) {
                     if ($shard['id'] === (int)$input->getOption('shard')) {
                         // Select sharded database
-                        $params = $shard;
-                        unset($params['id']);
+                        $params = array_merge($params, $shard);
+                        unset($params['shards'][$i]['dbname'], $params['id']);
                         break;
                     }
                 }
@@ -88,6 +89,7 @@ EOT
             // as some vendors do not allow dropping the database connected to.
             $connection->close();
             $connection = DriverManager::getConnection($params);
+            $connection->connect($input->getOption('shard'));
             $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
 
             // Only quote if we don't have a path
