@@ -89,6 +89,7 @@ EOT
             // as some vendors do not allow dropping the database connected to.
             $connection->close();
             $connection = DriverManager::getConnection($params);
+            $connection->connect($input->getOption('shard'));
             $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
 
             // Only quote if we don't have a path
