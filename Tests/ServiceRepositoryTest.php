@@ -48,7 +48,7 @@ class ServiceRepositoryTest extends TestCase
         $container->registerExtension($extension);
         $extension->load([[
             'dbal' => [
-                'driver' => 'pdo_mysql',
+                'driver' => 'pdo_sqlite',
                 'charset' => 'UTF8',
             ],
             'orm' => [
