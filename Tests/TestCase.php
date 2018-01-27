@@ -16,10 +16,10 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 
 class TestCase extends \PHPUnit_Framework_TestCase
 {
@@ -38,6 +38,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__.'/../../../../', // src dir
+            'kernel.name' => 'app',
         )));
         $container->set('annotation_reader', new AnnotationReader());
         $extension = new DoctrineExtension();
@@ -74,7 +75,14 @@ class TestCase extends \PHPUnit_Framework_TestCase
 
         $container->setDefinition('my.platform', new Definition('Doctrine\DBAL\Platforms\MySqlPlatform'));
 
-        $container->getCompilerPassConfig()->setOptimizationPasses(array(new ResolveDefinitionTemplatesPass()));
+        if (class_exists('Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass')) {
+            // BC < sf3.4
+            $resolvePassInstance = new Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass();
+        } else {
+            $resolvePassInstance = new ResolveChildDefinitionsPass();
+        }
+
+        $container->getCompilerPassConfig()->setOptimizationPasses(array($resolvePassInstance));
         $container->getCompilerPassConfig()->setRemovingPasses(array());
         $container->compile();
 

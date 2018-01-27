@@ -18,11 +18,11 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPa
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\Version;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 
 abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 {
@@ -847,6 +847,7 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__.'/../../', // src dir
+            'kernel.name' => 'app',
         )));
     }
 
@@ -928,7 +929,14 @@ abstract class AbstractDoctrineExtensionTest extends \PHPUnit_Framework_TestCase
 
     private function compileContainer(ContainerBuilder $container)
     {
-        $container->getCompilerPassConfig()->setOptimizationPasses(array(new ResolveDefinitionTemplatesPass()));
+        if (class_exists('Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass')) {
+            // BC < sf3.4
+            $resolvePassInstance = new Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass();
+        } else {
+            $resolvePassInstance = new ResolveChildDefinitionsPass();
+        }
+
+        $container->getCompilerPassConfig()->setOptimizationPasses(array($resolvePassInstance));
         $container->getCompilerPassConfig()->setRemovingPasses(array());
         $container->compile();
     }

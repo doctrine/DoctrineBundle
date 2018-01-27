@@ -15,12 +15,12 @@
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Doctrine\ORM\Version;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\DefinitionDecorator;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Component\Config\FileLocator;
@@ -83,17 +83,19 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->ormLoad($config['orm'], $container);
         }
 
-        $this->addClassesToCompile(array(
-            'Doctrine\\Common\\Annotations\\DocLexer',
-            'Doctrine\\Common\\Annotations\\FileCacheReader',
-            'Doctrine\\Common\\Annotations\\PhpParser',
-            'Doctrine\\Common\\Annotations\\Reader',
-            'Doctrine\\Common\\Lexer',
-            'Doctrine\\Common\\Persistence\\ConnectionRegistry',
-            'Doctrine\\Common\\Persistence\\Proxy',
-            'Doctrine\\Common\\Util\\ClassUtils',
-            'Doctrine\\Bundle\\DoctrineBundle\\Registry',
-        ));
+        if (method_exists($this, "addClassesToCompile")) {
+            $this->addClassesToCompile(array(
+                'Doctrine\\Common\\Annotations\\DocLexer',
+                'Doctrine\\Common\\Annotations\\FileCacheReader',
+                'Doctrine\\Common\\Annotations\\PhpParser',
+                'Doctrine\\Common\\Annotations\\Reader',
+                'Doctrine\\Common\\Lexer',
+                'Doctrine\\Common\\Persistence\\ConnectionRegistry',
+                'Doctrine\\Common\\Persistence\\Proxy',
+                'Doctrine\\Common\\Util\\ClassUtils',
+                'Doctrine\\Bundle\\DoctrineBundle\\Registry',
+            ));
+        }
     }
 
     /**
@@ -157,7 +159,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     protected function loadDbalConnection($name, array $connection, ContainerBuilder $container)
     {
         // configuration
-        $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new DefinitionDecorator('doctrine.dbal.connection.configuration'));
+        $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), $this->createChildDefinition('doctrine.dbal.connection.configuration'));
         $logger = null;
         if ($connection['logging']) {
             $logger = new Reference('doctrine.dbal.logger');
@@ -165,12 +167,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         unset ($connection['logging']);
         if ($connection['profiling']) {
             $profilingLoggerId = 'doctrine.dbal.logger.profiling.'.$name;
-            $container->setDefinition($profilingLoggerId, new DefinitionDecorator('doctrine.dbal.logger.profiling'));
+            $container->setDefinition($profilingLoggerId, $this->createChildDefinition('doctrine.dbal.logger.profiling'));
             $profilingLogger = new Reference($profilingLoggerId);
             $container->getDefinition('data_collector.doctrine')->addMethodCall('addLogger', array($name, $profilingLogger));
 
             if (null !== $logger) {
-                $chainLogger = new DefinitionDecorator('doctrine.dbal.logger.chain');
+                $chainLogger = $this->createChildDefinition('doctrine.dbal.logger.chain');
                 $chainLogger->addMethodCall('addLogger', array($profilingLogger));
 
                 $loggerId = 'doctrine.dbal.logger.chain.'.$name;
@@ -199,7 +201,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         // event manager
-        $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), new DefinitionDecorator('doctrine.dbal.connection.event_manager'));
+        $container->setDefinition(sprintf('doctrine.dbal.%s_connection.event_manager', $name), $this->createChildDefinition('doctrine.dbal.connection.event_manager'));
 
         // connection
         // PDO ignores the charset property before 5.3.6 so the init listener has to be used instead.
@@ -222,7 +224,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $options = $this->getConnectionOptions($connection);
 
         $def = $container
-            ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), new DefinitionDecorator('doctrine.dbal.connection'))
+            ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), $this->createChildDefinition('doctrine.dbal.connection'))
             ->setArguments(array(
                 $options,
                 new Reference(sprintf('doctrine.dbal.%s_connection.configuration', $name)),
@@ -427,7 +429,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container)
     {
-        $ormConfigDef = $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), new DefinitionDecorator('doctrine.orm.configuration'));
+        $ormConfigDef = $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), $this->createChildDefinition('doctrine.orm.configuration'));
 
         $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container);
         $this->loadOrmCacheDrivers($entityManager, $container);
@@ -511,7 +513,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $managerConfiguratorName = sprintf('doctrine.orm.%s_manager_configurator', $entityManager['name']);
         $container
-            ->setDefinition($managerConfiguratorName, new DefinitionDecorator('doctrine.orm.manager_configurator.abstract'))
+            ->setDefinition($managerConfiguratorName, $this->createChildDefinition('doctrine.orm.manager_configurator.abstract'))
             ->replaceArgument(0, $enabledFilters)
             ->replaceArgument(1, $filtersParameters)
         ;
@@ -521,7 +523,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         $container
-            ->setDefinition(sprintf('doctrine.orm.%s_entity_manager', $entityManager['name']), new DefinitionDecorator('doctrine.orm.entity_manager.abstract'))
+            ->setDefinition(sprintf('doctrine.orm.%s_entity_manager', $entityManager['name']), $this->createChildDefinition('doctrine.orm.entity_manager.abstract'))
             ->setArguments(array(
                 new Reference(sprintf('doctrine.dbal.%s_connection', $entityManager['connection'])),
                 new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager['name'])),
@@ -834,5 +836,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
     public function getConfiguration(array $config, ContainerBuilder $container)
     {
         return new Configuration($container->getParameter('kernel.debug'));
+    }
+
+    /**
+     * @param $parent
+     * @return Symfony\Component\DependencyInjection\DefinitionDecorator|ChildDefinition
+     */
+    private function createChildDefinition($parent)
+    {
+        if (class_exists('Symfony\Component\DependencyInjection\DefinitionDecorator')) {
+            return new Symfony\Component\DependencyInjection\DefinitionDecorator($parent);
+        }
+
+        return new ChildDefinition($parent);
     }
 }
