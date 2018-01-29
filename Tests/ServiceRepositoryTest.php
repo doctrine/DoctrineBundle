@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
@@ -13,8 +12,8 @@ use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomServiceRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
-use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomServiceRepoRepository;
+use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -25,7 +24,7 @@ class ServiceRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        if (!class_exists('Doctrine\\ORM\\Version')) {
+        if (! class_exists('Doctrine\\ORM\\Version')) {
             $this->markTestSkipped('Doctrine ORM is not available.');
         }
     }
@@ -33,7 +32,7 @@ class ServiceRepositoryTest extends TestCase
     public function testRepositoryServiceWiring()
     {
         // needed for older versions of Doctrine
-        AnnotationRegistry::registerFile(__DIR__.'/../vendor/doctrine/orm/lib/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
+        AnnotationRegistry::registerFile(__DIR__ . '/../vendor/doctrine/orm/lib/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
 
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.name' => 'app',
@@ -41,7 +40,7 @@ class ServiceRepositoryTest extends TestCase
             'kernel.bundles' => ['RepositoryServiceBundle' => RepositoryServiceBundle::class],
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
-            'kernel.root_dir' => __DIR__.'/../../../../', // src dir
+            'kernel.root_dir' => __DIR__ . '/../../../../', // src dir
         ]));
         $container->set('annotation_reader', new AnnotationReader());
         $extension = new DoctrineExtension();
@@ -52,13 +51,16 @@ class ServiceRepositoryTest extends TestCase
                 'charset' => 'UTF8',
             ],
             'orm' => [
-                'mappings' => ['RepositoryServiceBundle' => [
+                'mappings' => [
+            'RepositoryServiceBundle' => [
                     'type' => 'annotation',
-                    'dir' => __DIR__.'/DependencyInjection/Fixtures/Bundles/RepositoryServiceBundle/Entity',
+                    'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/RepositoryServiceBundle/Entity',
                     'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
-                ]],
+                ],
+                ],
             ],
-        ]], $container);
+        ],
+        ], $container);
 
         $def = $container->register(TestCustomServiceRepoRepository::class, TestCustomServiceRepoRepository::class)
             ->setPublic(false);
@@ -94,7 +96,7 @@ class ServiceRepositoryTest extends TestCase
 
         // Symfony 3.2 and lower should work normally in traditional cases (tested above)
         // the code below should *not* work (by design)
-        if (!class_exists(ServiceLocatorTagPass::class)) {
+        if (! class_exists(ServiceLocatorTagPass::class)) {
             $message = '/Support for loading entities from the service container only works for Symfony 3\.3/';
             if (method_exists($this, 'expectException')) {
                 $this->expectException(\RuntimeException::class);

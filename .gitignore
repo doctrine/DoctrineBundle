@@ -2,3 +2,5 @@ vendor
 composer.phar
 composer.lock
 phpunit.xml
+/phpcs.xml
+/.phpcs-cache

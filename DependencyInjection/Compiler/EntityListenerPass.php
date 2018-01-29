@@ -1,26 +1,14 @@
 <?php
 
-/*
- * This file is part of the Doctrine Bundle
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- * (c) Doctrine Project, Benjamin Eberlei <kontakt@beberlei.de>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Class for Symfony bundles to register entity listeners
- *
- * @author Sander Marechal <s.marechal@jejik.com>
  */
 class EntityListenerPass implements CompilerPassInterface
 {
@@ -33,16 +21,16 @@ class EntityListenerPass implements CompilerPassInterface
 
         foreach ($resolvers as $id => $tagAttributes) {
             foreach ($tagAttributes as $attributes) {
-                $name = isset($attributes['entity_manager']) ? $attributes['entity_manager'] : $container->getParameter('doctrine.default_entity_manager');
+                $name          = isset($attributes['entity_manager']) ? $attributes['entity_manager'] : $container->getParameter('doctrine.default_entity_manager');
                 $entityManager = sprintf('doctrine.orm.%s_entity_manager', $name);
 
-                if (!$container->hasDefinition($entityManager)) {
+                if (! $container->hasDefinition($entityManager)) {
                     continue;
                 }
 
                 $resolverId = sprintf('doctrine.orm.%s_entity_listener_resolver', $name);
 
-                if (!$container->has($resolverId)) {
+                if (! $container->has($resolverId)) {
                     continue;
                 }
 
@@ -61,14 +49,14 @@ class EntityListenerPass implements CompilerPassInterface
                     }
 
                     $interface = 'Doctrine\\Bundle\\DoctrineBundle\\Mapping\\EntityListenerServiceResolver';
-                    $class = $resolver->getClass();
+                    $class     = $resolver->getClass();
 
                     if (substr($class, 0, 1) === '%') {
                         // resolve container parameter first
                         $class = $container->getParameterBag()->resolveValue($resolver->getClass());
                     }
 
-                    if (!is_a($class, $interface, true)) {
+                    if (! is_a($class, $interface, true)) {
                         throw new InvalidArgumentException(
                             sprintf('Lazy-loaded entity listeners can only be resolved by a resolver implementing %s.', $interface)
                         );
@@ -76,9 +64,9 @@ class EntityListenerPass implements CompilerPassInterface
 
                     $listener->setPublic(true);
 
-                    $resolver->addMethodCall('registerService', array($listener->getClass(), $id));
+                    $resolver->addMethodCall('registerService', [$listener->getClass(), $id]);
                 } else {
-                    $resolver->addMethodCall('register', array(new Reference($id)));
+                    $resolver->addMethodCall('register', [new Reference($id)]);
                 }
             }
         }
@@ -88,17 +76,17 @@ class EntityListenerPass implements CompilerPassInterface
     {
         $listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $name);
 
-        if (!$container->has($listenerId)) {
+        if (! $container->has($listenerId)) {
             return;
         }
 
         $serviceDef = $container->getDefinition($id);
 
-        $args = array(
+        $args = [
             $attributes['entity'],
             $serviceDef->getClass(),
             $attributes['event'],
-        );
+        ];
 
         if (isset($attributes['method'])) {
             $args[] = $attributes['method'];

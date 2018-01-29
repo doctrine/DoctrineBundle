@@ -1,17 +1,15 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
+use Doctrine\ORM\Version;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Command Delegate.
- *
- * @author Fabio B. Silva <fabio.bat.silva@gmail.com>
  */
 abstract class DelegateCommand extends Command
 {
@@ -34,11 +32,11 @@ abstract class DelegateCommand extends Command
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     private function isVersionCompatible()
     {
-        return (version_compare(\Doctrine\ORM\Version::VERSION, $this->getMinimalVersion()) >= 0);
+        return version_compare(Version::VERSION, $this->getMinimalVersion()) >= 0;
     }
 
     /**
@@ -56,7 +54,7 @@ abstract class DelegateCommand extends Command
      */
     protected function wrapCommand($entityManagerName)
     {
-        if (!$this->isVersionCompatible()) {
+        if (! $this->isVersionCompatible()) {
             throw new \RuntimeException(sprintf('"%s" requires doctrine-orm "%s" or newer', $this->getName(), $this->getMinimalVersion()));
         }
 

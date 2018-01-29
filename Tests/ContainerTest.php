@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\DBAL\Types\Type;
@@ -11,7 +10,7 @@ class ContainerTest extends TestCase
     {
         parent::setUp();
 
-        if (!class_exists('Doctrine\\ORM\\Version')) {
+        if (! class_exists('Doctrine\\ORM\\Version')) {
             $this->markTestSkipped('Doctrine ORM is not available.');
         }
     }

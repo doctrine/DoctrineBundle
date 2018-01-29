@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\DBAL\Connection;
@@ -11,8 +10,6 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 
 /**
  * Base class for Doctrine console commands to extend from.
- *
- * @author Fabien Potencier <fabien@symfony.com>
  */
 abstract class DoctrineCommand extends ContainerAwareCommand
 {
@@ -37,8 +34,8 @@ abstract class DoctrineCommand extends ContainerAwareCommand
     /**
      * Get a doctrine entity manager by symfony name.
      *
-     * @param string       $name
-     * @param null|integer $shardId
+     * @param string   $name
+     * @param null|int $shardId
      *
      * @return EntityManager
      */
@@ -47,7 +44,7 @@ abstract class DoctrineCommand extends ContainerAwareCommand
         $manager = $this->getContainer()->get('doctrine')->getManager($name);
 
         if ($shardId) {
-            if (!$manager->getConnection() instanceof PoolingShardConnection) {
+            if (! $manager->getConnection() instanceof PoolingShardConnection) {
                 throw new \LogicException(sprintf("Connection of EntityManager '%s' must implement shards configuration.", $name));
             }
 

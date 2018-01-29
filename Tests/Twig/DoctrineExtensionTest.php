@@ -1,15 +1,4 @@
 <?php
-/*
- * This file is part of the Doctrine Bundle
- *
- * The code was originally distributed inside the Symfony framework.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- * (c) Doctrine Project, Benjamin Eberlei <kontakt@beberlei.de>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
-*/
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Twig;
 
@@ -20,9 +9,9 @@ class DoctrineExtensionTest extends TestCase
 {
     public function testReplaceQueryParametersWithPostgresCasting()
     {
-        $extension = new DoctrineExtension();
-        $query = 'a=? OR (1)::string OR b=?';
-        $parameters = array(1, 2);
+        $extension  = new DoctrineExtension();
+        $query      = 'a=? OR (1)::string OR b=?';
+        $parameters = [1, 2];
 
         $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('a=1 OR (1)::string OR b=2', $result);
@@ -30,12 +19,12 @@ class DoctrineExtensionTest extends TestCase
 
     public function testReplaceQueryParametersWithStartingIndexAtOne()
     {
-        $extension = new DoctrineExtension();
-        $query = 'a=? OR b=?';
-        $parameters = array(
+        $extension  = new DoctrineExtension();
+        $query      = 'a=? OR b=?';
+        $parameters = [
             1 => 1,
-            2 => 2
-        );
+            2 => 2,
+        ];
 
         $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('a=1 OR b=2', $result);
@@ -43,12 +32,12 @@ class DoctrineExtensionTest extends TestCase
 
     public function testReplaceQueryParameters()
     {
-        $extension = new DoctrineExtension();
-        $query = 'a=? OR b=?';
-        $parameters = array(
+        $extension  = new DoctrineExtension();
+        $query      = 'a=? OR b=?';
+        $parameters = [
             1,
-            2
-        );
+            2,
+        ];
 
         $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('a=1 OR b=2', $result);
@@ -56,12 +45,12 @@ class DoctrineExtensionTest extends TestCase
 
     public function testReplaceQueryParametersWithNamedIndex()
     {
-        $extension = new DoctrineExtension();
-        $query = 'a=:a OR b=:b';
-        $parameters = array(
+        $extension  = new DoctrineExtension();
+        $query      = 'a=:a OR b=:b';
+        $parameters = [
             'a' => 1,
-            'b' => 2
-        );
+            'b' => 2,
+        ];
 
         $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('a=1 OR b=2', $result);
@@ -80,7 +69,7 @@ class DoctrineExtensionTest extends TestCase
 
     public function testEscapeArrayParameter()
     {
-        $this->assertEquals("1, NULL, 'test', foo", DoctrineExtension::escapeFunction(array(1, null, 'test', new DummyClass('foo'))));
+        $this->assertEquals("1, NULL, 'test', foo", DoctrineExtension::escapeFunction([1, null, 'test', new DummyClass('foo')]));
     }
 
     public function testEscapeObjectParameter()
@@ -102,6 +91,7 @@ class DoctrineExtensionTest extends TestCase
 
 class DummyClass
 {
+    /** @var string */
     protected $str;
 
     public function __construct($str)

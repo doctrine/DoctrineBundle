@@ -5,8 +5,8 @@ namespace Doctrine\Bundle\DoctrineBundle;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Types\Type;
 
@@ -15,14 +15,19 @@ use Doctrine\DBAL\Types\Type;
  */
 class ConnectionFactory
 {
-    private $typesConfig = array();
-    private $commentedTypes = array();
+    /** @var mixed[][] */
+    private $typesConfig = [];
+
+    /** @var string[] */
+    private $commentedTypes = [];
+
+    /** @var bool */
     private $initialized = false;
 
     /**
      * Construct.
      *
-     * @param array $typesConfig
+     * @param mixed[][] $typesConfig
      */
     public function __construct(array $typesConfig)
     {
@@ -32,28 +37,26 @@ class ConnectionFactory
     /**
      * Create a connection by name.
      *
-     * @param array         $params
-     * @param Configuration $config
-     * @param EventManager  $eventManager
-     * @param array         $mappingTypes
+     * @param mixed[]         $params
+     * @param string[]|Type[] $mappingTypes
      *
      * @return \Doctrine\DBAL\Connection
      */
-    public function createConnection(array $params, Configuration $config = null, EventManager $eventManager = null, array $mappingTypes = array())
+    public function createConnection(array $params, Configuration $config = null, EventManager $eventManager = null, array $mappingTypes = [])
     {
-        if (!$this->initialized) {
+        if (! $this->initialized) {
             $this->initializeTypes();
         }
 
         $connection = DriverManager::getConnection($params, $config, $eventManager);
 
-        if (!empty($mappingTypes)) {
+        if (! empty($mappingTypes)) {
             $platform = $this->getDatabasePlatform($connection);
             foreach ($mappingTypes as $dbType => $doctrineType) {
                 $platform->registerDoctrineTypeMapping($dbType, $doctrineType);
             }
         }
-        if (!empty($this->commentedTypes)) {
+        if (! empty($this->commentedTypes)) {
             $platform = $this->getDatabasePlatform($connection);
             foreach ($this->commentedTypes as $type) {
                 $platform->markDoctrineTypeCommented(Type::getType($type));
@@ -70,7 +73,6 @@ class ConnectionFactory
      * and the platform version is unknown.
      * For details have a look at DoctrineBundle issue #673.
      *
-     * @param  \Doctrine\DBAL\Connection $connection
      *
      * @return \Doctrine\DBAL\Platforms\AbstractPlatform
      * @throws \Doctrine\DBAL\DBALException
@@ -82,10 +84,10 @@ class ConnectionFactory
         } catch (DBALException $driverException) {
             if ($driverException instanceof DriverException) {
                 throw new DBALException(
-                    "An exception occured while establishing a connection to figure out your platform version." . PHP_EOL .
+                    'An exception occured while establishing a connection to figure out your platform version.' . PHP_EOL .
                     "You can circumvent this by setting a 'server_version' configuration value" . PHP_EOL . PHP_EOL .
-                    "For further information have a look at:" . PHP_EOL .
-                    "https://github.com/doctrine/DoctrineBundle/issues/673",
+                    'For further information have a look at:' . PHP_EOL .
+                    'https://github.com/doctrine/DoctrineBundle/issues/673',
                     0,
                     $driverException
                 );

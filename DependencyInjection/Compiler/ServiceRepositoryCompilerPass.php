@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -9,9 +8,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 use Symfony\Component\DependencyInjection\Reference;
 
-/**
- * @author Ryan Weaver <ryan@knpuniversity.com>
- */
 final class ServiceRepositoryCompilerPass implements CompilerPassInterface
 {
     const REPOSITORY_SERVICE_TAG = 'doctrine.repository_service';
@@ -19,7 +15,7 @@ final class ServiceRepositoryCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         // when ORM is not enabled
-        if (!$container->hasDefinition('doctrine.orm.container_repository_factory')) {
+        if (! $container->hasDefinition('doctrine.orm.container_repository_factory')) {
             return;
         }
 
@@ -28,8 +24,8 @@ final class ServiceRepositoryCompilerPass implements CompilerPassInterface
         $repoServiceIds = array_keys($container->findTaggedServiceIds(self::REPOSITORY_SERVICE_TAG));
 
         // Symfony 3.2 and lower sanity check
-        if (!class_exists(ServiceLocatorTagPass::class)) {
-            if (!empty($repoServiceIds)) {
+        if (! class_exists(ServiceLocatorTagPass::class)) {
+            if (! empty($repoServiceIds)) {
                 throw new RuntimeException(sprintf('The "%s" tag can only be used with Symfony 3.3 or higher. Remove the tag from the following services (%s) or upgrade to Symfony 3.3 or higher.', self::REPOSITORY_SERVICE_TAG, implode(', ', $repoServiceIds)));
             }
 

@@ -2,10 +2,9 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Builder;
 
-
 class BundleConfigurationBuilder
 {
-
+    /** @var array */
     private $configuration;
 
     public static function createBuilder()
@@ -26,10 +25,8 @@ class BundleConfigurationBuilder
     {
         $this->addConnection([
             'connections' => [
-                'default' => [
-                    'password' => 'foo'
-                ]
-            ]
+                'default' => ['password' => 'foo'],
+            ],
         ]);
 
         return $this;
@@ -42,10 +39,10 @@ class BundleConfigurationBuilder
             'entity_managers' => [
                 'default' => [
                     'mappings' => [
-                        'YamlBundle' => []
-                    ]
-                ]
-            ]
+                        'YamlBundle' => [],
+                    ],
+                ],
+            ],
         ]);
 
         return $this;
@@ -54,14 +51,10 @@ class BundleConfigurationBuilder
     public function addBaseSecondLevelCache()
     {
         $this->addSecondLevelCache([
-            'region_cache_driver' => [
-                'type' => 'memcache'
-            ],
+            'region_cache_driver' => ['type' => 'memcache'],
             'regions' => [
-                'hour_region' => [
-                    'lifetime' => 3600
-                ]
-            ]
+                'hour_region' => ['lifetime' => 3600],
+            ],
         ]);
 
         return $this;

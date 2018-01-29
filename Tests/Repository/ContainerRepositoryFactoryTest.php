@@ -15,17 +15,13 @@ class ContainerRepositoryFactoryTest extends TestCase
 {
     public function testGetRepositoryReturnsService()
     {
-        if (!interface_exists(ContainerInterface::class)) {
+        if (! interface_exists(ContainerInterface::class)) {
             $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
         }
 
-        $em = $this->createEntityManager([
-            'Foo\CoolEntity' => 'my_repo',
-        ]);
-        $repo = new StubRepository($em, new ClassMetadata(''));
-        $container = $this->createContainer([
-            'my_repo' => $repo,
-        ]);
+        $em        = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
+        $repo      = new StubRepository($em, new ClassMetadata(''));
+        $container = $this->createContainer(['my_repo' => $repo]);
 
         $factory = new ContainerRepositoryFactory($container);
         $this->assertSame($repo, $factory->getRepository($em, 'Foo\CoolEntity'));
@@ -33,16 +29,14 @@ class ContainerRepositoryFactoryTest extends TestCase
 
     public function testGetRepositoryReturnsEntityRepository()
     {
-        if (!interface_exists(ContainerInterface::class)) {
+        if (! interface_exists(ContainerInterface::class)) {
             $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
         }
 
         $container = $this->createContainer([]);
-        $em = $this->createEntityManager([
-            'Foo\BoringEntity' => null,
-        ]);
+        $em        = $this->createEntityManager(['Foo\BoringEntity' => null]);
 
-        $factory = new ContainerRepositoryFactory($container);
+        $factory    = new ContainerRepositoryFactory($container);
         $actualRepo = $factory->getRepository($em, 'Foo\BoringEntity');
         $this->assertInstanceOf(EntityRepository::class, $actualRepo);
         // test the same instance is returned
@@ -51,16 +45,16 @@ class ContainerRepositoryFactoryTest extends TestCase
 
     public function testCustomRepositoryIsReturned()
     {
-        if (!interface_exists(ContainerInterface::class)) {
+        if (! interface_exists(ContainerInterface::class)) {
             $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
         }
 
         $container = $this->createContainer([]);
-        $em = $this->createEntityManager([
+        $em        = $this->createEntityManager([
             'Foo\CustomNormalRepoEntity' => StubRepository::class,
         ]);
 
-        $factory = new ContainerRepositoryFactory($container);
+        $factory    = new ContainerRepositoryFactory($container);
         $actualRepo = $factory->getRepository($em, 'Foo\CustomNormalRepoEntity');
         $this->assertInstanceOf(StubRepository::class, $actualRepo);
         // test the same instance is returned
@@ -73,19 +67,15 @@ class ContainerRepositoryFactoryTest extends TestCase
      */
     public function testServiceRepositoriesMustExtendEntityRepository()
     {
-        if (!interface_exists(ContainerInterface::class)) {
+        if (! interface_exists(ContainerInterface::class)) {
             $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
         }
 
         $repo = new \stdClass();
 
-        $container = $this->createContainer([
-            'my_repo' => $repo,
-        ]);
+        $container = $this->createContainer(['my_repo' => $repo]);
 
-        $em = $this->createEntityManager([
-            'Foo\CoolEntity' => 'my_repo',
-        ]);
+        $em = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
 
         $factory = new ContainerRepositoryFactory($container);
         $factory->getRepository($em, 'Foo\CoolEntity');
@@ -97,7 +87,7 @@ class ContainerRepositoryFactoryTest extends TestCase
      */
     public function testRepositoryMatchesServiceInterfaceButServiceNotFound()
     {
-        if (!interface_exists(ContainerInterface::class)) {
+        if (! interface_exists(ContainerInterface::class)) {
             $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
         }
 
@@ -124,9 +114,7 @@ class ContainerRepositoryFactoryTest extends TestCase
             $container = null;
         }
 
-        $em = $this->createEntityManager([
-            'Foo\CoolEntity' => 'not_a_real_class',
-        ]);
+        $em = $this->createEntityManager(['Foo\CoolEntity' => 'not_a_real_class']);
 
         $factory = new ContainerRepositoryFactory($container);
         $factory->getRepository($em, 'Foo\CoolEntity');
@@ -153,7 +141,7 @@ class ContainerRepositoryFactoryTest extends TestCase
     {
         $classMetadatas = [];
         foreach ($entityRepositoryClasses as $entityClass => $entityRepositoryClass) {
-            $metadata = new ClassMetadata($entityClass);
+            $metadata                            = new ClassMetadata($entityClass);
             $metadata->customRepositoryClassName = $entityRepositoryClass;
 
             $classMetadatas[$entityClass] = $metadata;

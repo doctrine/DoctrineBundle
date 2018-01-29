@@ -1,74 +1,74 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
+use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 
 class TestCase extends BaseTestCase
 {
     protected function setUp()
     {
-        if (!class_exists('Doctrine\\Common\\Version')) {
+        if (! class_exists('Doctrine\\Common\\Version')) {
             $this->markTestSkipped('Doctrine is not available.');
         }
     }
 
     public function createYamlBundleTestContainer()
     {
-        $container = new ContainerBuilder(new ParameterBag(array(
+        $container = new ContainerBuilder(new ParameterBag([
             'kernel.name' => 'app',
             'kernel.debug' => false,
-            'kernel.bundles' => array('YamlBundle' => 'Fixtures\Bundles\YamlBundle\YamlBundle'),
+            'kernel.bundles' => ['YamlBundle' => 'Fixtures\Bundles\YamlBundle\YamlBundle'],
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
-            'kernel.root_dir' => __DIR__.'/../../../../', // src dir
-        )));
+            'kernel.root_dir' => __DIR__ . '/../../../../', // src dir
+        ]));
         $container->set('annotation_reader', new AnnotationReader());
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
-        $extension->load(array(array(
-            'dbal' => array(
-                'connections' => array(
-                    'default' => array(
+        $extension->load([[
+            'dbal' => [
+                'connections' => [
+                    'default' => [
                         'driver' => 'pdo_mysql',
                         'charset' => 'UTF8',
                         'platform-service' => 'my.platform',
-                    ),
-                ),
+                    ],
+                ],
                 'default_connection' => 'default',
-                'types' => array(
+                'types' => [
                     'test' => TestType::class,
-                ),
-            ), 'orm' => array(
+                ],
+            ], 'orm' => [
                 'default_entity_manager' => 'default',
-                'entity_managers' => array (
-                    'default' => array(
-                        'mappings' => array('YamlBundle' => array(
+                'entity_managers' => [
+                    'default' => [
+                        'mappings' => [
+            'YamlBundle' => [
                             'type' => 'yml',
-                            'dir' => __DIR__.'/DependencyInjection/Fixtures/Bundles/YamlBundle/Resources/config/doctrine',
+                            'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/YamlBundle/Resources/config/doctrine',
                             'prefix' => 'Fixtures\Bundles\YamlBundle\Entity',
-                        )),
-                    ),
-                ),
-                'resolve_target_entities' => array(
-                    'Symfony\Component\Security\Core\User\UserInterface' => 'stdClass',
-                ),
-            ),
-        )), $container);
+                        ],
+                        ],
+                    ],
+                ],
+                'resolve_target_entities' => ['Symfony\Component\Security\Core\User\UserInterface' => 'stdClass'],
+            ],
+        ],
+        ], $container);
 
         $container->setDefinition('my.platform', new Definition('Doctrine\DBAL\Platforms\MySqlPlatform'));
 
-        $container->getCompilerPassConfig()->setOptimizationPasses(array(class_exists(ResolveChildDefinitionsPass::class) ? new ResolveChildDefinitionsPass() : new ResolveDefinitionTemplatesPass()));
-        $container->getCompilerPassConfig()->setRemovingPasses(array());
+        $container->getCompilerPassConfig()->setOptimizationPasses([class_exists(ResolveChildDefinitionsPass::class) ? new ResolveChildDefinitionsPass() : new ResolveDefinitionTemplatesPass()]);
+        $container->getCompilerPassConfig()->setRemovingPasses([]);
         $container->compile();
 
         return $container;

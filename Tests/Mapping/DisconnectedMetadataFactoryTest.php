@@ -1,14 +1,5 @@
 <?php
 
-/*
- * This file is part of the Doctrine Bundle
- *
- * (c) Doctrine Project, Benjamin Eberlei <kontakt@beberlei.de>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 
 use Doctrine\Bundle\DoctrineBundle\Mapping\ClassMetadataCollection;
@@ -22,7 +13,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
     {
         parent::setUp();
 
-        if (!class_exists('Doctrine\\ORM\\Version')) {
+        if (! class_exists('Doctrine\\ORM\\Version')) {
             $this->markTestSkipped('Doctrine ORM is not available.');
         }
     }
@@ -33,22 +24,22 @@ class DisconnectedMetadataFactoryTest extends TestCase
      */
     public function testCannotFindNamespaceAndPathForMetadata()
     {
-        $class = new ClassMetadataInfo(__CLASS__);
-        $collection = new ClassMetadataCollection(array($class));
+        $class      = new ClassMetadataInfo(__CLASS__);
+        $collection = new ClassMetadataCollection([$class]);
 
         $registry = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')->getMock();
-        $factory = new DisconnectedMetadataFactory($registry);
+        $factory  = new DisconnectedMetadataFactory($registry);
 
         $factory->findNamespaceAndPathForMetadata($collection);
     }
 
     public function testFindNamespaceAndPathForMetadata()
     {
-        $class = new ClassMetadataInfo('\Vendor\Package\Class');
-        $collection = new ClassMetadataCollection(array($class));
+        $class      = new ClassMetadataInfo('\Vendor\Package\Class');
+        $collection = new ClassMetadataCollection([$class]);
 
         $registry = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')->getMock();
-        $factory = new DisconnectedMetadataFactory($registry);
+        $factory  = new DisconnectedMetadataFactory($registry);
 
         $factory->findNamespaceAndPathForMetadata($collection, '/path/to/code');
 

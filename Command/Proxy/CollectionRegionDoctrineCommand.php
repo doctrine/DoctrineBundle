@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
 use Doctrine\ORM\Tools\Console\Command\ClearCache\CollectionRegionCommand;
 
 /**
  * Command to clear a collection cache region.
- *
- * @author Fabio B. Silva <fabio.bat.silva@gmail.com>
  */
 class CollectionRegionDoctrineCommand extends DelegateCommand
 {

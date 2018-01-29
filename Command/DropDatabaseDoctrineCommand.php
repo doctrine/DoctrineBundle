@@ -1,18 +1,14 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\DBAL\DriverManager;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Database tool allows you to easily drop and create your configured databases.
- *
- * @author Fabien Potencier <fabien@symfony.com>
- * @author Jonathan H. Wage <jonwage@gmail.com>
  */
 class DropDatabaseDoctrineCommand extends DoctrineCommand
 {
@@ -54,7 +50,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $connection = $this->getDoctrineConnection($input->getOption('connection'));
-        $ifExists = $input->getOption('if-exists');
+        $ifExists   = $input->getOption('if-exists');
 
         $params = $connection->getParams();
         if (isset($params['master'])) {
@@ -67,7 +63,7 @@ EOT
             $params = array_merge($params, $params['global']);
             if ($input->getOption('shard')) {
                 foreach ($shards as $shard) {
-                    if ($shard['id'] === (int)$input->getOption('shard')) {
+                    if ($shard['id'] === (int) $input->getOption('shard')) {
                         // Select sharded database
                         $params = $shard;
                         unset($params['id']);
@@ -78,7 +74,7 @@ EOT
         }
 
         $name = isset($params['path']) ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
-        if (!$name) {
+        if (! $name) {
             throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
         unset($params['dbname']);
@@ -87,11 +83,11 @@ EOT
             // Reopen connection without database name set
             // as some vendors do not allow dropping the database connected to.
             $connection->close();
-            $connection = DriverManager::getConnection($params);
-            $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
+            $connection         = DriverManager::getConnection($params);
+            $shouldDropDatabase = ! $ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
 
             // Only quote if we don't have a path
-            if (!isset($params['path'])) {
+            if (! isset($params['path'])) {
                 $name = $connection->getDatabasePlatform()->quoteSingleIdentifier($name);
             }
 

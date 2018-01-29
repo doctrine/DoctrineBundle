@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Fixtures\Bundles\YamlBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;

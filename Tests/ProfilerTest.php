@@ -2,7 +2,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
-
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -24,21 +23,23 @@ class ProfilerTest extends BaseTestCase
 {
     /** @var DebugStack */
     private $logger;
+
     /** @var \Twig_Environment */
     private $twig;
+
     /** @var DoctrineDataCollector */
     private $collector;
 
     public function setUp()
     {
         $this->logger = new DebugStack();
-        $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
+        $registry     = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $registry->expects($this->once())->method('getManagers')->willReturn([]);
         $this->collector = new DoctrineDataCollector($registry);
         $this->collector->addLogger('foo', $this->logger);
 
-        $twigLoaderFilesystem = new \Twig_Loader_Filesystem(__DIR__.'/../Resources/views/Collector');
-        $twigLoaderFilesystem->addPath(__DIR__.'/../vendor/symfony/web-profiler-bundle/Resources/views', 'WebProfiler');
+        $twigLoaderFilesystem = new \Twig_Loader_Filesystem(__DIR__ . '/../Resources/views/Collector');
+        $twigLoaderFilesystem->addPath(__DIR__ . '/../vendor/symfony/web-profiler-bundle/Resources/views', 'WebProfiler');
         $this->twig = new \Twig_Environment($twigLoaderFilesystem, ['debug' => true, 'strict_variables' => true]);
 
         $this->twig->addExtension(new CodeExtension('', '', ''));
@@ -80,7 +81,7 @@ class ProfilerTest extends BaseTestCase
             'queries' => $this->logger->queries,
         ]);
 
-        $output = str_replace(["\e[37m", "\e[0m", "\e[32;1m", "\e[34;1m"], "", $output);
+        $output = str_replace(["\e[37m", "\e[0m", "\e[32;1m", "\e[34;1m"], '', $output);
         $this->assertContains("SELECT * FROM foo WHERE bar IN ('foo', 'bar');", $output);
     }
 }

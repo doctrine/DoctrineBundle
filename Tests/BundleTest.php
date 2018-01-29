@@ -3,25 +3,25 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 
 class BundleTest extends TestCase
 {
     public function testBuildCompilerPasses()
     {
         $container = new ContainerBuilder();
-        $bundle = new DoctrineBundle();
+        $bundle    = new DoctrineBundle();
         $bundle->build($container);
 
         $config = $container->getCompilerPassConfig();
         $passes = $config->getBeforeOptimizationPasses();
 
         $foundEventListener = false;
-        $foundValidation = false;
+        $foundValidation    = false;
 
         foreach ($passes as $pass) {
             if ($pass instanceof RegisterEventListenersAndSubscribersPass) {

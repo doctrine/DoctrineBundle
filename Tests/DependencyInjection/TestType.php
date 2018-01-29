@@ -1,11 +1,11 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Types\Type;
 
-class TestType extends \Doctrine\DBAL\Types\Type
+class TestType extends Type
 {
     public function getName()
     {

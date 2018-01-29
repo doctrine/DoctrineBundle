@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
 use Doctrine\ORM\Tools\Console\Command\ClearCache\EntityRegionCommand;
 
 /**
  * Command to clear a entity cache region.
- *
- * @author Fabio B. Silva <fabio.bat.silva@gmail.com>
  */
 class EntityRegionCacheDoctrineCommand extends DelegateCommand
 {
