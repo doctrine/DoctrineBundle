@@ -1,6 +1,6 @@
 language: php
-
 sudo: false
+dist: trusty
 
 cache:
   directories:
@@ -14,35 +14,55 @@ php:
   - 7.2
   - nightly
 
-matrix:
-  include:
-    - php: 5.5
-      env: deps=low SYMFONY_DEPRECATIONS_HELPER=weak
-    - php: 5.6
-      env: SYMFONY_VERSION="2.8.*"
-    - php: 7.0
-      env: SYMFONY_VERSION="3.2.*"
-    - php: 7.1
-      env: stability=RC SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="3.4.*"
-    - php: 7.2
-      env: stability=alpha
-  allow_failures:
-    - php: nightly
-
 env:
   global:
     - deps=no
 
 before_install:
+  - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{,.disabled} || echo "xdebug not available"
   - composer self-update
   - if [ "$SYMFONY_VERSION" != "" ]; then jq "(.require, .\"require-dev\")|=(with_entries(if .key|test(\"^symfony/\") then .value|=\"${SYMFONY_VERSION}\" else . end))" composer.json|ex -sc 'wq!composer.json' /dev/stdin; fi;
-  - if [ ! -z "$stability" ]; then perl -pi -e "s/^}$/,\"minimum-stability\":\"$stability\"}/" composer.json; fi;
 
 install:
-  - if [ "$deps" = "low" ]; then composer --prefer-lowest --prefer-stable update; else composer update; fi;
+  - travis_retry composer update -n --prefer-dist
 
 script:
-  - ./vendor/bin/phpunit -v --coverage-clover ./build/logs/clover.xml
+  - ./vendor/bin/phpunit -v
 
-after_script:
-    - php ./vendor/bin/coveralls -v
+jobs:
+  include:
+    - php: 5.5
+      env: deps=low SYMFONY_DEPRECATIONS_HELPER=weak
+      install:
+        - travis_retry composer update -n --prefer-lowest --prefer-stable --prefer-dist
+
+    - php: 5.6
+      env: SYMFONY_VERSION="2.8.*"
+
+    - php: 7.0
+      env: SYMFONY_VERSION="3.2.*"
+
+    - php: 7.1
+      env: stability=RC SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="3.4.*"
+      install:
+        - composer config minimum-stability RC
+        - travis_retry composer update -n --prefer-dist
+
+    - php: 7.2
+      env: stability=alpha
+      install:
+        - composer config minimum-stability alpha
+        - travis_retry composer update -n --prefer-dist
+
+    - stage: Coverage
+      php: 7.2
+      before_script:
+        - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{.disabled,}
+        - if [[ ! $(php -m | grep -si xdebug) ]]; then echo "xdebug required for coverage"; exit 1; fi
+      script:
+        - ./vendor/bin/phpunit -v --coverage-clover ./build/logs/clover.xml
+      after_script:
+        - php ./vendor/bin/coveralls -v
+
+  allow_failures:
+    - php: nightly
