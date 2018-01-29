@@ -1,21 +1,24 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Mapping;
 
-/**
- * @author Fabien Potencier <fabien@symfony.com>
- */
+use Doctrine\ORM\Mapping\ClassMetadata;
+
 class ClassMetadataCollection
 {
+    /** @var string */
     private $path;
+
+    /** @var string */
     private $namespace;
+
+    /** @var ClassMetadata[] */
     private $metadata;
 
     /**
      * Constructor
      *
-     * @param array $metadata
+     * @param ClassMetadata[] $metadata
      */
     public function __construct(array $metadata)
     {
@@ -23,7 +26,7 @@ class ClassMetadataCollection
     }
 
     /**
-     * @return array
+     * @return ClassMetadata[]
      */
     public function getMetadata()
     {

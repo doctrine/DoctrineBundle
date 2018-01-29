@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
@@ -9,11 +8,11 @@ class XMLSchemaTest extends TestCase
 {
     public static function dataValidateSchemaFiles()
     {
-        $schemaFiles = array();
-        $di = new \DirectoryIterator(__DIR__.'/Fixtures/config/xml');
+        $schemaFiles = [];
+        $di          = new \DirectoryIterator(__DIR__ . '/Fixtures/config/xml');
         foreach ($di as $element) {
-            if ($element->isFile() && substr($element->getFilename(), -4) === ".xml") {
-                $schemaFiles[] = array($element->getPathname());
+            if ($element->isFile() && substr($element->getFilename(), -4) === '.xml') {
+                $schemaFiles[] = [$element->getPathname()];
             }
         }
 
@@ -26,33 +25,33 @@ class XMLSchemaTest extends TestCase
     public function testValidateSchema($file)
     {
         $found = false;
-        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom   = new \DOMDocument('1.0', 'UTF-8');
         $dom->load($file);
 
         $xmlns = 'http://symfony.com/schema/dic/doctrine';
 
         $dbalElements = $dom->getElementsByTagNameNS($xmlns, 'dbal');
         if ($dbalElements->length) {
-            $dbalDom = new \DOMDocument('1.0', 'UTF-8');
-            $dbalNode = $dbalDom->importNode($dbalElements->item(0));
+            $dbalDom    = new \DOMDocument('1.0', 'UTF-8');
+            $dbalNode   = $dbalDom->importNode($dbalElements->item(0));
             $configNode = $dbalDom->createElementNS($xmlns, 'config');
             $configNode->appendChild($dbalNode);
             $dbalDom->appendChild($configNode);
 
-            $ret = $dbalDom->schemaValidate(__DIR__.'/../../Resources/config/schema/doctrine-1.0.xsd');
+            $ret = $dbalDom->schemaValidate(__DIR__ . '/../../Resources/config/schema/doctrine-1.0.xsd');
             $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
             $found = true;
         }
 
         $ormElements = $dom->getElementsByTagNameNS($xmlns, 'orm');
         if ($ormElements->length) {
-            $ormDom = new \DOMDocument('1.0', 'UTF-8');
-            $ormNode = $ormDom->importNode($ormElements->item(0));
+            $ormDom     = new \DOMDocument('1.0', 'UTF-8');
+            $ormNode    = $ormDom->importNode($ormElements->item(0));
             $configNode = $ormDom->createElementNS($xmlns, 'config');
             $configNode->appendChild($ormNode);
             $ormDom->appendChild($configNode);
 
-            $ret = $ormDom->schemaValidate(__DIR__.'/../../Resources/config/schema/doctrine-1.0.xsd');
+            $ret = $ormDom->schemaValidate(__DIR__ . '/../../Resources/config/schema/doctrine-1.0.xsd');
             $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
             $found = true;
         }

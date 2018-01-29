@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
@@ -12,19 +11,19 @@ class CreateDatabaseDoctrineTest extends TestCase
 {
     public function tearDown()
     {
-        @unlink(sys_get_temp_dir() . "/test");
-        @unlink(sys_get_temp_dir() . "/shard_1");
-        @unlink(sys_get_temp_dir() . "/shard_2");
+        @unlink(sys_get_temp_dir() . '/test');
+        @unlink(sys_get_temp_dir() . '/shard_1');
+        @unlink(sys_get_temp_dir() . '/shard_2');
     }
 
     public function testExecute()
     {
         $connectionName = 'default';
-        $dbName = 'test';
-        $params = array(
-            'path' => sys_get_temp_dir() . "/" . $dbName,
+        $dbName         = 'test';
+        $params         = [
+            'path' => sys_get_temp_dir() . '/' . $dbName,
             'driver' => 'pdo_sqlite',
-        );
+        ];
 
         $application = new Application();
         $application->add(new CreateDatabaseDoctrineCommand());
@@ -34,36 +33,36 @@ class CreateDatabaseDoctrineTest extends TestCase
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
-            array_merge(array('command' => $command->getName()))
+            array_merge(['command' => $command->getName()])
         );
 
-        $this->assertContains("Created database " . sys_get_temp_dir() . "/" . $dbName . " for connection named $connectionName", $commandTester->getDisplay());
+        $this->assertContains('Created database ' . sys_get_temp_dir() . '/' . $dbName . ' for connection named ' . $connectionName, $commandTester->getDisplay());
     }
 
     public function testExecuteWithShardOption()
     {
         $connectionName = 'default';
-        $params = array(
+        $params         = [
             'dbname' => 'test',
             'memory' => true,
             'driver' => 'pdo_sqlite',
-            'global' => array(
+            'global' => [
                 'driver' => 'pdo_sqlite',
                 'dbname' => 'test',
-            ),
-            'shards' => array(
-                'foo' => array(
+            ],
+            'shards' => [
+                'foo' => [
                     'id' => 1,
                     'path' => sys_get_temp_dir() . '/shard_1',
                     'driver' => 'pdo_sqlite',
-                ),
-                'bar' => array(
+                ],
+                'bar' => [
                     'id' => 2,
                     'path' => sys_get_temp_dir() . '/shard_2',
                     'driver' => 'pdo_sqlite',
-                ),
-            )
-        );
+                ],
+            ],
+        ];
 
         $application = new Application();
         $application->add(new CreateDatabaseDoctrineCommand());
@@ -72,19 +71,19 @@ class CreateDatabaseDoctrineTest extends TestCase
         $command->setContainer($this->getMockContainer($connectionName, $params));
 
         $commandTester = new CommandTester($command);
-        $commandTester->execute(array('command' => $command->getName(), '--shard' => 1));
+        $commandTester->execute(['command' => $command->getName(), '--shard' => 1]);
 
-        $this->assertContains("Created database " . sys_get_temp_dir() ."/shard_1 for connection named $connectionName", $commandTester->getDisplay());
+        $this->assertContains('Created database ' . sys_get_temp_dir() . '/shard_1 for connection named ' . $connectionName, $commandTester->getDisplay());
 
         $commandTester = new CommandTester($command);
-        $commandTester->execute(array('command' => $command->getName(), '--shard' => 2));
+        $commandTester->execute(['command' => $command->getName(), '--shard' => 2]);
 
-        $this->assertContains("Created database " . sys_get_temp_dir() ."/shard_2 for connection named $connectionName", $commandTester->getDisplay());
+        $this->assertContains('Created database ' . sys_get_temp_dir() . '/shard_2 for connection named ' . $connectionName, $commandTester->getDisplay());
     }
 
     /**
-     * @param string     $connectionName Connection name
-     * @param array|null $params         Connection parameters
+     * @param string       $connectionName Connection name
+     * @param mixed[]|null $params         Connection parameters
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
     private function getMockContainer($connectionName, $params = null)
@@ -100,7 +99,7 @@ class CreateDatabaseDoctrineTest extends TestCase
 
         $mockConnection = $this->getMockBuilder('Doctrine\DBAL\Connection')
             ->disableOriginalConstructor()
-            ->setMethods(array('getParams'))
+            ->setMethods(['getParams'])
             ->getMockForAbstractClass();
 
         $mockConnection->expects($this->any())
@@ -114,7 +113,7 @@ class CreateDatabaseDoctrineTest extends TestCase
             ->willReturn($mockConnection);
 
         $mockContainer = $this->getMockBuilder('Symfony\Component\DependencyInjection\Container')
-            ->setMethods(array('get'))
+            ->setMethods(['get'])
             ->getMock();
 
         $mockContainer->expects($this->any())

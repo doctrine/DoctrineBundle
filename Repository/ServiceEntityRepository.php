@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Repository;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -19,14 +18,11 @@ use Doctrine\ORM\EntityRepository;
  *         parent::__construct($registry, YourEntity::class);
  *     }
  * }
- *
- * @author Ryan Weaver <ryan@knpuniversity.com>
  */
 class ServiceEntityRepository extends EntityRepository implements ServiceEntityRepositoryInterface
 {
     /**
-     * @param ManagerRegistry $registry
-     * @param string          $entityClass The class name of the entity this repository manages
+     * @param string $entityClass The class name of the entity this repository manages
      */
     public function __construct(ManagerRegistry $registry, $entityClass)
     {

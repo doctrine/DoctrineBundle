@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Controller;
 
 use Doctrine\DBAL\Connection;
@@ -11,8 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * ProfilerController.
- *
- * @author Christophe Coevoet <stof@notk.org>
  */
 class ProfilerController implements ContainerAwareInterface
 {
@@ -32,31 +29,31 @@ class ProfilerController implements ContainerAwareInterface
     /**
      * Renders the profiler panel for the given token.
      *
-     * @param string  $token          The profiler token
-     * @param string  $connectionName
-     * @param integer $query
+     * @param string $token          The profiler token
+     * @param string $connectionName
+     * @param int    $query
      *
      * @return Response A Response instance
      */
     public function explainAction($token, $connectionName, $query)
     {
-        /** @var $profiler \Symfony\Component\HttpKernel\Profiler\Profiler */
+        /** @var \Symfony\Component\HttpKernel\Profiler\Profiler $profiler */
         $profiler = $this->container->get('profiler');
         $profiler->disable();
 
         $profile = $profiler->loadProfile($token);
         $queries = $profile->getCollector('db')->getQueries();
 
-        if (!isset($queries[$connectionName][$query])) {
+        if (! isset($queries[$connectionName][$query])) {
             return new Response('This query does not exist.');
         }
 
         $query = $queries[$connectionName][$query];
-        if (!$query['explainable']) {
+        if (! $query['explainable']) {
             return new Response('This query cannot be explained.');
         }
 
-        /** @var $connection \Doctrine\DBAL\Connection */
+        /** @var \Doctrine\DBAL\Connection $connection */
         $connection = $this->container->get('doctrine')->getConnection($connectionName);
         try {
             if ($connection->getDatabasePlatform() instanceof SQLServerPlatform) {
@@ -64,14 +61,14 @@ class ProfilerController implements ContainerAwareInterface
             } else {
                 $results = $this->explainOtherPlatform($connection, $query);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return new Response('This query cannot be explained.');
         }
 
-        return new Response($this->container->get('twig')->render('@Doctrine/Collector/explain.html.twig', array(
+        return new Response($this->container->get('twig')->render('@Doctrine/Collector/explain.html.twig', [
             'data' => $results,
             'query' => $query,
-        )));
+        ]));
     }
 
     private function explainSQLServerPlatform(Connection $connection, $query)
@@ -79,7 +76,7 @@ class ProfilerController implements ContainerAwareInterface
         if (stripos($query['sql'], 'SELECT') === 0) {
             $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . '; SET STATISTICS PROFILE OFF;';
         } else {
-            $sql = 'SET SHOWPLAN_TEXT ON; GO; SET NOEXEC ON; ' . $query['sql'] .'; SET NOEXEC OFF; GO; SET SHOWPLAN_TEXT OFF;';
+            $sql = 'SET SHOWPLAN_TEXT ON; GO; SET NOEXEC ON; ' . $query['sql'] . '; SET NOEXEC OFF; GO; SET SHOWPLAN_TEXT OFF;';
         }
         $stmt = $connection->executeQuery($sql, $query['params'], $query['types']);
         $stmt->nextRowset();
@@ -88,7 +85,7 @@ class ProfilerController implements ContainerAwareInterface
 
     private function explainOtherPlatform(Connection $connection, $query)
     {
-        return $connection->executeQuery('EXPLAIN '.$query['sql'], $query['params'], $query['types'])
+        return $connection->executeQuery('EXPLAIN ' . $query['sql'], $query['params'], $query['types'])
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

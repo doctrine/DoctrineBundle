@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Fixtures\Bundles\RepositoryServiceBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
 use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryRegionCommand;
 
 /**
  * Command to clear a query cache region.
- *
- * @author Fabio B. Silva <fabio.bat.silva@gmail.com>
  */
 class QueryRegionCacheDoctrineCommand extends DelegateCommand
 {
