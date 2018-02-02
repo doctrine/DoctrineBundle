@@ -61,7 +61,7 @@ class ProfilerController implements ContainerAwareInterface
             } else {
                 $results = $this->explainOtherPlatform($connection, $query);
             }
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return new Response('This query cannot be explained.');
         }
 
