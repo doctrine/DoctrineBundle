@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Repository;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
 /**
@@ -29,5 +30,17 @@ class ServiceEntityRepository extends EntityRepository implements ServiceEntityR
         $manager = $registry->getManagerForClass($entityClass);
 
         parent::__construct($manager, $manager->getClassMetadata($entityClass));
+    }
+
+    /**
+     * @param EntityManagerInterface $em
+     *
+     * @return ServiceEntityRepository
+     */
+    public function setEntityManager(EntityManagerInterface $em)
+    {
+        $this->_em = $em;
+
+        return $this;
     }
 }

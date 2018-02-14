@@ -53,6 +53,9 @@ final class ContainerRepositoryFactory implements RepositoryFactory
                 if (! $repository instanceof EntityRepository) {
                     throw new \RuntimeException(sprintf('The service "%s" must extend EntityRepository (or a base class, like ServiceEntityRepository).', $repositoryServiceId));
                 }
+                if ($repository instanceof ServiceEntityRepositoryInterface) {
+                    $repository->setEntityManager($entityManager);
+                }
 
                 return $repository;
             }
