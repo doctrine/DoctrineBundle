@@ -23,19 +23,25 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
     {
         $this
             ->setName('doctrine:mapping:import')
-            ->addArgument('bundle', InputArgument::REQUIRED, 'The bundle to import the mapping information to')
+            ->addArgument('name', InputArgument::REQUIRED, 'The bundle or namespace to import the mapping information to')
             ->addArgument('mapping-type', InputArgument::OPTIONAL, 'The mapping type to export the imported mapping information to')
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
             ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('filter', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'A string pattern used to match entities that should be mapped.')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force to overwrite existing mapping files.')
-            ->addOption('bundle-less', null, InputOption::VALUE_NONE, 'Bundle argument will be used as destination path')
-            ->addOption('root-namespace', null, InputOption::VALUE_REQUIRED, 'Specify root namespace')
+            ->addOption('path', null, InputOption::VALUE_REQUIRED, 'The path where the files would be generated (not used when a bundle is passed).')
             ->setDescription('Imports mapping information from an existing database')
             ->setHelp(<<<EOT
 The <info>%command.name%</info> command imports mapping information
 from an existing database:
 
+Generate annotation mappings into the src/ directory using App as the namespace:
+<info>php %command.full_name% App\\\Entity annotation --path=src/Entity</info>
+
+Generate annotation mappings into the config/doctrine/ directory using App as the namespace:
+<info>php %command.full_name% App\\\Entity xml --path=config/doctrine</info>
+
+Generate XML mappings into a bundle:
 <info>php %command.full_name% "MyCustomBundle" xml</info>
 
 You can also optionally specify which entity manager to import from with the
@@ -61,27 +67,28 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($input->getOption('bundle-less')) {
-            $destPath = $input->getArgument('bundle');
-            $namespace = 'App';
-        } else {
-            $bundle = $this->getApplication()->getKernel()->getBundle($input->getArgument('bundle'));
-            $destPath = $bundle->getPath();
-            $namespace = $bundle->getNamespace();
-        }
-
-        if ($input->getOption('root-namespace')) {
-            $namespace = $input->getOption('root-namespace');
-        }
-
         $type     = $input->getArgument('mapping-type') ? $input->getArgument('mapping-type') : 'xml';
-        if ($type === 'annotation') {
-            $destPath .= '/Entity';
-        } else {
-            $destPath .= '/Resources/config/doctrine';
-        }
         if ($type === 'yaml') {
             $type = 'yml';
+        }
+
+        $bundles = $this->getContainer()->getParameter('kernel.bundles');
+        if (isset($bundles[$input->getArgument('name')])) {
+            $bundle = $this->getApplication()->getKernel()->getBundle($input->getArgument('name'));
+            $namespace = $bundle->getNamespace(). '\\Entity';
+
+            $destPath = $bundle->getPath();
+            if ($type === 'annotation') {
+                $destPath .= '/Entity';
+            } else {
+                $destPath .= '/Resources/config/doctrine';
+            }
+        } else {
+            // assume a namespace has been passed
+            $namespace = $input->getArgument('name');
+            if (null === $destPath = $input->getOption('path')) {
+                throw new \InvalidArgumentException('The --path option is required when passing a namespace (e.g. --path=src). If you intended to pass a bundle name, check your spelling.');
+            }
         }
 
         $cme      = new ClassMetadataExporter();
@@ -109,7 +116,7 @@ EOT
             $output->writeln(sprintf('Importing mapping information from "<info>%s</info>" entity manager', $emName));
             foreach ($metadata as $class) {
                 $className   = $class->name;
-                $class->name = $namespace . '\\Entity\\' . $className;
+                $class->name = $namespace . '\\' . $className;
                 if ($type === 'annotation') {
                     $path = $destPath . '/' . str_replace('\\', '.', $className) . '.php';
                 } else {
