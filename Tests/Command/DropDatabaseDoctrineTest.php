@@ -35,32 +35,6 @@ class DropDatabaseDoctrineTest extends TestCase
         $this->assertContains("Dropped database for connection named " . sys_get_temp_dir() . "/" . $dbName . "" , $commandTester->getDisplay());
     }
 
-    /*
-    public function testExecuteWithConnectionUrlParam()
-    {
-        $connectionName = 'default';
-        $dbName = 'test';
-        $params = array(
-            'url' => "mysql://root@127.0.0.1:3306/" . $dbName,
-            'user' => 'root',
-            'dbname' => $dbName,
-            'driver' => "pdo_mysql"
-        );
-
-        $application = new Application();
-        $application->add(new DropDatabaseDoctrineCommand());
-
-        $command = $application->find('doctrine:database:drop');
-        $command->setContainer($this->getMockContainer($connectionName, $params));
-
-        $commandTester = new CommandTester($command);
-        $commandTester->execute(
-            array_merge(array('command' => $command->getName(), '--force' => true, '--if-exists' => true))
-        );
-
-        $this->assertContains("Database for connection named `". $dbName ."` doesn't exist. Skipped.", $commandTester->getDisplay());
-    }*/
-
     public function testExecuteWithoutOptionForceWillFailWithAttentionMessage()
     {
         $connectionName = 'default';
