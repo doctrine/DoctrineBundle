@@ -72,6 +72,9 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        trigger_error('The doctrine:generate:entity command has been deprecated.', E_USER_DEPRECATED);
+        $output->writeln(' <comment>NOTE:</comment> The <info>doctrine:generate:entities</info> command has been deprecated. Use <info>make:entity --regenerate</info> from MakerBundle instead.');
+
         $manager = new DisconnectedMetadataFactory($this->getContainer()->get('doctrine'));
 
         try {
