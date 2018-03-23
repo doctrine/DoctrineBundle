@@ -9,7 +9,6 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class DropDatabaseDoctrineTest extends TestCase
 {
-
     public function testExecute()
     {
         $connectionName = 'default';
