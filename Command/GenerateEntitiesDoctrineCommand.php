@@ -73,7 +73,11 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         trigger_error('The doctrine:generate:entity command has been deprecated.', E_USER_DEPRECATED);
-        $output->writeln(' <comment>NOTE:</comment> The <info>doctrine:generate:entities</info> command has been deprecated. Use <info>make:entity --regenerate</info> from MakerBundle instead.');
+        $output->writeln([
+            ' <comment>NOTE:</comment> The <info>doctrine:generate:entities</info> command has been deprecated.',
+            '       To read more about the differences between anemic and rich models go here <info>http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/getting-started.html#adding-behavior-to-entities</info>.',
+            '       If you wish to generate your entities, use <info>make:entity --regenerate</info> from MakerBundle instead.',
+        ]);
 
         $manager = new DisconnectedMetadataFactory($this->getContainer()->get('doctrine'));
 
