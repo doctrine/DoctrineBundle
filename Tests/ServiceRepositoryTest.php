@@ -14,6 +14,7 @@ use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomServiceRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
+use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -64,6 +65,8 @@ class ServiceRepositoryTest extends TestCase
 
         $def = $container->register(TestCustomServiceRepoRepository::class, TestCustomServiceRepoRepository::class)
             ->setPublic(false);
+        // create a public alias so we can use it below for testing
+        $container->setAlias('test_alias__' . TestCustomServiceRepoRepository::class, new Alias(TestCustomServiceRepoRepository::class, true));
 
         // Symfony 2.7 compat - can be moved above later
         if (method_exists($def, 'setAutowired')) {
@@ -109,7 +112,7 @@ class ServiceRepositoryTest extends TestCase
 
         // custom service repository
         $customServiceRepo = $em->getRepository(TestCustomServiceRepoEntity::class);
-        $this->assertSame($customServiceRepo, $container->get(TestCustomServiceRepoRepository::class));
+        $this->assertSame($customServiceRepo, $container->get('test_alias__' . TestCustomServiceRepoRepository::class));
         // a smoke test, trying some methods
         $this->assertSame(TestCustomServiceRepoEntity::class, $customServiceRepo->getClassName());
         $this->assertInstanceOf(QueryBuilder::class, $customServiceRepo->createQueryBuilder('tc'));
