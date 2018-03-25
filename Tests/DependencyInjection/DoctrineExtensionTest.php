@@ -754,13 +754,17 @@ class DoctrineExtensionTest extends TestCase
     private function assertDICDefinitionMethodCallAt($pos, Definition $definition, $methodName, array $params = null)
     {
         $calls = $definition->getMethodCalls();
-        if (isset($calls[$pos][0])) {
-            $this->assertEquals($methodName, $calls[$pos][0], "Method '" . $methodName . "' is expected to be called at position " . $pos . '.');
-
-            if ($params !== null) {
-                $this->assertEquals($params, $calls[$pos][1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
-            }
+        if (! isset($calls[$pos][0])) {
+            return;
         }
+
+        $this->assertEquals($methodName, $calls[$pos][0], "Method '" . $methodName . "' is expected to be called at position " . $pos . '.');
+
+        if ($params === null) {
+            return;
+        }
+
+        $this->assertEquals($params, $calls[$pos][1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
     }
 
     /**
@@ -774,20 +778,24 @@ class DoctrineExtensionTest extends TestCase
         $calls  = $definition->getMethodCalls();
         $called = false;
         foreach ($calls as $call) {
-            if ($call[0] === $methodName) {
-                if ($called) {
-                    $this->fail("Method '" . $methodName . "' is expected to be called only once, a second call was registered though.");
-                } else {
-                    $called = true;
-                    if ($params !== null) {
-                        $this->assertEquals($params, $call[1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
-                    }
+            if ($call[0] !== $methodName) {
+                continue;
+            }
+
+            if ($called) {
+                $this->fail("Method '" . $methodName . "' is expected to be called only once, a second call was registered though.");
+            } else {
+                $called = true;
+                if ($params !== null) {
+                    $this->assertEquals($params, $call[1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
                 }
             }
         }
-        if (! $called) {
-            $this->fail("Method '" . $methodName . "' is expected to be called once, definition does not contain a call though.");
+        if ($called) {
+            return;
         }
+
+        $this->fail("Method '" . $methodName . "' is expected to be called once, definition does not contain a call though.");
     }
 
     private function compileContainer(ContainerBuilder $container)

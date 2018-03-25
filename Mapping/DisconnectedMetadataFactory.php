@@ -18,8 +18,6 @@ class DisconnectedMetadataFactory
     private $registry;
 
     /**
-     * Constructor.
-     *
      * @param ManagerRegistry $registry A ManagerRegistry instance
      */
     public function __construct(ManagerRegistry $registry)
@@ -156,9 +154,11 @@ class DisconnectedMetadataFactory
     {
         $metadata = [];
         foreach ($this->getAllMetadata() as $m) {
-            if (strpos($m->name, $namespace) === 0) {
-                $metadata[] = $m;
+            if (strpos($m->name, $namespace) !== 0) {
+                continue;
             }
+
+            $metadata[] = $m;
         }
 
         return new ClassMetadataCollection($metadata);

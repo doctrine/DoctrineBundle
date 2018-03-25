@@ -114,11 +114,11 @@ EOT
             }
 
             return 0;
-        } else {
-            $output->writeln('Database does not have any mapping information.');
-            $output->writeln('');
-
-            return 1;
         }
+
+        $output->writeln('Database does not have any mapping information.');
+        $output->writeln('');
+
+        return 1;
     }
 }

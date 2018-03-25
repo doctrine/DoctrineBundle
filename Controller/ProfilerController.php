@@ -7,15 +7,14 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Profiler\Profiler;
 
 /**
  * ProfilerController.
  */
 class ProfilerController implements ContainerAwareInterface
 {
-    /**
-     * @var ContainerInterface
-     */
+    /** @var ContainerInterface */
     private $container;
 
     /**
@@ -37,7 +36,7 @@ class ProfilerController implements ContainerAwareInterface
      */
     public function explainAction($token, $connectionName, $query)
     {
-        /** @var \Symfony\Component\HttpKernel\Profiler\Profiler $profiler */
+        /** @var Profiler $profiler */
         $profiler = $this->container->get('profiler');
         $profiler->disable();
 
@@ -53,7 +52,7 @@ class ProfilerController implements ContainerAwareInterface
             return new Response('This query cannot be explained.');
         }
 
-        /** @var \Doctrine\DBAL\Connection $connection */
+        /** @var Connection $connection */
         $connection = $this->container->get('doctrine')->getConnection($connectionName);
         try {
             if ($connection->getDatabasePlatform() instanceof SQLServerPlatform) {

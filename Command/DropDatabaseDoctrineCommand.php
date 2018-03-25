@@ -79,32 +79,7 @@ EOT
         }
         unset($params['dbname']);
 
-        if ($input->getOption('force')) {
-            // Reopen connection without database name set
-            // as some vendors do not allow dropping the database connected to.
-            $connection->close();
-            $connection         = DriverManager::getConnection($params);
-            $shouldDropDatabase = ! $ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
-
-            // Only quote if we don't have a path
-            if (! isset($params['path'])) {
-                $name = $connection->getDatabasePlatform()->quoteSingleIdentifier($name);
-            }
-
-            try {
-                if ($shouldDropDatabase) {
-                    $connection->getSchemaManager()->dropDatabase($name);
-                    $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
-                } else {
-                    $output->writeln(sprintf('<info>Database for connection named <comment>%s</comment> doesn\'t exist. Skipped.</info>', $name));
-                }
-            } catch (\Exception $e) {
-                $output->writeln(sprintf('<error>Could not drop database for connection named <comment>%s</comment></error>', $name));
-                $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
-
-                return self::RETURN_CODE_NOT_DROP;
-            }
-        } else {
+        if (! $input->getOption('force')) {
             $output->writeln('<error>ATTENTION:</error> This operation should not be executed in a production environment.');
             $output->writeln('');
             $output->writeln(sprintf('<info>Would drop the database named <comment>%s</comment>.</info>', $name));
@@ -112,6 +87,31 @@ EOT
             $output->writeln('<error>All data will be lost!</error>');
 
             return self::RETURN_CODE_NO_FORCE;
+        }
+
+        // Reopen connection without database name set
+        // as some vendors do not allow dropping the database connected to.
+        $connection->close();
+        $connection         = DriverManager::getConnection($params);
+        $shouldDropDatabase = ! $ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
+
+        // Only quote if we don't have a path
+        if (! isset($params['path'])) {
+            $name = $connection->getDatabasePlatform()->quoteSingleIdentifier($name);
+        }
+
+        try {
+            if ($shouldDropDatabase) {
+                $connection->getSchemaManager()->dropDatabase($name);
+                $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
+            } else {
+                $output->writeln(sprintf('<info>Database for connection named <comment>%s</comment> doesn\'t exist. Skipped.</info>', $name));
+            }
+        } catch (\Exception $e) {
+            $output->writeln(sprintf('<error>Could not drop database for connection named <comment>%s</comment></error>', $name));
+            $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
+
+            return self::RETURN_CODE_NOT_DROP;
         }
     }
 }

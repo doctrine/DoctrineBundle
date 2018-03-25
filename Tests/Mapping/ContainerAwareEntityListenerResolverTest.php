@@ -8,14 +8,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ContainerAwareEntityListenerResolverTest extends TestCase
 {
-    /**
-     * @var ContainerAwareEntityListenerResolver
-     */
+    /** @var ContainerAwareEntityListenerResolver */
     private $resolver;
 
-    /**
-     * @var ContainerInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
+    /** @var ContainerInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $container;
 
     protected function setUp()

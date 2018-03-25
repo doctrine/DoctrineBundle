@@ -6,19 +6,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ContainerAwareEntityListenerResolver implements EntityListenerServiceResolver
 {
-    /**
-     * @var ContainerInterface
-     */
+    /** @var ContainerInterface */
     private $container;
 
-    /**
-     * @var object[] Map to store entity listener instances.
-     */
+    /** @var object[] Map to store entity listener instances. */
     private $instances = [];
 
-    /**
-     * @var string[] Map to store registered service ids
-     */
+    /** @var string[] Map to store registered service ids */
     private $serviceIds = [];
 
     public function __construct(ContainerInterface $container)
@@ -39,9 +33,11 @@ class ContainerAwareEntityListenerResolver implements EntityListenerServiceResol
 
         $className = $this->normalizeClassName($className);
 
-        if (isset($this->instances[$className])) {
-            unset($this->instances[$className]);
+        if (! isset($this->instances[$className])) {
+            return;
         }
+
+        unset($this->instances[$className]);
     }
 
     /**

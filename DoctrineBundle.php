@@ -47,46 +47,48 @@ class DoctrineBundle extends Bundle
     {
         // Register an autoloader for proxies to avoid issues when unserializing them
         // when the ORM is used.
-        if ($this->container->hasParameter('doctrine.orm.proxy_namespace')) {
-            $namespace      = $this->container->getParameter('doctrine.orm.proxy_namespace');
-            $dir            = $this->container->getParameter('doctrine.orm.proxy_dir');
-            $proxyGenerator = null;
-
-            if ($this->container->getParameter('doctrine.orm.auto_generate_proxy_classes')) {
-                // See https://github.com/symfony/symfony/pull/3419 for usage of references
-                $container = &$this->container;
-
-                $proxyGenerator = function ($proxyDir, $proxyNamespace, $class) use (&$container) {
-                    $originalClassName = ClassUtils::getRealClass($class);
-                    /** @var Registry $registry */
-                    $registry = $container->get('doctrine');
-
-                    // Tries to auto-generate the proxy file
-                    /** @var $em \Doctrine\ORM\EntityManager */
-                    foreach ($registry->getManagers() as $em) {
-                        if (! $em->getConfiguration()->getAutoGenerateProxyClasses()) {
-                            continue;
-                        }
-
-                        $metadataFactory = $em->getMetadataFactory();
-
-                        if ($metadataFactory->isTransient($originalClassName)) {
-                            continue;
-                        }
-
-                        $classMetadata = $metadataFactory->getMetadataFor($originalClassName);
-
-                        $em->getProxyFactory()->generateProxyClasses([$classMetadata]);
-
-                        clearstatcache(true, Autoloader::resolveFile($proxyDir, $proxyNamespace, $class));
-
-                        break;
-                    }
-                };
-            }
-
-            $this->autoloader = Autoloader::register($dir, $namespace, $proxyGenerator);
+        if (! $this->container->hasParameter('doctrine.orm.proxy_namespace')) {
+            return;
         }
+
+        $namespace      = $this->container->getParameter('doctrine.orm.proxy_namespace');
+        $dir            = $this->container->getParameter('doctrine.orm.proxy_dir');
+        $proxyGenerator = null;
+
+        if ($this->container->getParameter('doctrine.orm.auto_generate_proxy_classes')) {
+            // See https://github.com/symfony/symfony/pull/3419 for usage of references
+            $container = &$this->container;
+
+            $proxyGenerator = function ($proxyDir, $proxyNamespace, $class) use (&$container) {
+                $originalClassName = ClassUtils::getRealClass($class);
+                /** @var Registry $registry */
+                $registry = $container->get('doctrine');
+
+                // Tries to auto-generate the proxy file
+                /** @var $em \Doctrine\ORM\EntityManager */
+                foreach ($registry->getManagers() as $em) {
+                    if (! $em->getConfiguration()->getAutoGenerateProxyClasses()) {
+                        continue;
+                    }
+
+                    $metadataFactory = $em->getMetadataFactory();
+
+                    if ($metadataFactory->isTransient($originalClassName)) {
+                        continue;
+                    }
+
+                    $classMetadata = $metadataFactory->getMetadataFor($originalClassName);
+
+                    $em->getProxyFactory()->generateProxyClasses([$classMetadata]);
+
+                    clearstatcache(true, Autoloader::resolveFile($proxyDir, $proxyNamespace, $class));
+
+                    break;
+                }
+            };
+        }
+
+        $this->autoloader = Autoloader::register($dir, $namespace, $proxyGenerator);
     }
 
     /**
@@ -102,19 +104,25 @@ class DoctrineBundle extends Bundle
         // Clear all entity managers to clear references to entities for GC
         if ($this->container->hasParameter('doctrine.entity_managers')) {
             foreach ($this->container->getParameter('doctrine.entity_managers') as $id) {
-                if (! method_exists($this->container, 'initialized') || $this->container->initialized($id)) {
-                    $this->container->get($id)->clear();
+                if (method_exists($this->container, 'initialized') && ! $this->container->initialized($id)) {
+                    continue;
                 }
+
+                $this->container->get($id)->clear();
             }
         }
 
         // Close all connections to avoid reaching too many connections in the process when booting again later (tests)
-        if ($this->container->hasParameter('doctrine.connections')) {
-            foreach ($this->container->getParameter('doctrine.connections') as $id) {
-                if (! method_exists($this->container, 'initialized') || $this->container->initialized($id)) {
-                    $this->container->get($id)->close();
-                }
+        if (! $this->container->hasParameter('doctrine.connections')) {
+            return;
+        }
+
+        foreach ($this->container->getParameter('doctrine.connections') as $id) {
+            if (method_exists($this->container, 'initialized') && ! $this->container->initialized($id)) {
+                continue;
             }
+
+            $this->container->get($id)->close();
         }
     }
 

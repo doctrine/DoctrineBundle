@@ -11,9 +11,11 @@ class XMLSchemaTest extends TestCase
         $schemaFiles = [];
         $di          = new \DirectoryIterator(__DIR__ . '/Fixtures/config/xml');
         foreach ($di as $element) {
-            if ($element->isFile() && substr($element->getFilename(), -4) === '.xml') {
-                $schemaFiles[] = [$element->getPathname()];
+            if (! $element->isFile() || substr($element->getFilename(), -4) !== '.xml') {
+                continue;
             }
+
+            $schemaFiles[] = [$element->getPathname()];
         }
 
         return $schemaFiles;

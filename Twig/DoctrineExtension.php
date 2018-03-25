@@ -63,12 +63,14 @@ class DoctrineExtension extends \Twig_Extension
                     continue;
                 }
 
-                if ($found === true && $key < $baseCount) {
-                    $tmp              = $nextLevelElement;
-                    $newCombination   = array_slice($tmp, 0);
-                    $newCombination[] = $element;
-                    $result[]         = array_slice($newCombination, 0);
+                if ($found !== true || $key >= $baseCount) {
+                    continue;
                 }
+
+                $tmp              = $nextLevelElement;
+                $newCombination   = array_slice($tmp, 0);
+                $newCombination[] = $element;
+                $result[]         = array_slice($newCombination, 0);
             }
         }
 

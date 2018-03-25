@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Version;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
@@ -681,7 +682,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($definition, [['soft_delete', 'myFilter'], ['myFilter' => ['myParameter' => 'myValue', 'mySecondParameter' => 'mySecondValue']]]);
 
         // Let's create the instance to check the configurator work.
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $container->get('doctrine.orm.entity_manager');
         $this->assertCount(2, $entityManager->getFilters()->getEnabledFilters());
     }
@@ -1021,13 +1022,17 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     private function assertDICDefinitionMethodCallAt($pos, Definition $definition, $methodName, array $params = null)
     {
         $calls = $definition->getMethodCalls();
-        if (isset($calls[$pos][0])) {
-            $this->assertEquals($methodName, $calls[$pos][0], "Method '" . $methodName . "' is expected to be called at position " . $pos . '.');
-
-            if ($params !== null) {
-                $this->assertEquals($params, $calls[$pos][1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
-            }
+        if (! isset($calls[$pos][0])) {
+            return;
         }
+
+        $this->assertEquals($methodName, $calls[$pos][0], "Method '" . $methodName . "' is expected to be called at position " . $pos . '.');
+
+        if ($params === null) {
+            return;
+        }
+
+        $this->assertEquals($params, $calls[$pos][1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
     }
 
     /**
@@ -1041,20 +1046,24 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $calls  = $definition->getMethodCalls();
         $called = false;
         foreach ($calls as $call) {
-            if ($call[0] === $methodName) {
-                if ($called) {
-                    $this->fail("Method '" . $methodName . "' is expected to be called only once, a second call was registered though.");
-                } else {
-                    $called = true;
-                    if ($params !== null) {
-                        $this->assertEquals($params, $call[1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
-                    }
+            if ($call[0] !== $methodName) {
+                continue;
+            }
+
+            if ($called) {
+                $this->fail("Method '" . $methodName . "' is expected to be called only once, a second call was registered though.");
+            } else {
+                $called = true;
+                if ($params !== null) {
+                    $this->assertEquals($params, $call[1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
                 }
             }
         }
-        if (! $called) {
-            $this->fail("Method '" . $methodName . "' is expected to be called once, definition does not contain a call though.");
+        if ($called) {
+            return;
         }
+
+        $this->fail("Method '" . $methodName . "' is expected to be called once, definition does not contain a call though.");
     }
 
     private function assertDICDefinitionMethodCallCount(Definition $definition, $methodName, array $params = [], $nbCalls = 1)
@@ -1062,16 +1071,18 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $calls  = $definition->getMethodCalls();
         $called = 0;
         foreach ($calls as $call) {
-            if ($call[0] === $methodName) {
-                if ($called > $nbCalls) {
-                    break;
-                }
-
-                if (isset($params[$called])) {
-                    $this->assertEquals($params[$called], $call[1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
-                }
-                $called++;
+            if ($call[0] !== $methodName) {
+                continue;
             }
+
+            if ($called > $nbCalls) {
+                break;
+            }
+
+            if (isset($params[$called])) {
+                $this->assertEquals($params[$called], $call[1], "Expected parameters to methods '" . $methodName . "' do not match the actual parameters.");
+            }
+            $called++;
         }
 
         $this->assertEquals($nbCalls, $called, sprintf('The method "%s" should be called %d times', $methodName, $nbCalls));
@@ -1087,12 +1098,14 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     {
         $calls = $definition->getMethodCalls();
         foreach ($calls as $call) {
-            if ($call[0] === $methodName) {
-                if ($params !== null) {
-                    $this->assertNotEquals($params, $call[1], "Method '" . $methodName . "' is not expected to be called with the given parameters.");
-                } else {
-                    $this->fail("Method '" . $methodName . "' is not expected to be called");
-                }
+            if ($call[0] !== $methodName) {
+                continue;
+            }
+
+            if ($params !== null) {
+                $this->assertNotEquals($params, $call[1], "Method '" . $methodName . "' is not expected to be called with the given parameters.");
+            } else {
+                $this->fail("Method '" . $methodName . "' is not expected to be called");
             }
         }
     }

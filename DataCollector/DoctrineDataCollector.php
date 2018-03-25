@@ -3,6 +3,10 @@
 namespace Doctrine\Bundle\DoctrineBundle\DataCollector;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
+use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
+use Doctrine\ORM\Configuration;
+use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Doctrine\ORM\Version;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
@@ -53,27 +57,31 @@ class DoctrineDataCollector extends BaseCollector
 
         foreach ($this->registry->getManagers() as $name => $em) {
             $entities[$name] = [];
-            /** @var \Doctrine\ORM\Mapping\ClassMetadataFactory $factory */
+            /** @var ClassMetadataFactory $factory */
             $factory   = $em->getMetadataFactory();
             $validator = new SchemaValidator($em);
 
             /** @var $class \Doctrine\ORM\Mapping\ClassMetadataInfo */
             foreach ($factory->getLoadedMetadata() as $class) {
-                if (! isset($entities[$name][$class->getName()])) {
-                    $classErrors                        = $validator->validateClass($class);
-                    $entities[$name][$class->getName()] = $class->getName();
-
-                    if (! empty($classErrors)) {
-                        $errors[$name][$class->getName()] = $classErrors;
-                    }
+                if (isset($entities[$name][$class->getName()])) {
+                    continue;
                 }
+
+                $classErrors                        = $validator->validateClass($class);
+                $entities[$name][$class->getName()] = $class->getName();
+
+                if (empty($classErrors)) {
+                    continue;
+                }
+
+                $errors[$name][$class->getName()] = $classErrors;
             }
 
             if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
                 continue;
             }
 
-            /** @var \Doctrine\ORM\Configuration $emConfig */
+            /** @var Configuration $emConfig */
             $emConfig   = $em->getConfiguration();
             $slcEnabled = $emConfig->isSecondLevelCacheEnabled();
 
@@ -84,7 +92,7 @@ class DoctrineDataCollector extends BaseCollector
             $caches['enabled'] = true;
 
             /** @var $cacheConfiguration \Doctrine\ORM\Cache\CacheConfiguration */
-            /** @var \Doctrine\ORM\Cache\Logging\CacheLoggerChain $cacheLoggerChain */
+            /** @var CacheLoggerChain $cacheLoggerChain */
             $cacheConfiguration = $emConfig->getSecondLevelCacheConfiguration();
             $cacheLoggerChain   = $cacheConfiguration->getCacheLogger();
 
@@ -92,7 +100,7 @@ class DoctrineDataCollector extends BaseCollector
                 continue;
             }
 
-            /** @var \Doctrine\ORM\Cache\Logging\StatisticsCacheLogger $cacheLoggerStats */
+            /** @var StatisticsCacheLogger $cacheLoggerStats */
             $cacheLoggerStats      = $cacheLoggerChain->getLogger('statistics');
             $caches['log_enabled'] = true;
 
