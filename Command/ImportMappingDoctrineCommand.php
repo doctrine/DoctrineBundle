@@ -67,15 +67,15 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $type     = $input->getArgument('mapping-type') ? $input->getArgument('mapping-type') : 'xml';
+        $type = $input->getArgument('mapping-type') ? $input->getArgument('mapping-type') : 'xml';
         if ($type === 'yaml') {
             $type = 'yml';
         }
 
         $bundles = $this->getContainer()->getParameter('kernel.bundles');
         if (isset($bundles[$input->getArgument('name')])) {
-            $bundle = $this->getApplication()->getKernel()->getBundle($input->getArgument('name'));
-            $namespace = $bundle->getNamespace(). '\\Entity';
+            $bundle    = $this->getApplication()->getKernel()->getBundle($input->getArgument('name'));
+            $namespace = $bundle->getNamespace() . '\\Entity';
 
             $destPath = $bundle->getPath();
             if ($type === 'annotation') {
@@ -86,7 +86,8 @@ EOT
         } else {
             // assume a namespace has been passed
             $namespace = $input->getArgument('name');
-            if (null === $destPath = $input->getOption('path')) {
+            $destPath  = $input->getOption('path');
+            if ($destPath === null) {
                 throw new \InvalidArgumentException('The --path option is required when passing a namespace (e.g. --path=src). If you intended to pass a bundle name, check your spelling.');
             }
         }
