@@ -13,13 +13,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class DelegateCommand extends Command
 {
-    /**
-     * @var \Symfony\Component\Console\Command\Command
-     */
+    /** @var Command */
     protected $command;
 
     /**
-     * @return \Symfony\Component\Console\Command\Command
+     * @return Command
      */
     abstract protected function createCommand();
 

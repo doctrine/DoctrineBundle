@@ -25,9 +25,11 @@ class ServiceRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        if (! class_exists('Doctrine\\ORM\\Version')) {
-            $this->markTestSkipped('Doctrine ORM is not available.');
+        if (class_exists('Doctrine\\ORM\\Version')) {
+            return;
         }
+
+        $this->markTestSkipped('Doctrine ORM is not available.');
     }
 
     public function testRepositoryServiceWiring()

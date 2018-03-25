@@ -26,14 +26,10 @@ use Symfony\Component\Form\AbstractType;
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $defaultConnection;
 
-    /**
-     * @var SymfonyBridgeAdapter
-     */
+    /** @var SymfonyBridgeAdapter */
     private $adapter;
 
     public function __construct(SymfonyBridgeAdapter $adapter = null)
@@ -55,17 +51,19 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->dbalLoad($config['dbal'], $container);
         }
 
-        if (! empty($config['orm'])) {
-            if (empty($config['dbal'])) {
-                throw new \LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
-            }
-
-            if (! class_exists('Doctrine\ORM\Version')) {
-                throw new \LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
-            }
-
-            $this->ormLoad($config['orm'], $container);
+        if (empty($config['orm'])) {
+            return;
         }
+
+        if (empty($config['dbal'])) {
+            throw new \LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
+        }
+
+        if (! class_exists('Doctrine\ORM\Version')) {
+            throw new \LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
+        }
+
+        $this->ormLoad($config['orm'], $container);
     }
 
     /**
@@ -190,10 +188,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         // Create a shard_manager for this connection
-        if (isset($options['shards'])) {
-            $shardManagerDefinition = new Definition($options['shardManagerClass'], [new Reference(sprintf('doctrine.dbal.%s_connection', $name))]);
-            $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
+        if (! isset($options['shards'])) {
+            return;
         }
+
+        $shardManagerDefinition = new Definition($options['shardManagerClass'], [new Reference(sprintf('doctrine.dbal.%s_connection', $name))]);
+        $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
     }
 
     protected function getConnectionOptions($connection)
@@ -221,10 +221,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'server_version' => 'serverVersion',
             'default_table_options' => 'defaultTableOptions',
         ] as $old => $new) {
-            if (isset($options[$old])) {
-                $options[$new] = $options[$old];
-                unset($options[$old]);
+            if (! isset($options[$old])) {
+                continue;
             }
+
+            $options[$new] = $options[$old];
+            unset($options[$old]);
         }
 
         if (! empty($options['slaves']) && ! empty($options['shards'])) {
@@ -234,21 +236,21 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (! empty($options['slaves'])) {
             $nonRewrittenKeys = [
                 'driver' => true,
-            'driverOptions' => true,
-            'driverClass' => true,
+                'driverOptions' => true,
+                'driverClass' => true,
                 'wrapperClass' => true,
-            'keepSlave' => true,
-            'shardChoser' => true,
+                'keepSlave' => true,
+                'shardChoser' => true,
                 'platform' => true,
-            'slaves' => true,
-            'master' => true,
-            'shards' => true,
+                'slaves' => true,
+                'master' => true,
+                'shards' => true,
                 'serverVersion' => true,
                 // included by safety but should have been unset already
                 'logging' => true,
-            'profiling' => true,
-            'mapping_types' => true,
-            'platform_service' => true,
+                'profiling' => true,
+                'mapping_types' => true,
+                'platform_service' => true,
             ];
             foreach ($options as $key => $value) {
                 if (isset($nonRewrittenKeys[$key])) {
@@ -268,21 +270,21 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (! empty($options['shards'])) {
             $nonRewrittenKeys = [
                 'driver' => true,
-            'driverOptions' => true,
-            'driverClass' => true,
+                'driverOptions' => true,
+                'driverClass' => true,
                 'wrapperClass' => true,
-            'keepSlave' => true,
-            'shardChoser' => true,
+                'keepSlave' => true,
+                'shardChoser' => true,
                 'platform' => true,
-            'slaves' => true,
-            'global' => true,
-            'shards' => true,
+                'slaves' => true,
+                'global' => true,
+                'shards' => true,
                 'serverVersion' => true,
                 // included by safety but should have been unset already
                 'logging' => true,
-            'profiling' => true,
-            'mapping_types' => true,
-            'platform_service' => true,
+                'profiling' => true,
+                'mapping_types' => true,
+                'platform_service' => true,
             ];
             foreach ($options as $key => $value) {
                 if (isset($nonRewrittenKeys[$key])) {
@@ -354,9 +356,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
 
-            if ($loadPropertyInfoExtractor) {
-                $this->loadPropertyInfoExtractor($name, $container);
+            if (! $loadPropertyInfoExtractor) {
+                continue;
             }
+
+            $this->loadPropertyInfoExtractor($name, $container);
         }
 
         if ($config['resolve_target_entities']) {
@@ -364,8 +368,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
             foreach ($config['resolve_target_entities'] as $name => $implementation) {
                 $def->addMethodCall('addResolveTargetEntity', [
                     $name,
-                $implementation,
-                [],
+                    $implementation,
+                    [],
                 ]);
             }
 
@@ -392,10 +396,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
          * This is replaced with a true locator by ServiceRepositoryCompilerPass.
          * This makes that pass technically optional (good for tests).
          */
-        if (class_exists(ServiceLocator::class)) {
-            $container->getDefinition('doctrine.orm.container_repository_factory')
-                ->replaceArgument(0, (new Definition(ServiceLocator::class))->setArgument(0, []));
+        if (! class_exists(ServiceLocator::class)) {
+            return;
         }
+
+        $container->getDefinition('doctrine.orm.container_repository_factory')
+            ->replaceArgument(0, (new Definition(ServiceLocator::class))->setArgument(0, []));
     }
 
     /**
@@ -490,9 +496,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             if ($filter['enabled']) {
                 $enabledFilters[] = $name;
             }
-            if ($filter['parameters']) {
-                $filtersParameters[$name] = $filter['parameters'];
+            if (! $filter['parameters']) {
+                continue;
             }
+
+            $filtersParameters[$name] = $filter['parameters'];
         }
 
         $managerConfiguratorName = sprintf('doctrine.orm.%s_manager_configurator', $entityManager['name']);
@@ -521,26 +529,28 @@ class DoctrineExtension extends AbstractDoctrineExtension
             new Alias(sprintf('doctrine.dbal.%s_connection.event_manager', $entityManager['connection']), false)
         );
 
-        if (isset($entityManager['entity_listeners'])) {
-            if (! isset($listenerDef)) {
-                throw new InvalidArgumentException('Entity listeners configuration requires doctrine-orm 2.5.0 or newer');
-            }
+        if (! isset($entityManager['entity_listeners'])) {
+            return;
+        }
 
-            $entities = $entityManager['entity_listeners']['entities'];
+        if (! isset($listenerDef)) {
+            throw new InvalidArgumentException('Entity listeners configuration requires doctrine-orm 2.5.0 or newer');
+        }
 
-            foreach ($entities as $entityListenerClass => $entity) {
-                foreach ($entity['listeners'] as $listenerClass => $listener) {
-                    foreach ($listener['events'] as $listenerEvent) {
-                        $listenerEventName = $listenerEvent['type'];
-                        $listenerMethod    = $listenerEvent['method'];
+        $entities = $entityManager['entity_listeners']['entities'];
 
-                        $listenerDef->addMethodCall('addEntityListener', [
-                            $entityListenerClass,
+        foreach ($entities as $entityListenerClass => $entity) {
+            foreach ($entity['listeners'] as $listenerClass => $listener) {
+                foreach ($listener['events'] as $listenerEvent) {
+                    $listenerEventName = $listenerEvent['type'];
+                    $listenerMethod    = $listenerEvent['method'];
+
+                    $listenerDef->addMethodCall('addEntityListener', [
+                        $entityListenerClass,
                         $listenerClass,
                         $listenerEventName,
                         $listenerMethod,
-                        ]);
-                    }
+                    ]);
                 }
             }
         }

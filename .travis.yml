@@ -58,7 +58,7 @@ jobs:
       env: CODING_STANDARDS
       php: 7.1
       install:
-        - travis_retry composer require -n --prefer-dist --dev doctrine/coding-standard:~2.1.0
+        - travis_retry composer require -n --prefer-dist --dev doctrine/coding-standard:^4.0
       script:
         - ./vendor/bin/phpcs
 

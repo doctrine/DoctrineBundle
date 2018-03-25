@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception\DriverException;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 
 /**
@@ -40,7 +41,7 @@ class ConnectionFactory
      * @param mixed[]         $params
      * @param string[]|Type[] $mappingTypes
      *
-     * @return \Doctrine\DBAL\Connection
+     * @return Connection
      */
     public function createConnection(array $params, Configuration $config = null, EventManager $eventManager = null, array $mappingTypes = [])
     {
@@ -74,8 +75,8 @@ class ConnectionFactory
      * For details have a look at DoctrineBundle issue #673.
      *
      *
-     * @return \Doctrine\DBAL\Platforms\AbstractPlatform
-     * @throws \Doctrine\DBAL\DBALException
+     * @return AbstractPlatform
+     * @throws DBALException
      */
     private function getDatabasePlatform(Connection $connection)
     {
@@ -107,9 +108,11 @@ class ConnectionFactory
             } else {
                 Type::addType($type, $typeConfig['class']);
             }
-            if ($typeConfig['commented']) {
-                $this->commentedTypes[] = $type;
+            if (! $typeConfig['commented']) {
+                continue;
             }
+
+            $this->commentedTypes[] = $type;
         }
         $this->initialized = true;
     }

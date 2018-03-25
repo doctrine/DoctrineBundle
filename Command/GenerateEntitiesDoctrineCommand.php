@@ -125,9 +125,11 @@ EOT
             $output->writeln(sprintf('  > generating <comment>%s</comment>', $m->name));
             $generator->generate([$m], $entityMetadata->getPath());
 
-            if ($m->customRepositoryClassName && strpos($m->customRepositoryClassName, $metadata->getNamespace()) !== false) {
-                $repoGenerator->writeEntityRepositoryClass($m->customRepositoryClassName, $metadata->getPath());
+            if (! $m->customRepositoryClassName || strpos($m->customRepositoryClassName, $metadata->getNamespace()) === false) {
+                continue;
             }
+
+            $repoGenerator->writeEntityRepositoryClass($m->customRepositoryClassName, $metadata->getPath());
         }
     }
 }

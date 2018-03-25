@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -24,7 +25,7 @@ class Configuration implements ConfigurationInterface
      */
     public function __construct($debug)
     {
-        $this->debug = (Boolean) $debug;
+        $this->debug = (bool) $debug;
     }
 
     /**
@@ -352,7 +353,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Return ORM target entity resolver node
      *
-     * @return \Symfony\Component\Config\Definition\Builder\NodeDefinition
+     * @return NodeDefinition
      */
     private function getOrmTargetEntityResolverNode()
     {
@@ -372,7 +373,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Return ORM entity listener node
      *
-     * @return \Symfony\Component\Config\Definition\Builder\NodeDefinition
+     * @return NodeDefinition
      */
     private function getOrmEntityListenersNode()
     {
@@ -669,10 +670,12 @@ class Configuration implements ConfigurationInterface
         $valuesArray = [];
 
         foreach ($constsArray as $key => $value) {
-            if (strpos($key, $constPrefix) === 0) {
-                $namesArray[]  = substr($key, $prefixLen);
-                $valuesArray[] = (int) $value;
+            if (strpos($key, $constPrefix) !== 0) {
+                continue;
             }
+
+            $namesArray[]  = substr($key, $prefixLen);
+            $valuesArray[] = (int) $value;
         }
 
         return [

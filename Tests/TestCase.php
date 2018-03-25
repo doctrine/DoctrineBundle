@@ -17,9 +17,11 @@ class TestCase extends BaseTestCase
 {
     protected function setUp()
     {
-        if (! class_exists('Doctrine\\Common\\Version')) {
-            $this->markTestSkipped('Doctrine is not available.');
+        if (class_exists('Doctrine\\Common\\Version')) {
+            return;
         }
+
+        $this->markTestSkipped('Doctrine is not available.');
     }
 
     public function createYamlBundleTestContainer()
@@ -83,15 +85,19 @@ class TestCaseAllPublicCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         foreach ($container->getDefinitions() as $id => $definition) {
-            if (strpos($id, 'doctrine') !== false) {
-                $definition->setPublic(true);
+            if (strpos($id, 'doctrine') === false) {
+                continue;
             }
+
+            $definition->setPublic(true);
         }
 
         foreach ($container->getAliases() as $id => $alias) {
-            if (strpos($id, 'doctrine') !== false) {
-                $alias->setPublic(true);
+            if (strpos($id, 'doctrine') === false) {
+                continue;
             }
+
+            $alias->setPublic(true);
         }
     }
 }
