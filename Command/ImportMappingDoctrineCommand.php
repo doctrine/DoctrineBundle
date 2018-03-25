@@ -29,6 +29,8 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
             ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('filter', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'A string pattern used to match entities that should be mapped.')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force to overwrite existing mapping files.')
+            ->addOption('bundle-less', null, InputOption::VALUE_NONE, 'Bundle argument will be used as destination path')
+            ->addOption('root-namespace', null, InputOption::VALUE_REQUIRED, 'Specify root namespace')
             ->setDescription('Imports mapping information from an existing database')
             ->setHelp(<<<EOT
 The <info>%command.name%</info> command imports mapping information
@@ -59,9 +61,19 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $bundle = $this->getApplication()->getKernel()->getBundle($input->getArgument('bundle'));
+        if ($input->getOption('bundle-less')) {
+            $destPath = $input->getArgument('bundle');
+            $namespace = 'App';
+        } else {
+            $bundle = $this->getApplication()->getKernel()->getBundle($input->getArgument('bundle'));
+            $destPath = $bundle->getPath();
+            $namespace = $bundle->getNamespace();
+        }
 
-        $destPath = $bundle->getPath();
+        if ($input->getOption('root-namespace')) {
+            $namespace = $input->getOption('root-namespace');
+        }
+
         $type     = $input->getArgument('mapping-type') ? $input->getArgument('mapping-type') : 'xml';
         if ($type === 'annotation') {
             $destPath .= '/Entity';
@@ -97,7 +109,7 @@ EOT
             $output->writeln(sprintf('Importing mapping information from "<info>%s</info>" entity manager', $emName));
             foreach ($metadata as $class) {
                 $className   = $class->name;
-                $class->name = $bundle->getNamespace() . '\\Entity\\' . $className;
+                $class->name = $namespace . '\\Entity\\' . $className;
                 if ($type === 'annotation') {
                     $path = $destPath . '/' . str_replace('\\', '.', $className) . '.php';
                 } else {
