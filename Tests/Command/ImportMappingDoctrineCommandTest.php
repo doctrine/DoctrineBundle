@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
@@ -21,9 +22,9 @@ class ImportMappingDoctrineCommandTest extends TestCase
     /** @var CommandTester|null */
     private $commandTester;
 
-    public function setup()
+    protected function setup()
     {
-        $this->kernel = new ImportMappingTestingKernel('test', true);
+        $this->kernel = new ImportMappingTestingKernel();
         $this->kernel->boot();
 
         $connection = $this->kernel->getContainer()
@@ -36,7 +37,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->commandTester = new CommandTester($command);
     }
 
-    public function tearDown()
+    protected function tearDown()
     {
         $fs = new Filesystem();
         if ($this->kernel !== null) {
@@ -44,6 +45,8 @@ class ImportMappingDoctrineCommandTest extends TestCase
         }
 
         $fs->remove(sys_get_temp_dir() . '/import_mapping_bundle');
+        $this->kernel        = null;
+        $this->commandTester = null;
     }
 
     public function testExecuteXmlWithBundle()
@@ -69,17 +72,17 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
     /**
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessageRegExp /The \-\-path option is required/
+     * @expectedExceptionMessageRegExp /The --path option is required/
      */
     public function testExecuteThrowsExceptionWithNamespaceAndNoPath()
     {
-        $this->commandTester->execute(['name' => 'Some\\Namespace']);
+        $this->commandTester->execute(['name' => 'Some\Namespace']);
     }
 
     public function testExecuteXmlWithNamespace()
     {
         $this->commandTester->execute([
-            'name' => 'Some\\Namespace\\Entity',
+            'name' => 'Some\Namespace\Entity',
             '--path' => $this->kernel->getRootDir() . '/config/doctrine',
         ]);
 
@@ -91,7 +94,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
     public function testExecuteAnnotationsWithNamespace()
     {
         $this->commandTester->execute([
-            'name' => 'Some\\Namespace\\Entity',
+            'name' => 'Some\Namespace\Entity',
             '--path' => $this->kernel->getRootDir() . '/src/Entity',
             'mapping-type' => 'annotation',
         ]);
@@ -104,6 +107,11 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
 class ImportMappingTestingKernel extends Kernel
 {
+    public function __construct()
+    {
+        parent::__construct('test', true);
+    }
+
     public function registerBundles()
     {
         return [
@@ -127,13 +135,17 @@ class ImportMappingTestingKernel extends Kernel
             ]);
 
             // Register a NullLogger to avoid getting the stderr default logger of FrameworkBundle
-            $container->register('logger', 'Psr\Log\NullLogger');
+            $container->register('logger', NullLogger::class);
         });
     }
 
     public function getRootDir()
     {
-        return sys_get_temp_dir() . '/sf_kernel_' . spl_object_hash($this);
+        if ($this->rootDir === null) {
+            $this->rootDir = sys_get_temp_dir() . '/sf_kernel_' . md5(mt_rand());
+        }
+
+        return $this->rootDir;
     }
 }
 
