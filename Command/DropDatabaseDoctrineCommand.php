@@ -96,7 +96,7 @@ EOT
         // If the database config comes from a URL,
         // ensure that the database name is not set.
         if (isset($params['url'])) {
-            $params['url'] = str_replace('/'.basename($params['url']), '', $params['url']);
+            $params['url'] = str_replace('/' . basename($params['url']), '', $params['url']);
         }
 
         $connection         = DriverManager::getConnection($params);
