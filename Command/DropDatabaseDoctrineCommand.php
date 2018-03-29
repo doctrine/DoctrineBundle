@@ -92,6 +92,13 @@ EOT
         // Reopen connection without database name set
         // as some vendors do not allow dropping the database connected to.
         $connection->close();
+
+        // If the database config comes from a URL,
+        // ensure that the database name is not set.
+        if (isset($params['url'])) {
+            $params['url'] = str_replace('/'.basename($params['url']), '', $params['url']);
+        }
+
         $connection         = DriverManager::getConnection($params);
         $shouldDropDatabase = ! $ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
 
