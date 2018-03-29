@@ -312,19 +312,17 @@ class Configuration implements ConfigurationInterface
                     ->children()
                         ->scalarNode('default_entity_manager')->end()
                         ->scalarNode('auto_generate_proxy_classes')->defaultValue(false)
-                            ->info('Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL"')
+                            ->info('Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "FILE_OUTDATED", "EVAL"')
                             ->validate()
                                 ->ifTrue(function ($v) use ($generationModes) {
-                                    if (is_int($v) && in_array($v, $generationModes['values']/*array(0, 1, 2, 3)*/)) {
+                                    if (is_int($v) && in_array($v, $generationModes['values']/*array(0, 1, 2, 3, 4)*/)) {
                                         return false;
                                     }
                                     if (is_bool($v)) {
                                         return false;
                                     }
-                                    if (is_string($v)) {
-                                        if (in_array(strtoupper($v), $generationModes['names']/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'EVAL')*/)) {
-                                            return false;
-                                        }
+                                    if (is_string($v) && in_array(strtoupper($v), $generationModes['names']/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'FILE_OUTDATED', 'EVAL')*/)) {
+                                        return false;
                                     }
 
                                     return true;

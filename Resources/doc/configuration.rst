@@ -214,7 +214,7 @@ Configuration Reference
             orm:
                 default_entity_manager: ~ # The first defined is used if not set
 
-                # Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL"
+                # Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "FILE_OUTDATED", "EVAL"
                 auto_generate_proxy_classes:  false
                 proxy_dir:                    "%kernel.cache_dir%/doctrine/orm/Proxies"
                 proxy_namespace:              Proxies
@@ -526,7 +526,7 @@ Configuration Reference
 
                 </doctrine:dbal>
 
-                <!-- auto-generate-proxy-classes: Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL" -->
+                <!-- auto-generate-proxy-classes: Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "FILE_OUTDATED", "EVAL" -->
                 <doctrine:orm
                     default-entity-manager="default"
                     auto-generate-proxy-classes="false"
