@@ -24,6 +24,9 @@ class DoctrineDataCollector extends BaseCollector
     /** @var int|null */
     private $invalidEntityCount;
 
+    /** @var [] */
+    private $groupedQueries;
+
     public function __construct(ManagerRegistry $registry)
     {
         $this->registry = $registry;
@@ -147,6 +150,7 @@ class DoctrineDataCollector extends BaseCollector
         $this->data['entities'] = $entities;
         $this->data['errors']   = $errors;
         $this->data['caches']   = $caches;
+        $this->groupedQueries = null;
     }
 
     public function getEntities()
@@ -200,13 +204,11 @@ class DoctrineDataCollector extends BaseCollector
 
     public function getGroupedQueries()
     {
-        static $groupedQueries = null;
-
-        if ($groupedQueries !== null) {
-            return $groupedQueries;
+        if ($this->groupedQueries !== null) {
+            return $this->groupedQueries;
         }
 
-        $groupedQueries   = [];
+        $this->groupedQueries   = [];
         $totalExecutionMS = 0;
         foreach ($this->data['queries'] as $connection => $queries) {
             $connectionGroupedQueries = [];
@@ -228,17 +230,17 @@ class DoctrineDataCollector extends BaseCollector
                 }
                 return ($a['executionMS'] < $b['executionMS']) ? 1 : -1;
             });
-            $groupedQueries[$connection] = $connectionGroupedQueries;
+            $this->groupedQueries[$connection] = $connectionGroupedQueries;
         }
 
-        foreach ($groupedQueries as $connection => $queries) {
+        foreach ($this->groupedQueries as $connection => $queries) {
             foreach ($queries as $i => $query) {
-                $groupedQueries[$connection][$i]['executionPercent'] =
+                $this->groupedQueries[$connection][$i]['executionPercent'] =
                     $this->executionTimePercentage($query['executionMS'], $totalExecutionMS);
             }
         }
 
-        return $groupedQueries;
+        return $this->groupedQueries;
     }
 
     private function executionTimePercentage($executionTimeMS, $totalExecutionTimeMS)
