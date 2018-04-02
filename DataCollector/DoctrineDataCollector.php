@@ -24,7 +24,7 @@ class DoctrineDataCollector extends BaseCollector
     /** @var int|null */
     private $invalidEntityCount;
 
-    /** @var []
+    /** @var [] */
     private $groupedQueries;
 
     public function __construct(ManagerRegistry $registry)
