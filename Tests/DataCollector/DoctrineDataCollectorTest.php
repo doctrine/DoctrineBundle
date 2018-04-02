@@ -50,6 +50,28 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertCount(2, $entities['default']);
     }
 
+    public function testGetGroupedQueries()
+    {
+        $logger = $this->getMockBuilder('Doctrine\DBAL\Logging\DebugStack')->getMock();
+        $logger->queries = [];
+        $logger->queries[] = ['sql' => 'SELECT * FROM foo WHERE bar = :bar', 'params' => [':bar' => 1]];
+        $logger->queries[] = ['sql' => 'SELECT * FROM foo WHERE bar = :bar', 'params' => [':bar' => 2]];
+        $collector = $this->createCollector([]);
+        $collector->addLogger('default', $logger);
+        $collector->collect(new Request(), new Response());
+        $groupedQueries = $collector->getGroupedQueries();
+        $this->assertCount(1, $groupedQueries['default']);
+        $this->assertSame('SELECT * FROM foo WHERE bar = :bar', $groupedQueries['default'][0]['sql']);
+        $this->assertSame(2, $groupedQueries['default'][0]['count']);
+
+        $logger->queries[] = ['sql' => 'SELECT * FROM bar', 'params' => []];
+        $collector->collect(new Request(), new Response());
+        $groupedQueries = $collector->getGroupedQueries();
+        $this->assertCount(2, $groupedQueries['default']);
+        $this->assertSame('SELECT * FROM bar', $groupedQueries['default'][1]['sql']);
+        $this->assertSame(1, $groupedQueries['default'][1]['count']);
+    }
+
     /**
      * @param string $entityFQCN
      *
