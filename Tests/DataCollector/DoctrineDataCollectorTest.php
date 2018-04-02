@@ -54,8 +54,16 @@ class DoctrineDataCollectorTest extends TestCase
     {
         $logger = $this->getMockBuilder('Doctrine\DBAL\Logging\DebugStack')->getMock();
         $logger->queries = [];
-        $logger->queries[] = ['sql' => 'SELECT * FROM foo WHERE bar = :bar', 'params' => [':bar' => 1]];
-        $logger->queries[] = ['sql' => 'SELECT * FROM foo WHERE bar = :bar', 'params' => [':bar' => 2]];
+        $logger->queries[] = [
+            'sql' => 'SELECT * FROM foo WHERE bar = :bar',
+            'params' => [':bar' => 1],
+            'executionMS' => 32,
+        ];
+        $logger->queries[] = [
+            'sql' => 'SELECT * FROM foo WHERE bar = :bar',
+            'params' => [':bar' => 2],
+            'executionMS' => 25,
+        ];
         $collector = $this->createCollector([]);
         $collector->addLogger('default', $logger);
         $collector->collect(new Request(), new Response());
@@ -64,7 +72,11 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame('SELECT * FROM foo WHERE bar = :bar', $groupedQueries['default'][0]['sql']);
         $this->assertSame(2, $groupedQueries['default'][0]['count']);
 
-        $logger->queries[] = ['sql' => 'SELECT * FROM bar', 'params' => []];
+        $logger->queries[] = [
+            'sql' => 'SELECT * FROM bar',
+            'params' => [],
+            'executionMS' => 25,
+        ];
         $collector->collect(new Request(), new Response());
         $groupedQueries = $collector->getGroupedQueries();
         $this->assertCount(2, $groupedQueries['default']);
