@@ -52,8 +52,8 @@ class DoctrineDataCollectorTest extends TestCase
 
     public function testGetGroupedQueries()
     {
-        $logger = $this->getMockBuilder('Doctrine\DBAL\Logging\DebugStack')->getMock();
-        $logger->queries = [];
+        $logger            = $this->getMockBuilder('Doctrine\DBAL\Logging\DebugStack')->getMock();
+        $logger->queries   = [];
         $logger->queries[] = [
             'sql' => 'SELECT * FROM foo WHERE bar = :bar',
             'params' => [':bar' => 1],
@@ -64,7 +64,7 @@ class DoctrineDataCollectorTest extends TestCase
             'params' => [':bar' => 2],
             'executionMS' => 25,
         ];
-        $collector = $this->createCollector([]);
+        $collector         = $this->createCollector([]);
         $collector->addLogger('default', $logger);
         $collector->collect(new Request(), new Response());
         $groupedQueries = $collector->getGroupedQueries();
