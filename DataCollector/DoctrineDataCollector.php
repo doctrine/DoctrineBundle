@@ -24,7 +24,7 @@ class DoctrineDataCollector extends BaseCollector
     /** @var int|null */
     private $invalidEntityCount;
 
-    /** @var [] */
+    /** @var string[] */
     private $groupedQueries;
 
     public function __construct(ManagerRegistry $registry)
@@ -150,7 +150,7 @@ class DoctrineDataCollector extends BaseCollector
         $this->data['entities'] = $entities;
         $this->data['errors']   = $errors;
         $this->data['caches']   = $caches;
-        $this->groupedQueries = null;
+        $this->groupedQueries   = null;
     }
 
     public function getEntities()
@@ -208,8 +208,8 @@ class DoctrineDataCollector extends BaseCollector
             return $this->groupedQueries;
         }
 
-        $this->groupedQueries   = [];
-        $totalExecutionMS = 0;
+        $this->groupedQueries = [];
+        $totalExecutionMS     = 0;
         foreach ($this->data['queries'] as $connection => $queries) {
             $connectionGroupedQueries = [];
             foreach ($queries as $i => $query) {
