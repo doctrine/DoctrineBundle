@@ -72,7 +72,7 @@ EOT
             }
         }
 
-        $hasPath = isset($params['path']);
+        $hasPath = !empty($params['path']);
         $name    = $hasPath ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
         if (! $name) {
             throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
