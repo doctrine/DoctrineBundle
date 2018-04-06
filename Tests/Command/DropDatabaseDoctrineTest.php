@@ -12,12 +12,12 @@ class DropDatabaseDoctrineTest extends TestCase
     public function testExecute()
     {
         $connectionName = 'default';
-        $dbName = 'test';
-        $params = array(
-            'url' => "sqlite:///". sys_get_temp_dir() ."/test.db",
-            'path' => sys_get_temp_dir() . "/" . $dbName,
+        $dbName         = 'test';
+        $params         = [
+            'url' => 'sqlite:///' . sys_get_temp_dir() . '/test.db',
+            'path' => sys_get_temp_dir() . '/' . $dbName,
             'driver' => 'pdo_sqlite',
-        );
+        ];
 
         $application = new Application();
         $application->add(new DropDatabaseDoctrineCommand());
@@ -27,20 +27,20 @@ class DropDatabaseDoctrineTest extends TestCase
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
-            array_merge(array('command' => $command->getName(), '--force' => true))
+            array_merge(['command' => $command->getName(), '--force' => true])
         );
 
-        $this->assertContains("Dropped database for connection named " . sys_get_temp_dir() . "/" . $dbName . "" , $commandTester->getDisplay());
+        $this->assertContains('Dropped database for connection named ' . sys_get_temp_dir() . '/' . $dbName . '', $commandTester->getDisplay());
     }
 
     public function testExecuteWithoutOptionForceWillFailWithAttentionMessage()
     {
         $connectionName = 'default';
-        $dbName = 'test';
-        $params = array(
-            'path' => sys_get_temp_dir() . "/" . $dbName,
+        $dbName         = 'test';
+        $params         = [
+            'path' => sys_get_temp_dir() . '/' . $dbName,
             'driver' => 'pdo_sqlite',
-        );
+        ];
 
         $application = new Application();
         $application->add(new DropDatabaseDoctrineCommand());
@@ -50,11 +50,11 @@ class DropDatabaseDoctrineTest extends TestCase
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
-            array_merge(array('command' => $command->getName()))
+            array_merge(['command' => $command->getName()])
         );
 
-        $this->assertContains("Would drop the database named " . sys_get_temp_dir() . "/" . $dbName . ".", $commandTester->getDisplay());
-        $this->assertContains("Please run the operation with --force to execute", $commandTester->getDisplay());
+        $this->assertContains('Would drop the database named ' . sys_get_temp_dir() . '/' . $dbName . '.', $commandTester->getDisplay());
+        $this->assertContains('Please run the operation with --force to execute', $commandTester->getDisplay());
     }
 
     /**
@@ -75,7 +75,7 @@ class DropDatabaseDoctrineTest extends TestCase
 
         $mockConnection = $this->getMockBuilder('Doctrine\DBAL\Connection')
             ->disableOriginalConstructor()
-            ->setMethods(array('getParams'))
+            ->setMethods(['getParams'])
             ->getMockForAbstractClass();
 
         $mockConnection->expects($this->any())
@@ -89,7 +89,7 @@ class DropDatabaseDoctrineTest extends TestCase
             ->willReturn($mockConnection);
 
         $mockContainer = $this->getMockBuilder('Symfony\Component\DependencyInjection\Container')
-            ->setMethods(array('get'))
+            ->setMethods(['get'])
             ->getMock();
 
         $mockContainer->expects($this->any())
