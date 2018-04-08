@@ -77,7 +77,7 @@ EOT
         if (! $name) {
             throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
-        unset($params['dbname']);
+        unset($params['dbname'], $params['url']);
 
         if (! $input->getOption('force')) {
             $output->writeln('<error>ATTENTION:</error> This operation should not be executed in a production environment.');
