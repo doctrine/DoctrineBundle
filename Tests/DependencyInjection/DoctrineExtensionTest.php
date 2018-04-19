@@ -30,6 +30,8 @@ class DoctrineExtensionTest extends TestCase
         $expectedAliases = [
             DriverConnection::class => 'database_connection',
             Connection::class => 'database_connection',
+            ManagerRegistry::class => 'doctrine',
+            ObjectManager::class => 'doctrine.orm.entity_manager',
             EntityManagerInterface::class => 'doctrine.orm.entity_manager',
         ];
 
