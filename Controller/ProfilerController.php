@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
+use Symfony\Component\VarDumper\Cloner\Data;
 
 /**
  * ProfilerController.
@@ -77,14 +78,27 @@ class ProfilerController implements ContainerAwareInterface
         } else {
             $sql = 'SET SHOWPLAN_TEXT ON; GO; SET NOEXEC ON; ' . $query['sql'] . '; SET NOEXEC OFF; GO; SET SHOWPLAN_TEXT OFF;';
         }
-        $stmt = $connection->executeQuery($sql, $query['params'], $query['types']);
+
+        $params = $query['params'];
+
+        if ($params instanceof Data) {
+            $params = $params->getValue(true);
+        }
+
+        $stmt = $connection->executeQuery($sql, $params, $query['types']);
         $stmt->nextRowset();
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     private function explainOtherPlatform(Connection $connection, $query)
     {
-        return $connection->executeQuery('EXPLAIN ' . $query['sql'], $query['params'], $query['types'])
+        $params = $query['params'];
+
+        if ($params instanceof Data) {
+            $params = $params->getValue(true);
+        }
+
+        return $connection->executeQuery('EXPLAIN ' . $query['sql'], $params, $query['types'])
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
