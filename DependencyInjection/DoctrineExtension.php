@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositor
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\CacheProviderLoader;
 use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\SymfonyBridgeAdapter;
+use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Version;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Form\Type\DoctrineType;
@@ -386,6 +387,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (method_exists($container, 'registerForAutoconfiguration')) {
             $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
                 ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
+            $container->registerForAutoconfiguration(EventSubscriber::class)
+                ->addTag('doctrine.event_subscriber');
         }
 
         /*
