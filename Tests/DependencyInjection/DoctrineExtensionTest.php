@@ -676,6 +676,27 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
     }
 
+    public function testMessengerIntegration()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager([
+                'default_entity_manager' => 'default',
+                'entity_managers' => [
+                    'default' => [],
+                ],
+            ])
+            ->build();
+        $extension->load([$config], $container);
+
+        $this->assertNotNull($container->getDefinition('doctrine.orm.messenger.middleware_factory.transaction'));
+        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_transaction_middleware'));
+        $this->assertSame('default', $middlewarePrototype->getArgument(0));
+    }
+
     public function testCacheConfiguration()
     {
         $container = $this->getContainer();

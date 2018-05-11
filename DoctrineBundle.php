@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\MessengerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\Proxy\Autoloader;
@@ -38,6 +39,7 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new DoctrineValidationPass('orm'));
         $container->addCompilerPass(new EntityListenerPass());
         $container->addCompilerPass(new ServiceRepositoryCompilerPass());
+        $container->addCompilerPass(new MessengerPass());
     }
 
     /**
