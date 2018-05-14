@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class DoctrineExtensionTest extends TestCase
 {
@@ -678,6 +679,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testMessengerIntegration()
     {
+        if (! interface_exists(MessageBusInterface::class)) {
+            $this->markTestSkipped('Symfony Messenger component is not installed');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 

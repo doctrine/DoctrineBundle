@@ -16,10 +16,12 @@ class MessengerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        // Remove wired services if the Messenger component actually isn't enabled:
-        if (!$container->hasAlias('message_bus') || !is_subclass_of($container->findDefinition('message_bus')->getClass(), MessageBusInterface::class)) {
-            $container->removeDefinition('doctrine.orm.messenger.middleware_factory.transaction');
-            $container->removeDefinition('messenger.middleware.doctrine_transaction_middleware');
+        if ($container->hasAlias('message_bus') && is_subclass_of($container->findDefinition('message_bus')->getClass(), MessageBusInterface::class)) {
+            return;
         }
+
+        // Remove wired services if the Messenger component actually isn't enabled:
+        $container->removeDefinition('doctrine.orm.messenger.middleware_factory.transaction');
+        $container->removeDefinition('messenger.middleware.doctrine_transaction_middleware');
     }
 }
