@@ -50,7 +50,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $connectionName = $input->getOption('connection');
-        if (empty($connectionName) === true) {
+        if (empty($connectionName)) {
             $connectionName = $this->getContainer()->get('doctrine')->getDefaultConnectionName();
         }
         $connection = $this->getDoctrineConnection($connectionName);
