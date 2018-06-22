@@ -49,7 +49,12 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $connection = $this->getDoctrineConnection($input->getOption('connection'));
+        $connectionName = $input->getOption('connection');
+        if (empty($connectionName) === true) {
+            $connectionName = $this->getContainer()->get('doctrine')->getDefaultConnectionName();
+        }
+        $connection = $this->getDoctrineConnection($connectionName);
+
         $ifExists   = $input->getOption('if-exists');
 
         $params = $connection->getParams();
