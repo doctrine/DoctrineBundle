@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Database tool allows you to easily drop and create your configured databases.
+ * Database tool allows you to easily create your configured databases.
  */
 class CreateDatabaseDoctrineCommand extends DoctrineCommand
 {
