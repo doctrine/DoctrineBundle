@@ -87,7 +87,7 @@ EOT
         if (! $input->getOption('force')) {
             $output->writeln('<error>ATTENTION:</error> This operation should not be executed in a production environment.');
             $output->writeln('');
-            $output->writeln(sprintf('<info>Would drop the database named <comment>%s</comment>.</info>', $name));
+            $output->writeln(sprintf('<info>Would drop the database <comment>%s</comment> for connection named <comment>%s</comment>.</info>', $name, $connectionName));
             $output->writeln('Please run the operation with --force to execute');
             $output->writeln('<error>All data will be lost!</error>');
 
