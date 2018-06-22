@@ -55,7 +55,7 @@ EOT
         }
         $connection = $this->getDoctrineConnection($connectionName);
 
-        $ifExists   = $input->getOption('if-exists');
+        $ifExists = $input->getOption('if-exists');
 
         $params = $connection->getParams();
         if (isset($params['master'])) {
