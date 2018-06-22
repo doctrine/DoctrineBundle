@@ -24,8 +24,8 @@ class DropDatabaseDoctrineCommand extends DoctrineCommand
         $this
             ->setName('doctrine:database:drop')
             ->setDescription('Drops the configured database')
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
             ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
+            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
             ->addOption('if-exists', null, InputOption::VALUE_NONE, 'Don\'t trigger an error, when the database doesn\'t exist')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action')
             ->setHelp(<<<EOT
