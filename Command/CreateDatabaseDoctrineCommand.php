@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Database tool allows you to easily drop and create your configured databases.
+ * Database tool allows you to easily create your configured databases.
  */
 class CreateDatabaseDoctrineCommand extends DoctrineCommand
 {
@@ -41,7 +41,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $connectionName = $input->getOption('connection');
-        if (empty($connectionName) === true) {
+        if (empty($connectionName)) {
             $connectionName = $this->getContainer()->get('doctrine')->getDefaultConnectionName();
         }
         $connection = $this->getDoctrineConnection($connectionName);

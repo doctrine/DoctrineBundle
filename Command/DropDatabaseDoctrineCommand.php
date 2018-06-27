@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Database tool allows you to easily drop and create your configured databases.
+ * Database tool allows you to easily drop your configured databases.
  */
 class DropDatabaseDoctrineCommand extends DoctrineCommand
 {
@@ -24,8 +24,8 @@ class DropDatabaseDoctrineCommand extends DoctrineCommand
         $this
             ->setName('doctrine:database:drop')
             ->setDescription('Drops the configured database')
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
             ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
+            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
             ->addOption('if-exists', null, InputOption::VALUE_NONE, 'Don\'t trigger an error, when the database doesn\'t exist')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action')
             ->setHelp(<<<EOT
@@ -49,8 +49,13 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $connection = $this->getDoctrineConnection($input->getOption('connection'));
-        $ifExists   = $input->getOption('if-exists');
+        $connectionName = $input->getOption('connection');
+        if (empty($connectionName)) {
+            $connectionName = $this->getContainer()->get('doctrine')->getDefaultConnectionName();
+        }
+        $connection = $this->getDoctrineConnection($connectionName);
+
+        $ifExists = $input->getOption('if-exists');
 
         $params = $connection->getParams();
         if (isset($params['master'])) {
@@ -82,7 +87,7 @@ EOT
         if (! $input->getOption('force')) {
             $output->writeln('<error>ATTENTION:</error> This operation should not be executed in a production environment.');
             $output->writeln('');
-            $output->writeln(sprintf('<info>Would drop the database named <comment>%s</comment>.</info>', $name));
+            $output->writeln(sprintf('<info>Would drop the database <comment>%s</comment> for connection named <comment>%s</comment>.</info>', $name, $connectionName));
             $output->writeln('Please run the operation with --force to execute');
             $output->writeln('<error>All data will be lost!</error>');
 
@@ -103,12 +108,12 @@ EOT
         try {
             if ($shouldDropDatabase) {
                 $connection->getSchemaManager()->dropDatabase($name);
-                $output->writeln(sprintf('<info>Dropped database for connection named <comment>%s</comment></info>', $name));
+                $output->writeln(sprintf('<info>Dropped database <comment>%s</comment> for connection named <comment>%s</comment></info>', $name, $connectionName));
             } else {
-                $output->writeln(sprintf('<info>Database for connection named <comment>%s</comment> doesn\'t exist. Skipped.</info>', $name));
+                $output->writeln(sprintf('<info>Database <comment>%s</comment> for connection named <comment>%s</comment> doesn\'t exist. Skipped.</info>', $name, $connectionName));
             }
         } catch (\Exception $e) {
-            $output->writeln(sprintf('<error>Could not drop database for connection named <comment>%s</comment></error>', $name));
+            $output->writeln(sprintf('<error>Could not drop database <comment>%s</comment> for connection named <comment>%s</comment></error>', $name, $connectionName));
             $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
 
             return self::RETURN_CODE_NOT_DROP;
