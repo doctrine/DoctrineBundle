@@ -236,6 +236,11 @@ class Configuration implements ConfigurationInterface
                         'The path to the SSL client key file for PostgreSQL.'
                     )
                 ->end()
+                ->scalarNode('sslcrl')
+                    ->info(
+                        'The file name of the SSL certificate revocation list for PostgreSQL.'
+                    )
+                ->end()
                 ->booleanNode('pooled')->info('True to use a pooled server with the oci8/pdo_oracle driver')->end()
                 ->booleanNode('MultipleActiveResultSets')->info('Configuring MultipleActiveResultSets for the pdo_sqlsrv driver')->end()
                 ->booleanNode('use_savepoints')->info('Use savepoints for nested transactions')->end()
