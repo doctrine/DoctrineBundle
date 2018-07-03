@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\DBAL\Types\Type;
+use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 
 class ContainerTest extends TestCase
 {
@@ -53,6 +54,12 @@ class ContainerTest extends TestCase
         } else {
             $this->assertFalse($container->has('doctrine.orm.default_entity_manager.metadata_factory'));
             $this->assertFalse($container->has('doctrine.orm.default_entity_manager.property_info_extractor'));
+        }
+
+        if (class_exists(DoctrineLoader::class)) {
+            $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
+        } else {
+            $this->assertFalse($container->has('doctrine.orm.default_entity_manager.validator_loader'));
         }
     }
 }
