@@ -364,6 +364,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 continue;
             }
 
+            // TODO: drop the following block
             $metadataFactoryService = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $name);
             $metadataFactoryDefinition = $container->register($metadataFactoryService, ClassMetadataFactory::class);
             $metadataFactoryDefinition->setFactory([
@@ -372,12 +373,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ]);
             $metadataFactoryDefinition->setPublic(false);
 
+            $entityManagerService = sprintf('doctrine.orm.%s_entity_manager', $name);
             if ($loadPropertyInfoExtractor) {
                 $this->loadPropertyInfoExtractor($name, $container, $metadataFactoryService);
             }
 
             if ($loadValidatorAutoMappingLoader) {
-                $this->loadValidatorAutoMappingLoader($name, $container, $metadataFactoryService);
+                $this->loadValidatorAutoMappingLoader($name, $container, $entityManagerService);
             }
         }
 
@@ -816,12 +818,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * Loads a validator loader for each defined entity manager.
      *
      * @param string $entityManagerName
-     * @param string $metadataFactoryService
+     * @param string $entityManagerService
      */
-    private function loadValidatorAutoMappingLoader($entityManagerName, ContainerBuilder $container, $metadataFactoryService)
+    private function loadValidatorAutoMappingLoader($entityManagerName, ContainerBuilder $container, $entityManagerService)
     {
         $validatorLoaderDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.validator_loader', $entityManagerName), DoctrineLoader::class);
-        $validatorLoaderDefinition->addArgument(new Reference($metadataFactoryService));
+        $validatorLoaderDefinition->addArgument(new Reference($entityManagerService));
         $validatorLoaderDefinition->addTag('validator.auto_mapping');
     }
 
