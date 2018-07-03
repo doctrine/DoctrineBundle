@@ -360,26 +360,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
 
-            if (! $loadPropertyInfoExtractor && ! $loadValidatorAutoMappingLoader) {
-                continue;
-            }
-
-            // TODO: drop the following block
-            $metadataFactoryService = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $name);
-            $metadataFactoryDefinition = $container->register($metadataFactoryService, ClassMetadataFactory::class);
-            $metadataFactoryDefinition->setFactory([
-                new Reference(sprintf('doctrine.orm.%s_entity_manager', $name)),
-                'getMetadataFactory',
-            ]);
-            $metadataFactoryDefinition->setPublic(false);
-
-            $entityManagerService = sprintf('doctrine.orm.%s_entity_manager', $name);
             if ($loadPropertyInfoExtractor) {
-                $this->loadPropertyInfoExtractor($name, $container, $metadataFactoryService);
+                $this->loadPropertyInfoExtractor($name, $container);
             }
 
             if ($loadValidatorAutoMappingLoader) {
-                $this->loadValidatorAutoMappingLoader($name, $container, $entityManagerService);
+                $this->loadValidatorAutoMappingLoader($name, $container);
             }
         }
 
@@ -805,25 +791,33 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * Loads a property info extractor for each defined entity manager.
      *
      * @param string $entityManagerName
-     * @param string $metadataFactoryService
      */
-    private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container, $metadataFactoryService)
+    private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
     {
+        $metadataFactoryService = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
+
+        $metadataFactoryDefinition = $container->register($metadataFactoryService, 'Doctrine\Common\Persistence\Mapping\ClassMetadataFactory');
+        $metadataFactoryDefinition->setFactory([
+            new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)),
+            'getMetadataFactory',
+        ]);
+        $metadataFactoryDefinition->setPublic(false);
+
         $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), 'Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor');
         $propertyExtractorDefinition->addArgument(new Reference($metadataFactoryService));
         $propertyExtractorDefinition->addTag('property_info.list_extractor', ['priority' => -1001]);
         $propertyExtractorDefinition->addTag('property_info.type_extractor', ['priority' => -999]);
     }
+
     /**
      * Loads a validator loader for each defined entity manager.
      *
      * @param string $entityManagerName
-     * @param string $entityManagerService
      */
-    private function loadValidatorAutoMappingLoader($entityManagerName, ContainerBuilder $container, $entityManagerService)
+    private function loadValidatorAutoMappingLoader($entityManagerName, ContainerBuilder $container)
     {
         $validatorLoaderDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.validator_loader', $entityManagerName), DoctrineLoader::class);
-        $validatorLoaderDefinition->addArgument(new Reference($entityManagerService));
+        $validatorLoaderDefinition->addArgument(new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)));
         $validatorLoaderDefinition->addTag('validator.auto_mapping');
     }
 
