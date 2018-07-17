@@ -214,6 +214,11 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('server')
                     ->info('The name of a running database server to connect to for SQL Anywhere.')
                 ->end()
+                ->scalarNode('default_dbname')
+                    ->info(
+                        'Override the default database (postgres) to connect to for PostgreSQL connexion.'
+                    )
+                ->end()
                 ->scalarNode('sslmode')
                     ->info(
                         'Determines whether or with what priority a SSL TCP/IP connection will be negotiated with ' .
