@@ -80,7 +80,7 @@ Configuration Reference
                         platform_service:     ~
                         auto_commit:          ~
 
-                        # If set to "^sf2_" all tables not prefixed with "sf2_" will be ignored by the schema
+                        # If set to "/^sf2_/" all tables not prefixed with "sf2_" will be ignored by the schema
                         # tool. This is for custom tables which should not be altered automatically.
                         schema_filter:        ~
 
