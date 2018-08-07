@@ -63,9 +63,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         // doctrine.dbal.pgsql_connection
         $config = $container->getDefinition('doctrine.dbal.pgsql_connection')->getArgument(0);
         $this->assertSame('pdo_pgsql', $config['driver']);
-        $this->assertSame('pgsql_db', $config['dbname']);
+        $this->assertSame('pgsql_schema', $config['dbname']);
         $this->assertSame('pgsql_user', $config['user']);
         $this->assertSame('pgsql_s3cr3t', $config['password']);
+        $this->assertSame('pgsql_db', $config['default_dbname']);
         $this->assertSame('require', $config['sslmode']);
         $this->assertSame('postgresql-ca.pem', $config['sslrootcert']);
         $this->assertSame('utf8', $config['charset']);
