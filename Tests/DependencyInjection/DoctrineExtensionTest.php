@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class DoctrineExtensionTest extends TestCase
 {
@@ -674,6 +675,31 @@ class DoctrineExtensionTest extends TestCase
         $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
         $this->assertEquals('doctrine.orm.default_annotation_metadata_driver', (string) $calls[0][1][0]);
         $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
+    }
+
+    public function testMessengerIntegration()
+    {
+        if (! interface_exists(MessageBusInterface::class)) {
+            $this->markTestSkipped('Symfony Messenger component is not installed');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager([
+                'default_entity_manager' => 'default',
+                'entity_managers' => [
+                    'default' => [],
+                ],
+            ])
+            ->build();
+        $extension->load([$config], $container);
+
+        $this->assertNotNull($container->getDefinition('doctrine.orm.messenger.middleware_factory.transaction'));
+        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_transaction_middleware'));
+        $this->assertSame('default', $middlewarePrototype->getArgument(0));
     }
 
     public function testCacheConfiguration()

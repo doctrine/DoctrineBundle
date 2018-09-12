@@ -9,6 +9,7 @@ use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\SymfonyBridgeAdapter
 use Doctrine\ORM\Version;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Form\Type\DoctrineType;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddlewareFactory;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -20,6 +21,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -386,6 +388,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (method_exists($container, 'registerForAutoconfiguration')) {
             $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
                 ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
+        }
+
+        // If the Messenger component is installed and the doctrine transaction middleware factory is available, wire it:
+        if (interface_exists(MessageBusInterface::class) && class_exists(DoctrineTransactionMiddlewareFactory::class)) {
+            $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+            $loader->load('messenger.xml');
+
+            $container->getDefinition('messenger.middleware.doctrine_transaction_middleware')
+                ->replaceArgument(0, $config['default_entity_manager'])
+            ;
         }
 
         /*
