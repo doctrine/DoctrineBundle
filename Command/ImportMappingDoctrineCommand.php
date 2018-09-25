@@ -38,7 +38,7 @@ from an existing database:
 Generate annotation mappings into the src/ directory using App as the namespace:
 <info>php %command.full_name% App\\\Entity annotation --path=src/Entity</info>
 
-Generate annotation mappings into the config/doctrine/ directory using App as the namespace:
+Generate xml mappings into the config/doctrine/ directory using App as the namespace:
 <info>php %command.full_name% App\\\Entity xml --path=config/doctrine</info>
 
 Generate XML mappings into a bundle:
