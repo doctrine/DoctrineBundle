@@ -40,7 +40,7 @@
         "symfony/property-info": "~2.8|~3.0|~4.0",
         "symfony/phpunit-bridge": "~2.7|~3.0|~4.0",
         "twig/twig": "~1.26|~2.0",
-        "satooshi/php-coveralls": "^1.0",
+        "php-coveralls/php-coveralls": "^2.1",
         "phpunit/phpunit": "^4.8.36|^5.7|^6.4",
         "symfony/web-profiler-bundle": "~2.7|~3.0|~4.0"
     },
