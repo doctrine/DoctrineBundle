@@ -6,7 +6,9 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\Configuration;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Doctrine\ORM\Version;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
@@ -58,14 +60,14 @@ class DoctrineDataCollector extends BaseCollector
             ],
         ];
 
-        /** @var \Doctrine\ORM\EntityManager $em */
+        /** @var EntityManager $em */
         foreach ($this->registry->getManagers() as $name => $em) {
             $entities[$name] = [];
             /** @var ClassMetadataFactory $factory */
             $factory   = $em->getMetadataFactory();
             $validator = new SchemaValidator($em);
 
-            /** @var \Doctrine\ORM\Mapping\ClassMetadataInfo $class */
+            /** @var ClassMetadataInfo $class */
             foreach ($factory->getLoadedMetadata() as $class) {
                 if (isset($entities[$name][$class->getName()])) {
                     continue;

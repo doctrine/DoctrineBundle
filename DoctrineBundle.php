@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPa
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\MessengerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Common\Util\ClassUtils;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
@@ -67,7 +68,7 @@ class DoctrineBundle extends Bundle
                 $registry = $container->get('doctrine');
 
                 // Tries to auto-generate the proxy file
-                /** @var \Doctrine\ORM\EntityManager $em */
+                /** @var EntityManager $em */
                 foreach ($registry->getManagers() as $em) {
                     if (! $em->getConfiguration()->getAutoGenerateProxyClasses()) {
                         continue;
