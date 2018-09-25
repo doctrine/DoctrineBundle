@@ -58,13 +58,14 @@ class DoctrineDataCollector extends BaseCollector
             ],
         ];
 
+        /** @var \Doctrine\ORM\EntityManager $em */
         foreach ($this->registry->getManagers() as $name => $em) {
             $entities[$name] = [];
             /** @var ClassMetadataFactory $factory */
             $factory   = $em->getMetadataFactory();
             $validator = new SchemaValidator($em);
 
-            /** @var $class \Doctrine\ORM\Mapping\ClassMetadataInfo */
+            /** @var \Doctrine\ORM\Mapping\ClassMetadataInfo $class */
             foreach ($factory->getLoadedMetadata() as $class) {
                 if (isset($entities[$name][$class->getName()])) {
                     continue;

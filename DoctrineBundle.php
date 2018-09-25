@@ -67,7 +67,7 @@ class DoctrineBundle extends Bundle
                 $registry = $container->get('doctrine');
 
                 // Tries to auto-generate the proxy file
-                /** @var $em \Doctrine\ORM\EntityManager */
+                /** @var \Doctrine\ORM\EntityManager $em */
                 foreach ($registry->getManagers() as $em) {
                     if (! $em->getConfiguration()->getAutoGenerateProxyClasses()) {
                         continue;
