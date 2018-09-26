@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Doctrine\ORM\Version;
+use Exception;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,7 +40,7 @@ class DoctrineDataCollector extends BaseCollector
     /**
      * {@inheritdoc}
      */
-    public function collect(Request $request, Response $response, \Exception $exception = null)
+    public function collect(Request $request, Response $response, Exception $exception = null)
     {
         parent::collect($request, $response, $exception);
 
@@ -227,11 +228,11 @@ class DoctrineDataCollector extends BaseCollector
                 $connectionGroupedQueries[$key]['count']++;
                 $totalExecutionMS += $query['executionMS'];
             }
-            usort($connectionGroupedQueries, function ($a, $b) {
+            usort($connectionGroupedQueries, static function ($a, $b) {
                 if ($a['executionMS'] === $b['executionMS']) {
                     return 0;
                 }
-                return ($a['executionMS'] < $b['executionMS']) ? 1 : -1;
+                return $a['executionMS'] < $b['executionMS'] ? 1 : -1;
             });
             $this->groupedQueries[$connection] = $connectionGroupedQueries;
         }

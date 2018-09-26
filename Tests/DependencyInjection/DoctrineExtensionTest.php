@@ -222,12 +222,12 @@ class DoctrineExtensionTest extends TestCase
         $extension->load(
             [
                 [
-            'dbal' => [
-            'connections' => [
-                    'default' => ['password' => 'foo', 'wrapper_class' => TestWrapperClass::class],
-                    'second' => ['password' => 'boo'],
-                ],
-            ],
+                    'dbal' => [
+                        'connections' => [
+                            'default' => ['password' => 'foo', 'wrapper_class' => TestWrapperClass::class],
+                            'second' => ['password' => 'boo'],
+                        ],
+                    ],
                 ],
                 [],
                 ['dbal' => ['default_connection' => 'foo']],
@@ -350,11 +350,11 @@ class DoctrineExtensionTest extends TestCase
         $extension = new DoctrineExtension();
 
         $extension->load([[
-        'dbal' => [
-        'connections' => [
-            'default' => ['password' => 'foo', 'use_savepoints' => true],
-        ],
-        ],
+            'dbal' => [
+                'connections' => [
+                    'default' => ['password' => 'foo', 'use_savepoints' => true],
+                ],
+            ],
         ],
         ], $container);
 
@@ -409,7 +409,7 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
-        new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.orm.default_configuration'),
         ]);
     }
 
@@ -439,7 +439,7 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
-        new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.orm.default_configuration'),
         ]);
 
         $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
@@ -478,7 +478,7 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
-        new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.orm.default_configuration'),
         ]);
 
         $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');

@@ -55,11 +55,11 @@ class TestCase extends BaseTestCase
                 'entity_managers' => [
                     'default' => [
                         'mappings' => [
-            'YamlBundle' => [
-                            'type' => 'yml',
-                            'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/YamlBundle/Resources/config/doctrine',
-                            'prefix' => 'Fixtures\Bundles\YamlBundle\Entity',
-                        ],
+                            'YamlBundle' => [
+                                'type' => 'yml',
+                                'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/YamlBundle/Resources/config/doctrine',
+                                'prefix' => 'Fixtures\Bundles\YamlBundle\Entity',
+                            ],
                         ],
                     ],
                 ],

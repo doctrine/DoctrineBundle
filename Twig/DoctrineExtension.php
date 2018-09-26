@@ -2,12 +2,15 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Twig;
 
+use SqlFormatter;
 use Symfony\Component\VarDumper\Cloner\Data;
+use Twig_Extension;
+use Twig_SimpleFilter;
 
 /**
  * This class contains the needed functions in order to do the query highlighting
  */
-class DoctrineExtension extends \Twig_Extension
+class DoctrineExtension extends Twig_Extension
 {
     /**
      * Number of maximum characters that one single line can hold in the interface
@@ -19,14 +22,14 @@ class DoctrineExtension extends \Twig_Extension
     /**
      * Define our functions
      *
-     * @return \Twig_SimpleFilter[]
+     * @return Twig_SimpleFilter[]
      */
     public function getFilters()
     {
         return [
-            new \Twig_SimpleFilter('doctrine_minify_query', [$this, 'minifyQuery'], ['deprecated' => true]),
-            new \Twig_SimpleFilter('doctrine_pretty_query', [$this, 'formatQuery'], ['is_safe' => ['html']]),
-            new \Twig_SimpleFilter('doctrine_replace_query_parameters', [$this, 'replaceQueryParameters']),
+            new Twig_SimpleFilter('doctrine_minify_query', [$this, 'minifyQuery'], ['deprecated' => true]),
+            new Twig_SimpleFilter('doctrine_pretty_query', [$this, 'formatQuery'], ['is_safe' => ['html']]),
+            new Twig_SimpleFilter('doctrine_replace_query_parameters', [$this, 'replaceQueryParameters']),
         ];
     }
 
@@ -92,7 +95,7 @@ class DoctrineExtension extends \Twig_Extension
 
         $maxLength  = $this->maxCharWidth;
         $maxLength -= count($parameters) * 5;
-        $maxLength  = $maxLength / count($parameters);
+        $maxLength /= count($parameters);
 
         foreach ($parameters as $key => $value) {
             $isLarger = false;
@@ -151,9 +154,7 @@ class DoctrineExtension extends \Twig_Extension
             $regexp = '/^' . $regexp . '/is';
 
             if (preg_match($regexp, $query, $matches)) {
-                $result = $this->shrinkParameters($matches, $combination);
-
-                return $result;
+                return $this->shrinkParameters($matches, $combination);
             }
         }
 
@@ -162,15 +163,11 @@ class DoctrineExtension extends \Twig_Extension
         $regexp = '/^' . $regexp . '/is';
 
         if (preg_match($regexp, $query, $matches)) {
-            $result = $this->shrinkParameters($matches, $mandatoryKeywords);
-
-            return $result;
+            return $this->shrinkParameters($matches, $mandatoryKeywords);
         }
 
         // Fallback in case we didn't managed to find any good match (can we actually have that happen?!)
-        $result = substr($query, 0, $this->maxCharWidth);
-
-        return $result;
+        return substr($query, 0, $this->maxCharWidth);
     }
 
     /**
@@ -290,9 +287,9 @@ class DoctrineExtension extends \Twig_Extension
             $i = 1;
         }
 
-        $result = preg_replace_callback(
+        return preg_replace_callback(
             '/\?|((?<!:):[a-z0-9_]+)/i',
-            function ($matches) use ($parameters, &$i) {
+            static function ($matches) use ($parameters, &$i) {
                 $key = substr($matches[0], 1);
                 if (! array_key_exists($i, $parameters) && ($key === false || ! array_key_exists($key, $parameters))) {
                     return $matches[0];
@@ -306,8 +303,6 @@ class DoctrineExtension extends \Twig_Extension
             },
             $query
         );
-
-        return $result;
     }
 
     /**
@@ -320,22 +315,22 @@ class DoctrineExtension extends \Twig_Extension
      */
     public function formatQuery($sql, $highlightOnly = false)
     {
-        \SqlFormatter::$pre_attributes            = 'class="highlight highlight-sql"';
-        \SqlFormatter::$quote_attributes          = 'class="string"';
-        \SqlFormatter::$backtick_quote_attributes = 'class="string"';
-        \SqlFormatter::$reserved_attributes       = 'class="keyword"';
-        \SqlFormatter::$boundary_attributes       = 'class="symbol"';
-        \SqlFormatter::$number_attributes         = 'class="number"';
-        \SqlFormatter::$word_attributes           = 'class="word"';
-        \SqlFormatter::$error_attributes          = 'class="error"';
-        \SqlFormatter::$comment_attributes        = 'class="comment"';
-        \SqlFormatter::$variable_attributes       = 'class="variable"';
+        SqlFormatter::$pre_attributes            = 'class="highlight highlight-sql"';
+        SqlFormatter::$quote_attributes          = 'class="string"';
+        SqlFormatter::$backtick_quote_attributes = 'class="string"';
+        SqlFormatter::$reserved_attributes       = 'class="keyword"';
+        SqlFormatter::$boundary_attributes       = 'class="symbol"';
+        SqlFormatter::$number_attributes         = 'class="number"';
+        SqlFormatter::$word_attributes           = 'class="word"';
+        SqlFormatter::$error_attributes          = 'class="error"';
+        SqlFormatter::$comment_attributes        = 'class="comment"';
+        SqlFormatter::$variable_attributes       = 'class="variable"';
 
         if ($highlightOnly) {
-            $html = \SqlFormatter::highlight($sql);
+            $html = SqlFormatter::highlight($sql);
             $html = preg_replace('/<pre class=".*">([^"]*+)<\/pre>/Us', '\1', $html);
         } else {
-            $html = \SqlFormatter::format($sql);
+            $html = SqlFormatter::format($sql);
             $html = preg_replace('/<pre class="(.*)">([^"]*+)<\/pre>/Us', '<div class="\1"><pre>\2</pre></div>', $html);
         }
 

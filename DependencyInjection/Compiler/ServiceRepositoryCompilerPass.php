@@ -32,7 +32,7 @@ final class ServiceRepositoryCompilerPass implements CompilerPassInterface
             return;
         }
 
-        $repoReferences = array_map(function ($id) {
+        $repoReferences = array_map(static function ($id) {
             return new Reference($id);
         }, $repoServiceIds);
 

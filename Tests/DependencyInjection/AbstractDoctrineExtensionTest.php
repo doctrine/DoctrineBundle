@@ -109,24 +109,24 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertTrue($param['keepSlave']);
         $this->assertEquals(
             [
-            'user' => 'mysql_user',
-            'password' => 'mysql_s3cr3t',
-                  'port' => null,
-            'dbname' => 'mysql_db',
-            'host' => 'localhost',
-                  'unix_socket' => '/path/to/mysqld.sock',
-                  'defaultTableOptions' => [],
+                'user' => 'mysql_user',
+                'password' => 'mysql_s3cr3t',
+                'port' => null,
+                'dbname' => 'mysql_db',
+                'host' => 'localhost',
+                'unix_socket' => '/path/to/mysqld.sock',
+                'defaultTableOptions' => [],
             ],
             $param['master']
         );
         $this->assertEquals(
             [
                 'user' => 'slave_user',
-            'password' => 'slave_s3cr3t',
-            'port' => null,
-            'dbname' => 'slave_db',
+                'password' => 'slave_s3cr3t',
+                'port' => null,
+                'dbname' => 'slave_db',
                 'host' => 'localhost',
-            'unix_socket' => '/path/to/mysqld_slave.sock',
+                'unix_socket' => '/path/to/mysqld_slave.sock',
             ],
             $param['slaves']['slave1']
         );
@@ -143,25 +143,25 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(new Reference('foo.shard_choser'), $param['shardChoser']);
         $this->assertEquals(
             [
-            'user' => 'mysql_user',
-            'password' => 'mysql_s3cr3t',
-                  'port' => null,
-            'dbname' => 'mysql_db',
-            'host' => 'localhost',
-                  'unix_socket' => '/path/to/mysqld.sock',
-                  'defaultTableOptions' => [],
+                'user' => 'mysql_user',
+                'password' => 'mysql_s3cr3t',
+                'port' => null,
+                'dbname' => 'mysql_db',
+                'host' => 'localhost',
+                'unix_socket' => '/path/to/mysqld.sock',
+                'defaultTableOptions' => [],
             ],
             $param['global']
         );
         $this->assertEquals(
             [
                 'user' => 'shard_user',
-            'password' => 'shard_s3cr3t',
-            'port' => null,
-            'dbname' => 'shard_db',
+                'password' => 'shard_s3cr3t',
+                'port' => null,
+                'dbname' => 'shard_db',
                 'host' => 'localhost',
-            'unix_socket' => '/path/to/mysqld_shard.sock',
-            'id' => 1,
+                'unix_socket' => '/path/to/mysqld_shard.sock',
+                'id' => 1,
             ],
             $param['shards'][0]
         );
@@ -216,7 +216,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
-        new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.orm.default_configuration'),
         ]);
     }
 
@@ -231,19 +231,19 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.dbal.default_connection');
 
         $this->assertDICConstructorArguments($definition, [
-                [
-                    'host' => 'localhost',
-                    'port' => null,
-                    'user' => 'root',
-                    'password' => null,
-                    'driver' => 'pdo_mysql',
-                    'driverOptions' => [],
-                    'defaultTableOptions' => [],
-                ],
-                new Reference('doctrine.dbal.default_connection.configuration'),
-                new Reference('doctrine.dbal.default_connection.event_manager'),
-                [],
-            ]);
+            [
+                'host' => 'localhost',
+                'port' => null,
+                'user' => 'root',
+                'password' => null,
+                'driver' => 'pdo_mysql',
+                'driverOptions' => [],
+                'defaultTableOptions' => [],
+            ],
+            new Reference('doctrine.dbal.default_connection.configuration'),
+            new Reference('doctrine.dbal.default_connection.event_manager'),
+            [],
+        ]);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
@@ -258,9 +258,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('create', $factory[1]);
 
         $this->assertDICConstructorArguments($definition, [
-                new Reference('doctrine.dbal.default_connection'),
-        new Reference('doctrine.orm.default_configuration'),
-            ]);
+            new Reference('doctrine.dbal.default_connection'),
+            new Reference('doctrine.orm.default_configuration'),
+        ]);
     }
 
     public function testLoadSingleConnection()
@@ -297,7 +297,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
-        new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.orm.default_configuration'),
         ]);
 
         $configDef = $container->getDefinition('doctrine.orm.default_configuration');
@@ -409,7 +409,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionClass($definition, '%doctrine_cache.memcache.connection.class%');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addServer', [
             'localhost',
-        '11211',
+            '11211',
         ]);
     }
 
@@ -717,63 +717,63 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(['doctrine.event_listener' => [ ['event' => 'loadClassMetadata'] ] ], $definition->getTags());
 
         $this->assertEquals($methodCalls[0], [
-        'addEntityListener',
-        [
-            'ExternalBundles\Entities\FooEntity',
-            'MyBundles\Listeners\FooEntityListener',
-            'prePersist',
-            null,
-        ],
+            'addEntityListener',
+            [
+                'ExternalBundles\Entities\FooEntity',
+                'MyBundles\Listeners\FooEntityListener',
+                'prePersist',
+                null,
+            ],
         ]);
 
         $this->assertEquals($methodCalls[1], [
-        'addEntityListener',
-        [
-            'ExternalBundles\Entities\FooEntity',
-            'MyBundles\Listeners\FooEntityListener',
-            'postPersist',
-            'postPersist',
-        ],
+            'addEntityListener',
+            [
+                'ExternalBundles\Entities\FooEntity',
+                'MyBundles\Listeners\FooEntityListener',
+                'postPersist',
+                'postPersist',
+            ],
         ]);
 
         $this->assertEquals($methodCalls[2], [
-        'addEntityListener',
-        [
-            'ExternalBundles\Entities\FooEntity',
-            'MyBundles\Listeners\FooEntityListener',
-            'postLoad',
-            'postLoadHandler',
-        ],
+            'addEntityListener',
+            [
+                'ExternalBundles\Entities\FooEntity',
+                'MyBundles\Listeners\FooEntityListener',
+                'postLoad',
+                'postLoadHandler',
+            ],
         ]);
 
         $this->assertEquals($methodCalls[3], [
-        'addEntityListener',
-        [
-            'ExternalBundles\Entities\BarEntity',
-            'MyBundles\Listeners\BarEntityListener',
-            'prePersist',
-            'prePersist',
-        ],
+            'addEntityListener',
+            [
+                'ExternalBundles\Entities\BarEntity',
+                'MyBundles\Listeners\BarEntityListener',
+                'prePersist',
+                'prePersist',
+            ],
         ]);
 
         $this->assertEquals($methodCalls[4], [
-        'addEntityListener',
-        [
-            'ExternalBundles\Entities\BarEntity',
-            'MyBundles\Listeners\BarEntityListener',
-            'prePersist',
-            'prePersistHandler',
-        ],
+            'addEntityListener',
+            [
+                'ExternalBundles\Entities\BarEntity',
+                'MyBundles\Listeners\BarEntityListener',
+                'prePersist',
+                'prePersistHandler',
+            ],
         ]);
 
         $this->assertEquals($methodCalls[5], [
-        'addEntityListener',
-        [
-            'ExternalBundles\Entities\BarEntity',
-            'MyBundles\Listeners\LogDeleteEntityListener',
-            'postDelete',
-            'postDelete',
-        ],
+            'addEntityListener',
+            [
+                'ExternalBundles\Entities\BarEntity',
+                'MyBundles\Listeners\LogDeleteEntityListener',
+                'postDelete',
+                'postDelete',
+            ],
         ]);
     }
 

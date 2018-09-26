@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerAwareEntityListenerResolver;
 use PHPUnit\Framework\TestCase;
+use PHPUnit_Framework_MockObject_MockObject;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ContainerAwareEntityListenerResolverTest extends TestCase
@@ -11,7 +12,7 @@ class ContainerAwareEntityListenerResolverTest extends TestCase
     /** @var ContainerAwareEntityListenerResolver */
     private $resolver;
 
-    /** @var ContainerInterface|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var ContainerInterface|PHPUnit_Framework_MockObject_MockObject */
     private $container;
 
     protected function setUp()
@@ -56,14 +57,12 @@ class ContainerAwareEntityListenerResolverTest extends TestCase
             ->expects($this->any())
             ->method('has')
             ->with($serviceId)
-            ->will($this->returnValue(true))
-        ;
+            ->will($this->returnValue(true));
         $this->container
             ->expects($this->any())
             ->method('get')
             ->with($serviceId)
-            ->will($this->returnValue($object))
-        ;
+            ->will($this->returnValue($object));
 
         $this->assertInstanceOf($className, $this->resolver->resolve($className));
         $this->assertSame($object, $this->resolver->resolve($className));
@@ -83,8 +82,7 @@ class ContainerAwareEntityListenerResolverTest extends TestCase
             ->expects($this->any())
             ->method('has')
             ->with($serviceId)
-            ->will($this->returnValue(false))
-        ;
+            ->will($this->returnValue(false));
 
         $this->resolver->resolve($className);
     }

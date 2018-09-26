@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use stdClass;
 
 class ContainerRepositoryFactoryTest extends TestCase
 {
@@ -72,7 +73,7 @@ class ContainerRepositoryFactoryTest extends TestCase
             $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
         }
 
-        $repo = new \stdClass();
+        $repo = new stdClass();
 
         $container = $this->createContainer(['my_repo' => $repo]);
 
@@ -145,12 +146,12 @@ class ContainerRepositoryFactoryTest extends TestCase
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->expects($this->any())
             ->method('has')
-            ->willReturnCallback(function ($id) use ($services) {
+            ->willReturnCallback(static function ($id) use ($services) {
                 return isset($services[$id]);
             });
         $container->expects($this->any())
             ->method('get')
-            ->willReturnCallback(function ($id) use ($services) {
+            ->willReturnCallback(static function ($id) use ($services) {
                 return $services[$id];
             });
 
@@ -170,7 +171,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $em = $this->getMockBuilder(EntityManagerInterface::class)->getMock();
         $em->expects($this->any())
             ->method('getClassMetadata')
-            ->willReturnCallback(function ($class) use ($classMetadatas) {
+            ->willReturnCallback(static function ($class) use ($classMetadatas) {
                 return $classMetadatas[$class];
             });
 

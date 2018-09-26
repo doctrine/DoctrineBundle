@@ -74,8 +74,8 @@ class ConnectionFactory
      * and the platform version is unknown.
      * For details have a look at DoctrineBundle issue #673.
      *
-     *
      * @return AbstractPlatform
+     *
      * @throws DBALException
      */
     private function getDatabasePlatform(Connection $connection)

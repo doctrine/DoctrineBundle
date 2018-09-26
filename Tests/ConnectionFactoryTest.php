@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Exception\DriverException;
+use Exception;
 
 class ConnectionFactoryTest extends TestCase
 {
@@ -38,7 +39,7 @@ class ConnectionFactoryTest extends TestCase
 
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertTrue(strpos($e->getMessage(), 'can circumvent this by setting') > 0);
             throw $e;
         }
@@ -81,12 +82,12 @@ class FakeDriver implements Driver
      */
     public function connect(array $params, $username = null, $password = null, array $driverOptions = [])
     {
-        throw new \Exception('not implemented');
+        throw new Exception('not implemented');
     }
 
     public function getSchemaManager(Connection $conn)
     {
-        throw new \Exception('not implemented');
+        throw new Exception('not implemented');
     }
 
     public function getName()
