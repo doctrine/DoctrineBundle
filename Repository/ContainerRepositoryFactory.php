@@ -50,8 +50,8 @@ final class ContainerRepositoryFactory implements RepositoryFactory
             if ($this->container && $this->container->has($customRepositoryName)) {
                 $repository = $this->container->get($customRepositoryName);
 
-                if (! $repository instanceof EntityRepository) {
-                    throw new \RuntimeException(sprintf('The service "%s" must extend EntityRepository (or a base class, like ServiceEntityRepository).', $repositoryServiceId));
+                if (! $repository instanceof ObjectRepository) {
+                    throw new \RuntimeException(sprintf('The service "%s" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).', $repositoryServiceId));
                 }
 
                 return $repository;
