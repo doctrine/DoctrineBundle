@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\FallbackServiceRepositoryCompilePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\MessengerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
@@ -13,6 +14,7 @@ use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListen
 use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFactory;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -30,6 +32,16 @@ class DoctrineBundle extends Bundle
     public function build(ContainerBuilder $container)
     {
         parent::build($container);
+
+        $passConfig = $container->getCompiler()->getPassConfig();
+        $newPasses = [];
+        foreach ($passConfig->getOptimizationPasses() as $pass) {
+            $newPasses[] = $pass;
+            if ($pass instanceof ResolveChildDefinitionsPass) {
+                $newPasses[] = new DoctrineRepositoryCompilePass();
+            }
+        }
+        $passConfig->setOptimizationPasses($newPasses);
 
         $container->addCompilerPass(new RegisterEventListenersAndSubscribersPass('doctrine.connections', 'doctrine.dbal.%s_connection.event_manager', 'doctrine'), PassConfig::TYPE_BEFORE_OPTIMIZATION);
 
