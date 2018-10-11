@@ -75,7 +75,7 @@ EOT
         $hasPath = isset($params['path']);
         $name    = $hasPath ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
         if (! $name) {
-            throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
+            throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be created.");
         }
         // Need to get rid of _every_ occurrence of dbname from connection configuration and we have already extracted all relevant info from url
         unset($params['dbname'], $params['path'], $params['url']);
