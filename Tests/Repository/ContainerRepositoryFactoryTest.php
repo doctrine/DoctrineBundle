@@ -88,7 +88,7 @@ class ContainerRepositoryFactoryTest extends TestCase
             $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
         }
 
-        $repo = new StubCustomRepository();
+        $repo = $this->getMockBuilder(ObjectRepository::class)->getMock();
 
         $container = $this->createContainer(['my_repo' => $repo]);
 
@@ -97,7 +97,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $factory = new ContainerRepositoryFactory($container);
         $factory->getRepository($em, 'Foo\CoolEntity');
         $actualRepo = $factory->getRepository($em, 'Foo\CoolEntity');
-        $this->assertInstanceOf(StubCustomRepository::class, $actualRepo);
+        $this->assertSame($repo, $actualRepo);
     }
 
 
@@ -188,13 +188,4 @@ class StubRepository extends EntityRepository
 
 class StubServiceRepository extends EntityRepository implements ServiceEntityRepositoryInterface
 {
-}
-
-class StubCustomRepository implements ObjectRepository
-{
-    public function find($id) {}
-    public function findAll() {}
-    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null) {}
-    public function findOneBy(array $criteria) {}
-    public function getClassName() {}
 }
