@@ -192,10 +192,6 @@
             <tag name="console.command" command="doctrine:query:dql" />
         </service>
 
-        <service id="doctrine.query_sql_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand">
-            <tag name="console.command" command="doctrine:query:sql" />
-        </service>
-
         <service id="doctrine.schema_update_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand">
             <tag name="console.command" command="doctrine:schema:update" />
         </service>
