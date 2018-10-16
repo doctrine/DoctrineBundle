@@ -87,5 +87,9 @@
             <tag name="console.command" command="doctrine:mapping:import" />
         </service>
 
+        <service id="doctrine.query_sql_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand">
+            <tag name="console.command" command="doctrine:query:sql" />
+        </service>
+
     </services>
 </container>
