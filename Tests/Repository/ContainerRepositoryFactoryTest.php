@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -63,9 +64,9 @@ class ContainerRepositoryFactoryTest extends TestCase
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage The service "my_repo" must extend EntityRepository (or a base class, like ServiceEntityRepository).
+     * @expectedExceptionMessage The service "my_repo" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).
      */
-    public function testServiceRepositoriesMustExtendEntityRepository()
+    public function testServiceRepositoriesMustExtendObjectRepository()
     {
         if (! interface_exists(ContainerInterface::class)) {
             $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
@@ -80,6 +81,25 @@ class ContainerRepositoryFactoryTest extends TestCase
         $factory = new ContainerRepositoryFactory($container);
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
+
+    public function testServiceRepositoriesCanNotExtendsEntityRepository()
+    {
+        if (! interface_exists(ContainerInterface::class)) {
+            $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
+        }
+
+        $repo = $this->getMockBuilder(ObjectRepository::class)->getMock();
+
+        $container = $this->createContainer(['my_repo' => $repo]);
+
+        $em = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
+
+        $factory = new ContainerRepositoryFactory($container);
+        $factory->getRepository($em, 'Foo\CoolEntity');
+        $actualRepo = $factory->getRepository($em, 'Foo\CoolEntity');
+        $this->assertSame($repo, $actualRepo);
+    }
+
 
     /**
      * @expectedException \RuntimeException
