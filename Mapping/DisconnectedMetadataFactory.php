@@ -6,6 +6,8 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Tools\DisconnectedClassMetadataFactory;
+use ReflectionClass;
+use RuntimeException;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
@@ -32,14 +34,14 @@ class DisconnectedMetadataFactory
      *
      * @return ClassMetadataCollection A ClassMetadataCollection instance
      *
-     * @throws \RuntimeException When bundle does not contain mapped entities.
+     * @throws RuntimeException When bundle does not contain mapped entities.
      */
     public function getBundleMetadata(BundleInterface $bundle)
     {
         $namespace = $bundle->getNamespace();
         $metadata  = $this->getMetadataForNamespace($namespace);
         if (! $metadata->getMetadata()) {
-            throw new \RuntimeException(sprintf('Bundle "%s" does not contain any mapped entities.', $bundle->getName()));
+            throw new RuntimeException(sprintf('Bundle "%s" does not contain any mapped entities.', $bundle->getName()));
         }
 
         $path = $this->getBasePathForClass($bundle->getName(), $bundle->getNamespace(), $bundle->getPath());
@@ -80,13 +82,13 @@ class DisconnectedMetadataFactory
      *
      * @return ClassMetadataCollection A ClassMetadataCollection instance
      *
-     * @throws \RuntimeException When namespace not contain mapped entities.
+     * @throws RuntimeException When namespace not contain mapped entities.
      */
     public function getNamespaceMetadata($namespace, $path = null)
     {
         $metadata = $this->getMetadataForNamespace($namespace);
         if (! $metadata->getMetadata()) {
-            throw new \RuntimeException(sprintf('Namespace "%s" does not contain any mapped entities.', $namespace));
+            throw new RuntimeException(sprintf('Namespace "%s" does not contain any mapped entities.', $namespace));
         }
 
         $this->findNamespaceAndPathForMetadata($metadata, $path);
@@ -99,13 +101,13 @@ class DisconnectedMetadataFactory
      *
      * @param string|null $path
      *
-     * @throws \RuntimeException When unable to determine the path.
+     * @throws RuntimeException When unable to determine the path.
      */
     public function findNamespaceAndPathForMetadata(ClassMetadataCollection $metadata, $path = null)
     {
         $all = $metadata->getMetadata();
         if (class_exists($all[0]->name)) {
-            $r    = new \ReflectionClass($all[0]->name);
+            $r    = new ReflectionClass($all[0]->name);
             $path = $this->getBasePathForClass($r->getName(), $r->getNamespaceName(), dirname($r->getFilename()));
             $ns   = $r->getNamespaceName();
         } elseif ($path) {
@@ -114,7 +116,7 @@ class DisconnectedMetadataFactory
             array_pop($nsParts);
             $ns = implode('\\', $nsParts);
         } else {
-            throw new \RuntimeException(sprintf('Unable to determine where to save the "%s" class (use the --path option).', $all[0]->name));
+            throw new RuntimeException(sprintf('Unable to determine where to save the "%s" class (use the --path option).', $all[0]->name));
         }
 
         $metadata->setPath($path);
@@ -130,7 +132,7 @@ class DisconnectedMetadataFactory
      *
      * @return string
      *
-     * @throws \RuntimeException When base path not found.
+     * @throws RuntimeException When base path not found.
      */
     private function getBasePathForClass($name, $namespace, $path)
     {
@@ -139,7 +141,7 @@ class DisconnectedMetadataFactory
         $destination = str_replace('/' . $namespace, '', $search, $c);
 
         if ($c !== 1) {
-            throw new \RuntimeException(sprintf('Can\'t find base path for "%s" (path: "%s", destination: "%s").', $name, $path, $destination));
+            throw new RuntimeException(sprintf('Can\'t find base path for "%s" (path: "%s", destination: "%s").', $name, $path, $destination));
         }
 
         return $destination;

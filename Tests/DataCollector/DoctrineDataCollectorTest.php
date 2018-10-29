@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -93,7 +94,7 @@ class DoctrineDataCollectorTest extends TestCase
     {
         $metadata            = new ClassMetadataInfo($entityFQCN);
         $metadata->name      = $entityFQCN;
-        $metadata->reflClass = new \ReflectionClass('stdClass');
+        $metadata->reflClass = new ReflectionClass('stdClass');
 
         return $metadata;
     }
@@ -119,8 +120,6 @@ class DoctrineDataCollectorTest extends TestCase
             ->method('getManagers')
             ->will($this->returnValue($managers));
 
-        $collector = new DoctrineDataCollector($registry);
-
-        return $collector;
+        return new DoctrineDataCollector($registry);
     }
 }

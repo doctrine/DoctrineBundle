@@ -3,6 +3,8 @@
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\DBAL\DriverManager;
+use Exception;
+use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -80,7 +82,7 @@ EOT
 
         $name = isset($params['path']) ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
         if (! $name) {
-            throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
+            throw new InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
         unset($params['dbname'], $params['url']);
 
@@ -112,7 +114,7 @@ EOT
             } else {
                 $output->writeln(sprintf('<info>Database <comment>%s</comment> for connection named <comment>%s</comment> doesn\'t exist. Skipped.</info>', $name, $connectionName));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output->writeln(sprintf('<error>Could not drop database <comment>%s</comment> for connection named <comment>%s</comment></error>', $name, $connectionName));
             $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
 

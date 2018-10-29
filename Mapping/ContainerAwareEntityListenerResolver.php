@@ -2,6 +2,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Mapping;
 
+use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ContainerAwareEntityListenerResolver implements EntityListenerServiceResolver
@@ -46,7 +48,7 @@ class ContainerAwareEntityListenerResolver implements EntityListenerServiceResol
     public function register($object)
     {
         if (! is_object($object)) {
-            throw new \InvalidArgumentException(sprintf('An object was expected, but got "%s".', gettype($object)));
+            throw new InvalidArgumentException(sprintf('An object was expected, but got "%s".', gettype($object)));
         }
 
         $className = $this->normalizeClassName(get_class($object));
@@ -88,7 +90,7 @@ class ContainerAwareEntityListenerResolver implements EntityListenerServiceResol
     private function resolveService($serviceId)
     {
         if (! $this->container->has($serviceId)) {
-            throw new \RuntimeException(sprintf('There is no service named "%s"', $serviceId));
+            throw new RuntimeException(sprintf('There is no service named "%s"', $serviceId));
         }
 
         return $this->container->get($serviceId);

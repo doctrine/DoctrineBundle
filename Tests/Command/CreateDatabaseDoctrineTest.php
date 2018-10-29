@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
 use PHPUnit\Framework\TestCase;
+use PHPUnit_Framework_MockObject_MockObject;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -84,7 +85,8 @@ class CreateDatabaseDoctrineTest extends TestCase
     /**
      * @param string       $connectionName Connection name
      * @param mixed[]|null $params         Connection parameters
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
      */
     private function getMockContainer($connectionName, $params = null)
     {

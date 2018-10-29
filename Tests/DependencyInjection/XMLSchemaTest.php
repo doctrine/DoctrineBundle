@@ -2,6 +2,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use DirectoryIterator;
+use DOMDocument;
 use PHPUnit\Framework\TestCase;
 
 class XMLSchemaTest extends TestCase
@@ -9,7 +11,7 @@ class XMLSchemaTest extends TestCase
     public static function dataValidateSchemaFiles()
     {
         $schemaFiles = [];
-        $di          = new \DirectoryIterator(__DIR__ . '/Fixtures/config/xml');
+        $di          = new DirectoryIterator(__DIR__ . '/Fixtures/config/xml');
         foreach ($di as $element) {
             if (! $element->isFile() || substr($element->getFilename(), -4) !== '.xml') {
                 continue;
@@ -27,14 +29,14 @@ class XMLSchemaTest extends TestCase
     public function testValidateSchema($file)
     {
         $found = false;
-        $dom   = new \DOMDocument('1.0', 'UTF-8');
+        $dom   = new DOMDocument('1.0', 'UTF-8');
         $dom->load($file);
 
         $xmlns = 'http://symfony.com/schema/dic/doctrine';
 
         $dbalElements = $dom->getElementsByTagNameNS($xmlns, 'dbal');
         if ($dbalElements->length) {
-            $dbalDom    = new \DOMDocument('1.0', 'UTF-8');
+            $dbalDom    = new DOMDocument('1.0', 'UTF-8');
             $dbalNode   = $dbalDom->importNode($dbalElements->item(0));
             $configNode = $dbalDom->createElementNS($xmlns, 'config');
             $configNode->appendChild($dbalNode);
@@ -47,7 +49,7 @@ class XMLSchemaTest extends TestCase
 
         $ormElements = $dom->getElementsByTagNameNS($xmlns, 'orm');
         if ($ormElements->length) {
-            $ormDom     = new \DOMDocument('1.0', 'UTF-8');
+            $ormDom     = new DOMDocument('1.0', 'UTF-8');
             $ormNode    = $ormDom->importNode($ormElements->item(0));
             $configNode = $ormDom->createElementNS($xmlns, 'config');
             $configNode->appendChild($ormNode);

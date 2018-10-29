@@ -4,6 +4,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Controller;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Exception;
+use PDO;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -61,7 +63,7 @@ class ProfilerController implements ContainerAwareInterface
             } else {
                 $results = $this->explainOtherPlatform($connection, $query);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return new Response('This query cannot be explained.');
         }
 
@@ -87,7 +89,7 @@ class ProfilerController implements ContainerAwareInterface
 
         $stmt = $connection->executeQuery($sql, $params, $query['types']);
         $stmt->nextRowset();
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     private function explainOtherPlatform(Connection $connection, $query)
@@ -99,6 +101,6 @@ class ProfilerController implements ContainerAwareInterface
         }
 
         return $connection->executeQuery('EXPLAIN ' . $query['sql'], $params, $query['types'])
-            ->fetchAll(\PDO::FETCH_ASSOC);
+            ->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -28,7 +28,6 @@ class ManagerConfigurator
 
     /**
      * Create a connection by name.
-     *
      */
     public function configure(EntityManagerInterface $entityManager)
     {
@@ -37,7 +36,6 @@ class ManagerConfigurator
 
     /**
      * Enables filters for a given entity manager
-     *
      */
     private function enableFilters(EntityManagerInterface $entityManager)
     {

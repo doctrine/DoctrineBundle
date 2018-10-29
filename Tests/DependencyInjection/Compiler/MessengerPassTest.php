@@ -4,6 +4,7 @@ namespace DependencyInjection\Compiler;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\MessengerPass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -41,7 +42,7 @@ class MessengerPassTest extends TestCase
         $loader    = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../../Resources/config'));
         $loader->load('messenger.xml');
 
-        $container->register('some_other_bus', \stdClass::class);
+        $container->register('some_other_bus', stdClass::class);
         $container->setAlias('message_bus', 'some_other_bus');
 
         $pass->process($container);
