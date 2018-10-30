@@ -52,9 +52,9 @@ class EntityListenerPass implements CompilerPassInterface
                     $this->attachToListener($container, $name, $id, $attributes);
                 }
 
-                if (isset($attributes['lazy']) && $attributes['lazy']) {
-                    $listener = $container->findDefinition($id);
+                $listener = $container->findDefinition($id);
 
+                if ($listener->isLazy() || !empty($attributes['lazy'])) {
                     if ($listener->isAbstract()) {
                         throw new InvalidArgumentException(sprintf('The service "%s" must not be abstract as this entity listener is lazy-loaded.', $id));
                     }
