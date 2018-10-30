@@ -38,6 +38,7 @@ doctrine:
                 sslrootcert: postgresql-ca.pem
                 sslcert: postgresql-cert.pem
                 sslkey: postgresql-key.pem
+                sslcrl: postgresql.crl
                 charset: utf8
             sqlanywhere:
                 driver: sqlanywhere

@@ -75,6 +75,10 @@ Configuration Reference
                         # The name of a file containing the private key for the client SSL certificate.
                         sslkey:               ~
 
+                        # PostgreSQL specific (LIBPQ-CONNECT-SSLCRL).
+                        # The name of a file containing the SSL certificate revocation list (CRL).
+                        sslcrl:               ~
+
                         # Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
                         pooled:               ~
 
@@ -173,6 +177,10 @@ Configuration Reference
                                 # The name of a file containing the private key for the client SSL certificate.
                                 sslkey:               ~
 
+                                # PostgreSQL specific (LIBPQ-CONNECT-SSLCRL).
+                                # The name of a file containing the SSL certificate revocation list (CRL).
+                                sslcrl:               ~
+
                                 # Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
                                 pooled:               ~
 
@@ -228,6 +236,10 @@ Configuration Reference
                             # PostgreSQL specific (LIBPQ-CONNECT-SSLKEY).
                             # The name of a file containing the private key for the client SSL certificate.
                             sslkey:               ~
+
+                            # PostgreSQL specific (LIBPQ-CONNECT-SSLCRL).
+                            # The name of a file containing the SSL certificate revocation list (CRL).
+                            sslcrl:               ~
 
                             # Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
                             pooled:               ~
@@ -427,6 +439,7 @@ Configuration Reference
                     <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                     <!-- sslcert: The name of a file containing a client SSL certificate -->
                     <!-- sslkey: The name of a file containing the private key used for the client SSL certificate -->
+                    <!-- sslcrl: The name of a file containing the SSL certificate revocation list (CRL) -->
                     <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                     <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
                     <!-- use-savepoints: Enable savepoints for nested transactions -->
@@ -451,6 +464,7 @@ Configuration Reference
                         sslrootcert=""
                         sslcert=""
                         sslkey=""
+                        sslcrl=""
                         pooled=""
                         MultipleActiveResultSets=""
                         use-savepoints="true"
@@ -491,6 +505,7 @@ Configuration Reference
                         <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                         <!-- sslcert: The name of a file containing a client SSL certificate -->
                         <!-- sslkey: The name of a file containing the private key used for the client SSL certificate -->
+                        <!-- sslcrl: The name of a file containing the SSL certificate revocation list (CRL) -->
                         <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                         <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
                         <doctrine:slave
@@ -514,6 +529,7 @@ Configuration Reference
                             sslrootcert=""
                             sslcert=""
                             sslkey=""
+                            sslcrl=""
                             pooled=""
                             MultipleActiveResultSets=""
                         />
@@ -531,6 +547,7 @@ Configuration Reference
                         <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                         <!-- sslcert: The name of a file containing a client SSL certificate -->
                         <!-- sslkey: The name of a file containing the private key used for the client SSL certificate -->
+                        <!-- sslcrl: The name of a file containing the SSL certificate revocation list (CRL) -->
                         <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                         <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
                         <doctrine:shard
@@ -554,6 +571,7 @@ Configuration Reference
                             sslrootcert=""
                             sslcert=""
                             sslkey=""
+                            sslcrl=""
                             pooled=""
                             MultipleActiveResultSets=""
                         />
@@ -936,6 +954,7 @@ can configure. The following block shows all possible configuration keys:
                 sslrootcert:              postgresql-ca.pem   # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT)
                 sslcert:                  postgresql-cert.pem # PostgreSQL specific (LIBPQ-CONNECT-SSLCERT)
                 sslkey:                   postgresql-key.pem  # PostgreSQL specific (LIBPQ-CONNECT-SSLKEY)
+                sslcrl:                   postgresql.crl      # PostgreSQL specific (LIBPQ-CONNECT-SSLCRL)
                 wrapper_class:            MyDoctrineDbalConnectionWrapper
                 charset:                  UTF8
                 logging:                  "%kernel.debug%"
@@ -984,6 +1003,7 @@ can configure. The following block shows all possible configuration keys:
                 sslrootcert="postgresql-ca.pem"    <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT) -->
                 sslcert="postgresql-cert.pem"      <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLCERT) -->
                 sslkey="postgresql-key.pem"        <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLKEY) -->
+                sslcrl="postgresql.crl"            <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLCRL) -->
                 wrapper-class="MyDoctrineDbalConnectionWrapper"
                 charset="UTF8"
                 logging="%kernel.debug%"
