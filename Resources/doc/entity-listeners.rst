@@ -31,7 +31,12 @@ entity_manager attribute to specify which entity manager it should be registered
             <services>
                 <service id="user_listener" class="UserListener">
                     <tag name="doctrine.orm.entity_listener" event="preUpdate" entity="App\Entity\User" />
-                    <tag name="doctrine.orm.entity_listener" event="preUpdate" entity="App\Entity\User" entity_manager="custom" />
+                    <tag 
+                        name="doctrine.orm.entity_listener"
+                        event="preUpdate"
+                        entity="App\Entity\User"
+                        entity_manager="custom" 
+                    />
                 </service>
             </services>
         </container>
