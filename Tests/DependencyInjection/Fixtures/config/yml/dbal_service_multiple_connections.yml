@@ -36,6 +36,8 @@ doctrine:
                 password: pgsql_s3cr3t
                 sslmode: require
                 sslrootcert: postgresql-ca.pem
+                sslcert: postgresql-cert.pem
+                sslkey: postgresql-key.pem
                 charset: utf8
             sqlanywhere:
                 driver: sqlanywhere
