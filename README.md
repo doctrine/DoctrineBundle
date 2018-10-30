@@ -2,7 +2,7 @@
 
 Doctrine DBAL & ORM Bundle for the Symfony Framework.
 
-Build Status: [![Build Status](https://secure.travis-ci.org/doctrine/DoctrineBundle.png?branch=master)](http://travis-ci.org/doctrine/DoctrineBundle)
+Build Status: [![Build Status](https://travis-ci.org/doctrine/DoctrineBundle.svg?branch=master)](https://travis-ci.org/doctrine/DoctrineBundle)
 
 ## What is Doctrine?
 
