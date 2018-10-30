@@ -15,7 +15,11 @@ entity_manager attribute to specify which entity manager it should be registered
                 class: \UserListener
                 tags:
                     - { name: doctrine.orm.entity_listener, event: preUpdate, entity: App\Entity\User }
-                    - { name: doctrine.orm.entity_listener, event: preUpdate, entity: App\Entity\User, entity_manager: custom }
+                    - 
+                        name: doctrine.orm.entity_listener
+                        event: preUpdate
+                        entity: App\Entity\User
+                        entity_manager: custom
 
     .. code-block:: xml
 
