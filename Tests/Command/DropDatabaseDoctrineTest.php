@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
 use PHPUnit\Framework\TestCase;
+use PHPUnit_Framework_MockObject_MockObject;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -30,7 +31,14 @@ class DropDatabaseDoctrineTest extends TestCase
             array_merge(['command' => $command->getName(), '--force' => true])
         );
 
-        $this->assertContains('Dropped database for connection named ' . sys_get_temp_dir() . '/' . $dbName . '', $commandTester->getDisplay());
+        $this->assertContains(
+            sprintf(
+                'Dropped database %s for connection named %s',
+                sys_get_temp_dir() . '/' . $dbName,
+                $connectionName
+            ),
+            $commandTester->getDisplay()
+        );
     }
 
     public function testExecuteWithoutOptionForceWillFailWithAttentionMessage()
@@ -53,14 +61,22 @@ class DropDatabaseDoctrineTest extends TestCase
             array_merge(['command' => $command->getName()])
         );
 
-        $this->assertContains('Would drop the database named ' . sys_get_temp_dir() . '/' . $dbName . '.', $commandTester->getDisplay());
+        $this->assertContains(
+            sprintf(
+                'Would drop the database %s for connection named %s.',
+                sys_get_temp_dir() . '/' . $dbName,
+                $connectionName
+            ),
+            $commandTester->getDisplay()
+        );
         $this->assertContains('Please run the operation with --force to execute', $commandTester->getDisplay());
     }
 
     /**
      * @param string     $connectionName Connection name
      * @param array|null $params         Connection parameters
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
      */
     private function getMockContainer($connectionName, $params = null)
     {

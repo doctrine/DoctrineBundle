@@ -45,7 +45,12 @@ jobs:
     - php: 7.1
       env: stability=RC SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="3.4.*"
       install:
-        - composer config minimum-stability RC
+        - travis_retry composer update -n --prefer-dist
+
+    - php: 7.1
+      env: stability=dev SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="4.1.*"
+      install:
+        - composer require --dev "symfony/messenger" --no-update
         - travis_retry composer update -n --prefer-dist
 
     - php: 7.2
@@ -58,7 +63,7 @@ jobs:
       env: CODING_STANDARDS
       php: 7.1
       install:
-        - travis_retry composer require -n --prefer-dist --dev doctrine/coding-standard:^4.0
+        - travis_retry composer require -n --prefer-dist --dev doctrine/coding-standard:^5.0
       script:
         - ./vendor/bin/phpcs
 

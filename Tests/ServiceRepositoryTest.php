@@ -14,6 +14,7 @@ use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomServiceRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
+use RuntimeException;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -55,11 +56,11 @@ class ServiceRepositoryTest extends TestCase
             ],
             'orm' => [
                 'mappings' => [
-            'RepositoryServiceBundle' => [
-                    'type' => 'annotation',
-                    'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/RepositoryServiceBundle/Entity',
-                    'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
-                ],
+                    'RepositoryServiceBundle' => [
+                        'type' => 'annotation',
+                        'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/RepositoryServiceBundle/Entity',
+                        'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
+                    ],
                 ],
             ],
         ],
@@ -104,11 +105,11 @@ class ServiceRepositoryTest extends TestCase
         if (! class_exists(ServiceLocatorTagPass::class)) {
             $message = '/Support for loading entities from the service container only works for Symfony 3\.3/';
             if (method_exists($this, 'expectException')) {
-                $this->expectException(\RuntimeException::class);
+                $this->expectException(RuntimeException::class);
                 $this->expectExceptionMessageRegExp($message);
             } else {
                 // PHPUnit 4 compat
-                $this->setExpectedExceptionRegExp(\RuntimeException::class, $message);
+                $this->setExpectedExceptionRegExp(RuntimeException::class, $message);
             }
         }
 

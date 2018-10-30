@@ -26,7 +26,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
      */
     public function testCannotFindNamespaceAndPathForMetadata()
     {
-        $class      = new ClassMetadataInfo(__CLASS__);
+        $class      = new ClassMetadataInfo(self::class);
         $collection = new ClassMetadataCollection([$class]);
 
         $registry = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')->getMock();

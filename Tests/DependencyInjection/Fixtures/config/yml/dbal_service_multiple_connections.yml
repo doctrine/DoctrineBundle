@@ -31,9 +31,10 @@ doctrine:
                 protocol: TCPIP
             pgsql:
                 driver: pdo_pgsql
-                dbname: pgsql_db
+                dbname: pgsql_schema
                 user: pgsql_user
                 password: pgsql_s3cr3t
+                default_dbname: pgsql_db
                 sslmode: require
                 sslrootcert: postgresql-ca.pem
                 charset: utf8

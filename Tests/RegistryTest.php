@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
+use stdClass;
 
 class RegistryTest extends TestCase
 {
@@ -72,7 +73,7 @@ class RegistryTest extends TestCase
 
     public function testGetDefaultEntityManager()
     {
-        $em        = new \stdClass();
+        $em        = new stdClass();
         $container = $this->getMockBuilder('Symfony\Component\DependencyInjection\ContainerInterface')->getMock();
         $container->expects($this->once())
                   ->method('get')
@@ -86,7 +87,7 @@ class RegistryTest extends TestCase
 
     public function testGetEntityManager()
     {
-        $em        = new \stdClass();
+        $em        = new stdClass();
         $container = $this->getMockBuilder('Symfony\Component\DependencyInjection\ContainerInterface')->getMock();
         $container->expects($this->once())
                   ->method('get')

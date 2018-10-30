@@ -4,12 +4,14 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use stdClass;
 
 class ContainerRepositoryFactoryTest extends TestCase
 {
@@ -63,15 +65,15 @@ class ContainerRepositoryFactoryTest extends TestCase
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage The service "my_repo" must extend EntityRepository (or a base class, like ServiceEntityRepository).
+     * @expectedExceptionMessage The service "my_repo" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).
      */
-    public function testServiceRepositoriesMustExtendEntityRepository()
+    public function testServiceRepositoriesMustExtendObjectRepository()
     {
         if (! interface_exists(ContainerInterface::class)) {
             $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
         }
 
-        $repo = new \stdClass();
+        $repo = new stdClass();
 
         $container = $this->createContainer(['my_repo' => $repo]);
 
@@ -80,6 +82,25 @@ class ContainerRepositoryFactoryTest extends TestCase
         $factory = new ContainerRepositoryFactory($container);
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
+
+    public function testServiceRepositoriesCanNotExtendsEntityRepository()
+    {
+        if (! interface_exists(ContainerInterface::class)) {
+            $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
+        }
+
+        $repo = $this->getMockBuilder(ObjectRepository::class)->getMock();
+
+        $container = $this->createContainer(['my_repo' => $repo]);
+
+        $em = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
+
+        $factory = new ContainerRepositoryFactory($container);
+        $factory->getRepository($em, 'Foo\CoolEntity');
+        $actualRepo = $factory->getRepository($em, 'Foo\CoolEntity');
+        $this->assertSame($repo, $actualRepo);
+    }
+
 
     /**
      * @expectedException \RuntimeException
@@ -125,12 +146,12 @@ class ContainerRepositoryFactoryTest extends TestCase
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->expects($this->any())
             ->method('has')
-            ->willReturnCallback(function ($id) use ($services) {
+            ->willReturnCallback(static function ($id) use ($services) {
                 return isset($services[$id]);
             });
         $container->expects($this->any())
             ->method('get')
-            ->willReturnCallback(function ($id) use ($services) {
+            ->willReturnCallback(static function ($id) use ($services) {
                 return $services[$id];
             });
 
@@ -150,7 +171,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $em = $this->getMockBuilder(EntityManagerInterface::class)->getMock();
         $em->expects($this->any())
             ->method('getClassMetadata')
-            ->willReturnCallback(function ($class) use ($classMetadatas) {
+            ->willReturnCallback(static function ($class) use ($classMetadatas) {
                 return $classMetadatas[$class];
             });
 

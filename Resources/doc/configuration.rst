@@ -58,6 +58,10 @@ Configuration Reference
                         # SQL Anywhere specific (ServerName). The name of a running database server to connect to for SQL Anywhere.
                         server:               ~
 
+                        # PostgreSQL specific (default_dbname).
+                        # Override the default database (postgres) to connect to.
+                        default_dbname:       ~
+
                         # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE).
                         # Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
                         sslmode:              ~
@@ -80,7 +84,7 @@ Configuration Reference
                         platform_service:     ~
                         auto_commit:          ~
 
-                        # If set to "^sf2_" all tables not prefixed with "sf2_" will be ignored by the schema
+                        # If set to "/^sf2_/" all tables not prefixed with "sf2_" will be ignored by the schema
                         # tool. This is for custom tables which should not be altered automatically.
                         schema_filter:        ~
 
@@ -90,7 +94,7 @@ Configuration Reference
                         profiling:            "%kernel.debug%"
                         server_version:       ~
                         driver_class:         ~
-                        # Allows to specify a custom wrapper implementation to use.                       
+                        # Allows to specify a custom wrapper implementation to use.
                         # Must be a subclass of Doctrine\DBAL\Connection
                         wrapper_class:        ~
                         shard_choser:         ~
@@ -148,6 +152,10 @@ Configuration Reference
                                 # SQL Anywhere specific (ServerName). The name of a running database server to connect to for SQL Anywhere.
                                 server:               ~
 
+                                # PostgreSQL specific (default_dbname).
+                                # Override the default database (postgres) to connect to.
+                                default_dbname:       ~
+
                                 # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE).
                                 # Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
                                 sslmode:              ~
@@ -195,6 +203,10 @@ Configuration Reference
 
                             # SQL Anywhere specific (ServerName). The name of a running database server to connect to for SQL Anywhere.
                             server:               ~
+
+                            # PostgreSQL specific (default_dbname).
+                            # Override the default database (postgres) to connect to.
+                            default_dbname:       ~
 
                             # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE).
                             # Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
@@ -399,6 +411,7 @@ Configuration Reference
                     <!-- servicename: Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter for Oracle depending on the service parameter. -->
                     <!-- sessionMode: The session mode to use for the oci8 driver -->
                     <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
+                    <!-- default_dbname: Override the default database (postgres) to connect to for PostgreSQL. -->
                     <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
                     <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                     <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
@@ -421,6 +434,7 @@ Configuration Reference
                         servicename=""
                         sessionMode=""
                         server=""
+                        default_dbname=""
                         sslmode=""
                         sslrootcert=""
                         pooled=""
@@ -459,6 +473,7 @@ Configuration Reference
                         <!-- servicename: Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter for Oracle depending on the service parameter. -->
                         <!-- sessionMode: The session mode to use for the oci8 driver -->
                         <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
+                        <!-- default_dbname: Override the default database (postgres) to connect to for PostgreSQL. -->
                         <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
                         <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                         <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
@@ -480,6 +495,7 @@ Configuration Reference
                             servicename=""
                             sessionMode=""
                             server=""
+                            default_dbname=""
                             sslmode=""
                             sslrootcert=""
                             pooled=""
@@ -495,6 +511,7 @@ Configuration Reference
                         <!-- servicename: Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter for Oracle depending on the service parameter. -->
                         <!-- sessionMode: The session mode to use for the oci8 driver -->
                         <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
+                        <!-- default_dbname: Override the default database (postgres) to connect to for PostgreSQL. -->
                         <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
                         <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
                         <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
@@ -516,6 +533,7 @@ Configuration Reference
                             servicename=""
                             sessionMode=""
                             server=""
+                            default_dbname=""
                             sslmode=""
                             sslrootcert=""
                             pooled=""
@@ -896,6 +914,7 @@ can configure. The following block shows all possible configuration keys:
                 service:                  true                # Oracle specific (SERVICE_NAME instead of SID)
                 servicename:              MyOracleServiceName # Oracle specific (SERVICE_NAME)
                 sessionMode:              2                   # oci8 driver specific (session_mode)
+                default_dbname:           database            # PostgreSQL specific (default_dbname)
                 sslmode:                  require             # PostgreSQL specific (LIBPQ-CONNECT-SSLMODE)
                 sslrootcert:              postgresql-ca.pem   # PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT)
                 wrapper_class:            MyDoctrineDbalConnectionWrapper
@@ -942,6 +961,7 @@ can configure. The following block shows all possible configuration keys:
                 service="true"                     <!-- Oracle specific (SERVICE_NAME instead of SID) -->
                 servicename="MyOracleServiceName"  <!-- Oracle specific (SERVICE_NAME) -->
                 sessionMode"2"                     <!-- oci8 driver specific (session_mode) -->
+                default_dbname="database"          <!-- PostgreSQL specific (default_dbname) -->
                 sslmode="require"                  <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLMODE) -->
                 sslrootcert="postgresql-ca.pem"    <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT) -->
                 wrapper-class="MyDoctrineDbalConnectionWrapper"
@@ -985,6 +1005,6 @@ which is the first one defined or the one configured via the
 ``default_connection`` parameter.
 
 Each connection is also accessible via the ``doctrine.dbal.[name]_connection``
-service where ``[name]`` if the name of the connection.
+service where ``[name]`` is the name of the connection.
 
 .. _DBAL documentation: http://www.doctrine-project.org/docs/dbal/2.0/en

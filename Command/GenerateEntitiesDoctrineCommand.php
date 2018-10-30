@@ -4,6 +4,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
 use Doctrine\ORM\Tools\EntityRepositoryGenerator;
+use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -86,7 +88,7 @@ EOT
 
             $output->writeln(sprintf('Generating entities for bundle "<info>%s</info>"', $bundle->getName()));
             $metadata = $manager->getBundleMetadata($bundle);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $name = strtr($input->getArgument('name'), '/', '\\');
             $pos  = strpos($name, ':');
 
@@ -117,7 +119,7 @@ EOT
             // Getting the metadata for the entity class once more to get the correct path if the namespace has multiple occurrences
             try {
                 $entityMetadata = $manager->getClassMetadata($m->getName(), $input->getOption('path'));
-            } catch (\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 // fall back to the bundle metadata when no entity class could be found
                 $entityMetadata = $metadata;
             }

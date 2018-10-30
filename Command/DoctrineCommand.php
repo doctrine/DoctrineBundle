@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Sharding\PoolingShardConnection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\EntityGenerator;
+use LogicException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 
 /**
@@ -35,7 +36,7 @@ abstract class DoctrineCommand extends ContainerAwareCommand
      * Get a doctrine entity manager by symfony name.
      *
      * @param string   $name
-     * @param null|int $shardId
+     * @param int|null $shardId
      *
      * @return EntityManager
      */
@@ -45,7 +46,7 @@ abstract class DoctrineCommand extends ContainerAwareCommand
 
         if ($shardId) {
             if (! $manager->getConnection() instanceof PoolingShardConnection) {
-                throw new \LogicException(sprintf("Connection of EntityManager '%s' must implement shards configuration.", $name));
+                throw new LogicException(sprintf("Connection of EntityManager '%s' must implement shards configuration.", $name));
             }
 
             $manager->getConnection()->connect($shardId);

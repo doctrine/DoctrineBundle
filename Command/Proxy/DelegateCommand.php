@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
 use Doctrine\ORM\Version;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -53,7 +54,7 @@ abstract class DelegateCommand extends Command
     protected function wrapCommand($entityManagerName)
     {
         if (! $this->isVersionCompatible()) {
-            throw new \RuntimeException(sprintf('"%s" requires doctrine-orm "%s" or newer', $this->getName(), $this->getMinimalVersion()));
+            throw new RuntimeException(sprintf('"%s" requires doctrine-orm "%s" or newer', $this->getName(), $this->getMinimalVersion()));
         }
 
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $entityManagerName);

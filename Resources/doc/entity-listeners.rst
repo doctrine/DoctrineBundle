@@ -3,8 +3,8 @@ Entity Listeners
 
 Entity listeners that are services must be registered with the entity
 listener resolver. You can tag your entity listeners and they will automatically
-be added to the resolver. Compulsory attributes are 'name, event and entity.' Use the 
-entity_manager attribute to specify which entity manager it should be registered with. Example:
+be added to the resolver. Use the entity_manager attribute to specify which
+entity manager it should be registered with. Example:
 
 .. configuration-block::
 
@@ -14,13 +14,12 @@ entity_manager attribute to specify which entity manager it should be registered
             user_listener:
                 class: \UserListener
                 tags:
-                    - { name: doctrine.orm.entity_listener, event: preUpdate, entity: App\Entity\User }
-                    - 
+                    - { name: doctrine.orm.entity_listener }
+-
                         name: doctrine.orm.entity_listener
                         event: preUpdate
                         entity: App\Entity\User
                         entity_manager: custom
-
     .. code-block:: xml
 
         <?xml version="1.0" ?>
@@ -31,13 +30,12 @@ entity_manager attribute to specify which entity manager it should be registered
             <services>
                 <service id="user_listener" class="UserListener">
                     <tag name="doctrine.orm.entity_listener" event="preUpdate" entity="App\Entity\User" />
-                    <tag 
+                    <tag
                         name="doctrine.orm.entity_listener"
                         event="preUpdate"
                         entity="App\Entity\User"
-                        entity_manager="custom" 
-                    />
-                </service>
+                        entity_manager="custom"
+                    />                </service>
             </services>
         </container>
 
@@ -59,7 +57,6 @@ If you use a version of doctrine/orm < 2.5 you have to register the entity liste
         // ....
     }
 
-See also 
+See also
 http://doctrine-orm.readthedocs.org/en/latest/reference/events.html#entity-listeners
 for more info on entity listeners and the resolver required by Symfony.
-

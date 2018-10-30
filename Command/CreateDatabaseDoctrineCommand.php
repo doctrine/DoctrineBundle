@@ -3,12 +3,14 @@
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\DBAL\DriverManager;
+use Exception;
+use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Database tool allows you to easily drop and create your configured databases.
+ * Database tool allows you to easily create your configured databases.
  */
 class CreateDatabaseDoctrineCommand extends DoctrineCommand
 {
@@ -41,7 +43,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $connectionName = $input->getOption('connection');
-        if (empty($connectionName) === true) {
+        if (empty($connectionName)) {
             $connectionName = $this->getContainer()->get('doctrine')->getDefaultConnectionName();
         }
         $connection = $this->getDoctrineConnection($connectionName);
@@ -75,7 +77,7 @@ EOT
         $hasPath = isset($params['path']);
         $name    = $hasPath ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
         if (! $name) {
-            throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
+            throw new InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be created.");
         }
         // Need to get rid of _every_ occurrence of dbname from connection configuration and we have already extracted all relevant info from url
         unset($params['dbname'], $params['path'], $params['url']);
@@ -97,7 +99,7 @@ EOT
                 $tmpConnection->getSchemaManager()->createDatabase($name);
                 $output->writeln(sprintf('<info>Created database <comment>%s</comment> for connection named <comment>%s</comment></info>', $name, $connectionName));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output->writeln(sprintf('<error>Could not create database <comment>%s</comment> for connection named <comment>%s</comment></error>', $name, $connectionName));
             $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
             $error = true;
