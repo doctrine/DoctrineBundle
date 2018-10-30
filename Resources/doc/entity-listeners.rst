@@ -59,5 +59,7 @@ If you use a version of doctrine/orm < 2.5 you have to register the entity liste
         // ....
     }
 
-See also http://doctrine-orm.readthedocs.org/en/latest/reference/events.html#entity-listeners for more info on entity listeners and the resolver required by Symfony.
+See also 
+http://doctrine-orm.readthedocs.org/en/latest/reference/events.html#entity-listeners
+for more info on entity listeners and the resolver required by Symfony.
 
