@@ -697,9 +697,8 @@ class DoctrineExtensionTest extends TestCase
             ->build();
         $extension->load([$config], $container);
 
-        $this->assertNotNull($container->getDefinition('doctrine.orm.messenger.middleware_factory.transaction'));
-        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_transaction_middleware'));
-        $this->assertSame('default', $middlewarePrototype->getArgument(0));
+        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_transaction'));
+        $this->assertCount(1, $middlewarePrototype->getArguments());
     }
 
     public function testCacheConfiguration()
