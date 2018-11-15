@@ -6,11 +6,13 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositor
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\CacheProviderLoader;
 use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\SymfonyBridgeAdapter;
+use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Version;
 use LogicException;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Form\Type\DoctrineType;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddlewareFactory;
+use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -23,6 +25,7 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -797,13 +800,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
     {
-        $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), 'Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor');
-        if (class_exists('Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface')) {
+        $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), DoctrineExtractor::class);
+        if (class_exists(PropertyInitializableExtractorInterface::class)) {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
         } else {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
 
-            $metadataFactoryDefinition = $container->register($argumentId, 'Doctrine\Common\Persistence\Mapping\ClassMetadataFactory');
+            $metadataFactoryDefinition = $container->register($argumentId, ClassMetadataFactory::class);
             $metadataFactoryDefinition->setFactory([
                 new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)),
                 'getMetadataFactory',
