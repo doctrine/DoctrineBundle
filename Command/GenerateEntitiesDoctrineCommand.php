@@ -13,6 +13,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Generate entity classes from mapping information
+ *
+ * @final
  */
 class GenerateEntitiesDoctrineCommand extends DoctrineCommand
 {
@@ -81,7 +83,7 @@ EOT
             '       If you wish to generate your entities, use <info>make:entity --regenerate</info> from MakerBundle instead.',
         ]);
 
-        $manager = new DisconnectedMetadataFactory($this->getContainer()->get('doctrine'));
+        $manager = new DisconnectedMetadataFactory($this->doctrine);
 
         try {
             $bundle = $this->getApplication()->getKernel()->getBundle($input->getArgument('name'));
@@ -93,7 +95,7 @@ EOT
             $pos  = strpos($name, ':');
 
             if ($pos !== false) {
-                $name = $this->getContainer()->get('doctrine')->getAliasNamespace(substr($name, 0, $pos)) . '\\' . substr($name, $pos + 1);
+                $name = $this->doctrine->getAliasNamespace(substr($name, 0, $pos)) . '\\' . substr($name, $pos + 1);
             }
 
             if (class_exists($name)) {

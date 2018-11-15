@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Mapping\Driver\DatabaseDriver;
 use Doctrine\ORM\Tools\Console\MetadataFilter;
 use Doctrine\ORM\Tools\DisconnectedClassMetadataFactory;
@@ -14,9 +15,23 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Import Doctrine ORM metadata mapping information from an existing database.
+ *
+ * @final
  */
 class ImportMappingDoctrineCommand extends DoctrineCommand
 {
+    private $bundles;
+
+    /**
+     * @param string[] $bundles
+     */
+    public function __construct(ManagerRegistry $doctrine, array $bundles)
+    {
+        parent::__construct($doctrine);
+
+        $this->bundles = $bundles;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -74,8 +89,7 @@ EOT
         }
 
         $namespaceOrBundle = $input->getArgument('name');
-        $bundles           = $this->getContainer()->getParameter('kernel.bundles');
-        if (isset($bundles[$namespaceOrBundle])) {
+        if (isset($this->bundles[$namespaceOrBundle])) {
             $bundle    = $this->getApplication()->getKernel()->getBundle($namespaceOrBundle);
             $namespace = $bundle->getNamespace() . '\Entity';
 

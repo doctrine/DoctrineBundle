@@ -11,6 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Database tool allows you to easily create your configured databases.
+ *
+ * @final
  */
 class CreateDatabaseDoctrineCommand extends DoctrineCommand
 {
@@ -44,7 +46,7 @@ EOT
     {
         $connectionName = $input->getOption('connection');
         if (empty($connectionName)) {
-            $connectionName = $this->getContainer()->get('doctrine')->getDefaultConnectionName();
+            $connectionName = $this->doctrine->getDefaultConnectionName();
         }
         $connection = $this->getDoctrineConnection($connectionName);
 

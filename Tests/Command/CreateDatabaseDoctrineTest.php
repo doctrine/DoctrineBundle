@@ -26,11 +26,12 @@ class CreateDatabaseDoctrineTest extends TestCase
             'driver' => 'pdo_sqlite',
         ];
 
+        $container = $this->getMockContainer($connectionName, $params);
+
         $application = new Application();
-        $application->add(new CreateDatabaseDoctrineCommand());
+        $application->add(new CreateDatabaseDoctrineCommand($container->get('doctrine')));
 
         $command = $application->find('doctrine:database:create');
-        $command->setContainer($this->getMockContainer($connectionName, $params));
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
@@ -65,11 +66,12 @@ class CreateDatabaseDoctrineTest extends TestCase
             ],
         ];
 
+        $container = $this->getMockContainer($connectionName, $params);
+
         $application = new Application();
-        $application->add(new CreateDatabaseDoctrineCommand());
+        $application->add(new CreateDatabaseDoctrineCommand($container->get('doctrine')));
 
         $command = $application->find('doctrine:database:create');
-        $command->setContainer($this->getMockContainer($connectionName, $params));
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName(), '--shard' => 1]);
@@ -91,7 +93,7 @@ class CreateDatabaseDoctrineTest extends TestCase
     private function getMockContainer($connectionName, $params = null)
     {
         // Mock the container and everything you'll need here
-        $mockDoctrine = $this->getMockBuilder('Doctrine\Common\Persistence\ConnectionRegistry')
+        $mockDoctrine = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')
             ->getMock();
 
         $mockDoctrine->expects($this->any())
