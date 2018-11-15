@@ -30,7 +30,7 @@
         "symfony/dependency-injection": "~2.7|~3.0|~4.0",
         "doctrine/dbal": "^2.5.12",
         "jdorn/sql-formatter": "^1.2.16",
-        "symfony/doctrine-bridge": "^4.2",
+        "symfony/doctrine-bridge": "~2.7|~3.0|~4.0",
         "doctrine/doctrine-cache-bundle": "~1.2"
     },
     "require-dev": {
