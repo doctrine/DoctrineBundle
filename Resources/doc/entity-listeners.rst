@@ -1,58 +1,25 @@
 Entity Listeners
 ================
 
-To set up an entity listener, start by creating a listener class:
-
-.. code-block:: php
-
-    // src/EventListener/UserListener
-    namespace App\EventListener;
-
-    use Doctrine\ORM\Event\LifecycleEventArgs;
-    use App\Entity\User;
-
-    class UserListener
-    {    
-        public function prePersist(User $user, LifecycleEventArgs $event)
-        {
-            // ...
-        }
-    }
-
-Next, you have to register the class as a listener. There are two ways to
-achieve this:
-
-You can either do the registration in your entity like this:
-
-.. code-block:: php
-
-    // src/Entity/User.php
-    namespace App\Entity\User;
-
-    use Doctrine\ORM\Mapping as ORM;
-
-    /**
-     * @ORM\Entity
-     * @ORM\EntityListeners({"App\EventListener\UserListener"})
-     */
-    class User
-    {
-        // ...
-    }
-
-This works fine, but your event listener will not be registered as a service
-(even if you have ``autowire: true`` in your ``services.yaml``). So to register
-it as a service, you have to add this to your ``services.yaml``:
+Entity listeners that are services must be registered with the entity
+listener resolver. You can tag your entity listeners and they will automatically
+be added to the resolver. Use the entity_manager attribute to specify which
+entity manager it should be registered with. Example:
 
 .. configuration-block::
 
     .. code-block:: yaml
 
         services:
-            App\EventListener\UserListener:
+            user_listener:
+                class: \UserListener
                 tags:
                     - { name: doctrine.orm.entity_listener }
-
+-
+                        name: doctrine.orm.entity_listener
+                        event: preUpdate
+                        entity: App\Entity\User
+                        entity_manager: custom
     .. code-block:: xml
 
         <?xml version="1.0" ?>
@@ -61,23 +28,35 @@ it as a service, you have to add this to your ``services.yaml``:
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
             <services>
-                <service id="App\EventListener\UserListener">
-                    <tag name="doctrine.orm.entity_listener" />
-                </service>
+                <service id="user_listener" class="UserListener">
+                    <tag name="doctrine.orm.entity_listener" event="preUpdate" entity="App\Entity\User" />
+                    <tag
+                        name="doctrine.orm.entity_listener"
+                        event="preUpdate"
+                        entity="App\Entity\User"
+                        entity_manager="custom"
+                    />                </service>
             </services>
         </container>
 
-Alternatively, you could do the entire configuration in ``services.yaml`` and
-omit the ``@ORM\EntityListeners`` annotation in the entity:
+If you use a version of doctrine/orm < 2.5 you have to register the entity listener in your entity as well:
 
-.. code-block:: yaml
+.. code-block:: php
 
-    services:
-        App\EventListener\UserListener:
-            tags:
-                - { name: doctrine.orm.entity_listener, entity: App\Entity\User, event: prePersist }
+    <?php
+    // User.php
 
-To register the listener for a custom entity manager, just add the ``entity_manager`` attribute.
+    use Doctrine\ORM\Mapping as ORM;
 
-See also https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/events.html#entity-listeners for more info on entity listeners.
+    /**
+     * @ORM\Entity
+     * @ORM\EntityListeners({"UserListener"})
+     */
+    class User
+    {
+        // ....
+    }
 
+See also
+http://doctrine-orm.readthedocs.org/en/latest/reference/events.html#entity-listeners
+for more info on entity listeners and the resolver required by Symfony.
