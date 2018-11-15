@@ -797,17 +797,22 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
     {
-        $metadataFactoryService = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
-
-        $metadataFactoryDefinition = $container->register($metadataFactoryService, 'Doctrine\Common\Persistence\Mapping\ClassMetadataFactory');
-        $metadataFactoryDefinition->setFactory([
-            new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)),
-            'getMetadataFactory',
-        ]);
-        $metadataFactoryDefinition->setPublic(false);
-
         $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), 'Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor');
-        $propertyExtractorDefinition->addArgument(new Reference($metadataFactoryService));
+        if (class_exists('Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface')) {
+            $argumentId = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
+        } else {
+            $argumentId = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
+
+            $metadataFactoryDefinition = $container->register($argumentId, 'Doctrine\Common\Persistence\Mapping\ClassMetadataFactory');
+            $metadataFactoryDefinition->setFactory([
+                new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)),
+                'getMetadataFactory',
+            ]);
+            $metadataFactoryDefinition->setPublic(false);
+        }
+
+        $propertyExtractorDefinition->addArgument(new Reference($argumentId));
+
         $propertyExtractorDefinition->addTag('property_info.list_extractor', ['priority' => -1001]);
         $propertyExtractorDefinition->addTag('property_info.type_extractor', ['priority' => -999]);
     }
