@@ -213,17 +213,5 @@
             <tag name="console.command" command="doctrine:generate:entities" />
         </service>
 
-        <service id="doctrine.create_database_command" class="Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand">
-            <argument type="service" id="doctrine" />
-
-            <tag name="console.command" command="doctrine:database:create" />
-        </service>
-
-        <service id="doctrine.drop_database_command" class="Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand">
-            <argument type="service" id="doctrine" />
-
-            <tag name="console.command" command="doctrine:database:drop" />
-        </service>
-
     </services>
 </container>
