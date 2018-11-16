@@ -24,7 +24,7 @@ before_install:
   - if [ "$SYMFONY_VERSION" != "" ]; then jq "(.require, .\"require-dev\")|=(with_entries(if .key|test(\"^symfony/\") then .value|=\"${SYMFONY_VERSION}\" else . end))" composer.json|ex -sc 'wq!composer.json' /dev/stdin; fi;
 
 install:
-  - travis_retry composer update -n --prefer-dist
+  - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer update -n --prefer-dist
 
 script:
   - ./vendor/bin/phpunit -v
@@ -34,7 +34,7 @@ jobs:
     - php: 5.5
       env: deps=low SYMFONY_DEPRECATIONS_HELPER=weak
       install:
-        - travis_retry composer update -n --prefer-lowest --prefer-stable --prefer-dist
+        - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer update -n --prefer-lowest --prefer-stable --prefer-dist
 
     - php: 5.6
       env: SYMFONY_VERSION="2.8.*"

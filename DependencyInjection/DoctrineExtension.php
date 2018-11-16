@@ -798,7 +798,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
     {
         $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), DoctrineExtractor::class);
-        if (class_exists(PropertyInitializableExtractorInterface::class)) {
+        if (interface_exists(PropertyInitializableExtractorInterface::class)) {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
         } else {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
