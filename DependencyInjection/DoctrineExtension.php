@@ -11,7 +11,7 @@ use Doctrine\ORM\Version;
 use LogicException;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Form\Type\DoctrineType;
-use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddlewareFactory;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
@@ -393,13 +393,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
         }
 
-        // If the Messenger component is installed and the doctrine transaction middleware factory is available, wire it:
-        if (interface_exists(MessageBusInterface::class) && class_exists(DoctrineTransactionMiddlewareFactory::class)) {
+        // If the Messenger component is installed and the doctrine transaction middleware is available, wire it:
+        if (interface_exists(MessageBusInterface::class) && class_exists(DoctrineTransactionMiddleware::class)) {
             $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
             $loader->load('messenger.xml');
-
-            $container->getDefinition('messenger.middleware.doctrine_transaction_middleware')
-                ->replaceArgument(0, $config['default_entity_manager']);
         }
 
         /*
