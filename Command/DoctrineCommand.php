@@ -17,6 +17,9 @@ use Symfony\Component\Console\Command\Command;
  */
 abstract class DoctrineCommand extends Command
 {
+    /**
+     * @var ManagerRegistry
+     */
     protected $doctrine;
 
     public function __construct(ManagerRegistry $doctrine)

@@ -49,7 +49,7 @@ class ContainerTest extends TestCase
         $this->assertFalse($container->has('doctrine.dbal.default_connection.events.mysqlsessioninit'));
 
         if (interface_exists('Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface') && class_exists('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor')) {
-            if (!interface_exists(PropertyInitializableExtractorInterface::class)) {
+            if (! interface_exists(PropertyInitializableExtractorInterface::class)) {
                 $this->assertInstanceOf('Doctrine\Common\Persistence\Mapping\ClassMetadataFactory', $container->get('doctrine.orm.default_entity_manager.metadata_factory'));
             }
             $this->assertInstanceOf('Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor', $container->get('doctrine.orm.default_entity_manager.property_info_extractor'));
