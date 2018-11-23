@@ -200,7 +200,7 @@
             <tag name="console.command" command="doctrine:schema:validate" />
         </service>
 
-        <service id="doctrine.import_mapping_command" class="Doctrine\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand">
+        <service id="doctrine.mapping_import_command" class="Doctrine\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand">
             <argument type="service" id="doctrine" />
             <argument>%kernel.bundles%</argument>
 
