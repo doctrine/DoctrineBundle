@@ -20,9 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ImportMappingDoctrineCommand extends DoctrineCommand
 {
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $bundles;
 
     /**
