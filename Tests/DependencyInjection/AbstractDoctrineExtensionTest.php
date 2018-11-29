@@ -69,6 +69,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('pgsql_db', $config['default_dbname']);
         $this->assertSame('require', $config['sslmode']);
         $this->assertSame('postgresql-ca.pem', $config['sslrootcert']);
+        $this->assertSame('postgresql-cert.pem', $config['sslcert']);
+        $this->assertSame('postgresql-key.pem', $config['sslkey']);
+        $this->assertSame('postgresql.crl', $config['sslcrl']);
         $this->assertSame('utf8', $config['charset']);
 
         // doctrine.dbal.sqlanywhere_connection

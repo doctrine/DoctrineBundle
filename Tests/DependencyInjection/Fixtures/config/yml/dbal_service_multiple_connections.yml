@@ -37,6 +37,9 @@ doctrine:
                 default_dbname: pgsql_db
                 sslmode: require
                 sslrootcert: postgresql-ca.pem
+                sslcert: postgresql-cert.pem
+                sslkey: postgresql-key.pem
+                sslcrl: postgresql.crl
                 charset: utf8
             sqlanywhere:
                 driver: sqlanywhere

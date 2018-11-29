@@ -239,6 +239,21 @@ class Configuration implements ConfigurationInterface
                         'If the file exists, the server\'s certificate will be verified to be signed by one of these authorities.'
                     )
                 ->end()
+                ->scalarNode('sslcert')
+                    ->info(
+                        'The path to the SSL client certificate file for PostgreSQL.'
+                    )
+                ->end()
+                ->scalarNode('sslkey')
+                    ->info(
+                        'The path to the SSL client key file for PostgreSQL.'
+                    )
+                ->end()
+                ->scalarNode('sslcrl')
+                    ->info(
+                        'The file name of the SSL certificate revocation list for PostgreSQL.'
+                    )
+                ->end()
                 ->booleanNode('pooled')->info('True to use a pooled server with the oci8/pdo_oracle driver')->end()
                 ->booleanNode('MultipleActiveResultSets')->info('Configuring MultipleActiveResultSets for the pdo_sqlsrv driver')->end()
                 ->booleanNode('use_savepoints')->info('Use savepoints for nested transactions')->end()
