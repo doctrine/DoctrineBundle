@@ -50,7 +50,13 @@ jobs:
     - php: 7.1
       env: stability=dev SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="4.1.*"
       install:
-        - composer require --dev "symfony/messenger" --no-update
+        - composer require --dev "symfony/messenger:4.1.*" --no-update
+        - travis_retry composer update -n --prefer-dist
+
+    - php: 7.1
+      env: stability=dev SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="4.2.*"
+      install:
+        - composer require --dev "symfony/messenger:4.2.*" --no-update
         - travis_retry composer update -n --prefer-dist
 
     - php: 7.2
