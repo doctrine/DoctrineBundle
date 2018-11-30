@@ -20,11 +20,12 @@ class DropDatabaseDoctrineTest extends TestCase
             'driver' => 'pdo_sqlite',
         ];
 
+        $container = $this->getMockContainer($connectionName, $params);
+
         $application = new Application();
-        $application->add(new DropDatabaseDoctrineCommand());
+        $application->add(new DropDatabaseDoctrineCommand($container->get('doctrine')));
 
         $command = $application->find('doctrine:database:drop');
-        $command->setContainer($this->getMockContainer($connectionName, $params));
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
@@ -50,11 +51,12 @@ class DropDatabaseDoctrineTest extends TestCase
             'driver' => 'pdo_sqlite',
         ];
 
+        $container = $this->getMockContainer($connectionName, $params);
+
         $application = new Application();
-        $application->add(new DropDatabaseDoctrineCommand());
+        $application->add(new DropDatabaseDoctrineCommand($container->get('doctrine')));
 
         $command = $application->find('doctrine:database:drop');
-        $command->setContainer($this->getMockContainer($connectionName, $params));
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
@@ -81,7 +83,7 @@ class DropDatabaseDoctrineTest extends TestCase
     private function getMockContainer($connectionName, $params = null)
     {
         // Mock the container and everything you'll need here
-        $mockDoctrine = $this->getMockBuilder('Doctrine\Common\Persistence\ConnectionRegistry')
+        $mockDoctrine = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')
             ->getMock();
 
         $mockDoctrine->expects($this->any())
