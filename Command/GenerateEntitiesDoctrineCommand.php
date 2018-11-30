@@ -83,7 +83,7 @@ EOT
             '       If you wish to generate your entities, use <info>make:entity --regenerate</info> from MakerBundle instead.',
         ]);
 
-        $manager = new DisconnectedMetadataFactory($this->doctrine);
+        $manager = new DisconnectedMetadataFactory($this->getDoctrine());
 
         try {
             $bundle = $this->getApplication()->getKernel()->getBundle($input->getArgument('name'));
@@ -95,7 +95,7 @@ EOT
             $pos  = strpos($name, ':');
 
             if ($pos !== false) {
-                $name = $this->doctrine->getAliasNamespace(substr($name, 0, $pos)) . '\\' . substr($name, $pos + 1);
+                $name = $this->getDoctrine()->getAliasNamespace(substr($name, 0, $pos)) . '\\' . substr($name, $pos + 1);
             }
 
             if (class_exists($name)) {

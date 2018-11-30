@@ -46,7 +46,7 @@ EOT
     {
         $connectionName = $input->getOption('connection');
         if (empty($connectionName)) {
-            $connectionName = $this->doctrine->getDefaultConnectionName();
+            $connectionName = $this->getDoctrine()->getDefaultConnectionName();
         }
         $connection = $this->getDoctrineConnection($connectionName);
 
