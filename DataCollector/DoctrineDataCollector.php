@@ -84,10 +84,6 @@ class DoctrineDataCollector extends BaseCollector
                 $errors[$name][$class->getName()] = $classErrors;
             }
 
-            if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-                continue;
-            }
-
             /** @var Configuration $emConfig */
             $emConfig   = $em->getConfiguration();
             $slcEnabled = $emConfig->isSecondLevelCacheEnabled();

@@ -326,13 +326,9 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.default_query_cache', (string) $calls[2][1][0]);
         $this->assertEquals('doctrine.orm.default_result_cache', (string) $calls[3][1][0]);
 
-        if (version_compare(Version::VERSION, '2.3.0-DEV') >= 0) {
-            $this->assertEquals('doctrine.orm.naming_strategy.default', (string) $calls[10][1][0]);
-            $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[11][1][0]);
-        }
-        if (version_compare(Version::VERSION, '2.4.0-DEV') >= 0) {
-            $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
-        }
+        $this->assertEquals('doctrine.orm.naming_strategy.default', (string) $calls[10][1][0]);
+        $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[11][1][0]);
+        $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
@@ -415,9 +411,6 @@ class DoctrineExtensionTest extends TestCase
 
     public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped(sprintf('Second Level cache not supported by this version of the ORM : %s', Version::VERSION));
-        }
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -448,9 +441,6 @@ class DoctrineExtensionTest extends TestCase
 
     public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped(sprintf('Second Level cache not supported by this version of the ORM : %s', Version::VERSION));
-        }
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 

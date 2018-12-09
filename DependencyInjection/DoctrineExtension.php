@@ -378,13 +378,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 ]);
             }
 
-            // BC: ResolveTargetEntityListener implements the subscriber interface since
-            // v2.5.0-beta1 (Commit 437f812)
-            if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-                $def->addTag('doctrine.event_listener', ['event' => 'loadClassMetadata']);
-            } else {
-                $def->addTag('doctrine.event_subscriber');
-            }
+            $def->addTag('doctrine.event_subscriber');
         }
 
         // if is for Symfony 3.2 and lower compat
@@ -447,30 +441,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setAutoGenerateProxyClasses' => '%doctrine.orm.auto_generate_proxy_classes%',
             'setClassMetadataFactoryName' => $entityManager['class_metadata_factory_name'],
             'setDefaultRepositoryClassName' => $entityManager['default_repository_class'],
+            'setNamingStrategy' => new Reference($entityManager['naming_strategy']),
+            'setQuoteStrategy' => new Reference($entityManager['quote_strategy']),
+            'setEntityListenerResolver' => new Reference(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name'])),
         ];
-        // check for version to keep BC
-        if (version_compare(Version::VERSION, '2.3.0-DEV') >= 0) {
-            $methods = array_merge($methods, [
-                'setNamingStrategy' => new Reference($entityManager['naming_strategy']),
-                'setQuoteStrategy' => new Reference($entityManager['quote_strategy']),
-            ]);
-        }
 
-        if (version_compare(Version::VERSION, '2.4.0-DEV') >= 0) {
-            $methods = array_merge($methods, [
-                'setEntityListenerResolver' => new Reference(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name'])),
-            ]);
+        $listenerId        = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
+        $listenerDef       = $container->setDefinition($listenerId, new Definition('%doctrine.orm.listeners.attach_entity_listeners.class%'));
+        $listenerTagParams = ['event' => 'loadClassMetadata'];
+        if (isset($entityManager['connection'])) {
+            $listenerTagParams['connection'] = $entityManager['connection'];
         }
-
-        if (version_compare(Version::VERSION, '2.5.0-DEV') >= 0) {
-            $listenerId        = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
-            $listenerDef       = $container->setDefinition($listenerId, new Definition('%doctrine.orm.listeners.attach_entity_listeners.class%'));
-            $listenerTagParams = ['event' => 'loadClassMetadata'];
-            if (isset($entityManager['connection'])) {
-                $listenerTagParams['connection'] = $entityManager['connection'];
-            }
-            $listenerDef->addTag('doctrine.event_listener', $listenerTagParams);
-        }
+        $listenerDef->addTag('doctrine.event_listener', $listenerTagParams);
 
         if (isset($entityManager['second_level_cache'])) {
             $this->loadOrmSecondLevelCache($entityManager, $ormConfigDef, $container);
@@ -640,10 +622,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function loadOrmSecondLevelCache(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container)
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            throw new \InvalidArgumentException('Second-level cache requires doctrine-orm 2.5.0 or newer');
-        }
-
         $driverId = null;
         $enabled  = $entityManager['second_level_cache']['enabled'];
 

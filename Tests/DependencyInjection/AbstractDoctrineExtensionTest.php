@@ -567,9 +567,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSetNamingStrategy()
     {
-        if (version_compare(Version::VERSION, '2.3.0-DEV') < 0) {
-            $this->markTestSkipped('Naming Strategies are not available');
-        }
         $container = $this->loadContainer('orm_namingstrategy');
 
         $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
@@ -581,9 +578,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSetQuoteStrategy()
     {
-        if (version_compare(Version::VERSION, '2.3.0-DEV') < 0) {
-            $this->markTestSkipped('Quote Strategies are not available');
-        }
         $container = $this->loadContainer('orm_quotestrategy');
 
         $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
@@ -595,10 +589,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSecondLevelCache()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped('Second-level cache requires doctrine-orm 2.5.0 or newer');
-        }
-
         $container = $this->loadContainer('orm_second_level_cache');
 
         $this->assertTrue($container->has('doctrine.orm.default_configuration'));
@@ -698,19 +688,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.orm.listeners.resolve_target_entity');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addResolveTargetEntity', ['Symfony\Component\Security\Core\User\UserInterface', 'MyUserClass', []]);
 
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->assertEquals(['doctrine.event_listener' => [['event' => 'loadClassMetadata']]], $definition->getTags());
-        } else {
-            $this->assertEquals(['doctrine.event_subscriber' => [[]]], $definition->getTags());
-        }
+        $this->assertEquals(['doctrine.event_subscriber' => [[]]], $definition->getTags());
     }
 
     public function testAttachEntityListeners()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped('This test requires ORM 2.5-dev.');
-        }
-
         $container = $this->loadContainer('orm_attach_entity_listener');
 
         $definition  = $container->getDefinition('doctrine.orm.default_listeners.attach_entity_listeners');
@@ -817,14 +799,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_entity_listener_resolver', ['YamlBundle'], new EntityListenerPass());
 
         $definition = $container->getDefinition('doctrine.orm.em1_configuration');
-        if (version_compare(Version::VERSION, '2.4.0-DEV') >= 0) {
-            $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', [new Reference('doctrine.orm.em1_entity_listener_resolver')]);
-        }
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', [new Reference('doctrine.orm.em1_entity_listener_resolver')]);
 
         $definition = $container->getDefinition('doctrine.orm.em2_configuration');
-        if (version_compare(Version::VERSION, '2.4.0-DEV') >= 0) {
-            $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', [new Reference('doctrine.orm.em2_entity_listener_resolver')]);
-        }
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', [new Reference('doctrine.orm.em2_entity_listener_resolver')]);
 
         $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener1')]);
@@ -835,10 +813,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAttachEntityListenerTag()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
-        }
-
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -863,10 +837,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAttachEntityListenersTwoConnections()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
-        }
-
         $container = $this->getContainer(['YamlBundle']);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -887,10 +857,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAttachLazyEntityListener()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
-        }
-
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -913,10 +879,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      */
     public function testLazyEntityListenerResolverWithoutCorrectInterface()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
-        }
-
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -929,10 +891,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testPrivateLazyEntityListener()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
-        }
-
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -951,10 +909,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      */
     public function testAbstractLazyEntityListener()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped('Attaching entity listeners by tag requires doctrine-orm 2.5.0 or newer');
-        }
-
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
