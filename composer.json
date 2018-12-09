@@ -24,28 +24,29 @@
         }
     ],
     "require": {
-        "php": "^5.5.9|^7.0",
-        "symfony/framework-bundle": "^2.7.22|~3.0|~4.0",
-        "symfony/console": "~2.7|~3.0|~4.0",
-        "symfony/dependency-injection": "~2.7|~3.0|~4.0",
+        "php": "^7.1",
+        "symfony/framework-bundle": "^3.4|^4.1",
+        "symfony/config": "^3.4|^4.1",
+        "symfony/console": "^3.4|^4.1",
+        "symfony/dependency-injection": "^3.4|^4.1",
         "doctrine/dbal": "^2.5.12",
         "jdorn/sql-formatter": "^1.2.16",
-        "symfony/doctrine-bridge": "~2.7|~3.0|~4.0",
+        "symfony/doctrine-bridge": "^3.4|^4.1",
         "doctrine/doctrine-cache-bundle": "~1.2"
     },
     "require-dev": {
-        "doctrine/orm": "~2.4",
-        "symfony/yaml": "~2.7|~3.0|~4.0",
-        "symfony/validator": "~2.7|~3.0|~4.0",
-        "symfony/property-info": "~2.8|~3.0|~4.0",
-        "symfony/phpunit-bridge": "~2.7|~3.0|~4.0",
-        "twig/twig": "~1.26|~2.0",
+        "doctrine/orm": "^2.6",
+        "symfony/yaml": "^3.4|^4.1",
+        "symfony/validator": "^3.4|^4.1",
+        "symfony/property-info": "^3.4|^4.1",
+        "symfony/phpunit-bridge": "^4.2",
+        "twig/twig": "^1.26|^2.0",
         "php-coveralls/php-coveralls": "^2.1",
-        "phpunit/phpunit": "^4.8.36|^5.7|^6.4",
-        "symfony/web-profiler-bundle": "~2.7|~3.0|~4.0"
+        "phpunit/phpunit": "7.0",
+        "symfony/web-profiler-bundle": "^3.4|^4.1"
     },
     "conflict": {
-        "symfony/http-foundation": "<2.6"
+        "doctrine/orm": "<2.6"
     },
     "suggest": {
         "symfony/web-profiler-bundle": "To use the data collector.",

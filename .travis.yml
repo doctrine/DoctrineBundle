@@ -7,11 +7,9 @@ cache:
     - $HOME/.composer/cache
 
 php:
-  - 5.5
-  - 5.6
-  - 7.0
   - 7.1
   - 7.2
+  - 7.3
   - nightly
 
 env:
@@ -31,34 +29,37 @@ script:
 
 jobs:
   include:
-    - php: 5.5
+    # Tests the lowest set of dependencies
+    - php: 7.1
       env: deps=low SYMFONY_DEPRECATIONS_HELPER=weak
       install:
         - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer update -n --prefer-lowest --prefer-stable --prefer-dist
 
-    - php: 5.6
-      env: SYMFONY_VERSION="2.8.*"
-
-    - php: 7.0
-      env: SYMFONY_VERSION="3.2.*"
-
+    # Test against latest Symfony 3.4 stable
     - php: 7.1
-      env: stability=RC SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="3.4.*"
+      env: SYMFONY_VERSION="3.4.*"
+
+    # Test against latest Symfony 3.4 dev version
+    - php: 7.1
+      env: stability=dev SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="3.4.*"
       install:
         - travis_retry composer update -n --prefer-dist
 
+    # Test against latest Symfony 4.1 dev version
     - php: 7.1
       env: stability=dev SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="4.1.*"
       install:
         - composer require --dev "symfony/messenger:4.1.*" --no-update
         - travis_retry composer update -n --prefer-dist
 
+    # Test against latest Symfony 4.2 dev version
     - php: 7.1
       env: stability=dev SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="4.2.*"
       install:
         - composer require --dev "symfony/messenger:4.2.*" --no-update
         - travis_retry composer update -n --prefer-dist
 
+    # Test alpha packages
     - php: 7.2
       env: stability=alpha
       install:
