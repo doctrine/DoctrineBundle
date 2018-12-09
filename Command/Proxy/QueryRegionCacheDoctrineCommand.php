@@ -3,11 +3,14 @@
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
 use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryRegionCommand;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Command to clear a query cache region.
  */
-class QueryRegionCacheDoctrineCommand extends DelegateCommand
+class QueryRegionCacheDoctrineCommand extends QueryRegionCommand
 {
     /**
      * {@inheritDoc}
@@ -16,22 +19,15 @@ class QueryRegionCacheDoctrineCommand extends DelegateCommand
     {
         parent::configure();
 
-        $this->setName('doctrine:cache:clear-query-region');
+        $this
+            ->setName('doctrine:cache:clear-query-region')
+            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected function createCommand()
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
-        return new QueryRegionCommand();
-    }
+        DoctrineCommandHelper::setApplicationConnection($this->getApplication(), $input->getOption('connection'));
 
-    /**
-     * {@inheritDoc}
-     */
-    protected function getMinimalVersion()
-    {
-        return '2.5.0-DEV';
+        return parent::execute($input, $output);
     }
 }
