@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\Mapping\ClassMetadataCollection;
 use Doctrine\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Version;
 
 class DisconnectedMetadataFactoryTest extends TestCase
 {
@@ -13,7 +14,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
     {
         parent::setUp();
 
-        if (class_exists('Doctrine\\ORM\\Version')) {
+        if (class_exists(Version::class)) {
             return;
         }
 

@@ -23,15 +23,6 @@ final class ServiceRepositoryCompilerPass implements CompilerPassInterface
 
         $repoServiceIds = array_keys($container->findTaggedServiceIds(self::REPOSITORY_SERVICE_TAG));
 
-        // Symfony 3.2 and lower sanity check
-        if (! class_exists(ServiceLocatorTagPass::class)) {
-            if (! empty($repoServiceIds)) {
-                throw new RuntimeException(sprintf('The "%s" tag can only be used with Symfony 3.3 or higher. Remove the tag from the following services (%s) or upgrade to Symfony 3.3 or higher.', self::REPOSITORY_SERVICE_TAG, implode(', ', $repoServiceIds)));
-            }
-
-            return;
-        }
-
         $repoReferences = array_map(static function ($id) {
             return new Reference($id);
         }, $repoServiceIds);

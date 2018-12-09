@@ -147,10 +147,6 @@ class DoctrineExtensionTest extends TestCase
     {
         $extension = new DoctrineExtension();
 
-        if (! method_exists($extension, 'fixManagersAutoMappings')) {
-            $this->markTestSkipped('Auto mapping with multiple managers available with Symfony ~2.6');
-        }
-
         $container = $this->getContainer([
             'YamlBundle',
             'XmlBundle',
@@ -303,12 +299,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        if (method_exists($definition, 'getFactory')) {
-            $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-            $this->assertEquals('create', $definition->getFactoryMethod());
-        }
+        $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $this->assertEquals(['default' => 'doctrine.orm.default_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
@@ -396,12 +387,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        if (method_exists($definition, 'getFactory')) {
-            $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-            $this->assertEquals('create', $definition->getFactoryMethod());
-        }
+        $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -423,12 +409,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        if (method_exists($definition, 'getFactory')) {
-            $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-            $this->assertEquals('create', $definition->getFactoryMethod());
-        }
+        $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -459,12 +440,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        if (method_exists($definition, 'getFactory')) {
-            $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-            $this->assertEquals('create', $definition->getFactoryMethod());
-        }
+        $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -819,7 +795,7 @@ class DoctrineExtensionTest extends TestCase
 
     private function compileContainer(ContainerBuilder $container)
     {
-        $container->getCompilerPassConfig()->setOptimizationPasses([class_exists(ResolveChildDefinitionsPass::class) ? new ResolveChildDefinitionsPass() : new ResolveDefinitionTemplatesPass()]);
+        $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);
         $container->compile();
     }

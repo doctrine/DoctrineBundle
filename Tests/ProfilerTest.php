@@ -73,9 +73,7 @@ class ProfilerTest extends BaseTestCase
         // This is only needed for WebProfilerBundle=3.2, remove when support for it is dropped
         $requestCollector = new RequestDataCollector();
         $requestCollector->collect($request, $response);
-        if (method_exists($requestCollector, 'lateCollect')) {
-            $requestCollector->lateCollect();
-        }
+        $requestCollector->lateCollect();
         $profile->addCollector($requestCollector);
 
         $output = $this->twig->render('db.html.twig', [

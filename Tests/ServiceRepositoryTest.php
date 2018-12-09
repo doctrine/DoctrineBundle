@@ -8,6 +8,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Version;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomServiceRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
@@ -26,7 +27,7 @@ class ServiceRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        if (class_exists('Doctrine\\ORM\\Version')) {
+        if (class_exists(Version::class)) {
             return;
         }
 
@@ -71,15 +72,8 @@ class ServiceRepositoryTest extends TestCase
         // create a public alias so we can use it below for testing
         $container->setAlias('test_alias__' . TestCustomServiceRepoRepository::class, new Alias(TestCustomServiceRepoRepository::class, true));
 
-        // Symfony 2.7 compat - can be moved above later
-        if (method_exists($def, 'setAutowired')) {
-            $def->setAutowired(true);
-        }
-
-        // Symfony 3.3 and higher: autowire definition so it receives the tags
-        if (class_exists(ServiceLocatorTagPass::class)) {
-            $def->setAutoconfigured(true);
-        }
+        $def->setAutowired(true);
+        $def->setAutoconfigured(true);
 
         $container->addCompilerPass(new ServiceRepositoryCompilerPass());
         $container->compile();
@@ -99,19 +93,6 @@ class ServiceRepositoryTest extends TestCase
         $this->assertSame($genericRepository, $genericRepository = $em->getRepository(TestDefaultRepoEntity::class));
         // a smoke test, trying one of the methods
         $this->assertSame(TestDefaultRepoEntity::class, $genericRepository->getClassName());
-
-        // Symfony 3.2 and lower should work normally in traditional cases (tested above)
-        // the code below should *not* work (by design)
-        if (! class_exists(ServiceLocatorTagPass::class)) {
-            $message = '/Support for loading entities from the service container only works for Symfony 3\.3/';
-            if (method_exists($this, 'expectException')) {
-                $this->expectException(RuntimeException::class);
-                $this->expectExceptionMessageRegExp($message);
-            } else {
-                // PHPUnit 4 compat
-                $this->setExpectedExceptionRegExp(RuntimeException::class, $message);
-            }
-        }
 
         // custom service repository
         $customServiceRepo = $em->getRepository(TestCustomServiceRepoEntity::class);

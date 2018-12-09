@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerAwareEntityListenerResolver;
+use Doctrine\ORM\Mapping\EntityListenerResolver;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,10 +18,6 @@ class ContainerAwareEntityListenerResolverTest extends TestCase
 
     protected function setUp()
     {
-        if (! interface_exists('\Doctrine\ORM\Mapping\EntityListenerResolver')) {
-            $this->markTestSkipped('Entity listeners are not supported in this Doctrine version');
-        }
-
         parent::setUp();
 
         $this->container = $this->getMockForAbstractClass('\Symfony\Component\DependencyInjection\ContainerInterface');
