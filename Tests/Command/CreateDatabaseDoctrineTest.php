@@ -51,6 +51,7 @@ class CreateDatabaseDoctrineTest extends TestCase
             'global' => [
                 'driver' => 'pdo_sqlite',
                 'dbname' => 'test',
+                'path' => sys_get_temp_dir() . '/global',
             ],
             'shards' => [
                 'foo' => [

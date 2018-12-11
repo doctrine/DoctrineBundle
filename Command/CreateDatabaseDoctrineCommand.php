@@ -63,13 +63,13 @@ EOT
             $shards = $params['shards'];
             // Default select global
             $params = array_merge($params, $params['global']);
-            unset($params['global']['dbname']);
+            unset($params['global']['dbname'], $params['global']['path'], $params['global']['url']);
             if ($input->getOption('shard')) {
                 foreach ($shards as $i => $shard) {
                     if ($shard['id'] === (int) $input->getOption('shard')) {
                         // Select sharded database
                         $params = array_merge($params, $shard);
-                        unset($params['shards'][$i]['dbname'], $params['id']);
+                        unset($params['shards'][$i]['dbname'], $params['shards'][$i]['path'], $params['shards'][$i]['url'], $params['id']);
                         break;
                     }
                 }
