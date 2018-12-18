@@ -15,7 +15,7 @@ entity manager it should be registered with. Example:
                 class: \UserListener
                 tags:
                     - { name: doctrine.orm.entity_listener }
--
+                    -
                         name: doctrine.orm.entity_listener
                         event: preUpdate
                         entity: App\Entity\User
@@ -35,7 +35,8 @@ entity manager it should be registered with. Example:
                         event="preUpdate"
                         entity="App\Entity\User"
                         entity_manager="custom"
-                    />                </service>
+                    />
+                </service>
             </services>
         </container>
 
