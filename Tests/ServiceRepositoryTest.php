@@ -15,9 +15,7 @@ use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomServiceRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
-use RuntimeException;
 use Symfony\Component\DependencyInjection\Alias;
-use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 

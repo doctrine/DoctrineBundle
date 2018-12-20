@@ -3,7 +3,6 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerAwareEntityListenerResolver;
-use Doctrine\ORM\Mapping\EntityListenerResolver;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject;
 use Symfony\Component\DependencyInjection\ContainerInterface;

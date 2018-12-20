@@ -4,8 +4,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Version;
-use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
-use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 class ContainerTest extends TestCase

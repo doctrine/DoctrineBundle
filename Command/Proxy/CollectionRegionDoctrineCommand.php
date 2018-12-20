@@ -30,5 +30,4 @@ class CollectionRegionDoctrineCommand extends CollectionRegionCommand
 
         return parent::execute($input, $output);
     }
-
 }

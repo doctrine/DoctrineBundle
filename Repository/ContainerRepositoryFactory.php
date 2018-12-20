@@ -10,7 +10,6 @@ use Doctrine\ORM\Repository\RepositoryFactory;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
-use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 
 /**
  * Fetches repositories from the container or falls back to normal creation.

@@ -43,7 +43,8 @@
         "twig/twig": "^1.26|^2.0",
         "php-coveralls/php-coveralls": "^2.1",
         "phpunit/phpunit": "7.0",
-        "symfony/web-profiler-bundle": "^3.4|^4.1"
+        "symfony/web-profiler-bundle": "^3.4|^4.1",
+        "doctrine/coding-standard": "^5.0"
     },
     "conflict": {
         "doctrine/orm": "<2.6"
