@@ -66,6 +66,13 @@ jobs:
         - composer config minimum-stability alpha
         - travis_retry composer update -n --prefer-dist
 
+    # Test dev level software
+    - php: nightly
+      env: stability=dev
+      install:
+        - composer config minimum-stability dev
+        - travis_retry composer update -n --prefer-dist
+
     - stage: Code Quality
       env: CODING_STANDARDS
       php: 7.1
