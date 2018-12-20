@@ -31,30 +31,30 @@ jobs:
   include:
     # Tests the lowest set of dependencies
     - php: 7.1
-      env: deps=low SYMFONY_DEPRECATIONS_HELPER=weak
+      env: deps=low SYMFONY_DEPRECATIONS_HELPER=999999
       install:
         - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer update -n --prefer-lowest --prefer-stable --prefer-dist
 
     # Test against latest Symfony 3.4 stable
     - php: 7.1
-      env: SYMFONY_VERSION="3.4.*"
+      env: SYMFONY_VERSION="3.4.*" SYMFONY_DEPRECATIONS_HELPER=999999
 
     # Test against latest Symfony 3.4 dev version
     - php: 7.1
-      env: stability=dev SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="3.4.*"
+      env: stability=dev SYMFONY_DEPRECATIONS_HELPER=999999 SYMFONY_VERSION="3.4.*"
       install:
         - travis_retry composer update -n --prefer-dist
 
     # Test against latest Symfony 4.1 dev version
     - php: 7.1
-      env: stability=dev SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="4.1.*"
+      env: stability=dev SYMFONY_DEPRECATIONS_HELPER=999999 SYMFONY_VERSION="4.1.*"
       install:
         - composer require --dev "symfony/messenger:4.1.*" --no-update
         - travis_retry composer update -n --prefer-dist
 
     # Test against latest Symfony 4.2 dev version
     - php: 7.1
-      env: stability=dev SYMFONY_DEPRECATIONS_HELPER=weak SYMFONY_VERSION="4.2.*"
+      env: stability=dev SYMFONY_VERSION="4.2.*"
       install:
         - composer require --dev "symfony/messenger:4.2.*" --no-update
         - travis_retry composer update -n --prefer-dist
