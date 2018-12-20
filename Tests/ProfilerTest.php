@@ -70,12 +70,6 @@ class ProfilerTest extends BaseTestCase
 
         $profile = new Profile('foo');
 
-        // This is only needed for WebProfilerBundle=3.2, remove when support for it is dropped
-        $requestCollector = new RequestDataCollector();
-        $requestCollector->collect($request, $response);
-        $requestCollector->lateCollect();
-        $profile->addCollector($requestCollector);
-
         $output = $this->twig->render('db.html.twig', [
             'request' => $request,
             'token' => 'foo',
