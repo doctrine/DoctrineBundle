@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Exception\DriverException;
+use Doctrine\ORM\Version;
 use Exception;
 
 class ConnectionFactoryTest extends TestCase
@@ -14,7 +15,7 @@ class ConnectionFactoryTest extends TestCase
     {
         parent::setUp();
 
-        if (class_exists('Doctrine\\ORM\\Version')) {
+        if (class_exists(Version::class)) {
             return;
         }
 

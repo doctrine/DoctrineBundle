@@ -10,7 +10,6 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Tools\SchemaValidator;
-use Doctrine\ORM\Version;
 use Exception;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
 use Symfony\Component\HttpFoundation\Request;
@@ -84,10 +83,6 @@ class DoctrineDataCollector extends BaseCollector
                 $errors[$name][$class->getName()] = $classErrors;
             }
 
-            if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-                continue;
-            }
-
             /** @var Configuration $emConfig */
             $emConfig   = $em->getConfiguration();
             $slcEnabled = $emConfig->isSecondLevelCacheEnabled();
@@ -140,14 +135,11 @@ class DoctrineDataCollector extends BaseCollector
             }
         }
 
-        // HttpKernel < 3.2 compatibility layer
-        if (method_exists($this, 'cloneVar')) {
-            // Might be good idea to replicate this block in doctrine bridge so we can drop this from here after some time.
-            // This code is compatible with such change, because cloneVar is supposed to check if input is already cloned.
-            foreach ($this->data['queries'] as &$queries) {
-                foreach ($queries as &$query) {
-                    $query['params'] = $this->cloneVar($query['params']);
-                }
+        // Might be good idea to replicate this block in doctrine bridge so we can drop this from here after some time.
+        // This code is compatible with such change, because cloneVar is supposed to check if input is already cloned.
+        foreach ($this->data['queries'] as &$queries) {
+            foreach ($queries as &$query) {
+                $query['params'] = $this->cloneVar($query['params']);
             }
         }
 

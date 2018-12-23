@@ -277,8 +277,7 @@ class DoctrineExtension extends Twig_Extension
     public function replaceQueryParameters($query, $parameters)
     {
         if ($parameters instanceof Data) {
-            // VarDumper < 3.3 compatibility layer
-            $parameters = method_exists($parameters, 'getValue') ? $parameters->getValue(true) : $parameters->getRawData();
+            $parameters = $parameters->getValue(true);
         }
 
         $i = 0;

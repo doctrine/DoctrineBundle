@@ -10,10 +10,8 @@ use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Version;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
-use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -146,10 +144,6 @@ class DoctrineExtensionTest extends TestCase
     public function testAutomapping(array $entityManagers)
     {
         $extension = new DoctrineExtension();
-
-        if (! method_exists($extension, 'fixManagersAutoMappings')) {
-            $this->markTestSkipped('Auto mapping with multiple managers available with Symfony ~2.6');
-        }
 
         $container = $this->getContainer([
             'YamlBundle',
@@ -303,12 +297,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        if (method_exists($definition, 'getFactory')) {
-            $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-            $this->assertEquals('create', $definition->getFactoryMethod());
-        }
+        $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $this->assertEquals(['default' => 'doctrine.orm.default_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
@@ -326,13 +315,9 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.default_query_cache', (string) $calls[2][1][0]);
         $this->assertEquals('doctrine.orm.default_result_cache', (string) $calls[3][1][0]);
 
-        if (version_compare(Version::VERSION, '2.3.0-DEV') >= 0) {
-            $this->assertEquals('doctrine.orm.naming_strategy.default', (string) $calls[10][1][0]);
-            $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[11][1][0]);
-        }
-        if (version_compare(Version::VERSION, '2.4.0-DEV') >= 0) {
-            $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
-        }
+        $this->assertEquals('doctrine.orm.naming_strategy.default', (string) $calls[10][1][0]);
+        $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[11][1][0]);
+        $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
@@ -400,12 +385,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        if (method_exists($definition, 'getFactory')) {
-            $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-            $this->assertEquals('create', $definition->getFactoryMethod());
-        }
+        $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -415,9 +395,6 @@ class DoctrineExtensionTest extends TestCase
 
     public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped(sprintf('Second Level cache not supported by this version of the ORM : %s', Version::VERSION));
-        }
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -430,12 +407,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        if (method_exists($definition, 'getFactory')) {
-            $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-            $this->assertEquals('create', $definition->getFactoryMethod());
-        }
+        $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -448,9 +420,6 @@ class DoctrineExtensionTest extends TestCase
 
     public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration()
     {
-        if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
-            $this->markTestSkipped(sprintf('Second Level cache not supported by this version of the ORM : %s', Version::VERSION));
-        }
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -469,12 +438,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-        if (method_exists($definition, 'getFactory')) {
-            $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getFactoryClass());
-            $this->assertEquals('create', $definition->getFactoryMethod());
-        }
+        $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -829,7 +793,7 @@ class DoctrineExtensionTest extends TestCase
 
     private function compileContainer(ContainerBuilder $container)
     {
-        $container->getCompilerPassConfig()->setOptimizationPasses([class_exists(ResolveChildDefinitionsPass::class) ? new ResolveChildDefinitionsPass() : new ResolveDefinitionTemplatesPass()]);
+        $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);
         $container->compile();
     }

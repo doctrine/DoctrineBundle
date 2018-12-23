@@ -5,7 +5,6 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 use Symfony\Component\DependencyInjection\Reference;
 
 final class ServiceRepositoryCompilerPass implements CompilerPassInterface
@@ -22,15 +21,6 @@ final class ServiceRepositoryCompilerPass implements CompilerPassInterface
         $locatorDef = $container->getDefinition('doctrine.orm.container_repository_factory');
 
         $repoServiceIds = array_keys($container->findTaggedServiceIds(self::REPOSITORY_SERVICE_TAG));
-
-        // Symfony 3.2 and lower sanity check
-        if (! class_exists(ServiceLocatorTagPass::class)) {
-            if (! empty($repoServiceIds)) {
-                throw new RuntimeException(sprintf('The "%s" tag can only be used with Symfony 3.3 or higher. Remove the tag from the following services (%s) or upgrade to Symfony 3.3 or higher.', self::REPOSITORY_SERVICE_TAG, implode(', ', $repoServiceIds)));
-            }
-
-            return;
-        }
 
         $repoReferences = array_map(static function ($id) {
             return new Reference($id);

@@ -17,10 +17,6 @@ class ContainerRepositoryFactoryTest extends TestCase
 {
     public function testGetRepositoryReturnsService()
     {
-        if (! interface_exists(ContainerInterface::class)) {
-            $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
-        }
-
         $em        = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
         $repo      = new StubRepository($em, new ClassMetadata(''));
         $container = $this->createContainer(['my_repo' => $repo]);
@@ -31,10 +27,6 @@ class ContainerRepositoryFactoryTest extends TestCase
 
     public function testGetRepositoryReturnsEntityRepository()
     {
-        if (! interface_exists(ContainerInterface::class)) {
-            $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
-        }
-
         $container = $this->createContainer([]);
         $em        = $this->createEntityManager(['Foo\BoringEntity' => null]);
 
@@ -47,10 +39,6 @@ class ContainerRepositoryFactoryTest extends TestCase
 
     public function testCustomRepositoryIsReturned()
     {
-        if (! interface_exists(ContainerInterface::class)) {
-            $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
-        }
-
         $container = $this->createContainer([]);
         $em        = $this->createEntityManager([
             'Foo\CustomNormalRepoEntity' => StubRepository::class,
@@ -69,10 +57,6 @@ class ContainerRepositoryFactoryTest extends TestCase
      */
     public function testServiceRepositoriesMustExtendObjectRepository()
     {
-        if (! interface_exists(ContainerInterface::class)) {
-            $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
-        }
-
         $repo = new stdClass();
 
         $container = $this->createContainer(['my_repo' => $repo]);
@@ -85,10 +69,6 @@ class ContainerRepositoryFactoryTest extends TestCase
 
     public function testServiceRepositoriesCanNotExtendsEntityRepository()
     {
-        if (! interface_exists(ContainerInterface::class)) {
-            $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
-        }
-
         $repo = $this->getMockBuilder(ObjectRepository::class)->getMock();
 
         $container = $this->createContainer(['my_repo' => $repo]);
@@ -108,10 +88,6 @@ class ContainerRepositoryFactoryTest extends TestCase
      */
     public function testRepositoryMatchesServiceInterfaceButServiceNotFound()
     {
-        if (! interface_exists(ContainerInterface::class)) {
-            $this->markTestSkipped('Symfony 3.3 is needed for this feature.');
-        }
-
         $container = $this->createContainer([]);
 
         $em = $this->createEntityManager([
@@ -128,12 +104,7 @@ class ContainerRepositoryFactoryTest extends TestCase
      */
     public function testCustomRepositoryIsNotAValidClass()
     {
-        if (interface_exists(ContainerInterface::class)) {
-            $container = $this->createContainer([]);
-        } else {
-            // Symfony 3.2 and lower support
-            $container = null;
-        }
+        $container = $this->createContainer([]);
 
         $em = $this->createEntityManager(['Foo\CoolEntity' => 'not_a_real_class']);
 

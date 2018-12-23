@@ -5,10 +5,10 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\ORM\Version;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
-use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -17,7 +17,7 @@ class TestCase extends BaseTestCase
 {
     protected function setUp()
     {
-        if (class_exists('Doctrine\\Common\\Version')) {
+        if (class_exists(Version::class)) {
             return;
         }
 
@@ -70,7 +70,7 @@ class TestCase extends BaseTestCase
 
         $container->setDefinition('my.platform', new Definition('Doctrine\DBAL\Platforms\MySqlPlatform'))->setPublic(true);
 
-        $container->getCompilerPassConfig()->setOptimizationPasses([class_exists(ResolveChildDefinitionsPass::class) ? new ResolveChildDefinitionsPass() : new ResolveDefinitionTemplatesPass()]);
+        $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);
         // make all Doctrine services public, so we can fetch them in the test
         $container->getCompilerPassConfig()->addPass(new TestCaseAllPublicCompilerPass());

@@ -29,11 +29,9 @@ class DoctrineDataCollectorTest extends TestCase
             ->method('getConfiguration')
             ->will($this->returnValue($config));
 
-        if (method_exists($config, 'isSecondLevelCacheEnabled')) {
-            $config->expects($this->once())
-                ->method('isSecondLevelCacheEnabled')
-                ->will($this->returnValue(false));
-        }
+        $config->expects($this->once())
+            ->method('isSecondLevelCacheEnabled')
+            ->will($this->returnValue(false));
 
         $metadatas = [
             $this->createEntityMetadata(self::FIRST_ENTITY),
