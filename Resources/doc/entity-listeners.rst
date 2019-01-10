@@ -20,6 +20,7 @@ entity manager it should be registered with. Example:
                         event: preUpdate
                         entity: App\Entity\User
                         entity_manager: custom
+
     .. code-block:: xml
 
         <?xml version="1.0" ?>
@@ -61,3 +62,35 @@ If you use a version of doctrine/orm < 2.5 you have to register the entity liste
 See also
 https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#entity-listeners
 for more info on entity listeners and the resolver required by Symfony.
+
+
+Lazy Entity Listeners
+---------------------
+
+You can use the ``lazy`` attribute on the tag to make sure the listener
+services are only instantiated when they are actually used.
+    
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        services:
+            lazy_user_listener:
+                class: \UserListener
+                tags:
+                    - { name: doctrine.orm.entity_listener, lazy: true }
+                    
+    .. code-block:: xml
+
+        <?xml version="1.0" ?>
+
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+            <services>
+                <service id="lazy_user_listener" class="UserListener">
+                    <tag name="doctrine.orm.entity_listener" event="preUpdate" entity="App\Entity\User" lazy="true" />            
+                </service>
+            </services>
+        </container>
+    
