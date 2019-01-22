@@ -14,7 +14,10 @@ entity manager it should be registered with. Example:
             user_listener:
                 class: \UserListener
                 tags:
-                    - { name: doctrine.orm.entity_listener }
+                    - 
+                        name: doctrine.orm.entity_listener
+                        event: postPersist
+                        entity: App\Entity\User
                     -
                         name: doctrine.orm.entity_listener
                         event: preUpdate
@@ -29,7 +32,11 @@ entity manager it should be registered with. Example:
 
             <services>
                 <service id="user_listener" class="UserListener">
-                    <tag name="doctrine.orm.entity_listener" event="preUpdate" entity="App\Entity\User" />
+                    <tag 
+                        name="doctrine.orm.entity_listener" 
+                        event="postPersist"
+                        entity="App\Entity\User" 
+                    />
                     <tag
                         name="doctrine.orm.entity_listener"
                         event="preUpdate"
