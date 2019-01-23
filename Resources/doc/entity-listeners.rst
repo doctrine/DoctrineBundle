@@ -14,7 +14,6 @@ entity manager it should be registered with. Example:
             user_listener:
                 class: \UserListener
                 tags:
-                    - { name: doctrine.orm.entity_listener }
                     -
                         name: doctrine.orm.entity_listener
                         event: preUpdate
