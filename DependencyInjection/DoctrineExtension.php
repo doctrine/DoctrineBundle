@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositor
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\CacheProviderLoader;
 use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\SymfonyBridgeAdapter;
+use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Version;
 use LogicException;
@@ -365,6 +366,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
             ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
+
+        $container->registerForAutoconfiguration(EventSubscriber::class)
+            ->addTag('doctrine.event_subscriber');
 
         // If the Messenger component is installed and the doctrine transaction middleware is available, wire it:
         if (! interface_exists(MessageBusInterface::class) || ! class_exists(DoctrineTransactionMiddleware::class)) {
