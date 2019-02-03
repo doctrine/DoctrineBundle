@@ -118,7 +118,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
-                'defaultTableOptions' => [],
             ],
             $param['master']
         );
@@ -133,6 +132,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             ],
             $param['slaves']['slave1']
         );
+        $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
 
     public function testDbalLoadPoolShardingConnection()
@@ -152,7 +152,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
-                'defaultTableOptions' => [],
             ],
             $param['global']
         );
@@ -168,6 +167,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             ],
             $param['shards'][0]
         );
+        $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
 
     public function testDbalLoadSavepointsForNestedTransactions()

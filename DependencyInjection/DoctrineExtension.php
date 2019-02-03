@@ -286,6 +286,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'global' => true,
                 'shards' => true,
                 'serverVersion' => true,
+                'defaultTableOptions' => true,
                 // included by safety but should have been unset already
                 'logging' => true,
                 'profiling' => true,
