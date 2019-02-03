@@ -957,8 +957,8 @@ can configure. The following block shows all possible configuration keys:
                 driver_class:             MyNamespace\MyDriverImpl
                 options:
                     foo: bar
-                path:                     "%kernel.data_dir%/data.sqlite" # SQLite specific
-                memory:                   true                            # SQLite specific
+                path:                     "%kernel.project_dir%/var/data.db" # SQLite specific
+                memory:                   true                               # SQLite specific
                 unix_socket:              /tmp/mysql.sock
                 persistent:               true
                 MultipleActiveResultSets: true                # pdo_sqlsrv driver specific
@@ -1007,8 +1007,8 @@ can configure. The following block shows all possible configuration keys:
                 password="secret"
                 driver="pdo_mysql"
                 driver-class="MyNamespace\MyDriverImpl"
-                path="%kernel.data_dir%/data.sqlite" <!-- SQLite specific -->
-                memory="true"                        <!-- SQLite specific -->
+                path="%kernel.project_dir%/var/data.db" <!-- SQLite specific -->
+                memory="true"                           <!-- SQLite specific -->
                 unix-socket="/tmp/mysql.sock"
                 persistent="true"
                 multiple-active-result-sets="true" <!-- pdo_sqlsrv driver specific -->
