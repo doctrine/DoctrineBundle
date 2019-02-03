@@ -25,7 +25,6 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -801,7 +800,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), DoctrineExtractor::class);
         $constructorParameterClass = (new \ReflectionClass(DoctrineExtractor::class))->getConstructor()->getParameters()[0]->getClass();
-        if ($constructorParameterClass !== null && $constructorParameterClass->getName() === ClassMetadataFactory::class) {
+        if (null !== $constructorParameterClass && $constructorParameterClass->getName() === ClassMetadataFactory::class) {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
 
             $metadataFactoryDefinition = $container->register($argumentId, ClassMetadataFactory::class);
