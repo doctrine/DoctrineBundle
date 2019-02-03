@@ -800,9 +800,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
     private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
     {
         $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), DoctrineExtractor::class);
-        if (interface_exists(PropertyInitializableExtractorInterface::class)) {
-            $argumentId = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
-        } else {
+        $constructorParameterClass = (new \ReflectionClass(DoctrineExtractor::class))->getConstructor()->getParameters()[0]->getClass();
+        if ($constructorParameterClass !== null && $constructorParameterClass->getName() === ClassMetadataFactory::class) {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
 
             $metadataFactoryDefinition = $container->register($argumentId, ClassMetadataFactory::class);
@@ -811,6 +810,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'getMetadataFactory',
             ]);
             $metadataFactoryDefinition->setPublic(false);
+        } else {
+            $argumentId = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
         }
 
         $propertyExtractorDefinition->addArgument(new Reference($argumentId));
