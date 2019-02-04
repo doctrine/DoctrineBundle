@@ -9,8 +9,10 @@ use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\SymfonyBridgeAdapter
 use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Version;
 use LogicException;
+use ReflectionClass;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Form\Type\DoctrineType;
+use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Component\Config\FileLocator;
@@ -25,7 +27,6 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -800,7 +801,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
     private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
     {
         $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), DoctrineExtractor::class);
-        if (interface_exists(PropertyInitializableExtractorInterface::class)) {
+        $doctrineBridgePath          = dirname((new ReflectionClass(ManagerRegistry::class))->getFileName());
+
+        if (strpos(file_get_contents($doctrineBridgePath . '/CHANGELOG.md'), "4.2.0\n-----") !== false) {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
         } else {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
