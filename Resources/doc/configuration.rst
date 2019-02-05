@@ -1003,9 +1003,42 @@ can configure. The following block shows all possible configuration keys:
                 http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
 
             <doctrine:config>
+                <!--
+                    SQLite specific options:
+                    - path
+                    - memory
+                -->
+                <!--
+                    Oracle specific options:
+                    - pooled (SERVER=POOLED)
+                    - service (SERVICE_NAME instead of SID)
+                    - servicename (SERVICE_NAME)
+                -->
+                <!--
+                    PostgreSQL specific options:
+                    - default_dbname (default_dbname)
+                    - sslmode (LIBPQ-CONNECT-SSLMODE)
+                    - sslrootcert (LIBPQ-CONNECT-SSLROOTCERT)
+                    - sslcert (LIBPQ-CONNECT-SSLCERT)
+                    - sslkey (LIBPQ-CONNECT-SSLKEY)
+                    - sslcrl (LIBPQ-CONNECT-SSLCRL)
+                -->
+                <!--
+                    IBM DB2 specific options:
+                    - protocol (PROTOCOL)
+                -->
+                <!--
+                    SQL Anywhere specific options:
+                    - server (ServerName)
+                -->
+                <!--
+                    oci8 specific options:
+                    - sessionMode (session_mode)
+                -->
+
                 <doctrine:dbal
                     name="default"
-                    url="mysql://user:secret@localhost:1234/otherdatabase" <!-- this would override the values below -->
+                    url="mysql://user:secret@localhost:1234/otherdatabase"
                     dbname="database"
                     host="localhost"
                     port="1234"
@@ -1013,23 +1046,23 @@ can configure. The following block shows all possible configuration keys:
                     password="secret"
                     driver="pdo_mysql"
                     driver-class="MyNamespace\MyDriverImpl"
-                    path="%kernel.project_dir%/var/data.db" <!-- SQLite specific -->
-                    memory="true"                           <!-- SQLite specific -->
+                    path="%kernel.project_dir%/var/data.db"
+                    memory="true"
                     unix-socket="/tmp/mysql.sock"
                     persistent="true"
-                    multiple-active-result-sets="true" <!-- pdo_sqlsrv driver specific -->
-                    pooled="true"                      <!-- Oracle specific (SERVER=POOLED) -->
-                    protocol="TCPIP"                   <!-- IBM DB2 specific (PROTOCOL) -->
-                    server="my_database_server"        <!-- SQL Anywhere specific (ServerName) -->
-                    service="true"                     <!-- Oracle specific (SERVICE_NAME instead of SID) -->
-                    servicename="MyOracleServiceName"  <!-- Oracle specific (SERVICE_NAME) -->
-                    sessionMode"2"                     <!-- oci8 driver specific (session_mode) -->
-                    default_dbname="database"          <!-- PostgreSQL specific (default_dbname) -->
-                    sslmode="require"                  <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLMODE) -->
-                    sslrootcert="postgresql-ca.pem"    <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT) -->
-                    sslcert="postgresql-cert.pem"      <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLCERT) -->
-                    sslkey="postgresql-key.pem"        <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLKEY) -->
-                    sslcrl="postgresql.crl"            <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLCRL) -->
+                    multiple-active-result-sets="true"
+                    pooled="true"
+                    protocol="TCPIP"
+                    server="my_database_server"
+                    service="true"
+                    servicename="MyOracleServiceName"
+                    sessionMode="2"
+                    default_dbname="database"
+                    sslmode="require"
+                    sslrootcert="postgresql-ca.pem"
+                    sslcert="postgresql-cert.pem"
+                    sslkey="postgresql-key.pem"
+                    sslcrl="postgresql.crl"
                     wrapper-class="MyDoctrineDbalConnectionWrapper"
                     charset="UTF8"
                     logging="%kernel.debug%"
