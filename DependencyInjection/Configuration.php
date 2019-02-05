@@ -2,11 +2,13 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\ORM\EntityManager;
 use ReflectionClass;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\DependencyInjection\Exception\LogicException;
 
 /**
  * This class contains the configuration information for the bundle
@@ -307,6 +309,10 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('orm')
                     ->beforeNormalization()
                         ->ifTrue(static function ($v) {
+                            if (! empty($v) && ! class_exists(EntityManager::class)) {
+                                throw new LogicException('The doctrine/orm package is required when the doctrine.orm config is set.');
+                            }
+
                             return $v === null || (is_array($v) && ! array_key_exists('entity_managers', $v) && ! array_key_exists('entity_manager', $v));
                         })
                         ->then(static function ($v) {
