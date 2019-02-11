@@ -12,7 +12,7 @@ php:
   - 7.0
   - 7.1
   - 7.2
-  - nightly
+  - 7.4snapshot
 
 env:
   global:
@@ -84,4 +84,4 @@ jobs:
         - php ./vendor/bin/coveralls -v
 
   allow_failures:
-    - php: nightly
+    - php: 7.4snapshot
