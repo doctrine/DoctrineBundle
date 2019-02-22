@@ -51,8 +51,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                        append the parameter name for the default entity manager
      *                                        to this list.
      * @param string|false $enabledParameter  Service container parameter that must be present to
-     *                                  enable the mapping. Set to false to not do any check,
-     *                                  optional.
+     *                                        enable the mapping. Set to false to not do any check,
+     *                                        optional.
      * @param string[]     $aliasMap          Map of alias to namespace.
      *
      * @return self
@@ -73,8 +73,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                        append the parameter name for the default entity manager
      *                                        to this list.
      * @param string|false $enabledParameter  Service container parameter that must be present to
-     *                                  enable the mapping. Set to false to not do any check,
-     *                                  optional.
+     *                                        enable the mapping. Set to false to not do any check,
+     *                                        optional.
      * @param string[]     $aliasMap          Map of alias to namespace.
      *
      * @return self
@@ -89,15 +89,15 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
     }
 
     /**
-     * @param array    $namespaces        Hashmap of directory path to namespace
-     * @param string[] $managerParameters List of parameters that could which object manager name
-     *                                    your bundle uses. This compiler pass will automatically
-     *                                    append the parameter name for the default entity manager
-     *                                    to this list.
-     * @param string   $enabledParameter  Service container parameter that must be present to
-     *                                    enable the mapping. Set to false to not do any check,
-     *                                    optional.
-     * @param string[] $aliasMap          Map of alias to namespace.
+     * @param array        $namespaces        Hashmap of directory path to namespace
+     * @param string[]     $managerParameters List of parameters that could which object manager name
+     *                                        your bundle uses. This compiler pass will automatically
+     *                                        append the parameter name for the default entity manager
+     *                                        to this list.
+     * @param string|false $enabledParameter  Service container parameter that must be present to
+     *                                        enable the mapping. Set to false to not do any check,
+     *                                        optional.
+     * @param string[]     $aliasMap          Map of alias to namespace.
      *
      * @return self
      */
@@ -118,8 +118,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                        append the parameter name for the default entity manager
      *                                        to this list.
      * @param string|false $enabledParameter  Service container parameter that must be present to
-     *                                  enable the mapping. Set to false to not do any check,
-     *                                  optional.
+     *                                        enable the mapping. Set to false to not do any check,
+     *                                        optional.
      * @param string[]     $aliasMap          Map of alias to namespace.
      *
      * @return self
@@ -140,8 +140,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                        append the parameter name for the default entity manager
      *                                        to this list.
      * @param string|false $enabledParameter  Service container parameter that must be present to
-     *                                  enable the mapping. Set to false to not do any check,
-     *                                  optional.
+     *                                        enable the mapping. Set to false to not do any check,
+     *                                        optional.
      * @param string[]     $aliasMap          Map of alias to namespace.
      *
      * @return self
