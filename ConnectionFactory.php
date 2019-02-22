@@ -11,9 +11,6 @@ use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 
-/**
- * Connection
- */
 class ConnectionFactory
 {
     /** @var mixed[][] */
@@ -26,8 +23,6 @@ class ConnectionFactory
     private $initialized = false;
 
     /**
-     * Construct.
-     *
      * @param mixed[][] $typesConfig
      */
     public function __construct(array $typesConfig)

@@ -17,8 +17,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class Registry extends ManagerRegistry implements RegistryInterface
 {
     /**
-     * Construct.
-     *
      * @param Connection[]             $connections
      * @param EntityManagerInterface[] $entityManagers
      * @param string                   $defaultConnection

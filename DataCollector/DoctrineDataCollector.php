@@ -15,9 +15,6 @@ use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * DoctrineDataCollector.
- */
 class DoctrineDataCollector extends BaseCollector
 {
     /** @var ManagerRegistry */
