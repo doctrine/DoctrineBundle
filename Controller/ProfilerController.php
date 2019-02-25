@@ -12,9 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\VarDumper\Cloner\Data;
 
-/**
- * ProfilerController.
- */
 class ProfilerController implements ContainerAwareInterface
 {
     /** @var ContainerInterface */
