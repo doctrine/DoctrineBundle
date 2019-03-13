@@ -6,10 +6,9 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
+use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bridge\Doctrine\RegistryInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * References all Doctrine connections and entity managers in a given Container.
@@ -24,14 +23,7 @@ class Registry extends ManagerRegistry implements RegistryInterface
      */
     public function __construct(ContainerInterface $container, array $connections, array $entityManagers, $defaultConnection, $defaultEntityManager)
     {
-        $parentTraits = class_uses(parent::class);
-        if (isset($parentTraits[ContainerAwareTrait::class])) {
-            // this case should be removed when Symfony 3.4 becomes the lowest supported version
-            // and then also, the constructor should type-hint Psr\Container\ContainerInterface
-            $this->setContainer($container);
-        } else {
-            $this->container = $container;
-        }
+        $this->container = $container;
 
         parent::__construct('ORM', $connections, $entityManagers, $defaultConnection, $defaultEntityManager, 'Doctrine\ORM\Proxy\Proxy');
     }
