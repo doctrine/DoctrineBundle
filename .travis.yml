@@ -10,7 +10,7 @@ php:
   - 7.1
   - 7.2
   - 7.3
-  - nightly
+  - 7.4snapshot
 
 env:
   global:
@@ -67,7 +67,7 @@ jobs:
         - travis_retry composer update -n --prefer-dist
 
     # Test dev level software
-    - php: nightly
+    - php: 7.4snapshot
       env: stability=dev
       install:
         - composer config minimum-stability dev
@@ -90,4 +90,4 @@ jobs:
         - php ./vendor/bin/coveralls -v
 
   allow_failures:
-    - php: nightly
+    - php: 7.4snapshot
