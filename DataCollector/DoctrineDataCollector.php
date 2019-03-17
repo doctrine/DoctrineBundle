@@ -221,6 +221,7 @@ class DoctrineDataCollector extends BaseCollector
                 if ($a['executionMS'] === $b['executionMS']) {
                     return 0;
                 }
+
                 return $a['executionMS'] < $b['executionMS'] ? 1 : -1;
             });
             $this->groupedQueries[$connection] = $connectionGroupedQueries;

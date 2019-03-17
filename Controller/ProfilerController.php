@@ -86,6 +86,7 @@ class ProfilerController implements ContainerAwareInterface
 
         $stmt = $connection->executeQuery($sql, $params, $query['types']);
         $stmt->nextRowset();
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

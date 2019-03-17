@@ -81,7 +81,6 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->assertSame($repo, $actualRepo);
     }
 
-
     /**
      * @expectedException \RuntimeException
      * @expectedExceptionMessage The "Doctrine\Bundle\DoctrineBundle\Tests\Repository\StubServiceRepository" entity repository implements "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
