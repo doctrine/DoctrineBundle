@@ -11,5 +11,11 @@
         <service id="messenger.middleware.doctrine_transaction" class="Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware" abstract="true" public="false">
             <argument type="service" id="doctrine" />
         </service>
+
+        <service id="messenger.transport.doctrine.factory" class="Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory">
+            <argument type="service" id="doctrine" />
+
+            <tag name="messenger.transport_factory" />
+        </service>
     </services>
 </container>
