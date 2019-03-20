@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\CacheProviderLoader;
@@ -150,7 +151,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
         unset($connection['auto_commit']);
 
         if (isset($connection['schema_filter']) && $connection['schema_filter']) {
-            $configuration->addMethodCall('setFilterSchemaAssetsExpression', [$connection['schema_filter']]);
+            if (method_exists(\Doctrine\DBAL\Configuration::class, 'setSchemaAssetsFilter')) {
+                $definition = new Definition(RegexSchemaAssetFilter::class, [$connection['schema_filter']]);
+                $definition->addTag('doctrine.dbal.schema_filter', ['connection' => $name]);
+                $container->setDefinition(sprintf('doctrine.dbal.%s_regex_schema_filter', $name), $definition);
+            } else {
+                // backwards compatibility with dbal < 2.9
+                $configuration->addMethodCall('setFilterSchemaAssetsExpression', [$connection['schema_filter']]);
+            }
         }
 
         unset($connection['schema_filter']);

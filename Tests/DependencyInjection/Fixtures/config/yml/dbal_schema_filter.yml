@@ -1,3 +1,8 @@
 doctrine:
     dbal:
-        schema_filter: ^sf2_
+        default_connection: connection1
+        connections:
+            connection1:
+                schema_filter: ~^(?!t_)~
+            connection2: []
+            connection3: []

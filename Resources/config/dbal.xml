@@ -70,6 +70,10 @@
             <tag name="twig.extension" />
         </service>
 
+        <service id="doctrine.dbal.schema_asset_filter_manager" class="Doctrine\Bundle\DoctrineBundle\Dbal\SchemaAssetsFilterManager" public="false" abstract="true">
+            <!-- schema assets filters -->
+        </service>
+
         <!-- commands -->
         <service id="doctrine.database_create_command" class="Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand">
             <argument type="service" id="doctrine" />
