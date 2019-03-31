@@ -19,6 +19,7 @@ use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Doctrine\Logger\DbalLogger;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
+use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 class ContainerTest extends TestCase
@@ -68,5 +69,11 @@ class ContainerTest extends TestCase
             $this->assertInstanceOf(ClassMetadataFactory::class, $container->get('doctrine.orm.default_entity_manager.metadata_factory'));
         }
         $this->assertInstanceOf(DoctrineExtractor::class, $container->get('doctrine.orm.default_entity_manager.property_info_extractor'));
+
+        if (class_exists(DoctrineLoader::class)) {
+            $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
+        } else {
+            $this->assertFalse($container->has('doctrine.orm.default_entity_manager.validator_loader'));
+        }
     }
 }
