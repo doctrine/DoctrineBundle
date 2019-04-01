@@ -957,8 +957,8 @@ can configure. The following block shows all possible configuration keys:
                 driver_class:             MyNamespace\MyDriverImpl
                 options:
                     foo: bar
-                path:                     "%kernel.data_dir%/data.sqlite" # SQLite specific
-                memory:                   true                            # SQLite specific
+                path:                     "%kernel.project_dir%/var/data.db" # SQLite specific
+                memory:                   true                               # SQLite specific
                 unix_socket:              /tmp/mysql.sock
                 persistent:               true
                 MultipleActiveResultSets: true                # pdo_sqlsrv driver specific
@@ -993,52 +993,92 @@ can configure. The following block shows all possible configuration keys:
 
     .. code-block:: xml
 
-        <!-- xmlns:doctrine="http://symfony.com/schema/dic/doctrine" -->
-        <!-- xsi:schemaLocation="http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd"> -->
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:doctrine="http://symfony.com/schema/dic/doctrine"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/doctrine
+                http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
 
-        <doctrine:config>
-            <doctrine:dbal
-                name="default"
-                url="mysql://user:secret@localhost:1234/otherdatabase" <!-- this would override the values below -->
-                dbname="database"
-                host="localhost"
-                port="1234"
-                user="user"
-                password="secret"
-                driver="pdo_mysql"
-                driver-class="MyNamespace\MyDriverImpl"
-                path="%kernel.data_dir%/data.sqlite" <!-- SQLite specific -->
-                memory="true"                        <!-- SQLite specific -->
-                unix-socket="/tmp/mysql.sock"
-                persistent="true"
-                multiple-active-result-sets="true" <!-- pdo_sqlsrv driver specific -->
-                pooled="true"                      <!-- Oracle specific (SERVER=POOLED) -->
-                protocol="TCPIP"                   <!-- IBM DB2 specific (PROTOCOL) -->
-                server="my_database_server"        <!-- SQL Anywhere specific (ServerName) -->
-                service="true"                     <!-- Oracle specific (SERVICE_NAME instead of SID) -->
-                servicename="MyOracleServiceName"  <!-- Oracle specific (SERVICE_NAME) -->
-                sessionMode"2"                     <!-- oci8 driver specific (session_mode) -->
-                default_dbname="database"          <!-- PostgreSQL specific (default_dbname) -->
-                sslmode="require"                  <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLMODE) -->
-                sslrootcert="postgresql-ca.pem"    <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT) -->
-                sslcert="postgresql-cert.pem"      <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLCERT) -->
-                sslkey="postgresql-key.pem"        <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLKEY) -->
-                sslcrl="postgresql.crl"            <!-- PostgreSQL specific (LIBPQ-CONNECT-SSLCRL) -->
-                wrapper-class="MyDoctrineDbalConnectionWrapper"
-                charset="UTF8"
-                logging="%kernel.debug%"
-                platform-service="MyOwnDatabasePlatformService"
-                auto-commit="false"
-                schema-filter="^sf2_"
-            >
-                <doctrine:option key="foo">bar</doctrine:option>
-                <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
-                <doctrine:default-table-option name="charset">utf8</doctrine:default-table-option>
-                <doctrine:default-table-option name="collate">utf8_unicode_ci</doctrine:default-table-option>
-                <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
-                <doctrine:type name="custom">Acme\HelloBundle\MyCustomType</doctrine:type>
-            </doctrine:dbal>
-        </doctrine:config>
+            <doctrine:config>
+                <!--
+                    SQLite specific options:
+                    - path
+                    - memory
+                -->
+                <!--
+                    Oracle specific options:
+                    - pooled (SERVER=POOLED)
+                    - service (SERVICE_NAME instead of SID)
+                    - servicename (SERVICE_NAME)
+                -->
+                <!--
+                    PostgreSQL specific options:
+                    - default_dbname (default_dbname)
+                    - sslmode (LIBPQ-CONNECT-SSLMODE)
+                    - sslrootcert (LIBPQ-CONNECT-SSLROOTCERT)
+                    - sslcert (LIBPQ-CONNECT-SSLCERT)
+                    - sslkey (LIBPQ-CONNECT-SSLKEY)
+                    - sslcrl (LIBPQ-CONNECT-SSLCRL)
+                -->
+                <!--
+                    IBM DB2 specific options:
+                    - protocol (PROTOCOL)
+                -->
+                <!--
+                    SQL Anywhere specific options:
+                    - server (ServerName)
+                -->
+                <!--
+                    oci8 specific options:
+                    - sessionMode (session_mode)
+                -->
+
+                <doctrine:dbal
+                    name="default"
+                    url="mysql://user:secret@localhost:1234/otherdatabase"
+                    dbname="database"
+                    host="localhost"
+                    port="1234"
+                    user="user"
+                    password="secret"
+                    driver="pdo_mysql"
+                    driver-class="MyNamespace\MyDriverImpl"
+                    path="%kernel.project_dir%/var/data.db"
+                    memory="true"
+                    unix-socket="/tmp/mysql.sock"
+                    persistent="true"
+                    multiple-active-result-sets="true"
+                    pooled="true"
+                    protocol="TCPIP"
+                    server="my_database_server"
+                    service="true"
+                    servicename="MyOracleServiceName"
+                    sessionMode="2"
+                    default_dbname="database"
+                    sslmode="require"
+                    sslrootcert="postgresql-ca.pem"
+                    sslcert="postgresql-cert.pem"
+                    sslkey="postgresql-key.pem"
+                    sslcrl="postgresql.crl"
+                    wrapper-class="MyDoctrineDbalConnectionWrapper"
+                    charset="UTF8"
+                    logging="%kernel.debug%"
+                    platform-service="MyOwnDatabasePlatformService"
+                    auto-commit="false"
+                    schema-filter="^sf2_"
+                >
+                    <doctrine:option key="foo">bar</doctrine:option>
+                    <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
+                    <doctrine:default-table-option name="charset">utf8</doctrine:default-table-option>
+                    <doctrine:default-table-option name="collate">utf8_unicode_ci</doctrine:default-table-option>
+                    <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
+                    <doctrine:type name="custom">Acme\HelloBundle\MyCustomType</doctrine:type>
+                </doctrine:dbal>
+            </doctrine:config>
+        </container>
 
 If you want to configure multiple connections in YAML, put them under the
 ``connections`` key and give them a unique name:

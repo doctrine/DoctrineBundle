@@ -9,6 +9,7 @@
     <config>
         <dbal dbname="mysql_db" user="mysql_user" password="mysql_s3cr3t" unix-socket="/path/to/mysqld.sock" shard-choser-service="foo.shard_choser">
             <shard id="1" dbname="shard_db" user="shard_user" password="shard_s3cr3t" unix-socket="/path/to/mysqld_shard.sock" />
+            <default-table-option name="engine">InnoDB</default-table-option>
         </dbal>
     </config>
 </srv:container>

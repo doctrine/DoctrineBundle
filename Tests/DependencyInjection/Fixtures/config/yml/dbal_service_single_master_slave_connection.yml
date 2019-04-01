@@ -5,6 +5,8 @@ doctrine:
         password: mysql_s3cr3t
         unix_socket: /path/to/mysqld.sock
         keep_slave: true
+        default_table_options:
+            engine: InnoDB
         slaves:
             slave1:
                 user: slave_user

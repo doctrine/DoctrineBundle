@@ -21,7 +21,6 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -244,6 +243,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'master' => true,
                 'shards' => true,
                 'serverVersion' => true,
+                'defaultTableOptions' => true,
                 // included by safety but should have been unset already
                 'logging' => true,
                 'profiling' => true,
@@ -278,6 +278,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'global' => true,
                 'shards' => true,
                 'serverVersion' => true,
+                'defaultTableOptions' => true,
                 // included by safety but should have been unset already
                 'logging' => true,
                 'profiling' => true,
@@ -741,7 +742,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     private function loadPropertyInfoExtractor($entityManagerName, ContainerBuilder $container)
     {
         $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), DoctrineExtractor::class);
-        if (interface_exists(PropertyInitializableExtractorInterface::class)) {
+        if (property_exists(DoctrineExtractor::class, 'entityManager')) {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
         } else {
             $argumentId = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);

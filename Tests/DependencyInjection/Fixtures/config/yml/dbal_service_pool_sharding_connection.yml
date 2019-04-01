@@ -5,6 +5,8 @@ doctrine:
         password: mysql_s3cr3t
         unix_socket: /path/to/mysqld.sock
         shard_choser_service: foo.shard_choser
+        default_table_options:
+            engine: InnoDB
         shards:
             -
                 id: 1
