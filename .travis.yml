@@ -59,13 +59,6 @@ jobs:
         - composer require --dev "symfony/messenger:4.2.*" --no-update
         - travis_retry composer update -n --prefer-dist
 
-    # Test alpha packages
-    - php: 7.2
-      env: stability=alpha
-      install:
-        - composer config minimum-stability alpha
-        - travis_retry composer update -n --prefer-dist
-
     # Test dev versions
     - php: 7.3
       if: type = cron
