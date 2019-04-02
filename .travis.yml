@@ -12,13 +12,17 @@ php:
   - 7.3
   - 7.4snapshot
 
+env:
+  global:
+    - COMPOSER_MEMORY_LIMIT=-1
+
 before_install:
   - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{,.disabled} || echo "xdebug not available"
   - composer self-update
   - if [ "$SYMFONY_VERSION" != "" ]; then jq "(.require, .\"require-dev\")|=(with_entries(if .key|test(\"^symfony/\") then .value|=\"${SYMFONY_VERSION}\" else . end))" composer.json|ex -sc 'wq!composer.json' /dev/stdin; fi;
 
 install:
-  - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer update -n --prefer-dist
+  - travis_retry composer update -n --prefer-dist
 
 script:
   - ./vendor/bin/phpunit -v
@@ -29,7 +33,7 @@ jobs:
     - php: 7.1
       env: stability=lowest SYMFONY_DEPRECATIONS_HELPER=999999
       install:
-        - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer update -n --prefer-lowest --prefer-stable --prefer-dist
+        - travis_retry composer update -n --prefer-lowest --prefer-stable --prefer-dist
 
     # Test against latest Symfony 3.4 stable
     - php: 7.1
