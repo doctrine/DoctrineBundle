@@ -75,6 +75,9 @@ jobs:
 
     - stage: Coverage
       php: 7.2
+      install:
+        - composer require --dev "symfony/messenger:4.2.*" --no-update
+        - travis_retry composer update -n --prefer-dist
       before_script:
         - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{.disabled,}
         - if [[ ! $(php -m | grep -si xdebug) ]]; then echo "xdebug required for coverage"; exit 1; fi
