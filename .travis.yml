@@ -17,6 +17,7 @@ php:
 env:
   global:
     - deps=no
+    - SYMFONY_DEPRECATIONS_HELPER=3
 
 before_install:
   - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{,.disabled} || echo "xdebug not available"
