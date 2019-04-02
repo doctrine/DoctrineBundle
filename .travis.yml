@@ -66,8 +66,9 @@ jobs:
         - composer config minimum-stability alpha
         - travis_retry composer update -n --prefer-dist
 
-    # Test dev level software
-    - php: nightly
+    # Test dev versions
+    - php: 7.3
+      if: type = cron
       env: stability=dev
       install:
         - composer config minimum-stability dev
@@ -90,5 +91,4 @@ jobs:
         - php ./vendor/bin/coveralls -v
 
   allow_failures:
-    - php: nightly
     - php: 7.4snapshot
