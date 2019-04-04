@@ -367,13 +367,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
             ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
 
-        // If the Messenger component is installed and the doctrine transaction middleware is available, wire it:
-        if (! interface_exists(MessageBusInterface::class) || ! class_exists(DoctrineTransactionMiddleware::class)) {
-            return;
-        }
-
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load('messenger.xml');
+        $this->loadMessengerServices($container);
     }
 
     /**
@@ -792,5 +786,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
     public function getConfiguration(array $config, ContainerBuilder $container)
     {
         return new Configuration($container->getParameter('kernel.debug'));
+    }
+
+    private function loadMessengerServices(ContainerBuilder $container) : void
+    {
+        // If the Messenger component is installed and the doctrine transaction middleware is available, wire it:
+        if (! interface_exists(MessageBusInterface::class) || ! class_exists(DoctrineTransactionMiddleware::class)) {
+            return;
+        }
+
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('messenger.xml');
     }
 }
