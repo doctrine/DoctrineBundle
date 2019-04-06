@@ -2,8 +2,11 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
@@ -761,10 +764,60 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testDbalSchemaFilter()
     {
+        if (method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
+            $this->markTestSkipped('Test only applies to doctrine/dbal 2.8 or lower');
+        }
+
         $container = $this->loadContainer('dbal_schema_filter');
 
-        $definition = $container->getDefinition('doctrine.dbal.default_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setFilterSchemaAssetsExpression', ['^sf2_']);
+        $definition = $container->getDefinition('doctrine.dbal.connection1_connection.configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setFilterSchemaAssetsExpression', ['~^(?!t_)~']);
+    }
+
+    public function testDbalSchemaFilterNewConfig()
+    {
+        if (! method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
+            $this->markTestSkipped('Test requires doctrine/dbal 2.9 or higher');
+        }
+
+        $container = $this->getContainer([]);
+        $loader    = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $container->addCompilerPass(new DbalSchemaFilterPass());
+
+        // ignore table1 table on "default" connection
+        $container->register('dummy_filter1', DummySchemaAssetsFilter::class)
+            ->setArguments(['table1'])
+            ->addTag('doctrine.dbal.schema_filter');
+
+        // ignore table2 table on "connection2" connection
+        $container->register('dummy_filter2', DummySchemaAssetsFilter::class)
+            ->setArguments(['table2'])
+            ->addTag('doctrine.dbal.schema_filter', ['connection' => 'connection2']);
+
+        $this->loadFromFile($container, 'dbal_schema_filter');
+
+        $assetNames               = ['table1', 'table2', 'table3', 't_ignored'];
+        $expectedConnectionAssets = [
+            // ignores table1 + schema_filter applies
+            'connection1' => ['table2', 'table3'],
+            // ignores table2, no schema_filter applies
+            'connection2' => ['table1', 'table3', 't_ignored'],
+            // connection3 has no ignores, handled separately
+        ];
+
+        $this->compileContainer($container);
+
+        $getConfiguration = static function (string $connectionName) use ($container) : Configuration {
+            return $container->get(sprintf('doctrine.dbal.%s_connection', $connectionName))->getConfiguration();
+        };
+
+        foreach ($expectedConnectionAssets as $connectionName => $expectedTables) {
+            $connConfig = $getConfiguration($connectionName);
+            $this->assertSame($expectedTables, array_values(array_filter($assetNames, $connConfig->getSchemaAssetsFilter())), sprintf('Filtering for connection "%s"', $connectionName));
+        }
+
+        $this->assertNull($connConfig = $getConfiguration('connection3')->getSchemaAssetsFilter());
     }
 
     public function testEntityListenerResolver()
@@ -1046,5 +1099,25 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);
         $container->compile();
+    }
+}
+
+class DummySchemaAssetsFilter
+{
+    /** @var string */
+    private $tableToIgnore;
+
+    public function __construct(string $tableToIgnore)
+    {
+        $this->tableToIgnore = $tableToIgnore;
+    }
+
+    public function __invoke($assetName) : bool
+    {
+        if ($assetName instanceof AbstractAsset) {
+            $assetName = $assetName->getName();
+        }
+
+        return $assetName !== $this->tableToIgnore;
     }
 }
