@@ -48,7 +48,10 @@ class TestCase extends BaseTestCase
                 ],
                 'default_connection' => 'default',
                 'types' => [
-                    'test' => TestType::class,
+                    'test' => [
+                        'class' => TestType::class,
+                        'commented' => false,
+                    ],
                 ],
             ], 'orm' => [
                 'default_entity_manager' => 'default',
