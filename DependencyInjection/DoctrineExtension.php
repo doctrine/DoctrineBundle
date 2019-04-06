@@ -12,6 +12,7 @@ use LogicException;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
+use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -22,6 +23,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory;
+use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -350,6 +352,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->loadOrmEntityManager($entityManager, $container);
 
             $this->loadPropertyInfoExtractor($name, $container);
+            $this->loadValidatorLoader($name, $container);
         }
 
         if ($config['resolve_target_entities']) {
@@ -754,6 +757,21 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $propertyExtractorDefinition->addTag('property_info.list_extractor', ['priority' => -1001]);
         $propertyExtractorDefinition->addTag('property_info.type_extractor', ['priority' => -999]);
+    }
+
+    /**
+     * Loads a validator loader for each defined entity manager.
+     */
+    private function loadValidatorLoader(string $entityManagerName, ContainerBuilder $container) : void
+    {
+        if (! interface_exists(LoaderInterface::class) || ! class_exists(DoctrineLoader::class)) {
+            return;
+        }
+
+        $validatorLoaderDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.validator_loader', $entityManagerName), DoctrineLoader::class);
+        $validatorLoaderDefinition->addArgument(new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)));
+
+        $validatorLoaderDefinition->addTag('validator.auto_mapper', ['priority' => -100]);
     }
 
     /**
