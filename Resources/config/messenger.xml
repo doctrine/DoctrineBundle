@@ -11,5 +11,13 @@
         <service id="messenger.middleware.doctrine_transaction" class="Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware" abstract="true" public="false">
             <argument type="service" id="doctrine" />
         </service>
+
+        <!--
+        The following service isn't tagged as transport factory because the class may not exist.
+        The tag is added conditionally in DoctrineExtension.
+        -->
+        <service id="messenger.transport.doctrine.factory" class="Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory" public="false">
+            <argument type="service" id="doctrine" />
+        </service>
     </services>
 </container>
