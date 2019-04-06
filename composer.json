@@ -36,6 +36,7 @@
     },
     "require-dev": {
         "doctrine/orm": "^2.6",
+        "symfony/cache": "^3.4|^4.1",
         "symfony/yaml": "^3.4|^4.1",
         "symfony/validator": "^3.4|^4.1",
         "symfony/property-info": "^3.4|^4.1",

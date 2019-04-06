@@ -665,33 +665,88 @@ class DoctrineExtensionTest extends TestCase
         $this->assertCount(1, $middlewarePrototype->getArguments());
     }
 
-    public function testCacheConfiguration()
+    /**
+     * @param array|string $cacheConfig
+     *
+     * @dataProvider cacheConfigurationProvider
+     */
+    public function testCacheConfiguration(string $expectedAliasName, string $expectedAliasTarget, string $cacheName, $cacheConfig) : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
         $config = BundleConfigurationBuilder::createBuilder()
-             ->addBaseConnection()
-             ->addEntityManager([
-                 'metadata_cache_driver' => ['cache_provider' => 'metadata_cache'],
-                 'query_cache_driver' => ['cache_provider' => 'query_cache'],
-                 'result_cache_driver' => ['cache_provider' => 'result_cache'],
-             ])
+            ->addBaseConnection()
+            ->addEntityManager([$cacheName => $cacheConfig])
             ->build();
 
         $extension->load([$config], $container);
 
-        $this->assertTrue($container->hasAlias('doctrine.orm.default_metadata_cache'));
-        $alias = $container->getAlias('doctrine.orm.default_metadata_cache');
-        $this->assertEquals('doctrine_cache.providers.metadata_cache', (string) $alias);
+        $this->assertTrue($container->hasAlias($expectedAliasName));
+        $alias = $container->getAlias($expectedAliasName);
+        $this->assertEquals($expectedAliasTarget, (string) $alias);
+    }
 
-        $this->assertTrue($container->hasAlias('doctrine.orm.default_query_cache'));
-        $alias = $container->getAlias('doctrine.orm.default_query_cache');
-        $this->assertEquals('doctrine_cache.providers.query_cache', (string) $alias);
+    public static function cacheConfigurationProvider() : array
+    {
+        return [
+            'metadata_cache_provider' => [
+                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
+                'expectedAliasTarget' => 'doctrine_cache.providers.metadata_cache',
+                'cacheName' => 'metadata_cache_driver',
+                'cacheConfig' => ['cache_provider' => 'metadata_cache'],
+            ],
+            'query_cache_provider' => [
+                'expectedAliasName' => 'doctrine.orm.default_query_cache',
+                'expectedAliasTarget' => 'doctrine_cache.providers.query_cache',
+                'cacheName' => 'query_cache_driver',
+                'cacheConfig' => ['cache_provider' => 'query_cache'],
+            ],
+            'result_cache_provider' => [
+                'expectedAliasName' => 'doctrine.orm.default_result_cache',
+                'expectedAliasTarget' => 'doctrine_cache.providers.result_cache',
+                'cacheName' => 'result_cache_driver',
+                'cacheConfig' => ['cache_provider' => 'result_cache'],
+            ],
 
-        $this->assertTrue($container->hasAlias('doctrine.orm.default_result_cache'));
-        $alias = $container->getAlias('doctrine.orm.default_result_cache');
-        $this->assertEquals('doctrine_cache.providers.result_cache', (string) $alias);
+            'metadata_cache_service' => [
+                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
+                'expectedAliasTarget' => 'service_target_metadata',
+                'cacheName' => 'metadata_cache_driver',
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata'],
+            ],
+            'query_cache_service' => [
+                'expectedAliasName' => 'doctrine.orm.default_query_cache',
+                'expectedAliasTarget' => 'service_target_query',
+                'cacheName' => 'query_cache_driver',
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_query'],
+            ],
+            'result_cache_service' => [
+                'expectedAliasName' => 'doctrine.orm.default_result_cache',
+                'expectedAliasTarget' => 'service_target_result',
+                'cacheName' => 'result_cache_driver',
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_result'],
+            ],
+
+            'metadata_cache_array' => [
+                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
+                'expectedAliasTarget' => 'doctrine_cache.providers.doctrine.orm.default_metadata_cache',
+                'cacheName' => 'metadata_cache_driver',
+                'cacheConfig' => 'array',
+            ],
+            'query_cache_array' => [
+                'expectedAliasName' => 'doctrine.orm.default_query_cache',
+                'expectedAliasTarget' => 'doctrine_cache.providers.doctrine.orm.default_query_cache',
+                'cacheName' => 'query_cache_driver',
+                'cacheConfig' => 'array',
+            ],
+            'result_cache_array' => [
+                'expectedAliasName' => 'doctrine.orm.default_result_cache',
+                'expectedAliasTarget' => 'doctrine_cache.providers.doctrine.orm.default_result_cache',
+                'cacheName' => 'result_cache_driver',
+                'cacheConfig' => 'array',
+            ],
+        ];
     }
 
     public function testShardManager()

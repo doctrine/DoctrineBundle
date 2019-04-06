@@ -9,6 +9,8 @@ use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
+use function array_key_exists;
+use function is_array;
 
 /**
  * This class contains the configuration information for the bundle
@@ -687,18 +689,27 @@ class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet()
             ->beforeNormalization()
                 ->ifString()
-                ->then(static function ($v) {
+                ->then(static function ($v) : array {
                     return ['type' => $v];
+                })
+            ->end()
+            ->beforeNormalization()
+                ->ifTrue(static function ($v) : bool {
+                    return is_array($v) && array_key_exists('cache_provider', $v);
+                })
+                ->then(static function ($v) : array {
+                    return ['type' => 'provider'] + $v;
                 })
             ->end()
             ->children()
                 ->scalarNode('type')->defaultValue('array')->end()
+                ->scalarNode('id')->end()
+                ->scalarNode('pool')->end()
                 ->scalarNode('host')->end()
                 ->scalarNode('port')->end()
                 ->scalarNode('database')->end()
                 ->scalarNode('instance_class')->end()
                 ->scalarNode('class')->end()
-                ->scalarNode('id')->end()
                 ->scalarNode('namespace')->defaultNull()->end()
                 ->scalarNode('cache_provider')->defaultNull()->end()
             ->end();
