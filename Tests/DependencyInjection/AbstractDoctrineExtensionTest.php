@@ -831,7 +831,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', [new Reference('doctrine.orm.em2_entity_listener_resolver')]);
 
         $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener1')]);
+        $this->assertDICDefinitionMethodCallOnce($listener, 'registerService', ['EntityListener', 'entity_listener1']);
 
         $listener = $container->getDefinition('entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener2')]);
@@ -849,10 +849,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
 
         $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener1')]);
+        $this->assertDICDefinitionMethodCallOnce($listener, 'registerService', ['EntityListener1', 'entity_listener1']);
 
         $listener = $container->getDefinition('doctrine.orm.em2_entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener2')]);
+        $this->assertDICDefinitionMethodCallOnce($listener, 'registerService', ['EntityListener2', 'entity_listener2']);
 
         $attachListener = $container->getDefinition('doctrine.orm.em1_listeners.attach_entity_listeners');
         $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', ['My/Entity1', 'EntityListener1', 'postLoad']);
@@ -894,6 +894,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $resolver1 = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($resolver1, 'registerService', ['EntityListener1', 'entity_listener1']);
+        $this->assertDICDefinitionMethodCallOnce($resolver1, 'register', [new Reference('entity_listener3')]);
 
         $resolver2 = $container->findDefinition('custom_entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($resolver2, 'registerService', ['EntityListener2', 'entity_listener2']);
