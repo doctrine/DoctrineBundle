@@ -24,6 +24,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory;
+use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
 
 /**
@@ -355,11 +356,17 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $container->getParameter('kernel.bundles'));
 
+        $loadPropertyInfoExtractor = interface_exists(PropertyInfoExtractorInterface::class)
+            && class_exists(DoctrineExtractor::class);
+
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
 
-            $this->loadPropertyInfoExtractor($name, $container);
+            if ($loadPropertyInfoExtractor) {
+                $this->loadPropertyInfoExtractor($name, $container);
+            }
+
             $this->loadValidatorLoader($name, $container);
         }
 
