@@ -14,6 +14,7 @@ use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
+use Symfony\Component\Cache\DoctrineProvider;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -25,6 +26,8 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
+use function class_exists;
+use function sprintf;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -715,10 +718,24 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function loadCacheDriver($driverName, $entityManagerName, array $driverMap, ContainerBuilder $container)
     {
-        if (! empty($driverMap['cache_provider'])) {
-            $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $entityManagerName, $driverName));
-            $serviceId = sprintf('doctrine_cache.providers.%s', $driverMap['cache_provider']);
+        $serviceId = null;
+        $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $entityManagerName, $driverName));
 
+        switch ($driverMap['type']) {
+            case 'service':
+                $serviceId = $driverMap['id'];
+                break;
+
+            case 'pool':
+                $serviceId = $this->createPoolCacheDefinition($container, $aliasId, $driverMap['pool']);
+                break;
+
+            case 'provider':
+                $serviceId = sprintf('doctrine_cache.providers.%s', $driverMap['cache_provider']);
+                break;
+        }
+
+        if ($serviceId !== null) {
             $container->setAlias($aliasId, new Alias($serviceId, false));
 
             return $aliasId;
@@ -831,5 +848,20 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $transportFactoryDefinition = $container->getDefinition('messenger.transport.doctrine.factory');
         $transportFactoryDefinition->addTag('messenger.transport_factory');
+    }
+
+    private function createPoolCacheDefinition(ContainerBuilder $container, string $aliasId, string $poolName) : string
+    {
+        if (! class_exists(DoctrineProvider::class)) {
+            throw new LogicException('Using the "pool" cache type is only supported when symfony/cache is installed.');
+        }
+
+        $serviceId = sprintf('doctrine.orm.cache.pool.%s', $poolName);
+
+        $definition = $container->register($aliasId, DoctrineProvider::class);
+        $definition->addArgument(new Reference($poolName));
+        $definition->setPrivate(true);
+
+        return $serviceId;
     }
 }
