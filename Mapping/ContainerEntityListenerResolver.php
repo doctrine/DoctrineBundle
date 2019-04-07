@@ -38,10 +38,6 @@ class ContainerEntityListenerResolver implements EntityListenerServiceResolver
 
         $className = $this->normalizeClassName($className);
 
-        if (! isset($this->instances[$className])) {
-            return;
-        }
-
         unset($this->instances[$className]);
     }
 

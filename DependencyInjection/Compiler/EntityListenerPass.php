@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
+use Doctrine\Bundle\DoctrineBundle\Mapping\EntityListenerServiceResolver;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -44,19 +45,18 @@ class EntityListenerPass implements CompilerPassInterface
                     $this->attachToListener($container, $name, $id, $attributes);
                 }
 
-                $interface = 'Doctrine\\Bundle\\DoctrineBundle\\Mapping\\EntityListenerServiceResolver';
-                $class     = $resolver->getClass();
+                $class = $resolver->getClass();
 
                 if (substr($class, 0, 1) === '%') {
                     // resolve container parameter first
                     $class = $container->getParameterBag()->resolveValue($resolver->getClass());
                 }
-                $resolverSupportsLazyListeners = is_a($class, $interface, true);
+                $resolverSupportsLazyListeners = is_a($class, EntityListenerServiceResolver::class, true);
 
                 $lazyByAttribute = isset($attributes['lazy']) && $attributes['lazy'];
                 if ($lazyByAttribute && ! $resolverSupportsLazyListeners) {
                     throw new InvalidArgumentException(
-                        sprintf('Lazy-loaded entity listeners can only be resolved by a resolver implementing %s.', $interface)
+                        sprintf('Lazy-loaded entity listeners can only be resolved by a resolver implementing %s.', EntityListenerServiceResolver::class)
                     );
                 }
 
