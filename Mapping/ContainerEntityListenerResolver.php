@@ -8,6 +8,7 @@ use RuntimeException;
 
 class ContainerEntityListenerResolver implements EntityListenerServiceResolver
 {
+    /** @var ContainerInterface */
     private $container;
 
     /** @var object[] Map to store entity listener instances. */
@@ -92,7 +93,7 @@ class ContainerEntityListenerResolver implements EntityListenerServiceResolver
         return $this->container->get($serviceId);
     }
 
-    private function normalizeClassName(string $className): string
+    private function normalizeClassName(string $className) : string
     {
         return trim($className, '\\');
     }
