@@ -20,6 +20,9 @@
         <service id="entity_listener3" class="EntityListener3">
             <tag name="doctrine.orm.entity_listener" lazy="false" />
         </service>
+        <service id="entity_listener4" class="EntityListener4">
+            <tag name="doctrine.orm.entity_listener" />
+        </service>
     </services>
 
     <doctrine:config>

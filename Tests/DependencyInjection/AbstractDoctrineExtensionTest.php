@@ -16,6 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 abstract class AbstractDoctrineExtensionTest extends TestCase
 {
@@ -893,8 +894,16 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
 
         $resolver1 = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallOnce($resolver1, 'registerService', ['EntityListener1', 'entity_listener1']);
-        $this->assertDICDefinitionMethodCallOnce($resolver1, 'register', [new Reference('entity_listener3')]);
+        $this->assertDICDefinitionMethodCallAt(0, $resolver1, 'registerService', ['EntityListener1', 'entity_listener1']);
+        $this->assertDICDefinitionMethodCallAt(1, $resolver1, 'register', [new Reference('entity_listener3')]);
+        $this->assertDICDefinitionMethodCallAt(2, $resolver1, 'registerService', ['EntityListener4', 'entity_listener4']);
+
+        $serviceLocatorReference = $resolver1->getArgument(0);
+        $this->assertInstanceOf(Reference::class, $serviceLocatorReference);
+        $serviceLocatorDefinition = $container->getDefinition((string) $serviceLocatorReference);
+        $this->assertSame(ServiceLocator::class, $serviceLocatorDefinition->getClass());
+        $serviceLocatorMap = $serviceLocatorDefinition->getArgument(0);
+        $this->assertSame(['entity_listener1', 'entity_listener4'], array_keys($serviceLocatorMap));
 
         $resolver2 = $container->findDefinition('custom_entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($resolver2, 'registerService', ['EntityListener2', 'entity_listener2']);
@@ -1008,6 +1017,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
+            $this->fail(sprintf('Method call at position %s not found!', $pos));
+
             return;
         }
 

@@ -19,6 +19,11 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, lazy: false }
 
+    entity_listener4:
+        class: EntityListener4
+        tags:
+            - { name: doctrine.orm.entity_listener }
+
 doctrine:
     dbal:
         default_connection: default
