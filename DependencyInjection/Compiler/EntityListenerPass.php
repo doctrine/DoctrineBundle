@@ -55,9 +55,10 @@ class EntityListenerPass implements CompilerPassInterface
 
                 $lazyByAttribute = isset($attributes['lazy']) && $attributes['lazy'];
                 if ($lazyByAttribute && ! $resolverSupportsLazyListeners) {
-                    throw new InvalidArgumentException(
-                        sprintf('Lazy-loaded entity listeners can only be resolved by a resolver implementing %s.', EntityListenerServiceResolver::class)
-                    );
+                    throw new InvalidArgumentException(sprintf(
+                        'Lazy-loaded entity listeners can only be resolved by a resolver implementing %s.',
+                        EntityListenerServiceResolver::class
+                    ));
                 }
 
                 if (! isset($attributes['lazy']) && $resolverSupportsLazyListeners || $lazyByAttribute) {
