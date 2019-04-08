@@ -8,7 +8,6 @@ use RuntimeException;
 
 class ContainerEntityListenerResolver implements EntityListenerServiceResolver
 {
-    /** @var ContainerInterface */
     private $container;
 
     /** @var object[] Map to store entity listener instances. */
@@ -82,11 +81,9 @@ class ContainerEntityListenerResolver implements EntityListenerServiceResolver
     }
 
     /**
-     * @param string $serviceId
-     *
      * @return object
      */
-    private function resolveService($serviceId)
+    private function resolveService(string $serviceId)
     {
         if (! $this->container->has($serviceId)) {
             throw new RuntimeException(sprintf('There is no service named "%s"', $serviceId));
@@ -95,12 +92,7 @@ class ContainerEntityListenerResolver implements EntityListenerServiceResolver
         return $this->container->get($serviceId);
     }
 
-    /**
-     * @param string $className
-     *
-     * @return string
-     */
-    private function normalizeClassName($className)
+    private function normalizeClassName(string $className): string
     {
         return trim($className, '\\');
     }
