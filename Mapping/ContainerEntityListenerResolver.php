@@ -6,6 +6,9 @@ use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 
+/**
+ * @final
+ */
 class ContainerEntityListenerResolver implements EntityListenerServiceResolver
 {
     /** @var ContainerInterface */
