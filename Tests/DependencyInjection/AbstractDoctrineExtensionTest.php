@@ -909,6 +909,24 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($resolver2, 'registerService', ['EntityListener2', 'entity_listener2']);
     }
 
+    public function testAttachLazyEntityListenerForCustomResolver()
+    {
+        $container = $this->getContainer([]);
+        $loader    = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $container->addCompilerPass(new EntityListenerPass());
+
+        $this->loadFromFile($container, 'orm_entity_listener_custom_resolver');
+
+        $this->compileContainer($container);
+
+        $resolver = $container->getDefinition('custom_entity_listener_resolver');
+        $this->assertTrue($resolver->isPublic());
+        $this->assertEmpty($resolver->getArguments(), 'We must not change the arguments for custom services.');
+        $this->assertDICDefinitionMethodCallOnce($resolver, 'registerService', ['EntityListener', 'entity_listener']);
+        $this->assertTrue($container->getDefinition('entity_listener')->isPublic());
+    }
+
     /**
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage EntityListenerServiceResolver
