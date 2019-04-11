@@ -16,6 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 abstract class AbstractDoctrineExtensionTest extends TestCase
 {
@@ -831,7 +832,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setEntityListenerResolver', [new Reference('doctrine.orm.em2_entity_listener_resolver')]);
 
         $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener1')]);
+        $this->assertDICDefinitionMethodCallOnce($listener, 'registerService', ['EntityListener', 'entity_listener1']);
 
         $listener = $container->getDefinition('entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener2')]);
@@ -849,10 +850,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
 
         $listener = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener1')]);
+        $this->assertDICDefinitionMethodCallOnce($listener, 'registerService', ['EntityListener1', 'entity_listener1']);
 
         $listener = $container->getDefinition('doctrine.orm.em2_entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener2')]);
+        $this->assertDICDefinitionMethodCallOnce($listener, 'registerService', ['EntityListener2', 'entity_listener2']);
 
         $attachListener = $container->getDefinition('doctrine.orm.em1_listeners.attach_entity_listeners');
         $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', ['My/Entity1', 'EntityListener1', 'postLoad']);
@@ -893,10 +894,37 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
 
         $resolver1 = $container->getDefinition('doctrine.orm.em1_entity_listener_resolver');
-        $this->assertDICDefinitionMethodCallOnce($resolver1, 'registerService', ['EntityListener1', 'entity_listener1']);
+        $this->assertDICDefinitionMethodCallAt(0, $resolver1, 'registerService', ['EntityListener1', 'entity_listener1']);
+        $this->assertDICDefinitionMethodCallAt(1, $resolver1, 'register', [new Reference('entity_listener3')]);
+        $this->assertDICDefinitionMethodCallAt(2, $resolver1, 'registerService', ['EntityListener4', 'entity_listener4']);
+
+        $serviceLocatorReference = $resolver1->getArgument(0);
+        $this->assertInstanceOf(Reference::class, $serviceLocatorReference);
+        $serviceLocatorDefinition = $container->getDefinition((string) $serviceLocatorReference);
+        $this->assertSame(ServiceLocator::class, $serviceLocatorDefinition->getClass());
+        $serviceLocatorMap = $serviceLocatorDefinition->getArgument(0);
+        $this->assertSame(['entity_listener1', 'entity_listener4'], array_keys($serviceLocatorMap));
 
         $resolver2 = $container->findDefinition('custom_entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($resolver2, 'registerService', ['EntityListener2', 'entity_listener2']);
+    }
+
+    public function testAttachLazyEntityListenerForCustomResolver()
+    {
+        $container = $this->getContainer([]);
+        $loader    = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $container->addCompilerPass(new EntityListenerPass());
+
+        $this->loadFromFile($container, 'orm_entity_listener_custom_resolver');
+
+        $this->compileContainer($container);
+
+        $resolver = $container->getDefinition('custom_entity_listener_resolver');
+        $this->assertTrue($resolver->isPublic());
+        $this->assertEmpty($resolver->getArguments(), 'We must not change the arguments for custom services.');
+        $this->assertDICDefinitionMethodCallOnce($resolver, 'registerService', ['EntityListener', 'entity_listener']);
+        $this->assertTrue($container->getDefinition('entity_listener')->isPublic());
     }
 
     /**
@@ -1007,6 +1035,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
+            $this->fail(sprintf('Method call at position %s not found!', $pos));
+
             return;
         }
 

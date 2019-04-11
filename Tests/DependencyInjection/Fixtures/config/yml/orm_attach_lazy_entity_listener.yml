@@ -1,6 +1,6 @@
 services:
     custom_entity_listener_resolver:
-        class: Doctrine\Bundle\DoctrineBundle\Mapping\ContainerAwareEntityListenerResolver
+        class: Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver
         arguments:
             - '@service_container'
 
@@ -13,6 +13,16 @@ services:
         class: EntityListener2
         tags:
             - { name: doctrine.orm.entity_listener, entity_manager: em2, lazy: true }
+
+    entity_listener3:
+        class: EntityListener3
+        tags:
+            - { name: doctrine.orm.entity_listener, lazy: false }
+
+    entity_listener4:
+        class: EntityListener4
+        tags:
+            - { name: doctrine.orm.entity_listener }
 
 doctrine:
     dbal:

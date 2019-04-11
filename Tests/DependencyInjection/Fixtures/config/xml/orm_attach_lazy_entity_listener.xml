@@ -7,7 +7,7 @@
                         http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
 
     <services>
-        <service id="custom_entity_listener_resolver" class="Doctrine\Bundle\DoctrineBundle\Mapping\ContainerAwareEntityListenerResolver" >
+        <service id="custom_entity_listener_resolver" class="Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver" >
             <argument type="service" id="service_container"/>
         </service>
 
@@ -16,6 +16,12 @@
         </service>
         <service id="entity_listener2" class="EntityListener2">
             <tag name="doctrine.orm.entity_listener" entity_manager="em2" lazy="true" />
+        </service>
+        <service id="entity_listener3" class="EntityListener3">
+            <tag name="doctrine.orm.entity_listener" lazy="false" />
+        </service>
+        <service id="entity_listener4" class="EntityListener4">
+            <tag name="doctrine.orm.entity_listener" />
         </service>
     </services>
 

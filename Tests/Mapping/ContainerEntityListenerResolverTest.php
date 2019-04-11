@@ -2,14 +2,14 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 
-use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerAwareEntityListenerResolver;
+use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Psr\Container\ContainerInterface;
 
-class ContainerAwareEntityListenerResolverTest extends TestCase
+class ContainerEntityListenerResolverTest extends TestCase
 {
-    /** @var ContainerAwareEntityListenerResolver */
+    /** @var ContainerEntityListenerResolver */
     private $resolver;
 
     /** @var ContainerInterface|PHPUnit_Framework_MockObject_MockObject */
@@ -19,8 +19,8 @@ class ContainerAwareEntityListenerResolverTest extends TestCase
     {
         parent::setUp();
 
-        $this->container = $this->getMockForAbstractClass('\Symfony\Component\DependencyInjection\ContainerInterface');
-        $this->resolver  = new ContainerAwareEntityListenerResolver($this->container);
+        $this->container = $this->createMock(ContainerInterface::class);
+        $this->resolver  = new ContainerEntityListenerResolver($this->container);
     }
 
     public function testResolveClass()
