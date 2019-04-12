@@ -526,7 +526,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('dbal_types');
 
         $this->assertEquals(
-            ['test' => ['class' => TestType::class, 'commented' => true]],
+            ['test' => ['class' => TestType::class, 'commented' => null]],
             $container->getParameter('doctrine.dbal.connection_factory.types')
         );
         $this->assertEquals('%doctrine.dbal.connection_factory.types%', $container->getDefinition('doctrine.dbal.connection_factory')->getArgument(0));
