@@ -164,6 +164,7 @@
 
         <xsd:attribute name="type" type="xsd:string" />
         <xsd:attribute name="id" type="xsd:string" />
+        <xsd:attribute name="pool" type="xsd:string" />
         <xsd:attribute name="namespace" type="xsd:string" />
     </xsd:complexType>
 
