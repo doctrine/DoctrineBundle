@@ -148,7 +148,7 @@
 
     {% if profiler_markup_version > 1 %}
         <h2>Query Metrics</h2>
-    
+
         <div class="metrics">
             <div class="metric">
                 <span class="value">{{ collector.querycount }}</span>
@@ -159,17 +159,17 @@
                 <span class="value">{{ collector.groupedQueryCount }}</span>
                 <span class="label">Different statements</span>
             </div>
-    
+
             <div class="metric">
                 <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
                 <span class="label">Query time</span>
             </div>
-    
+
             <div class="metric">
                 <span class="value">{{ collector.invalidEntityCount }}</span>
                 <span class="label">Invalid entities</span>
             </div>
-    
+
             {% if collector.cacheEnabled %}
                 <div class="metric">
                 	<span class="value">{{ collector.cacheHitsCount }}</span>
@@ -254,6 +254,11 @@
                                         &nbsp;&nbsp;
                                         <a class="link-inverse" href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
                                     {% endif %}
+
+                                    {% if query.backtrace is defined %}
+                                        &nbsp;&nbsp;
+                                        <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#backtrace-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide query backtrace">View query backtrace</a>
+                                    {% endif %}
                                 </div>
 
                                 <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
@@ -266,6 +271,40 @@
 
                                 {% if query.explainable %}
                                     <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="sql-explain"></div>
+                                {% endif %}
+
+                                {% if query.backtrace is defined %}
+                                    <div id="backtrace-{{ i }}-{{ loop.parent.loop.index }}" class="hidden">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">File/Call</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for trace in query.backtrace %}
+                                                    <tr>
+                                                        <td>{{ loop.index }}</td>
+                                                        <td>
+                                                            <span class="text-small">
+                                                                {% set line_number = trace.line|default(1) %}
+                                                                {% set file_path = trace.file|format_file(line_number)|striptags|replace({ (' at line ' ~ line_number): '' }) %}
+                                                                {% set file_path_parts = file_path|split(constant('DIRECTORY_SEPARATOR')) %}
+
+                                                                {{- file_path_parts[:-1]|join(constant('DIRECTORY_SEPARATOR')) -}}
+                                                                {{- constant('DIRECTORY_SEPARATOR') -}}
+                                                                <strong>{{ file_path_parts|last }}</strong>
+                                                                {{- trace.type ?? '::' -}}
+                                                                <span class="status-warning">{{ trace.function }}</span>
+                                                                (line {{ line_number }})
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 {% endif %}
                             </td>
                         </tr>
