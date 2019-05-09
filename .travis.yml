@@ -53,6 +53,14 @@ jobs:
         - composer require --dev "symfony/messenger:4.2.*" --no-update
         - travis_retry composer update -n --prefer-dist
 
+    # Test against latest Symfony 4.3 beta
+    - php: 7.3
+      env: SYMFONY_VERSION="4.3.*@beta"
+      install:
+        - composer config minimum-stability beta
+        - composer require --dev "symfony/messenger:4.3.*@beta" --no-update
+        - travis_retry composer update -n --prefer-dist
+
     # Test dev versions
     - php: 7.3
       if: type = cron
