@@ -289,14 +289,10 @@
                                                         <td>
                                                             <span class="text-small">
                                                                 {% set line_number = trace.line|default(1) %}
-                                                                {% set file_path = trace.file|format_file(line_number)|striptags|replace({ (' at line ' ~ line_number): '' }) %}
-                                                                {% set file_path_parts = file_path|split(constant('DIRECTORY_SEPARATOR')) %}
-
-                                                                {{- file_path_parts[:-1]|join(constant('DIRECTORY_SEPARATOR')) -}}
-                                                                {{- constant('DIRECTORY_SEPARATOR') -}}
-                                                                <strong>{{ file_path_parts|last }}</strong>
-                                                                {{- trace.type ?? '::' -}}
-                                                                <span class="status-warning">{{ trace.function }}</span>
+                                                                <a href="{{ trace.file|file_link(line_number) }}">
+                                                                    {{- trace.class|default ~ (trace.class is defined ? trace.type|default('::')) -}}
+                                                                    <span class="status-warning">{{ trace.function }}</span>
+                                                                </a>
                                                                 (line {{ line_number }})
                                                             </span>
                                                         </td>
