@@ -30,6 +30,7 @@
         </service>
 
         <service id="doctrine.dbal.logger.profiling" class="%doctrine.dbal.logger.profiling.class%" public="false" abstract="true" />
+        <service id="doctrine.dbal.logger.backtrace" class="Doctrine\Bundle\DoctrineBundle\Dbal\Logging\BacktraceLogger" public="false" abstract="true" />
 
         <service id="doctrine.dbal.logger" class="%doctrine.dbal.logger.class%" public="false">
             <tag name="monolog.logger" channel="doctrine" />

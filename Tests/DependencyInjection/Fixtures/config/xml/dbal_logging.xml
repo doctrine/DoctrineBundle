@@ -17,6 +17,16 @@
                 logging="false"
                 profiling="true" />
             <connection
+                name="profile_with_backtrace"
+                logging="false"
+                profiling="true"
+                profiling-collect-backtrace="true" />
+            <connection
+                name="backtrace_without_profile"
+                logging="false"
+                profiling="false"
+                profiling-collect-backtrace="true" />
+            <connection
                 name="both"
                 logging="true"
                 profiling="true" />
