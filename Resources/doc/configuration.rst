@@ -104,6 +104,9 @@ Configuration Reference
                         logging:              "%kernel.debug%"
 
                         profiling:            "%kernel.debug%"
+                        # When true, profiling also collects a backtrace for each query
+                        profiling_collect_backtrace: false
+
                         server_version:       ~
                         driver_class:         ~
                         # Allows to specify a custom wrapper implementation to use.
@@ -493,6 +496,7 @@ Configuration Reference
                         schema-filter=""
                         logging="%kernel.debug%"
                         profiling="%kernel.debug%"
+                        profiling-collect-backtrace="false"
                         server-version=""
                         driver-class=""
                         wrapper-class=""
