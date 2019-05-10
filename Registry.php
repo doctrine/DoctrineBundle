@@ -2,9 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
@@ -16,10 +14,10 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 class Registry extends ManagerRegistry implements RegistryInterface
 {
     /**
-     * @param Connection[]             $connections
-     * @param EntityManagerInterface[] $entityManagers
-     * @param string                   $defaultConnection
-     * @param string                   $defaultEntityManager
+     * @param string[] $connections
+     * @param string[] $entityManagers
+     * @param string   $defaultConnection
+     * @param string   $defaultEntityManager
      */
     public function __construct(ContainerInterface $container, array $connections, array $entityManagers, $defaultConnection, $defaultEntityManager)
     {
