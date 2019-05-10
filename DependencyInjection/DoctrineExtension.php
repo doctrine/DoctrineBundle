@@ -133,8 +133,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
         unset($connection['logging']);
 
-        if ($connection['profiling'] || $connection['profiling_backtrace']) {
-            $profilingAbstractId = $connection['profiling_backtrace'] ?
+        if ($connection['profiling']) {
+            $profilingAbstractId = $connection['profiling_collect_backtrace'] ?
                 'doctrine.dbal.logger.backtrace' :
                 'doctrine.dbal.logger.profiling';
 
@@ -154,7 +154,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $logger = $profilingLogger;
             }
         }
-        unset($connection['profiling'], $connection['profiling_backtrace']);
+        unset($connection['profiling'], $connection['profiling_collect_backtrace']);
 
         if (isset($connection['auto_commit'])) {
             $configuration->addMethodCall('setAutoCommit', [$connection['auto_commit']]);

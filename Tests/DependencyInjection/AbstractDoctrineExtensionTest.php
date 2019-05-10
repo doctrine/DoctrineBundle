@@ -358,6 +358,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.dbal.profile_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.profiling.profile')]);
 
+        $definition = $container->getDefinition('doctrine.dbal.profile_with_backtrace_connection.configuration');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.backtrace.profile_with_backtrace')]);
+
+        $definition = $container->getDefinition('doctrine.dbal.backtrace_without_profile_connection.configuration');
+        $this->assertDICDefinitionNoMethodCall($definition, 'setSQLLogger');
+
         $definition = $container->getDefinition('doctrine.dbal.both_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.chain.both')]);
     }
