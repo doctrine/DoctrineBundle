@@ -739,7 +739,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 break;
 
             case 'pool':
-                $serviceId = $this->createPoolCacheDefinition($container, $aliasId, $driverMap['pool']);
+                $serviceId = $this->createPoolCacheDefinition($container, $driverMap['pool']);
                 break;
 
             case 'provider':
@@ -862,7 +862,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $transportFactoryDefinition->addTag('messenger.transport_factory');
     }
 
-    private function createPoolCacheDefinition(ContainerBuilder $container, string $aliasId, string $poolName) : string
+    private function createPoolCacheDefinition(ContainerBuilder $container, string $poolName) : string
     {
         if (! class_exists(DoctrineProvider::class)) {
             throw new LogicException('Using the "pool" cache type is only supported when symfony/cache is installed.');
@@ -870,7 +870,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $serviceId = sprintf('doctrine.orm.cache.pool.%s', $poolName);
 
-        $definition = $container->register($aliasId, DoctrineProvider::class);
+        $definition = $container->register($serviceId, DoctrineProvider::class);
         $definition->addArgument(new Reference($poolName));
         $definition->setPrivate(true);
 
