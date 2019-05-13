@@ -289,10 +289,14 @@
                                                         <td>
                                                             <span class="text-small">
                                                                 {% set line_number = trace.line|default(1) %}
-                                                                <a href="{{ trace.file|file_link(line_number) }}">
+                                                                {% if trace.file is defined %}
+                                                                    <a href="{{ trace.file|file_link(line_number) }}">
+                                                                {% endif %}
                                                                     {{- trace.class|default ~ (trace.class is defined ? trace.type|default('::')) -}}
                                                                     <span class="status-warning">{{ trace.function }}</span>
-                                                                </a>
+                                                                {% if trace.file is defined %}
+                                                                    </a>
+                                                                {% endif %}
                                                                 (line {{ line_number }})
                                                             </span>
                                                         </td>
