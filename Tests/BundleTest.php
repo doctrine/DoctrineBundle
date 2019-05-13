@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
@@ -21,16 +22,20 @@ class BundleTest extends TestCase
 
         $foundEventListener = false;
         $foundValidation    = false;
+        $foundSchemaFilter  = false;
 
         foreach ($passes as $pass) {
             if ($pass instanceof RegisterEventListenersAndSubscribersPass) {
                 $foundEventListener = true;
             } elseif ($pass instanceof DoctrineValidationPass) {
                 $foundValidation = true;
+            } elseif ($pass instanceof DbalSchemaFilterPass) {
+                $foundSchemaFilter = true;
             }
         }
 
         $this->assertTrue($foundEventListener, 'RegisterEventListenersAndSubscribersPass was not found');
         $this->assertTrue($foundValidation, 'DoctrineValidationPass was not found');
+        $this->assertTrue($foundSchemaFilter, 'DbalSchemaFilterPass was not found');
     }
 }
