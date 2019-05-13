@@ -25,6 +25,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory;
+use Symfony\Component\PropertyInfo\PropertyAccessExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
 use function class_exists;
@@ -794,6 +795,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $propertyExtractorDefinition->addTag('property_info.list_extractor', ['priority' => -1001]);
         $propertyExtractorDefinition->addTag('property_info.type_extractor', ['priority' => -999]);
+
+        if (! is_a(DoctrineExtractor::class, PropertyAccessExtractorInterface::class, true)) {
+            return;
+        }
+
+        $propertyExtractorDefinition->addTag('property_info.access_extractor', ['priority' => -999]);
     }
 
     /**
