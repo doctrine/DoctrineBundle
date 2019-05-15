@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
+use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
@@ -689,6 +690,31 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue($container->hasAlias($expectedAliasName));
         $alias = $container->getAlias($expectedAliasName);
         $this->assertEquals($expectedAliasTarget, (string) $alias);
+    }
+
+    public function testEventSubscriberAutoConfiguration()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $container->register('foo', EventSubscriber::class)
+            ->setAutoconfigured(true)
+            ->setPublic(true);
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager([
+                'default_entity_manager' => 'default',
+                'entity_managers' => ['default' => []],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+        $container->compile();
+
+        $definition = $container->findDefinition('foo');
+
+        $this->assertTrue($definition->hasTag('doctrine.event_subscriber'), 'Definition should have tag "doctrine.event_subscriber".');
     }
 
     public static function cacheConfigurationProvider() : array
