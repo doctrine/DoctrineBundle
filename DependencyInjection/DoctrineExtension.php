@@ -23,8 +23,10 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory;
+use Symfony\Component\PropertyInfo\PropertyAccessExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
 use function class_exists;
@@ -341,6 +343,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('orm.xml');
+
+        if (class_exists(AbstractType::class)) {
+            $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
+        }
 
         $entityManagers = [];
         foreach (array_keys($config['entity_managers']) as $name) {
@@ -739,7 +745,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 break;
 
             case 'pool':
-                $serviceId = $this->createPoolCacheDefinition($container, $aliasId, $driverMap['pool']);
+                $serviceId = $this->createPoolCacheDefinition($container, $driverMap['pool']);
                 break;
 
             case 'provider':
@@ -794,6 +800,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $propertyExtractorDefinition->addTag('property_info.list_extractor', ['priority' => -1001]);
         $propertyExtractorDefinition->addTag('property_info.type_extractor', ['priority' => -999]);
+
+        if (! is_a(DoctrineExtractor::class, PropertyAccessExtractorInterface::class, true)) {
+            return;
+        }
+
+        $propertyExtractorDefinition->addTag('property_info.access_extractor', ['priority' => -999]);
     }
 
     /**
@@ -862,7 +874,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $transportFactoryDefinition->addTag('messenger.transport_factory');
     }
 
-    private function createPoolCacheDefinition(ContainerBuilder $container, string $aliasId, string $poolName) : string
+    private function createPoolCacheDefinition(ContainerBuilder $container, string $poolName) : string
     {
         if (! class_exists(DoctrineProvider::class)) {
             throw new LogicException('Using the "pool" cache type is only supported when symfony/cache is installed.');
@@ -870,7 +882,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $serviceId = sprintf('doctrine.orm.cache.pool.%s', $poolName);
 
-        $definition = $container->register($aliasId, DoctrineProvider::class);
+        $definition = $container->register($serviceId, DoctrineProvider::class);
         $definition->addArgument(new Reference($poolName));
         $definition->setPrivate(true);
 
