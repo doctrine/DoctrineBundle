@@ -26,7 +26,7 @@ class CollectionRegionDoctrineCommand extends CollectionRegionCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        DoctrineCommandHelper::setApplicationConnection($this->getApplication(), $input->getOption('connection'));
+        DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
 
         return parent::execute($input, $output);
     }
