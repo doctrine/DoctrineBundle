@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory;
 use Symfony\Component\PropertyInfo\PropertyAccessExtractorInterface;
@@ -342,6 +343,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('orm.xml');
+
+        if (class_exists(AbstractType::class)) {
+            $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
+        }
 
         $entityManagers = [];
         foreach (array_keys($config['entity_managers']) as $name) {
