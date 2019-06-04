@@ -10,6 +10,8 @@ use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Cache\DoctrineProvider;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -339,13 +341,19 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.em2_configuration', (string) $arguments[1]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
-        $this->assertEquals('%doctrine_cache.xcache.class%', $definition->getClass());
+        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_query_cache'));
-        $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
+        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
+        $arguments = $definition->getArguments();
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
+        $this->assertEquals('cache.app', (string) $arguments[0]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_result_cache'));
-        $this->assertEquals('%doctrine_cache.array.class%', $definition->getClass());
+        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
+        $arguments = $definition->getArguments();
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
+        $this->assertEquals('cache.app', (string) $arguments[0]);
     }
 
     public function testLoadLogging()
@@ -373,15 +381,18 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
-        $this->assertDICDefinitionClass($definition, '%doctrine_cache.xcache.class%');
+        $this->assertDICDefinitionClass($definition, DoctrineProvider::class);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em2_metadata_cache'));
-        $this->assertDICDefinitionClass($definition, '%doctrine_cache.apc.class%');
+        $this->assertDICDefinitionClass($definition, DoctrineProvider::class);
     }
 
+    /**
+     * @group legacy
+     */
     public function testEntityManagerMemcacheMetadataCacheDriverConfiguration()
     {
-        $container = $this->loadContainer('orm_service_simple_single_entity_manager');
+        $container = $this->loadContainer('orm_service_simple_single_entity_manager_memcache');
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertDICDefinitionClass($definition, '%doctrine_cache.memcache.class%');
@@ -399,6 +410,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
     }
 
+    /**
+     * @group legacy
+     */
     public function testEntityManagerRedisMetadataCacheDriverConfigurationWithDatabaseKey()
     {
         $container = $this->loadContainer('orm_service_simple_single_entity_manager_redis');
@@ -422,7 +436,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_imports');
 
         $cacheDefinition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
-        $this->assertEquals('%doctrine_cache.apc.class%', $cacheDefinition->getClass());
+        $this->assertEquals(DoctrineProvider::class, $cacheDefinition->getClass());
 
         $configDefinition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setAutoGenerateProxyClasses', ['%doctrine.orm.auto_generate_proxy_classes%']);
@@ -605,7 +619,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
         $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
         $this->assertDICDefinitionClass($loggerStatisticsDef, '%doctrine.orm.second_level_cache.logger_statistics.class%');
-        $this->assertDICDefinitionClass($cacheDriverDef, '%doctrine_cache.array.class%');
+        $this->assertDICDefinitionClass($cacheDriverDef, DoctrineProvider::class);
         $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
         $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', [], 3);
         $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', [], 3);
@@ -1018,14 +1032,23 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             $map[$bundle] = 'Fixtures\\Bundles\\' . $bundle . '\\' . $bundle;
         }
 
-        return new ContainerBuilder(new ParameterBag([
+        $container = new ContainerBuilder(new ParameterBag([
             'kernel.name' => 'app',
             'kernel.debug' => false,
             'kernel.bundles' => $map,
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__ . '/../../', // src dir
+            'kernel.project_dir' => __DIR__ . '/../../', // src dir
+            'kernel.bundles_metadata' => [],
+            'container.build_id' => uniqid(),
         ]));
+
+        // Register dummy cache services so we don't have to load the FrameworkExtension
+        $container->setDefinition('cache.system', (new Definition(ArrayAdapter::class))->setPublic(true));
+        $container->setDefinition('cache.app', (new Definition(ArrayAdapter::class))->setPublic(true));
+
+        return $container;
     }
 
     /**

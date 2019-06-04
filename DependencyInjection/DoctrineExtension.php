@@ -739,6 +739,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $serviceId = null;
         $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $entityManagerName, $driverName));
 
+        if ($driverMap['type'] === null) {
+            $driverMap = [
+                'type' => 'pool',
+                'pool' => $this->getPoolNameForCacheDriver($driverName),
+            ];
+        }
+
         switch ($driverMap['type']) {
             case 'service':
                 $serviceId = $driverMap['id'];
@@ -887,5 +894,15 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $definition->setPrivate(true);
 
         return $serviceId;
+    }
+
+    private function getPoolNameForCacheDriver(string $driverName) : string
+    {
+        switch ($driverName) {
+            case 'metadata_cache':
+                return 'cache.system';
+            default:
+                return 'cache.app';
+        }
     }
 }

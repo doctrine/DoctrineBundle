@@ -13,12 +13,6 @@
 
         <orm default-entity-manager="default">
             <entity-manager name="default">
-                <metadata-cache-driver type="memcache">
-                    <class>Doctrine\Common\Cache\MemcacheCache</class>
-                    <host>localhost</host>
-                    <port>11211</port>
-                    <instance-class>Memcache</instance-class>
-                </metadata-cache-driver>
                 <mapping name="YamlBundle" />
             </entity-manager>
         </orm>

@@ -15,7 +15,7 @@
             auto-generate-proxy-classes="false"
             default-entity-manager="default"
         >
-            <entity-manager name="default" metadata-cache-driver="apc">
+            <entity-manager name="default">
                 <mapping name="YamlBundle" />
             </entity-manager>
         </orm>
