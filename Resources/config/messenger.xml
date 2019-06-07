@@ -14,6 +14,14 @@
 
         <!--
         The following service isn't prefixed by the "doctrine.orm" namespace in order for end-users to just use
+        the "doctrine_clear_entity_manager" shortcut in message buses middleware config
+        -->
+        <service id="messenger.middleware.doctrine_clear_entity_manager" class="Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerMiddleware" abstract="true" public="false">
+            <argument type="service" id="doctrine" />
+        </service>
+
+        <!--
+        The following service isn't prefixed by the "doctrine.orm" namespace in order for end-users to just use
         the "doctrine_ping_connection" shortcut in message buses middleware config
         -->
         <service id="messenger.middleware.doctrine_ping_connection" class="Symfony\Bridge\Doctrine\Messenger\DoctrinePingConnectionMiddleware" abstract="true" public="false">

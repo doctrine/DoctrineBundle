@@ -663,6 +663,8 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_transaction'));
         $this->assertCount(1, $middlewarePrototype->getArguments());
+        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_clear_entity_manager'));
+        $this->assertCount(1, $middlewarePrototype->getArguments());
         $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_ping_connection'));
         $this->assertCount(1, $middlewarePrototype->getArguments());
         $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_close_connection'));
