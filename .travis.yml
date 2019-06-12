@@ -78,7 +78,7 @@ jobs:
     - stage: Coverage
       php: 7.3
       install:
-        - composer require --dev "symfony/messenger:4.2.*" --no-update
+        - composer require --dev "symfony/messenger" --no-update
         - travis_retry composer update -n --prefer-dist
       before_script:
         - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{.disabled,}
