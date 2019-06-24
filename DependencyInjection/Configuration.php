@@ -707,6 +707,7 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->children()
                 ->scalarNode('type')->defaultValue('array')->end()
+                ->scalarNode('directory')->defaultValue('%kernel.project_dir%/cache')->end()
                 ->scalarNode('id')->end()
                 ->scalarNode('pool')->end()
                 ->scalarNode('host')->end()
