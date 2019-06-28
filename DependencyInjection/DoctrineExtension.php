@@ -813,7 +813,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     private function loadValidatorLoader(string $entityManagerName, ContainerBuilder $container) : void
     {
-        if (! interface_exists(LoaderInterface::class) || ! class_exists(DoctrineLoader::class)) {
+        $autoMapping = $container->hasParameter('validator.auto_mapping') ? $container->getParameter('validator.auto_mapping') : false;
+
+        if (! $autoMapping || ! interface_exists(LoaderInterface::class) || ! class_exists(DoctrineLoader::class)) {
             return;
         }
 

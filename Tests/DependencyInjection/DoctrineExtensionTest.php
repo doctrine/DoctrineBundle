@@ -11,6 +11,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -641,6 +642,41 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
     }
 
+    public function testValidatorLoader()
+    {
+        if (! interface_exists(DoctrineLoader::class)) {
+            $this->markTestSkipped('DoctrineLoader is not found');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $configurationArray = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+
+        $extension->load([$configurationArray], $container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_entity_manager.validator_loader');
+        $this->assertEquals(['validator.auto_mapper' => [['priority' => -100]]], $definition->getTags());
+
+        $this->assertDICConstructorArguments($definition, [
+            new Reference('doctrine.orm.default_entity_manager'),
+        ]);
+    }
+
+    public function testValidatorLoaderEmptyAutoMapping()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $container->setParameter('validator.auto_mapping', []);
+
+        $configurationArray = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+
+        $extension->load([$configurationArray], $container);
+
+        $this->assertFalse($container->hasDefinition('doctrine.orm.default_entity_manager.validator_loader'));
+    }
+
     public function testMessengerIntegration()
     {
         if (! interface_exists(MessageBusInterface::class)) {
@@ -795,6 +831,7 @@ class DoctrineExtensionTest extends TestCase
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__ . '/../../', // src dir
+            'validator.auto_mapping' => ['App\Entity\Foo' => ['services' => []]],
         ]));
     }
 
