@@ -105,6 +105,8 @@ class EntityListenerPass implements CompilerPassInterface
 
         if (isset($attributes['method'])) {
             $args[] = $attributes['method'];
+        } elseif (! method_exists($serviceDef->getClass(), $attributes['event']) && method_exists($serviceDef->getClass(), '__invoke')) {
+            $args[] = '__invoke';
         }
 
         $container->findDefinition($listenerId)->addMethodCall('addEntityListener', $args);
