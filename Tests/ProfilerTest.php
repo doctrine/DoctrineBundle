@@ -61,6 +61,7 @@ class ProfilerTest extends BaseTestCase
             [
                 'sql' => 'SELECT * FROM foo WHERE bar IN (?, ?)',
                 'params' => ['foo', 'bar'],
+                'types' => null,
                 'executionMS' => 1,
             ],
         ];

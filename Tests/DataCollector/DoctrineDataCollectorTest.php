@@ -56,11 +56,13 @@ class DoctrineDataCollectorTest extends TestCase
         $logger->queries[] = [
             'sql' => 'SELECT * FROM foo WHERE bar = :bar',
             'params' => [':bar' => 1],
+            'types' => null,
             'executionMS' => 32,
         ];
         $logger->queries[] = [
             'sql' => 'SELECT * FROM foo WHERE bar = :bar',
             'params' => [':bar' => 2],
+            'types' => null,
             'executionMS' => 25,
         ];
         $collector         = $this->createCollector([]);
@@ -74,6 +76,7 @@ class DoctrineDataCollectorTest extends TestCase
         $logger->queries[] = [
             'sql' => 'SELECT * FROM bar',
             'params' => [],
+            'types' => null,
             'executionMS' => 25,
         ];
         $collector->collect(new Request(), new Response());
