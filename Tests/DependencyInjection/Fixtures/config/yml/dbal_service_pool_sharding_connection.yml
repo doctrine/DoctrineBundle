@@ -14,3 +14,7 @@ doctrine:
                 dbname: shard_db
                 password: shard_s3cr3t
                 unix_socket: /path/to/mysqld_shard.sock
+
+services:
+    foo.shard_choser:
+        class: stdClass

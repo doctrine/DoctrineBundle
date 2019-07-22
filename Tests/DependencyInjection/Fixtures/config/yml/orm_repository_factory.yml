@@ -7,3 +7,7 @@ doctrine:
 
     orm:
         repository_factory: repository_factory
+
+services:
+    repository_factory:
+        class: Doctrine\Bundle\DoctrineBundle\Repository\RepositoryFactory

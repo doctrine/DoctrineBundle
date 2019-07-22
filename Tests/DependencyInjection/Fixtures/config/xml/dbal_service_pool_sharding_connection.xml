@@ -6,6 +6,10 @@
                xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
                         http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
 
+    <srv:services>
+        <srv:service id="foo.shard_choser" class="stdClass" />
+    </srv:services>
+
     <config>
         <dbal dbname="mysql_db" user="mysql_user" password="mysql_s3cr3t" unix-socket="/path/to/mysqld.sock" shard-choser-service="foo.shard_choser">
             <shard id="1" dbname="shard_db" user="shard_user" password="shard_s3cr3t" unix-socket="/path/to/mysqld_shard.sock" />
