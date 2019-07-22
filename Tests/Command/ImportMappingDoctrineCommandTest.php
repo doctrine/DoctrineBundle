@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\HttpKernel\Kernel;
+use function method_exists;
 
 class ImportMappingDoctrineCommandTest extends TestCase
 {
@@ -83,10 +84,10 @@ class ImportMappingDoctrineCommandTest extends TestCase
     {
         $this->commandTester->execute([
             'name' => 'Some\Namespace\Entity',
-            '--path' => $this->kernel->getRootDir() . '/config/doctrine',
+            '--path' => $this->getProjectDir($this->kernel) . '/config/doctrine',
         ]);
 
-        $expectedMetadataPath = $this->kernel->getRootDir() . '/config/doctrine/Product.orm.xml';
+        $expectedMetadataPath = $this->getProjectDir($this->kernel) . '/config/doctrine/Product.orm.xml';
         $this->assertFileExists($expectedMetadataPath);
         $this->assertContains('"Some\Namespace\Entity\Product"', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
     }
@@ -95,13 +96,21 @@ class ImportMappingDoctrineCommandTest extends TestCase
     {
         $this->commandTester->execute([
             'name' => 'Some\Namespace\Entity',
-            '--path' => $this->kernel->getRootDir() . '/src/Entity',
+            '--path' => $this->getProjectDir($this->kernel) . '/src/Entity',
             'mapping-type' => 'annotation',
         ]);
 
-        $expectedMetadataPath = $this->kernel->getRootDir() . '/src/Entity/Product.php';
+        $expectedMetadataPath = $this->getProjectDir($this->kernel) . '/src/Entity/Product.php';
         $this->assertFileExists($expectedMetadataPath);
         $this->assertContains('namespace Some\Namespace\Entity;', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
+    }
+
+    /**
+     * BC layer to support Symfony < 4.2 and Symfony >= 5.0. Once support for Symfony < 4.2 has been removed, this method can be dropped.
+     */
+    private function getProjectDir(Kernel $kernel) : string
+    {
+        return method_exists($kernel, 'getProjectDir') ? $kernel->getProjectDir() : $kernel->getRootDir();
     }
 }
 
@@ -124,6 +133,8 @@ class ImportMappingTestingKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
         $loader->load(function (ContainerBuilder $container) {
+            // @todo Setting the kernel.name parameter can be removed once the dependency on DoctrineCacheBundle has been dropped
+            $container->setParameter('kernel.name', 'foo');
             $container->loadFromExtension('framework', ['secret' => 'F00']);
 
             $container->loadFromExtension('doctrine', [
