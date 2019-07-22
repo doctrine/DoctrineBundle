@@ -6,6 +6,10 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
                         http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
 
+    <srv:services>
+        <srv:service id="repository_factory" class="Doctrine\Bundle\DoctrineBundle\Repository\RepositoryFactory" />
+    </srv:services>
+
     <config>
         <dbal default-connection="default">
             <connection name="default" dbname="db" />
