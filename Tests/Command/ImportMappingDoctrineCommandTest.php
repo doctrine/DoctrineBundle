@@ -13,11 +13,10 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\HttpKernel\Kernel;
-use function method_exists;
 
 class ImportMappingDoctrineCommandTest extends TestCase
 {
-    /** @var Kernel|null */
+    /** @var ImportMappingTestingKernel|null */
     private $kernel;
 
     /** @var CommandTester|null */
@@ -84,10 +83,10 @@ class ImportMappingDoctrineCommandTest extends TestCase
     {
         $this->commandTester->execute([
             'name' => 'Some\Namespace\Entity',
-            '--path' => $this->getProjectDir($this->kernel) . '/config/doctrine',
+            '--path' => $this->kernel->getProjectDir() . '/config/doctrine',
         ]);
 
-        $expectedMetadataPath = $this->getProjectDir($this->kernel) . '/config/doctrine/Product.orm.xml';
+        $expectedMetadataPath = $this->kernel->getProjectDir() . '/config/doctrine/Product.orm.xml';
         $this->assertFileExists($expectedMetadataPath);
         $this->assertContains('"Some\Namespace\Entity\Product"', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
     }
@@ -96,26 +95,21 @@ class ImportMappingDoctrineCommandTest extends TestCase
     {
         $this->commandTester->execute([
             'name' => 'Some\Namespace\Entity',
-            '--path' => $this->getProjectDir($this->kernel) . '/src/Entity',
+            '--path' => $this->kernel->getProjectDir() . '/src/Entity',
             'mapping-type' => 'annotation',
         ]);
 
-        $expectedMetadataPath = $this->getProjectDir($this->kernel) . '/src/Entity/Product.php';
+        $expectedMetadataPath = $this->kernel->getProjectDir() . '/src/Entity/Product.php';
         $this->assertFileExists($expectedMetadataPath);
         $this->assertContains('namespace Some\Namespace\Entity;', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
-    }
-
-    /**
-     * BC layer to support Symfony < 4.2 and Symfony >= 5.0. Once support for Symfony < 4.2 has been removed, this method can be dropped.
-     */
-    private function getProjectDir(Kernel $kernel) : string
-    {
-        return method_exists($kernel, 'getProjectDir') ? $kernel->getProjectDir() : $kernel->getRootDir();
     }
 }
 
 class ImportMappingTestingKernel extends Kernel
 {
+    /** @var string|null */
+    private $projectDir;
+
     public function __construct()
     {
         parent::__construct('test', true);
@@ -150,13 +144,18 @@ class ImportMappingTestingKernel extends Kernel
         });
     }
 
-    public function getRootDir()
+    public function getProjectDir()
     {
-        if ($this->rootDir === null) {
-            $this->rootDir = sys_get_temp_dir() . '/sf_kernel_' . md5(mt_rand());
+        if ($this->projectDir === null) {
+            $this->projectDir = sys_get_temp_dir() . '/sf_kernel_' . md5(mt_rand());
         }
 
-        return $this->rootDir;
+        return $this->projectDir;
+    }
+
+    public function getRootDir()
+    {
+        return $this->getProjectDir();
     }
 }
 
