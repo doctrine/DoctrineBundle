@@ -9,6 +9,12 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, entity_manager: em2, entity: My/Entity2, event: preFlush, method: preFlushHandler}
 
+    invokable_entity_listener:
+        class: Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\InvokableEntityListener
+        tags:
+            - { name: doctrine.orm.entity_listener, entity: My/Entity1, event: loadClassMetadata }
+            - { name: doctrine.orm.entity_listener, entity: My/Entity1, event: postPersist }
+
 doctrine:
     dbal:
         default_connection: default
