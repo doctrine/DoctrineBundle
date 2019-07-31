@@ -860,7 +860,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             ['EntityListener1', 'entity_listener1'],
             ['Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\InvokableEntityListener', 'invokable_entity_listener'],
             ['Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\InvokableEntityListener', 'invokable_entity_listener'],
-        ], 3);
+            ['ParentEntityListener', 'children_entity_listener'],
+        ], 4);
 
         $listener = $container->getDefinition('doctrine.orm.em2_entity_listener_resolver');
         $this->assertDICDefinitionMethodCallOnce($listener, 'registerService', ['EntityListener2', 'entity_listener2']);
@@ -869,6 +870,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallAt(0, $attachListener, 'addEntityListener', ['My/Entity1', 'EntityListener1', 'postLoad']);
         $this->assertDICDefinitionMethodCallAt(1, $attachListener, 'addEntityListener', ['My/Entity1', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\InvokableEntityListener', 'loadClassMetadata', '__invoke']);
         $this->assertDICDefinitionMethodCallAt(2, $attachListener, 'addEntityListener', ['My/Entity1', 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\InvokableEntityListener', 'postPersist']);
+        $this->assertDICDefinitionMethodCallAt(3, $attachListener, 'addEntityListener', ['My/Entity3', 'ParentEntityListener', 'postLoad']);
 
         $attachListener = $container->getDefinition('doctrine.orm.em2_listeners.attach_entity_listeners');
         $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', ['My/Entity2', 'EntityListener2', 'preFlush', 'preFlushHandler']);
