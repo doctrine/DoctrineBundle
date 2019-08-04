@@ -26,6 +26,12 @@ Mapping
  * Dropped `ContainerAwareEntityListenerResolver`, use
    `ContainerEntityListenerResolver` instead.
 
+Registry
+--------
+
+ * `Registry` no longer implements `Symfony\Bridge\Doctrine\RegistryInterface`.
+ * Removed all deprecated entity manager specific methods from the registry.
+
 Types
 -----
 
