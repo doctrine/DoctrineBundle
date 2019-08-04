@@ -63,7 +63,7 @@ jobs:
 
     # Test against latest Symfony 4.4 dev
     - php: 7.3
-      env: SYMFONY_VERSION="4.4.*@dev"
+      env: SYMFONY_VERSION="4.4.*@dev" SYMFONY_DEPRECATIONS_HELPER=1
       install:
         - composer config minimum-stability dev
         - composer require --dev "symfony/messenger:4.4.*@dev" --no-update
