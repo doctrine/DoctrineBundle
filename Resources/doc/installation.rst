@@ -28,11 +28,11 @@ file of your project::
     {
         public function registerBundles()
         {
-            $bundles = array(
+            $bundles = [
                 // ...
 
                 new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
-            );
+            ];
 
             // ...
         }
