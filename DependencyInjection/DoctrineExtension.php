@@ -705,12 +705,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function getObjectManagerElementName($name)
+    protected function getObjectManagerElementName($name) : string
     {
         return 'doctrine.orm.' . $name;
     }
 
-    protected function getMappingObjectDefaultName()
+    protected function getMappingObjectDefaultName() : string
     {
         return 'Entity';
     }
@@ -718,7 +718,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function getMappingResourceConfigDirectory()
+    protected function getMappingResourceConfigDirectory() : string
     {
         return 'Resources/config/doctrine';
     }
@@ -726,7 +726,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function getMappingResourceExtension()
+    protected function getMappingResourceExtension() : string
     {
         return 'orm';
     }
@@ -734,22 +734,29 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function loadCacheDriver($driverName, $entityManagerName, array $driverMap, ContainerBuilder $container)
+    protected function loadCacheDriver($cacheName, $objectManagerName, array $cacheDriver, ContainerBuilder $container) : string
     {
         $serviceId = null;
-        $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $entityManagerName, $driverName));
+        $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $objectManagerName, $cacheName));
 
-        switch ($driverMap['type']) {
+        if ($cacheDriver['type'] === null) {
+            $cacheDriver = [
+                'type' => 'pool',
+                'pool' => $this->getPoolNameForCacheDriver($cacheName),
+            ];
+        }
+
+        switch ($cacheDriver['type']) {
             case 'service':
-                $serviceId = $driverMap['id'];
+                $serviceId = $cacheDriver['id'];
                 break;
 
             case 'pool':
-                $serviceId = $this->createPoolCacheDefinition($container, $driverMap['pool']);
+                $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool']);
                 break;
 
             case 'provider':
-                $serviceId = sprintf('doctrine_cache.providers.%s', $driverMap['cache_provider']);
+                $serviceId = sprintf('doctrine_cache.providers.%s', $cacheDriver['cache_provider']);
                 break;
         }
 
@@ -759,7 +766,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             return $aliasId;
         }
 
-        return $this->adapter->loadCacheDriver($driverName, $entityManagerName, $driverMap, $container);
+        return $this->adapter->loadCacheDriver($cacheName, $objectManagerName, $cacheDriver, $container);
     }
 
     /**
@@ -835,7 +842,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    public function getXsdValidationBasePath()
+    public function getXsdValidationBasePath() : string
     {
         return __DIR__ . '/../Resources/config/schema';
     }
@@ -843,7 +850,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    public function getNamespace()
+    public function getNamespace() : string
     {
         return 'http://symfony.com/schema/dic/doctrine';
     }
@@ -851,7 +858,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    public function getConfiguration(array $config, ContainerBuilder $container)
+    public function getConfiguration(array $config, ContainerBuilder $container) : Configuration
     {
         return new Configuration($container->getParameter('kernel.debug'));
     }
@@ -887,5 +894,15 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $definition->setPrivate(true);
 
         return $serviceId;
+    }
+
+    private function getPoolNameForCacheDriver(string $driverName) : string
+    {
+        switch ($driverName) {
+            case 'metadata_cache':
+                return 'cache.system';
+            default:
+                return 'cache.app';
+        }
     }
 }

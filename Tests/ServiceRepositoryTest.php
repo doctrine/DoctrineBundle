@@ -15,6 +15,7 @@ use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomServiceRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -44,8 +45,19 @@ class ServiceRepositoryTest extends TestCase
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__ . '/../../../../', // src dir
+            'kernel.project_dir' => __DIR__ . '/../../../../', // src dir
+            'kernel.bundles_metadata' => [],
+            'kernel.charset' => 'UTF-8',
+            'kernel.container_class' => ContainerBuilder::class,
+            'kernel.secret' => 'test',
+            'container.build_id' => uniqid(),
         ]));
         $container->set('annotation_reader', new AnnotationReader());
+
+        $extension = new FrameworkExtension();
+        $container->registerExtension($extension);
+        $extension->load(['framework' => []], $container);
+
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
         $extension->load([[

@@ -39,17 +39,12 @@
 
             <entity-manager name="default">
                 <second-level-cache region-lifetime="3600" region-lock-lifetime="60" log-enabled="true" enabled="true">
-                    <region-cache-driver type="array"/>
-
                     <region name="my_service_region" type="service" service="my_service_region"/>
-                    <region name="my_query_region" lifetime="300" cache-driver="array" type="filelock"/>
-                    <region name="my_entity_region" lifetime="600">
-                        <cache-driver type="apc"/>
-                    </region>
+                    <region name="my_query_region" lifetime="300" type="filelock"/>
+                    <region name="my_entity_region" lifetime="600" />
 
                     <logger name="my_service_logger1" service="my_service_logger1"/>
                     <logger name="my_service_logger2" service="my_service_logger2"/>
-
                 </second-level-cache>
             </entity-manager>
         </orm>

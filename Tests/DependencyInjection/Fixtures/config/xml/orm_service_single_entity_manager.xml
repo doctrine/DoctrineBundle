@@ -26,12 +26,6 @@
                 auto-generate-proxy-classes="true"
             >
             <entity-manager name="default" connection="default" default-repository-class="Acme\Doctrine\Repository">
-                <metadata-cache-driver type="memcache">
-                    <class>Doctrine\Common\Cache\MemcacheCache</class>
-                    <host>localhost</host>
-                    <port>11211</port>
-                    <instance-class>Memcache</instance-class>
-                </metadata-cache-driver>
                 <mapping name="YamlBundle" />
             </entity-manager>
         </orm>

@@ -51,7 +51,7 @@ class BundleConfigurationBuilder
     public function addBaseSecondLevelCache()
     {
         $this->addSecondLevelCache([
-            'region_cache_driver' => ['type' => 'memcache'],
+            'region_cache_driver' => ['type' => 'pool', 'pool' => 'my_pool'],
             'regions' => [
                 'hour_region' => ['lifetime' => 3600],
             ],

@@ -69,9 +69,10 @@ definition:
                         name: doctrine.orm.entity_listener
                         event: preUpdate
                         entity: App\Entity\User
-                        # Entity manager name is optional
+                        # entity_manager attribute is optional
                         entity_manager: custom
-
+                        # method attribute is optional
+                        method: validateEmail
     .. code-block:: xml
 
         <?xml version="1.0" ?>
@@ -82,16 +83,22 @@ definition:
             <services>
                 <service id="user_listener" class="UserListener">
                     <!-- entity_manager attribute is optional -->
-                    <tag 
+                    <!-- method attribute is optional -->
+                    <tag
                         name="doctrine.orm.entity_listener" 
                         event="preUpdate"
                         entity="App\Entity\User"
                         entity_manager="custom"
+                        method="validateEmail"
                     />
                 </service>
             </services>
         </container>
 
+If you don't specify the ``method`` attribute, it falls back on the subscribed event name.
+
+Starting with Doctrine bundle 1.12, if this method does not exist but if your entity listener is invokable, it falls
+back on the ``__invoke()`` method.
 
 See also
 https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#entity-listeners

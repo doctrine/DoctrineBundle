@@ -14,6 +14,19 @@
         <service id="entity_listener2" class="EntityListener2">
             <tag name="doctrine.orm.entity_listener" entity_manager="em2" entity="My/Entity2" event="preFlush" method="preFlushHandler" />
         </service>
+
+        <service id="invokable_entity_listener" class="Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\InvokableEntityListener">
+            <tag name="doctrine.orm.entity_listener" entity="My/Entity1" event="loadClassMetadata" />
+            <tag name="doctrine.orm.entity_listener" entity="My/Entity1" event="postPersist" />
+        </service>
+
+        <service id="grand_parent_entity_listener" class="GrandParentEntityListener" />
+
+        <service id="parent_entity_listener" class="ParentEntityListener" />
+
+        <service id="children_entity_listener" parent="parent_entity_listener">
+            <tag name="doctrine.orm.entity_listener" entity="My/Entity3" event="postLoad" />
+        </service>
     </services>
 
     <doctrine:config>
