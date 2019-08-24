@@ -3,7 +3,6 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Common\Annotations\Reader;
-use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory;
@@ -20,6 +19,7 @@ use Symfony\Bridge\Doctrine\Logger\DbalLogger;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
+use Symfony\Component\Cache\DoctrineProvider;
 use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 class ContainerTest extends TestCase
@@ -47,9 +47,9 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(Reader::class, $container->get('doctrine.orm.metadata.annotation_reader'));
         $this->assertInstanceOf(Configuration::class, $container->get('doctrine.orm.default_configuration'));
         $this->assertInstanceOf(MappingDriverChain::class, $container->get('doctrine.orm.default_metadata_driver'));
-        $this->assertInstanceOf(ArrayCache::class, $container->get('doctrine.orm.default_metadata_cache'));
-        $this->assertInstanceOf(ArrayCache::class, $container->get('doctrine.orm.default_query_cache'));
-        $this->assertInstanceOf(ArrayCache::class, $container->get('doctrine.orm.default_result_cache'));
+        $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_metadata_cache'));
+        $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_query_cache'));
+        $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_result_cache'));
         $this->assertInstanceOf(EntityManager::class, $container->get('doctrine.orm.default_entity_manager'));
         $this->assertInstanceOf(Connection::class, $container->get('database_connection'));
         $this->assertInstanceOf(EntityManager::class, $container->get('doctrine.orm.entity_manager'));

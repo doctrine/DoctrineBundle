@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\Version;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -33,8 +34,12 @@ class TestCase extends BaseTestCase
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__ . '/../../../../', // src dir
+            'kernel.project_dir' => __DIR__ . '/../../../../', // src dir
+            'kernel.bundles_metadata' => [],
+            'container.build_id' => uniqid(),
         ]));
         $container->set('annotation_reader', new AnnotationReader());
+
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
         $extension->load([[
@@ -72,6 +77,10 @@ class TestCase extends BaseTestCase
         ], $container);
 
         $container->setDefinition('my.platform', new Definition('Doctrine\DBAL\Platforms\MySqlPlatform'))->setPublic(true);
+
+        // Register dummy cache services so we don't have to load the FrameworkExtension
+        $container->setDefinition('cache.system', (new Definition(ArrayAdapter::class))->setPublic(true));
+        $container->setDefinition('cache.app', (new Definition(ArrayAdapter::class))->setPublic(true));
 
         $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);

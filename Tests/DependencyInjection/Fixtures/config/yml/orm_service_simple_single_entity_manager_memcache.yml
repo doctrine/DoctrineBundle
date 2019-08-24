@@ -11,3 +11,9 @@ doctrine:
             default:
                 mappings:
                     YamlBundle: ~
+                metadata_cache_driver:
+                    type: memcache
+                    class: Doctrine\Common\Cache\MemcacheCache
+                    host: localhost
+                    port: 11211
+                    instance_class: Memcache

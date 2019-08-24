@@ -20,6 +20,13 @@ Commands
  * `Doctrine\Bundle\DoctrineBundle\Command` no longer implements
    `ContainerAwareInterface`.
 
+Deprecation of DoctrineCacheBundle
+----------------------------------
+
+Configuring caches through DoctrineCacheBundle is no longer possible. Please use
+symfony/cache through the `pool` type or configure your cache services manually
+and use the `service` type.
+
 Mapping
 -------
 
