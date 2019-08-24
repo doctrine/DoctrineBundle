@@ -87,11 +87,11 @@ class Registry extends ManagerRegistry implements RegistryInterface
      *
      * @param string $name The entity manager name (null for the default one)
      */
-    public function resetEntityManager($name = null)
+    public function resetEntityManager($name = null) : EntityManager
     {
         @trigger_error('resetEntityManager is deprecated since Symfony 2.1. Use resetManager instead', E_USER_DEPRECATED);
 
-        $this->resetManager($name);
+        return $this->resetManager($name);
     }
 
     /**

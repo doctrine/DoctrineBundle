@@ -705,12 +705,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function getObjectManagerElementName($name)
+    protected function getObjectManagerElementName($name) : string
     {
         return 'doctrine.orm.' . $name;
     }
 
-    protected function getMappingObjectDefaultName()
+    protected function getMappingObjectDefaultName() : string
     {
         return 'Entity';
     }
@@ -718,7 +718,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function getMappingResourceConfigDirectory()
+    protected function getMappingResourceConfigDirectory() : string
     {
         return 'Resources/config/doctrine';
     }
@@ -726,7 +726,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function getMappingResourceExtension()
+    protected function getMappingResourceExtension() : string
     {
         return 'orm';
     }
@@ -734,7 +734,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function loadCacheDriver($driverName, $entityManagerName, array $driverMap, ContainerBuilder $container)
+    protected function loadCacheDriver($driverName, $entityManagerName, array $driverMap, ContainerBuilder $container) : string
     {
         $serviceId = null;
         $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $entityManagerName, $driverName));
@@ -835,7 +835,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    public function getXsdValidationBasePath()
+    public function getXsdValidationBasePath() : string
     {
         return __DIR__ . '/../Resources/config/schema';
     }
@@ -843,7 +843,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    public function getNamespace()
+    public function getNamespace() : string
     {
         return 'http://symfony.com/schema/dic/doctrine';
     }
@@ -851,7 +851,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    public function getConfiguration(array $config, ContainerBuilder $container)
+    public function getConfiguration(array $config, ContainerBuilder $container) : Configuration
     {
         return new Configuration($container->getParameter('kernel.debug'));
     }
