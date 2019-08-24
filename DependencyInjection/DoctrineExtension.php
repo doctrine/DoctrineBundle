@@ -734,29 +734,29 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function loadCacheDriver($driverName, $entityManagerName, array $driverMap, ContainerBuilder $container) : string
+    protected function loadCacheDriver($cacheName, $objectManagerName, array $cacheDriver, ContainerBuilder $container) : string
     {
         $serviceId = null;
-        $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $entityManagerName, $driverName));
+        $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $objectManagerName, $cacheName));
 
-        if ($driverMap['type'] === null) {
-            $driverMap = [
+        if ($cacheDriver['type'] === null) {
+            $cacheDriver = [
                 'type' => 'pool',
-                'pool' => $this->getPoolNameForCacheDriver($driverName),
+                'pool' => $this->getPoolNameForCacheDriver($cacheName),
             ];
         }
 
-        switch ($driverMap['type']) {
+        switch ($cacheDriver['type']) {
             case 'service':
-                $serviceId = $driverMap['id'];
+                $serviceId = $cacheDriver['id'];
                 break;
 
             case 'pool':
-                $serviceId = $this->createPoolCacheDefinition($container, $driverMap['pool']);
+                $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool']);
                 break;
 
             case 'provider':
-                $serviceId = sprintf('doctrine_cache.providers.%s', $driverMap['cache_provider']);
+                $serviceId = sprintf('doctrine_cache.providers.%s', $cacheDriver['cache_provider']);
                 break;
         }
 
@@ -766,7 +766,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             return $aliasId;
         }
 
-        return $this->adapter->loadCacheDriver($driverName, $entityManagerName, $driverMap, $container);
+        return $this->adapter->loadCacheDriver($cacheName, $objectManagerName, $cacheDriver, $container);
     }
 
     /**
