@@ -663,12 +663,6 @@ class DoctrineExtensionTest extends TestCase
 
         $config = BundleConfigurationBuilder::createBuilder()
             ->addBaseConnection()
-            ->addEntityManager([
-                'default_entity_manager' => 'default',
-                'entity_managers' => [
-                    'default' => [],
-                ],
-            ])
             ->build();
         $extension->load([$config], $container);
 
