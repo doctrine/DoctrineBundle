@@ -62,16 +62,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->dbalLoad($config['dbal'], $container);
         }
 
+        $this->loadMessengerServices($container);
+
         if (empty($config['orm'])) {
             return;
         }
 
         if (empty($config['dbal'])) {
             throw new LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
-        }
-
-        if (! class_exists(Version::class)) {
-            throw new LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
         }
 
         $this->ormLoad($config['orm'], $container);
@@ -341,6 +339,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function ormLoad(array $config, ContainerBuilder $container)
     {
+        if (! class_exists(Version::class)) {
+            throw new LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
+        }
+
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('orm.xml');
 
@@ -399,8 +401,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
             ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
-
-        $this->loadMessengerServices($container);
     }
 
     /**
