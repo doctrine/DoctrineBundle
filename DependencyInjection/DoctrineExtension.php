@@ -345,6 +345,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $loader->load('orm.xml');
 
         if (class_exists(AbstractType::class)) {
+            $loader->load('orm-form.xml');
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
         }
 

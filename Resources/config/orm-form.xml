@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <!-- form field factory guesser -->
+        <parameter key="form.type_guesser.doctrine.class">Symfony\Bridge\Doctrine\Form\DoctrineOrmTypeGuesser</parameter>
+    </parameters>
+
+    <services>
+        <service id="form.type_guesser.doctrine" class="%form.type_guesser.doctrine.class%">
+            <tag name="form.type_guesser" />
+            <argument type="service" id="doctrine" />
+        </service>
+
+        <service id="form.type.entity" class="Symfony\Bridge\Doctrine\Form\Type\EntityType">
+            <tag name="form.type" alias="entity" />
+            <argument type="service" id="doctrine" />
+        </service>
+    </services>
+</container>
