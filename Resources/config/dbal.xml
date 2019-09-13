@@ -88,6 +88,10 @@
             <tag name="console.command" command="doctrine:database:drop" />
         </service>
 
+        <service id="doctrine.database_import_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand">
+            <tag name="console.command" command="doctrine:database:import" />
+        </service>
+
         <service id="doctrine.generate_entities_command" class="Doctrine\Bundle\DoctrineBundle\Command\GenerateEntitiesDoctrineCommand">
             <tag name="console.command" command="doctrine:generate:entities" />
         </service>

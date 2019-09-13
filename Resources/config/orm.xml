@@ -180,10 +180,6 @@
             <tag name="console.command" command="doctrine:cache:clear-entity-region" />
         </service>
 
-        <service id="doctrine.database_import_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand">
-            <tag name="console.command" command="doctrine:database:import" />
-        </service>
-
         <service id="doctrine.mapping_info_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\InfoDoctrineCommand">
             <tag name="console.command" command="doctrine:mapping:info" />
         </service>
