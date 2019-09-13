@@ -115,7 +115,7 @@ class ImportMappingTestingKernel extends Kernel
         parent::__construct('test', true);
     }
 
-    public function registerBundles()
+    public function registerBundles() : iterable
     {
         return [
             new FrameworkBundle(),
@@ -144,7 +144,7 @@ class ImportMappingTestingKernel extends Kernel
         });
     }
 
-    public function getProjectDir()
+    public function getProjectDir() : string
     {
         if ($this->projectDir === null) {
             $this->projectDir = sys_get_temp_dir() . '/sf_kernel_' . md5(mt_rand());
@@ -153,7 +153,7 @@ class ImportMappingTestingKernel extends Kernel
         return $this->projectDir;
     }
 
-    public function getRootDir()
+    public function getRootDir() : string
     {
         return $this->getProjectDir();
     }
@@ -161,7 +161,7 @@ class ImportMappingTestingKernel extends Kernel
 
 class ImportMappingTestFooBundle extends Bundle
 {
-    public function getPath()
+    public function getPath() : string
     {
         return sys_get_temp_dir() . '/import_mapping_bundle';
     }
