@@ -863,6 +863,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return new Configuration($container->getParameter('kernel.debug'));
     }
 
+    protected function getMetadataDriverClass(string $driverType) : string
+    {
+        return '%' . $this->getObjectManagerElementName('metadata.' . $driverType . '.class%');
+    }
+
     private function loadMessengerServices(ContainerBuilder $container) : void
     {
         // If the Messenger component is installed and the doctrine transaction middleware is available, wire it:
