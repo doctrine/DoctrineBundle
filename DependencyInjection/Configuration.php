@@ -382,12 +382,38 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('proxy_dir')->defaultValue('%kernel.cache_dir%/doctrine/orm/Proxies')->end()
                         ->scalarNode('proxy_namespace')->defaultValue('Proxies')->end()
                     ->end()
+                    ->fixXmlConfig('messenger_message_collector')
+                    ->append($this->getOrmMessengerCollectorNode())
                     ->fixXmlConfig('entity_manager')
                     ->append($this->getOrmEntityManagersNode())
                     ->fixXmlConfig('resolve_target_entity', 'resolve_target_entities')
                     ->append($this->getOrmTargetEntityResolverNode())
                 ->end()
             ->end();
+    }
+
+    /**
+     * @return NodeDefinition
+     */
+    private function getOrmMessengerCollectorNode()
+    {
+        $treeBuilder = new TreeBuilder('messenger_message_collector');
+
+        if (method_exists($treeBuilder, 'getRootNode')) {
+            $node = $treeBuilder->getRootNode();
+        } else {
+            // BC layer for symfony/config 4.1 and older
+            $node = $treeBuilder->root('messenger_message_collector');
+        }
+
+        $node
+            ->canBeEnabled()
+            ->children()
+                ->scalarNode('connection')->defaultNull()->end()
+                ->scalarNode('message_bus')->defaultValue('message_bus')->end()
+            ->end();
+
+        return $node;
     }
 
     /**

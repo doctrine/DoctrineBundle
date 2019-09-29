@@ -43,5 +43,12 @@
         <service id="messenger.transport.doctrine.factory" class="Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory" public="false">
             <argument type="service" id="doctrine" />
         </service>
+
+        <!--
+        The following service isn't tagged as the class may not exist.
+        The tag is added conditionally in DoctrineExtension.
+        -->
+        <service id="messenger.event_subscriber.entity_message_collector" class="Symfony\Bridge\Doctrine\Messenger\EventSubscriber\EntityMessageCollector" abstract="true" public="false">
+        </service>
     </services>
 </container>

@@ -12,6 +12,7 @@ use Doctrine\ORM\Version;
 use LogicException;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\EventSubscriber\EntityMessageCollector;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\DoctrineProvider;
@@ -395,6 +396,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
 
             $def->addTag('doctrine.event_subscriber');
+        }
+
+        if ($config['messenger_message_collector']['enabled']) {
+            if (! class_exists(EntityMessageCollector::class)) {
+                throw new LogicException('You need to use Symfony 4.4 or later to use "messenger_message_collector" configuration.');
+            }
+
+            $def = $container->getDefinition('messenger.event_subscriber.entity_message_collector');
+            $def->addArgument(new Reference($config['messenger_message_collector']['message_bus']));
+            $def->addTag('doctrine.event_subscriber', ['connection' => $config['messenger_message_collector']['connection'] ?? $this->defaultConnection]);
         }
 
         $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
