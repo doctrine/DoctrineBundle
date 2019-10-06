@@ -42,7 +42,7 @@
         "symfony/property-info": "^3.4.30|^4.3.3",
         "symfony/phpunit-bridge": "^4.2",
         "symfony/twig-bridge": "^3.4|^4.1",
-        "twig/twig": "^1.34|^2.4",
+        "twig/twig": "^1.34|^2.12",
         "php-coveralls/php-coveralls": "^2.1",
         "phpunit/phpunit": "^7.5",
         "symfony/web-profiler-bundle": "^3.4.30|^4.3.3",
