@@ -80,6 +80,3 @@ jobs:
         - ./vendor/bin/phpunit -v --coverage-clover ./build/logs/clover.xml
       after_script:
         - php ./vendor/bin/coveralls -v
-
-  allow_failures:
-    - php: 7.4snapshot
