@@ -387,50 +387,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionClass($definition, DoctrineProvider::class);
     }
 
-    /**
-     * @group legacy
-     */
-    public function testEntityManagerMemcacheMetadataCacheDriverConfiguration()
-    {
-        $container = $this->loadContainer('orm_service_simple_single_entity_manager_memcache');
-
-        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
-        $this->assertDICDefinitionClass($definition, '%doctrine_cache.memcache.class%');
-        $this->assertDICDefinitionMethodCallOnce(
-            $definition,
-            'setMemcache',
-            [new Reference('doctrine_cache.services.doctrine.orm.default_metadata_cache.connection')]
-        );
-
-        $definition = $container->getDefinition('doctrine_cache.services.doctrine.orm.default_metadata_cache.connection');
-        $this->assertDICDefinitionClass($definition, '%doctrine_cache.memcache.connection.class%');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addServer', [
-            'localhost',
-            '11211',
-        ]);
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testEntityManagerRedisMetadataCacheDriverConfigurationWithDatabaseKey()
-    {
-        $container = $this->loadContainer('orm_service_simple_single_entity_manager_redis');
-
-        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
-        $this->assertDICDefinitionClass($definition, '%doctrine_cache.redis.class%');
-        $this->assertDICDefinitionMethodCallOnce(
-            $definition,
-            'setRedis',
-            [new Reference('doctrine_cache.services.doctrine.orm.default_metadata_cache_redis.connection')]
-        );
-
-        $definition = $container->getDefinition('doctrine_cache.services.doctrine.orm.default_metadata_cache_redis.connection');
-        $this->assertDICDefinitionClass($definition, '%doctrine_cache.redis.connection.class%');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'connect', ['localhost', '6379']);
-        $this->assertDICDefinitionMethodCallOnce($definition, 'select', [1]);
-    }
-
     public function testDependencyInjectionImportsOverrideDefaults()
     {
         $container = $this->loadContainer('orm_imports');

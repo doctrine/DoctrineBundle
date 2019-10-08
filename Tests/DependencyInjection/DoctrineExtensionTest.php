@@ -10,6 +10,7 @@ use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\DoctrineProvider;
@@ -682,70 +683,20 @@ class DoctrineExtensionTest extends TestCase
         $this->assertCount(1, $middlewarePrototype->getArguments());
     }
 
-    /**
-     * @param array|string $cacheConfig
-     *
-     * @group legacy
-     * @dataProvider deprecatedCacheConfigurationProvider
-     */
-    public function testDeprecatedCacheConfiguration(string $expectedAliasName, string $expectedAliasTarget, string $cacheName, $cacheConfig) : void
+    public function testInvalidCacheConfiguration() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
         $config = BundleConfigurationBuilder::createBuilder()
             ->addBaseConnection()
-            ->addEntityManager([$cacheName => $cacheConfig])
+            ->addEntityManager(['metadata_cache_driver' => 'redis'])
             ->build();
 
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown cache of type "redis" configured for cache "metadata_cache" in entity manager "default"');
+
         $extension->load([$config], $container);
-
-        $this->assertTrue($container->hasAlias($expectedAliasName));
-        $alias = $container->getAlias($expectedAliasName);
-        $this->assertEquals($expectedAliasTarget, (string) $alias);
-    }
-
-    public static function deprecatedCacheConfigurationProvider() : array
-    {
-        return [
-            'metadata_cache_provider' => [
-                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'doctrine_cache.providers.metadata_cache',
-                'cacheName' => 'metadata_cache_driver',
-                'cacheConfig' => ['cache_provider' => 'metadata_cache'],
-            ],
-            'query_cache_provider' => [
-                'expectedAliasName' => 'doctrine.orm.default_query_cache',
-                'expectedAliasTarget' => 'doctrine_cache.providers.query_cache',
-                'cacheName' => 'query_cache_driver',
-                'cacheConfig' => ['cache_provider' => 'query_cache'],
-            ],
-            'result_cache_provider' => [
-                'expectedAliasName' => 'doctrine.orm.default_result_cache',
-                'expectedAliasTarget' => 'doctrine_cache.providers.result_cache',
-                'cacheName' => 'result_cache_driver',
-                'cacheConfig' => ['cache_provider' => 'result_cache'],
-            ],
-
-            'metadata_cache_array' => [
-                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'doctrine_cache.providers.doctrine.orm.default_metadata_cache',
-                'cacheName' => 'metadata_cache_driver',
-                'cacheConfig' => 'array',
-            ],
-            'query_cache_array' => [
-                'expectedAliasName' => 'doctrine.orm.default_query_cache',
-                'expectedAliasTarget' => 'doctrine_cache.providers.doctrine.orm.default_query_cache',
-                'cacheName' => 'query_cache_driver',
-                'cacheConfig' => 'array',
-            ],
-            'result_cache_array' => [
-                'expectedAliasName' => 'doctrine.orm.default_result_cache',
-                'expectedAliasTarget' => 'doctrine_cache.providers.doctrine.orm.default_result_cache',
-                'cacheName' => 'result_cache_driver',
-                'cacheConfig' => 'array',
-            ],
-        ];
     }
 
     /**

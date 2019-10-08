@@ -5,8 +5,6 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
-use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\CacheProviderLoader;
-use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\SymfonyBridgeAdapter;
 use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Version;
 use LogicException;
@@ -40,14 +38,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /** @var string */
     private $defaultConnection;
 
-    /** @var SymfonyBridgeAdapter */
-    private $adapter;
-
-    public function __construct(SymfonyBridgeAdapter $adapter = null)
-    {
-        $this->adapter = $adapter ?: new SymfonyBridgeAdapter(new CacheProviderLoader(), 'doctrine.orm', 'orm');
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -55,8 +45,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         $configuration = $this->getConfiguration($configs, $container);
         $config        = $this->processConfiguration($configuration, $configs);
-
-        $this->adapter->loadServicesConfiguration($container);
 
         if (! empty($config['dbal'])) {
             $this->dbalLoad($config['dbal'], $container);
@@ -739,34 +727,31 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $serviceId = null;
         $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $objectManagerName, $cacheName));
 
-        if ($cacheDriver['type'] === null) {
-            $cacheDriver = [
-                'type' => 'pool',
-                'pool' => $this->getPoolNameForCacheDriver($cacheName),
-            ];
-        }
-
-        switch ($cacheDriver['type']) {
+        switch ($cacheDriver['type'] ?? 'pool') {
             case 'service':
                 $serviceId = $cacheDriver['id'];
                 break;
 
             case 'pool':
-                $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool']);
+                $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool'] ?? $this->getPoolNameForCacheDriver($cacheName));
                 break;
 
             case 'provider':
                 $serviceId = sprintf('doctrine_cache.providers.%s', $cacheDriver['cache_provider']);
                 break;
+
+            default:
+                throw new \InvalidArgumentException(sprintf(
+                    'Unknown cache of type "%s" configured for cache "%s" in entity manager "%s".',
+                    $cacheDriver['type'],
+                    $cacheName,
+                    $objectManagerName
+                ));
         }
 
-        if ($serviceId !== null) {
-            $container->setAlias($aliasId, new Alias($serviceId, false));
+        $container->setAlias($aliasId, new Alias($serviceId, false));
 
-            return $aliasId;
-        }
-
-        return $this->adapter->loadCacheDriver($cacheName, $objectManagerName, $cacheDriver, $container);
+        return $aliasId;
     }
 
     /**

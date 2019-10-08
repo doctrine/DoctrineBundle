@@ -275,35 +275,17 @@ Configuration Reference
                     # A collection of different named entity managers (e.g. some_em, another_em)
                     some_em:
                         query_cache_driver:
-                            type:                 array
-                            id:                   ~
-                            pool:                 ~
-                            host:                 ~
-                            port:                 ~
-                            instance_class:       ~
-                            class:                ~
-                            namespace:            ~
-                            cache_provider:       ~
+                            type: ~
+                            id:   ~
+                            pool: ~
                         metadata_cache_driver:
-                            type:                 array
-                            id:                   ~
-                            pool:                 ~
-                            host:                 ~
-                            port:                 ~
-                            instance_class:       ~
-                            class:                ~
-                            namespace:            ~
-                            cache_provider:       ~
+                            type: ~
+                            id:   ~
+                            pool: ~
                         result_cache_driver:
-                            type:                 array
-                            id:                   ~
-                            pool:                 ~
-                            host:                 ~
-                            port:                 ~
-                            instance_class:       ~
-                            class:                ~
-                            namespace:            ~
-                            cache_provider:       ~
+                            type: ~
+                            id:   ~
+                            pool: ~
                         entity_listeners:
                             entities:
 
@@ -328,15 +310,9 @@ Configuration Reference
                         repository_factory:           ~
                         second_level_cache:
                             region_cache_driver:
-                                type:                 array
-                                pool:                 ~
-                                id:                   ~
-                                host:                 ~
-                                port:                 ~
-                                instance_class:       ~
-                                class:                ~
-                                namespace:            ~
-                                cache_provider:       ~
+                                type: ~
+                                id:   ~
+                                pool: ~
                             region_lock_lifetime: 60
                             log_enabled:          true
                             region_lifetime:      0
@@ -347,15 +323,9 @@ Configuration Reference
                                 # Prototype
                                 name:
                                     cache_driver:
-                                        type:                 array
-                                        id:                   ~
-                                        pool:                 ~
-                                        host:                 ~
-                                        port:                 ~
-                                        instance_class:       ~
-                                        class:                ~
-                                        namespace:            ~
-                                        cache_provider:       ~
+                                        type: ~
+                                        id:   ~
+                                        pool: ~
                                     lock_path:            '%kernel.cache_dir%/doctrine/orm/slc/filelock'
                                     lock_lifetime:        60
                                     type:                 default
@@ -629,39 +599,21 @@ Configuration Reference
                     >
 
                         <doctrine:query-cache-driver
-                            type="array"
+                            type="pool"
                             id=""
                             pool=""
-                            host=""
-                            port=""
-                            instance-class=""
-                            class=""
-                            namespace="null"
-                            cache-provider="null"
                         />
 
                         <doctrine:metadata-cache-driver
-                            type="memcache"
+                            type="pool"
                             id=""
                             pool=""
-                            host="localhost"
-                            port="11211"
-                            instance-class="Memcache"
-                            class="Doctrine\Common\Cache\MemcacheCache"
-                            namespace="null"
-                            cache-provider="null"
                         />
 
                         <doctrine:result-cache-driver
-                            type="array"
+                            type="pool"
                             id=""
                             pool=""
-                            host=""
-                            port=""
-                            instance-class=""
-                            class=""
-                            namespace="null"
-                            cache-provider="null"
                         />
 
                         <doctrine:entity-listeners>
@@ -693,15 +645,9 @@ Configuration Reference
                         >
 
                             <doctrine:region-cache-driver
-                                type="array"
+                                type="pool"
                                 id=""
                                 pool=""
-                                host=""
-                                port=""
-                                instance-class=""
-                                class=""
-                                namespace="null"
-                                cache-provider="null"
                             />
 
                             <!-- example -->
@@ -715,15 +661,9 @@ Configuration Reference
                             >
 
                                 <doctrine:cache-driver
-                                    type="array"
+                                    type="pool"
                                     id=""
                                     pool=""
-                                    host=""
-                                    port=""
-                                    instance-class=""
-                                    class=""
-                                    namespace="null"
-                                    cache-provider="null"
                                 />
 
                             </doctrine:region>
@@ -803,9 +743,9 @@ the ORM resolves to:
             proxy_namespace: Proxies
             proxy_dir: "%kernel.cache_dir%/doctrine/orm/Proxies"
             default_entity_manager: default
-            metadata_cache_driver: array
-            query_cache_driver: array
-            result_cache_driver: array
+            metadata_cache_driver: ~
+            query_cache_driver: ~
+            result_cache_driver: ~
 
 There are lots of other configuration options that you can use to overwrite
 certain classes, but those are for very advanced use-cases only.
@@ -839,11 +779,9 @@ The environment variables that doctrine is going to change in the Oracle DB sess
 Caching Drivers
 ~~~~~~~~~~~~~~~
 
-For the caching drivers you can specify the values ``array``, ``apc``, ``apcu``,
-``memcache``, ``memcached``, ``redis``, ``wincache``, ``zenddata`` and
-``xcache``. You can use a Symfony Cache pool by using the ``pool`` type and
-creating a cache bool through the FrameworkBundle configuration. The ``service``
-type lets you define the ``ID`` of your own caching service.
+You can use a Symfony Cache pool by using the ``pool`` type and creating a cache
+pool through the FrameworkBundle configuration. The ``service`` type lets you
+define the ``ID`` of your own caching service.
 
 The following example shows an overview of the caching configurations:
 
@@ -852,8 +790,8 @@ The following example shows an overview of the caching configurations:
     doctrine:
         orm:
             auto_mapping: true
-            # each caching driver type defines its own config options
-            metadata_cache_driver: apc
+            # With no cache set, this defaults to a sane 'pool' configuration
+            metadata_cache_driver: ~
             # the 'pool' type requires to define the 'pool' option and configure a cache pool using the FrameworkBundle
             result_cache_driver:
                 type: pool

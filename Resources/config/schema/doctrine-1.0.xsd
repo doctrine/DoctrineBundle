@@ -151,22 +151,17 @@
         </xsd:simpleContent>
     </xsd:complexType>
 
-    <xsd:complexType name="cache_driver">
-        <!-- This is not consistent with the Symfony config. These string elements should be attributes.
-        TODO: change it for 2.0
-        -->
-        <xsd:all>
-            <xsd:element name="class" type="xsd:string" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="host" type="xsd:string" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="port" type="xsd:string" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="database" type="xsd:integer" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="instance-class" type="xsd:string" minOccurs="0" maxOccurs="1" />
-        </xsd:all>
+    <xsd:simpleType name="cache_driver_type">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="pool"/>
+            <xsd:enumeration value="service"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 
-        <xsd:attribute name="type" type="xsd:string" />
+    <xsd:complexType name="cache_driver">
+        <xsd:attribute name="type" type="cache_driver_type" default="pool" />
         <xsd:attribute name="id" type="xsd:string" />
         <xsd:attribute name="pool" type="xsd:string" />
-        <xsd:attribute name="namespace" type="xsd:string" />
     </xsd:complexType>
 
     <xsd:complexType name="entity_listeners">
@@ -224,10 +219,6 @@
         <xsd:attribute name="quote-strategy" type="xsd:string" />
         <xsd:attribute name="entity-listener-resolver" type="xsd:string" />
         <xsd:attribute name="repository-factory" type="xsd:string" />
-        <!-- deprecated attributes, use the child element instead -->
-        <xsd:attribute name="result-cache-driver" type="xsd:string" />
-        <xsd:attribute name="metadata-cache-driver" type="xsd:string" />
-        <xsd:attribute name="query-cache-driver" type="xsd:string" />
     </xsd:attributeGroup>
 
     <xsd:complexType name="filter" mixed="true">

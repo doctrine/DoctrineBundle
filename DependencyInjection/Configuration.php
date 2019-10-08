@@ -9,12 +9,9 @@ use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
-use const E_USER_DEPRECATED;
 use function array_key_exists;
 use function in_array;
 use function is_array;
-use function sprintf;
-use function trigger_error;
 
 /**
  * This class contains the configuration information for the bundle
@@ -701,42 +698,10 @@ class Configuration implements ConfigurationInterface
                     return ['type' => $v];
                 })
             ->end()
-            ->beforeNormalization()
-                ->ifTrue(static function ($v) : bool {
-                    return is_array($v) && array_key_exists('cache_provider', $v);
-                })
-                ->then(static function ($v) : array {
-                    return ['type' => 'provider'] + $v;
-                })
-            ->end()
             ->children()
-                ->scalarNode('type')
-                    ->defaultNull()
-                    ->beforeNormalization()
-                        ->ifNotInArray([null, 'pool', 'service'])
-                        ->then(static function ($v) use ($name) {
-                            @trigger_error(
-                                sprintf(
-                                    'Using the "%s" type for cache "%s" is deprecated since DoctrineBundle 1.12 and will be dropped in 2.0. Please use the "service" or "pool" types exclusively.',
-                                    $v,
-                                    $name
-                                ),
-                                E_USER_DEPRECATED
-                            );
-
-                            return $v;
-                        })
-                    ->end()
-                ->end()
+                ->scalarNode('type')->defaultNull()->end()
                 ->scalarNode('id')->end()
                 ->scalarNode('pool')->end()
-                ->scalarNode('host')->setDeprecated()->end()
-                ->scalarNode('port')->setDeprecated()->end()
-                ->scalarNode('database')->setDeprecated()->end()
-                ->scalarNode('instance_class')->setDeprecated()->end()
-                ->scalarNode('class')->setDeprecated()->end()
-                ->scalarNode('namespace')->defaultNull()->setDeprecated()->end()
-                ->scalarNode('cache_provider')->defaultNull()->setDeprecated()->end()
             ->end();
 
         return $node;
