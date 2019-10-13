@@ -97,7 +97,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
-                                ->booleanNode('commented')->defaultNull()->end()
+                                ->booleanNode('commented')->setDeprecated()->end()
                             ->end()
                         ->end()
                     ->end()

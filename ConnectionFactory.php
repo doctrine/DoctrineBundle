@@ -10,9 +10,6 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-use const E_USER_DEPRECATED;
-use function get_class;
-use function trigger_error;
 
 class ConnectionFactory
 {
@@ -51,10 +48,6 @@ class ConnectionFactory
             foreach ($mappingTypes as $dbType => $doctrineType) {
                 $platform->registerDoctrineTypeMapping($dbType, $doctrineType);
             }
-        }
-
-        if (! empty($this->typesConfig)) {
-            $this->markTypesCommented($this->getDatabasePlatform($connection));
         }
 
         return $connection;
@@ -101,73 +94,5 @@ class ConnectionFactory
         }
 
         $this->initialized = true;
-    }
-
-    private function markTypesCommented(AbstractPlatform $platform) : void
-    {
-        foreach ($this->typesConfig as $typeName => $typeConfig) {
-            $type                   = Type::getType($typeName);
-            $requiresSQLCommentHint = $type->requiresSQLCommentHint($platform);
-
-            // Attribute is missing, make sure a type that doesn't require a comment is marked as commented
-            // This is deprecated behaviour that will be dropped in 2.0.
-            if ($typeConfig['commented'] === null) {
-                if (! $requiresSQLCommentHint) {
-                    @trigger_error(
-                        sprintf(
-                            'The type "%s" was implicitly marked as commented due to the configuration. This is deprecated and will be removed in DoctrineBundle 2.0. Either set the "commented" attribute in the configuration to "false" or mark the type as commented in "%s::requiresSQLCommentHint()."',
-                            $typeName,
-                            get_class($type)
-                        ),
-                        E_USER_DEPRECATED
-                    );
-
-                    $platform->markDoctrineTypeCommented($type);
-                }
-
-                continue;
-            }
-
-            // The following logic generates appropriate deprecation notices telling the user how to update their type configuration.
-            if ($typeConfig['commented']) {
-                if (! $requiresSQLCommentHint) {
-                    @trigger_error(
-                        sprintf(
-                            'The type "%s" was marked as commented in its configuration but not in the type itself. This is deprecated and will be removed in DoctrineBundle 2.0. Please update the return value of "%s::requiresSQLCommentHint()."',
-                            $typeName,
-                            get_class($type)
-                        ),
-                        E_USER_DEPRECATED
-                    );
-
-                    $platform->markDoctrineTypeCommented($type);
-
-                    continue;
-                }
-
-                @trigger_error(
-                    sprintf(
-                        'The type "%s" was explicitly marked as commented in its configuration. This is no longer necessary and will be removed in DoctrineBundle 2.0. Please remove the "commented" attribute from the type configuration.',
-                        $typeName
-                    ),
-                    E_USER_DEPRECATED
-                );
-
-                continue;
-            }
-
-            if (! $requiresSQLCommentHint) {
-                continue;
-            }
-
-            @trigger_error(
-                sprintf(
-                    'The type "%s" was marked as uncommented in its configuration but commented in the type itself. This is deprecated and will be removed in DoctrineBundle 2.0. Please update the return value of "%s::requiresSQLCommentHint()" or remove the "commented" attribute from the type configuration.',
-                    $typeName,
-                    get_class($type)
-                ),
-                E_USER_DEPRECATED
-            );
-        }
     }
 }
