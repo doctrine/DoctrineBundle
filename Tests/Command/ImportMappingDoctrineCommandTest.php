@@ -127,8 +127,6 @@ class ImportMappingTestingKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
         $loader->load(function (ContainerBuilder $container) {
-            // @todo Setting the kernel.name parameter can be removed once the dependency on DoctrineCacheBundle has been dropped
-            $container->setParameter('kernel.name', 'foo');
             $container->loadFromExtension('framework', ['secret' => 'F00']);
 
             $container->loadFromExtension('doctrine', [
