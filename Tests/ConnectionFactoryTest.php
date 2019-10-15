@@ -3,8 +3,6 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
-use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestCommentedType;
-use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Exception\DriverException;
@@ -50,112 +48,6 @@ class ConnectionFactoryTest extends TestCase
         } finally {
             FakeDriver::$exception = null;
         }
-    }
-
-    /**
-     * @dataProvider getValidTypeConfigurations
-     */
-    public function testRegisterTypes(array $type, int $expectedCalls) : void
-    {
-        $factory      = new ConnectionFactory(['test' => $type]);
-        $params       = ['driverClass' => FakeDriver::class];
-        $config       = null;
-        $eventManager = null;
-        $mappingTypes = [];
-
-        $platform = $this->createMock(AbstractPlatform::class);
-        $platform
-            ->expects($this->exactly($expectedCalls))
-            ->method('markDoctrineTypeCommented')
-            ->with($this->isInstanceOf($type['class']));
-
-        FakeDriver::$platform = $platform;
-
-        try {
-            $factory->createConnection($params, $config, $eventManager, $mappingTypes);
-        } finally {
-            FakeDriver::$platform = null;
-        }
-    }
-
-    public static function getValidTypeConfigurations() : array
-    {
-        return [
-            'uncommentedTypeMarkedNotCommented' => [
-                'type' => [
-                    'class' => TestType::class,
-                    'commented' => false,
-                ],
-                'expectedCalls' => 0,
-            ],
-            'commentedTypeNotMarked' => [
-                'type' => [
-                    'class' => TestCommentedType::class,
-                    'commented' => null,
-                ],
-                'expectedCalls' => 0,
-            ],
-        ];
-    }
-
-    /**
-     * @group legacy
-     * @expectedDeprecation The type "test" was implicitly marked as commented due to the configuration. This is deprecated and will be removed in DoctrineBundle 2.0. Either set the "commented" attribute in the configuration to "false" or mark the type as commented in "Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType::requiresSQLCommentHint()."
-     */
-    public function testRegisterUncommentedTypeNotMarked() : void
-    {
-        $this->testRegisterTypes(
-            [
-                'class' => TestType::class,
-                'commented' => null,
-            ],
-            1
-        );
-    }
-
-    /**
-     * @group legacy
-     * @expectedDeprecation The type "test" was marked as commented in its configuration but not in the type itself. This is deprecated and will be removed in DoctrineBundle 2.0. Please update the return value of "Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType::requiresSQLCommentHint()."
-     */
-    public function testRegisterUncommentedTypeMarkedCommented() : void
-    {
-        $this->testRegisterTypes(
-            [
-                'class' => TestType::class,
-                'commented' => true,
-            ],
-            1
-        );
-    }
-
-    /**
-     * @group legacy
-     * @expectedDeprecation The type "test" was explicitly marked as commented in its configuration. This is no longer necessary and will be removed in DoctrineBundle 2.0. Please remove the "commented" attribute from the type configuration.
-     */
-    public function testRegisterCommentedTypeMarkedCommented() : void
-    {
-        $this->testRegisterTypes(
-            [
-                'class' => TestCommentedType::class,
-                'commented' => true,
-            ],
-            0
-        );
-    }
-
-    /**
-     * @group legacy
-     * @expectedDeprecation The type "test" was marked as uncommented in its configuration but commented in the type itself. This is deprecated and will be removed in DoctrineBundle 2.0. Please update the return value of "Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestCommentedType::requiresSQLCommentHint()" or remove the "commented" attribute from the type configuration.
-     */
-    public function testRegisterCommentedTypeMarkedNotCommented() : void
-    {
-        $this->testRegisterTypes(
-            [
-                'class' => TestCommentedType::class,
-                'commented' => false,
-            ],
-            0
-        );
     }
 }
 

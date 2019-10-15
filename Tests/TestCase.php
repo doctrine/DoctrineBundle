@@ -55,7 +55,6 @@ class TestCase extends BaseTestCase
                 'types' => [
                     'test' => [
                         'class' => TestType::class,
-                        'commented' => false,
                     ],
                 ],
             ], 'orm' => [

@@ -18,7 +18,6 @@ Configuration Reference
                     # example
                     some_custom_type:
                         class:                Acme\HelloBundle\MyCustomType
-                        commented:            true
 
                 connections:
                     # A collection of different named connections (e.g. default, conn2, etc)
@@ -414,7 +413,6 @@ Configuration Reference
                     <doctrine:type
                         name="some_custom_type"
                         class="Acme\HelloBundle\MyCustomType"
-                        commented="true"
                     />
 
                     <!-- example -->
