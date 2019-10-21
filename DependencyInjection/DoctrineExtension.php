@@ -117,6 +117,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         foreach ($config['connections'] as $name => $connection) {
             $this->loadDbalConnection($name, $connection, $container);
         }
+
+        if (class_exists(Doctrine\Bundle\DoctrineBundle\Command\Proxy\PingCommand::class)) {
+            return;
+        }
+
+        $container->removeDefinition('doctrine.ping_command');
     }
 
     /**
