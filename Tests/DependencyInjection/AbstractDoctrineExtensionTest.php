@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Schema\AbstractAsset;
@@ -804,6 +805,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
+        $container->addCompilerPass(new WellKnownSchemaFilterPass());
         $container->addCompilerPass(new DbalSchemaFilterPass());
 
         // ignore table1 table on "default" connection
@@ -839,6 +841,68 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         }
 
         $this->assertNull($connConfig = $getConfiguration('connection3')->getSchemaAssetsFilter());
+    }
+
+    public function testWellKnownSchemaFilterDefaultTables()
+    {
+        if (! method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
+            $this->markTestSkipped('Test requires doctrine/dbal 2.9 or higher');
+        }
+
+        $container = $this->getContainer([]);
+        $loader    = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $container->addCompilerPass(new WellKnownSchemaFilterPass());
+        $container->addCompilerPass(new DbalSchemaFilterPass());
+
+        $this->loadFromFile($container, 'well_known_schema_filter_default_tables');
+
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.dbal.well_known_schema_asset_filter');
+
+        $this->assertSame([['cache_items', 'lock_keys', 'sessions', 'messenger_messages']], $definition->getArguments());
+        $this->assertSame([['connection' => 'connection1'], ['connection' => 'connection2'], ['connection' => 'connection3']], $definition->getTag('doctrine.dbal.schema_filter'));
+
+        $definition = $container->getDefinition('doctrine.dbal.connection1_schema_asset_filter_manager');
+
+        $this->assertEquals([new Reference('doctrine.dbal.well_known_schema_asset_filter'), new Reference('doctrine.dbal.connection1_regex_schema_filter')], $definition->getArgument(0));
+
+        $filter = $container->get('well_known_filter');
+
+        $this->assertFalse($filter('sessions'));
+        $this->assertFalse($filter('cache_items'));
+        $this->assertFalse($filter('lock_keys'));
+        $this->assertFalse($filter('messenger_messages'));
+        $this->assertTrue($filter('anything_else'));
+    }
+
+    public function testWellKnownSchemaFilterOverriddenTables()
+    {
+        if (! method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
+            $this->markTestSkipped('Test requires doctrine/dbal 2.9 or higher');
+        }
+
+        $container = $this->getContainer([]);
+        $loader    = new DoctrineExtension();
+        $container->registerExtension($loader);
+        $container->addCompilerPass(new WellKnownSchemaFilterPass());
+        $container->addCompilerPass(new DbalSchemaFilterPass());
+
+        $this->loadFromFile($container, 'well_known_schema_filter_overridden_tables');
+
+        $this->compileContainer($container);
+
+        $filter = $container->get('well_known_filter');
+
+        $this->assertFalse($filter('app_session'));
+        $this->assertFalse($filter('app_cache'));
+        $this->assertFalse($filter('app_locks'));
+        $this->assertFalse($filter('app_messages'));
+        $this->assertTrue($filter('sessions'));
+        $this->assertTrue($filter('cache_items'));
+        $this->assertTrue($filter('lock_keys'));
+        $this->assertTrue($filter('messenger_messages'));
     }
 
     public function testEntityListenerResolver()

@@ -75,6 +75,10 @@
             <!-- schema assets filters -->
         </service>
 
+        <service id="doctrine.dbal.well_known_schema_asset_filter" class="Doctrine\Bundle\DoctrineBundle\Dbal\BlacklistSchemaAssetFilter" public="false">
+            <argument type="collection" />
+        </service>
+
         <!-- commands -->
         <service id="doctrine.database_create_command" class="Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand">
             <argument type="service" id="doctrine" />
