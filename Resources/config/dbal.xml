@@ -100,5 +100,9 @@
             <tag name="console.command" command="doctrine:query:sql" />
         </service>
 
+        <service id="doctrine.ping_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\PingDoctrineCommand">
+            <tag name="console.command" command="doctrine:database:ping" />
+        </service>
+
     </services>
 </container>

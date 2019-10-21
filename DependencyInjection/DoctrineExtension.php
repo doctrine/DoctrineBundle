@@ -9,6 +9,7 @@ use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\CacheProviderLoader;
 use Doctrine\Bundle\DoctrineCacheBundle\DependencyInjection\SymfonyBridgeAdapter;
 use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Version;
+use Doctrine\DBAL\Tools\Console\Command\PingCommand;
 use LogicException;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
@@ -115,6 +116,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         foreach ($config['connections'] as $name => $connection) {
             $this->loadDbalConnection($name, $connection, $container);
         }
+
+        if (class_exists(PingCommand::class)) {
+            return;
+        }
+
+        $container->removeDefinition('doctrine.ping_command');
     }
 
     /**
