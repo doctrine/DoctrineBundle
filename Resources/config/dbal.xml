@@ -96,12 +96,6 @@
             <tag name="console.command" command="doctrine:database:import" />
         </service>
 
-        <service id="doctrine.generate_entities_command" class="Doctrine\Bundle\DoctrineBundle\Command\GenerateEntitiesDoctrineCommand">
-            <argument type="service" id="doctrine" />
-
-            <tag name="console.command" command="doctrine:generate:entities" />
-        </service>
-
         <service id="doctrine.query_sql_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand">
             <tag name="console.command" command="doctrine:query:sql" />
         </service>
