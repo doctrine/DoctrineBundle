@@ -151,14 +151,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
         unset($connection['auto_commit']);
 
         if (isset($connection['schema_filter']) && $connection['schema_filter']) {
-            if (method_exists(\Doctrine\DBAL\Configuration::class, 'setSchemaAssetsFilter')) {
-                $definition = new Definition(RegexSchemaAssetFilter::class, [$connection['schema_filter']]);
-                $definition->addTag('doctrine.dbal.schema_filter', ['connection' => $name]);
-                $container->setDefinition(sprintf('doctrine.dbal.%s_regex_schema_filter', $name), $definition);
-            } else {
-                // backwards compatibility with dbal < 2.9
-                $configuration->addMethodCall('setFilterSchemaAssetsExpression', [$connection['schema_filter']]);
-            }
+            $definition = new Definition(RegexSchemaAssetFilter::class, [$connection['schema_filter']]);
+            $definition->addTag('doctrine.dbal.schema_filter', ['connection' => $name]);
+            $container->setDefinition(sprintf('doctrine.dbal.%s_regex_schema_filter', $name), $definition);
         }
 
         unset($connection['schema_filter']);

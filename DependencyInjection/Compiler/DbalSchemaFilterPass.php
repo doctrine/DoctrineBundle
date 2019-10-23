@@ -2,8 +2,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
-use Doctrine\DBAL\Configuration;
-use LogicException;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -20,10 +18,6 @@ class DbalSchemaFilterPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         $filters = $container->findTaggedServiceIds('doctrine.dbal.schema_filter');
-
-        if (count($filters) > 0 && ! method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
-            throw new LogicException('The doctrine.dbal.schema_filter tag is only supported when using doctrine/dbal 2.9 or higher.');
-        }
 
         $connectionFilters = [];
         foreach ($filters as $id => $tagAttributes) {

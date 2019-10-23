@@ -740,24 +740,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('mySuperInstance', $config['instancename']);
     }
 
-    public function testDbalSchemaFilter()
-    {
-        if (method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
-            $this->markTestSkipped('Test only applies to doctrine/dbal 2.8 or lower');
-        }
-
-        $container = $this->loadContainer('dbal_schema_filter');
-
-        $definition = $container->getDefinition('doctrine.dbal.connection1_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setFilterSchemaAssetsExpression', ['~^(?!t_)~']);
-    }
-
     public function testDbalSchemaFilterNewConfig()
     {
-        if (! method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
-            $this->markTestSkipped('Test requires doctrine/dbal 2.9 or higher');
-        }
-
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -801,10 +785,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testWellKnownSchemaFilterDefaultTables()
     {
-        if (! method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
-            $this->markTestSkipped('Test requires doctrine/dbal 2.9 or higher');
-        }
-
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -835,10 +815,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testWellKnownSchemaFilterOverriddenTables()
     {
-        if (! method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
-            $this->markTestSkipped('Test requires doctrine/dbal 2.9 or higher');
-        }
-
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
