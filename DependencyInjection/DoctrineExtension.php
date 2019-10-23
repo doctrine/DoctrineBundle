@@ -554,7 +554,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *             alias: BundleAlias
      *         arbitrary_key:
      *             type: xml
-     *             dir: %kernel.root_dir%/../src/vendor/DoctrineExtensions/lib/DoctrineExtensions/Entities
+     *             dir: %kernel.project_dir%/src/vendor/DoctrineExtensions/lib/DoctrineExtensions/Entities
      *             prefix: DoctrineExtensions\Entities\
      *             alias: DExt
      *
