@@ -19,6 +19,8 @@ Commands
    `Doctrine\Bundle\DoctrineBundle\Command`.
  * `Doctrine\Bundle\DoctrineBundle\Command` no longer implements
    `ContainerAwareInterface`.
+ * `Doctrine\Bundle\DoctrineBundle\Command\GenerateEntitiesDoctrineCommand` was
+   dropped in favour of the MakerBundle.
 
 Deprecation of DoctrineCacheBundle
 ----------------------------------
