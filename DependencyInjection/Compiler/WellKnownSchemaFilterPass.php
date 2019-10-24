@@ -2,7 +2,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
-use Doctrine\DBAL\Configuration;
 use Symfony\Component\Cache\Adapter\PdoAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -20,11 +19,6 @@ class WellKnownSchemaFilterPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        if (! method_exists(Configuration::class, 'setSchemaAssetsFilter')) {
-            // only supported when using doctrine/dbal 2.9 or higher
-            return;
-        }
-
         $blacklist = [];
 
         foreach ($container->getDefinitions() as $definition) {
