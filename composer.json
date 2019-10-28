@@ -25,36 +25,39 @@
     ],
     "require": {
         "php": "^7.1",
-        "symfony/framework-bundle": "^3.4.30|^4.3.3",
+        "doctrine/dbal": "^2.5.12",
+        "doctrine/doctrine-cache-bundle": "~1.2",
+        "jdorn/sql-formatter": "^1.2.16",
         "symfony/config": "^3.4.30|^4.3.3",
         "symfony/console": "^3.4.30|^4.3.3",
         "symfony/dependency-injection": "^3.4.30|^4.3.3",
-        "doctrine/dbal": "^2.5.12",
-        "jdorn/sql-formatter": "^1.2.16",
         "symfony/doctrine-bridge": "^3.4.30|^4.3.3",
-        "doctrine/doctrine-cache-bundle": "~1.2"
+        "symfony/framework-bundle": "^3.4.30|^4.3.3"
     },
     "require-dev": {
+        "doctrine/coding-standard": "^6.0",
         "doctrine/orm": "^2.6",
-        "symfony/cache": "^3.4.30|^4.3.3",
-        "symfony/yaml": "^3.4.30|^4.3.3",
-        "symfony/validator": "^3.4.30|^4.3.3",
-        "symfony/property-info": "^3.4.30|^4.3.3",
-        "symfony/phpunit-bridge": "^4.2",
-        "symfony/twig-bridge": "^3.4|^4.1",
-        "twig/twig": "^1.34|^2.12",
         "php-coveralls/php-coveralls": "^2.1",
         "phpunit/phpunit": "^7.5",
+        "symfony/cache": "^3.4.30|^4.3.3",
+        "symfony/phpunit-bridge": "^4.2",
+        "symfony/property-info": "^3.4.30|^4.3.3",
+        "symfony/twig-bridge": "^3.4|^4.1",
+        "symfony/validator": "^3.4.30|^4.3.3",
         "symfony/web-profiler-bundle": "^3.4.30|^4.3.3",
-        "doctrine/coding-standard": "^6.0"
+        "symfony/yaml": "^3.4.30|^4.3.3",
+        "twig/twig": "^1.34|^2.12"
+    },
+    "config": {
+        "sort-packages": true
     },
     "conflict": {
         "doctrine/orm": "<2.6",
         "twig/twig": "<1.34|>=2.0,<2.4"
     },
     "suggest": {
-        "symfony/web-profiler-bundle": "To use the data collector.",
-        "doctrine/orm": "The Doctrine ORM integration is optional in the bundle."
+        "doctrine/orm": "The Doctrine ORM integration is optional in the bundle.",
+        "symfony/web-profiler-bundle": "To use the data collector."
     },
     "autoload": {
         "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "" }
