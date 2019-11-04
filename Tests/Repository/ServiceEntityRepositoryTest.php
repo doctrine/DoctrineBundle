@@ -15,6 +15,6 @@ class ServiceEntityRepositoryTest extends TestCase
     public function testConstructorThrowsExceptionWhenNoManagerFound()
     {
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
-        new ServiceEntityRepository($registry, TestEntity::class);
+        new ServiceEntityRepository($registry, TestEntity::class, [[]]);
     }
 }

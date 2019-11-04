@@ -54,6 +54,11 @@ final class ContainerRepositoryFactory implements RepositoryFactory
                     throw new RuntimeException(sprintf('The service "%s" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).', $repositoryServiceId));
                 }
 
+                // Use the correct manager when supported
+                if (method_exists($repository, 'withManager')) {
+                    return $repository->withManager($entityManager);
+                }
+
                 return $repository;
             }
 

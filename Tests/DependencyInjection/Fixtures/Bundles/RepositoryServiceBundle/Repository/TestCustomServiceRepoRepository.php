@@ -8,8 +8,8 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class TestCustomServiceRepoRepository extends ServiceEntityRepository
 {
-    public function __construct(RegistryInterface $registry)
+    public function __construct(RegistryInterface $registry, ...$args)
     {
-        parent::__construct($registry, TestCustomServiceRepoEntity::class);
+        parent::__construct($registry, TestCustomServiceRepoEntity::class, func_get_args());
     }
 }
