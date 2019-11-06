@@ -5,7 +5,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
@@ -20,7 +19,6 @@ use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\DoctrineProvider;
-use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 class ContainerTest extends TestCase
 {
@@ -65,15 +63,8 @@ class ContainerTest extends TestCase
 
         $this->assertFalse($container->has('doctrine.dbal.default_connection.events.mysqlsessioninit'));
 
-        if (! interface_exists(PropertyInitializableExtractorInterface::class)) {
-            $this->assertInstanceOf(ClassMetadataFactory::class, $container->get('doctrine.orm.default_entity_manager.metadata_factory'));
-        }
         $this->assertInstanceOf(DoctrineExtractor::class, $container->get('doctrine.orm.default_entity_manager.property_info_extractor'));
 
-        if (class_exists(DoctrineLoader::class)) {
-            $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
-        } else {
-            $this->assertFalse($container->has('doctrine.orm.default_entity_manager.validator_loader'));
-        }
+        $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
     }
 }

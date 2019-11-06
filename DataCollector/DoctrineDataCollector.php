@@ -10,10 +10,10 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Tools\SchemaValidator;
-use Exception;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class DoctrineDataCollector extends BaseCollector
 {
@@ -36,7 +36,7 @@ class DoctrineDataCollector extends BaseCollector
     /**
      * {@inheritdoc}
      */
-    public function collect(Request $request, Response $response, Exception $exception = null)
+    public function collect(Request $request, Response $response, Throwable $exception = null)
     {
         parent::collect($request, $response, $exception);
 
