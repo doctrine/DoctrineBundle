@@ -12,6 +12,7 @@ use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\DoctrineProvider;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
@@ -669,12 +670,17 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_transaction'));
         $this->assertCount(1, $middlewarePrototype->getArguments());
-        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_clear_entity_manager'));
-        $this->assertCount(1, $middlewarePrototype->getArguments());
         $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_ping_connection'));
         $this->assertCount(1, $middlewarePrototype->getArguments());
         $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_close_connection'));
         $this->assertCount(1, $middlewarePrototype->getArguments());
+
+        if (class_exists(DoctrineClearEntityManagerWorkerSubscriber::class)) {
+            $this->assertNotNull($subscriber = $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager'));
+            $this->assertCount(1, $subscriber->getArguments());
+        } else {
+            $this->assertFalse($container->hasDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager'));
+        }
     }
 
     public function testInvalidCacheConfiguration() : void

@@ -51,6 +51,7 @@ class ServiceRepositoryTest extends TestCase
             'kernel.container_class' => ContainerBuilder::class,
             'kernel.secret' => 'test',
             'container.build_id' => uniqid(),
+            'env(base64:default::SYMFONY_DECRYPTION_SECRET)' => 'foo',
         ]));
         $container->set('annotation_reader', new AnnotationReader());
 
