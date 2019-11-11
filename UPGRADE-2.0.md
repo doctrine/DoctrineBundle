@@ -41,6 +41,17 @@ Registry
  * `Registry` no longer implements `Symfony\Bridge\Doctrine\RegistryInterface`.
  * Removed all deprecated entity manager specific methods from the registry.
 
+Service aliases
+---------------
+
+ * The `Doctrine\Common\Persistence\ManagerRegistry` and
+   `Symfony\Bridge\Doctrine\RegistryInterface` interfaces are no longer aliased
+   to the `doctrine` service, use `Doctrine\Bundle\DoctrineBundle\Registry`
+   instead.
+ * The `Doctrine\Common\Persistence\ObjectManager` interface is no longer
+   aliased to the `doctrine.orm.entity_manager` service, use
+   `Doctrine\ORM\EntityManagerInterface` instead.
+
 Types
 -----
 
