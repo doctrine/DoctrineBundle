@@ -14,7 +14,7 @@ use LogicException;
  *
  * class YourEntityRepository extends ServiceEntityRepository
  * {
- *     public function __construct(RegistryInterface $registry)
+ *     public function __construct(Registry $registry)
  *     {
  *         parent::__construct($registry, YourEntity::class);
  *     }
