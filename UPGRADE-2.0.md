@@ -44,9 +44,8 @@ Registry
 Service aliases
 ---------------
 
- * The `Doctrine\Common\Persistence\ManagerRegistry` and
-   `Symfony\Bridge\Doctrine\RegistryInterface` interfaces are no longer aliased
-   to the `doctrine` service, use `Doctrine\Bundle\DoctrineBundle\Registry`
+ * The `Symfony\Bridge\Doctrine\RegistryInterface` interface is no longer aliased
+   to the `doctrine` service, use `Doctrine\Common\Persistence\ManagerRegistry`
    instead.
  * The `Doctrine\Common\Persistence\ObjectManager` interface is no longer
    aliased to the `doctrine.orm.entity_manager` service, use
