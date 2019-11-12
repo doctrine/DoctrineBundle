@@ -49,6 +49,13 @@ jobs:
         - composer require --dev symfony/messenger --no-update
         - travis_retry composer update -n --prefer-dist
 
+    # Test against latest Symfony 5.0 dev
+    - php: 7.3
+      env: SYMFONY_REQUIRE="5.0.*"
+      install:
+        - composer require --dev symfony/messenger --no-update
+        - travis_retry composer update -n --prefer-dist
+
     # Test dev versions
     - php: 7.3
       if: type = cron
@@ -72,5 +79,5 @@ jobs:
         - if [[ ! $(php -m | grep -si xdebug) ]]; then echo "xdebug required for coverage"; exit 1; fi
       script:
         - ./vendor/bin/phpunit -v --coverage-clover ./build/logs/clover.xml
-      after_script:
-        - php ./vendor/bin/coveralls -v
+#      after_script:
+#        - php ./vendor/bin/coveralls -v

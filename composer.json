@@ -37,7 +37,6 @@
     "require-dev": {
         "doctrine/coding-standard": "^6.0",
         "doctrine/orm": "^2.6",
-        "php-coveralls/php-coveralls": "^2.1",
         "phpunit/phpunit": "^7.5",
         "symfony/cache": "^3.4.30|^4.3.3|^5.0",
         "symfony/phpunit-bridge": "^4.2",
