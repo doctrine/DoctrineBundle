@@ -137,6 +137,8 @@ class DoctrineDataCollector extends BaseCollector
         foreach ($this->data['queries'] as &$queries) {
             foreach ($queries as &$query) {
                 $query['params'] = $this->cloneVar($query['params']);
+                // To be removed when the required minimum version of symfony/doctrine-bridge is >= 4.4
+                $query['runnable'] = $query['runnable'] ?? true;
             }
         }
 
