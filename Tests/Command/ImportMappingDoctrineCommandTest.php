@@ -14,6 +14,9 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\HttpKernel\Kernel;
 
+/**
+ * @group legacy
+ */
 class ImportMappingDoctrineCommandTest extends TestCase
 {
     /** @var ImportMappingTestingKernel|null */
