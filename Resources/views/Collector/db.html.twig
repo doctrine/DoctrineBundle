@@ -144,6 +144,12 @@
         .time-container { position: relative; }
         .time-container .nowrap { position: relative; z-index: 1; text-shadow: 0 0 2px #fff; }
         .time-bar { display: block; position: absolute; top: 0; left: 0; bottom: 0; background: #e0e0e0; }
+        .sql-formatted, .sql-runnable { background: var(--base-1, #f5f5f5); margin: .5em 0; padding: 1em; }
+        .sql-explain { overflow-x: auto; max-width: 920px; }
+        .sql-explain table td, .sql-explain table tr { word-break: normal;}
+        .queries-table pre { margin: 0; white-space: pre-wrap; -ms-word-break: break-all; word-break: break-all; word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; }
+        .sql-runnable.sf-toggle-content.sf-toggle-visible { display: flex; flex-direction: column; }
+        .sql-runnable button { align-self: end; }
     </style>
 
     {% if profiler_markup_version > 1 %}
@@ -262,13 +268,15 @@
                                     {% endif %}
                                 </div>
 
-                                <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-formatted hidden">
                                     {{ query.sql|doctrine_pretty_query }}
                                 </div>
 
                                 {% if query.runnable %}
                                     <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
-                                        {{ (query.sql ~ ';')|doctrine_replace_query_parameters(query.params)|doctrine_pretty_query(highlight_only = true) }}
+                                        {% set runnable_sql = (query.sql ~ ';')|doctrine_replace_query_parameters(query.params) %}
+                                        {{ runnable_sql|doctrine_pretty_query(highlight_only = true) }}
+                                        <button class="btn btn-sm" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
                                     </div>
                                 {% endif %}
 
@@ -506,6 +514,12 @@
         {% endif %}
 
         //]]></script>
+        {% if collector.queries|length %}
+            <script type="text/javascript">
+                {% include '@Doctrine/Collector/clipboard.min.js' %}
+                new ClipboardJS('.sql-runnable button');
+            </script>
+        {% endif %}
 {% endblock %}
 
 {% macro render_simple_table(label1, label2, data) %}
