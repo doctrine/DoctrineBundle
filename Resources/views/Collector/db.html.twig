@@ -246,9 +246,10 @@
                                 <div class="text-small font-normal">
                                     <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return toggleRunnableQuery(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
 
-                                    &nbsp;&nbsp;
-
-                                    <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return toggleRunnableQuery(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
+                                    {% if query.runnable %}
+                                        &nbsp;&nbsp;
+                                        <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return toggleRunnableQuery(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
+                                    {% endif %}
 
                                     {% if query.explainable %}
                                         &nbsp;&nbsp;
@@ -265,9 +266,11 @@
                                     {{ query.sql|doctrine_pretty_query }}
                                 </div>
 
-                                <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
-                                    {{ (query.sql ~ ';')|doctrine_replace_query_parameters(query.params)|doctrine_pretty_query(highlight_only = true) }}
-                                </div>
+                                {% if query.runnable %}
+                                    <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                        {{ (query.sql ~ ';')|doctrine_replace_query_parameters(query.params)|doctrine_pretty_query(highlight_only = true) }}
+                                    </div>
+                                {% endif %}
 
                                 {% if query.explainable %}
                                     <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="sql-explain"></div>

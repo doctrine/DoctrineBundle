@@ -35,7 +35,7 @@ class ContainerTest extends TestCase
 
     public function testContainer()
     {
-        $container = $this->createYamlBundleTestContainer();
+        $container = $this->createXmlBundleTestContainer();
 
         $this->assertInstanceOf(DbalLogger::class, $container->get('doctrine.dbal.logger'));
         $this->assertInstanceOf(DoctrineDataCollector::class, $container->get('data_collector.doctrine'));
