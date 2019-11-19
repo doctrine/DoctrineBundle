@@ -25,12 +25,12 @@ class TestCase extends BaseTestCase
         $this->markTestSkipped('Doctrine is not available.');
     }
 
-    public function createYamlBundleTestContainer()
+    public function createXmlBundleTestContainer()
     {
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.name' => 'app',
             'kernel.debug' => false,
-            'kernel.bundles' => ['YamlBundle' => 'Fixtures\Bundles\YamlBundle\YamlBundle'],
+            'kernel.bundles' => ['XmlBundle' => 'Fixtures\Bundles\XmlBundle\XmlBundle'],
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__ . '/../../../../', // src dir
@@ -63,10 +63,10 @@ class TestCase extends BaseTestCase
                 'entity_managers' => [
                     'default' => [
                         'mappings' => [
-                            'YamlBundle' => [
-                                'type' => 'yml',
-                                'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/YamlBundle/Resources/config/doctrine',
-                                'prefix' => 'Fixtures\Bundles\YamlBundle\Entity',
+                            'XmlBundle' => [
+                                'type' => 'xml',
+                                'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine',
+                                'prefix' => 'Fixtures\Bundles\XmlBundle\Entity',
                             ],
                         ],
                     ],
