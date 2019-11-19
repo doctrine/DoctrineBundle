@@ -140,6 +140,10 @@
         <!-- naming strategy -->
         <service id="doctrine.orm.naming_strategy.default" class="%doctrine.orm.naming_strategy.default.class%" public="false" />
         <service id="doctrine.orm.naming_strategy.underscore" class="%doctrine.orm.naming_strategy.underscore.class%" public="false" />
+        <service id="doctrine.orm.naming_strategy.underscore_number_aware" class="%doctrine.orm.naming_strategy.underscore.class%" public="false">
+            <argument type="constant">CASE_LOWER</argument>
+            <argument>true</argument>
+        </service>
 
         <!-- quote strategy -->
         <service id="doctrine.orm.quote_strategy.default" class="%doctrine.orm.quote_strategy.default.class%" public="false" />
