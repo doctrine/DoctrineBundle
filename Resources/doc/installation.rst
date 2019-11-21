@@ -17,8 +17,23 @@ in the `installation chapter`_ of the Composer documentation.
 Step 2: Enable the Bundle
 -------------------------
 
-Then, enable the bundle by adding the following line in the ``app/AppKernel.php``
-file of your project::
+Your bundle should be automatically enabled by Flex.
+In case you don't use Flex, you'll need to manually enable the bundle by
+adding the following line in the ``config/bundles.php`` file of your project::
+
+    <?php
+    // config/bundles.php
+
+    return [
+        // ...
+        Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class => ['all' => true],
+        // ...
+    ];
+
+
+If you don't have a ``config/bundles.php`` file in your project, chances are that
+ you're using an older Symfony version. In this case, you should have an
+``app/AppKernel.php`` file instead. Edit such file::
 
     <?php
     // app/AppKernel.php
