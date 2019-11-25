@@ -49,6 +49,26 @@ class ConnectionFactoryTest extends TestCase
             FakeDriver::$exception = null;
         }
     }
+
+    public function testDefaultCharset()
+    {
+        $factory = new ConnectionFactory([]);
+        $params  = ['driverClass' => FakeDriver::class];
+
+        $connection = $factory->createConnection($params);
+
+        $this->assertSame('utf8', $connection->getParams()['charset']);
+    }
+
+    public function testDefaultCharsetMySql()
+    {
+        $factory = new ConnectionFactory([]);
+        $params  = ['driver' => 'pdo_mysql'];
+
+        $connection = $factory->createConnection($params);
+
+        $this->assertSame('utf8mb4', $connection->getParams()['charset']);
+    }
 }
 
 /**
