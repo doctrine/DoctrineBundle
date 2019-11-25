@@ -9,6 +9,8 @@ PHP and Symfony version support
    Symfony 3.4 LTS and 4.1 or newer.
  * Support for Twig 1.34 and below as well as 2.4 and below (for 2.x) releases
    was dropped.
+ * When no charset parameter is defined, it now defaults to `utf8mb4` on the
+   MySQL platform and to `utf8` on all other platforms.
 
 Commands
 --------
