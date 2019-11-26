@@ -6,6 +6,7 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Driver\AbstractMySQLDriver;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -42,6 +43,22 @@ class ConnectionFactory
         }
 
         $connection = DriverManager::getConnection($params, $config, $eventManager);
+
+        if (! isset($params['pdo']) && ! isset($params['charset'])) {
+            $params            = $connection->getParams();
+            $params['charset'] = 'utf8';
+            $driver            = $connection->getDriver();
+
+            if ($driver instanceof AbstractMySQLDriver) {
+                $params['charset'] = 'utf8mb4';
+
+                if (! isset($params['defaultTableOptions']['collate'])) {
+                    $params['defaultTableOptions']['collate'] = 'utf8mb4_unicode_ci';
+                }
+            }
+
+            $connection = new $connection($params, $driver, $connection->getConfiguration(), $connection->getEventManager());
+        }
 
         if (! empty($mappingTypes)) {
             $platform = $this->getDatabasePlatform($connection);
