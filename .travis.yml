@@ -19,10 +19,10 @@ env:
 before_install:
   - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{,.disabled} || echo "xdebug not available"
   - composer self-update
-  - if [ "$SYMFONY_VERSION" != "" ]; then jq "(.require, .\"require-dev\")|=(with_entries(if .key|test(\"^symfony/\") then .value|=\"${SYMFONY_VERSION}\" else . end))" composer.json|ex -sc 'wq!composer.json' /dev/stdin; fi;
+  - composer global require --no-progress --no-scripts --no-plugins symfony/flex dev-master
 
 install:
-  - travis_retry composer update -n --prefer-dist
+  - travis_retry composer update -n --prefer-dist --prefer-stable
 
 script:
   - ./vendor/bin/phpunit -v
@@ -37,21 +37,20 @@ jobs:
 
     # Test against latest Symfony 3.4 stable
     - php: 7.3
-      env: SYMFONY_VERSION="3.4.*" SYMFONY_DEPRECATIONS_HELPER=999999
+      env: SYMFONY_REQUIRE="3.4.*" SYMFONY_DEPRECATIONS_HELPER=999999
 
     # Test against latest Symfony 4.3 stable
     - php: 7.3
-      env: SYMFONY_VERSION="4.3.*"
+      env: SYMFONY_REQUIRE="4.3.*"
       install:
-        - composer require --dev "symfony/messenger:4.3.*" --no-update
-        - travis_retry composer update -n --prefer-dist
+        - composer require --dev symfony/messenger --no-update
+        - travis_retry composer update -n --prefer-dist --prefer-stable
 
     # Test against latest Symfony 4.4 dev
     - php: 7.3
-      env: SYMFONY_VERSION="4.4.*@dev" SYMFONY_DEPRECATIONS_HELPER=1
+      env: SYMFONY_REQUIRE="4.4.*"
       install:
-        - composer config minimum-stability dev
-        - composer require --dev "symfony/messenger:4.4.*@dev" --no-update
+        - composer require --dev symfony/messenger --no-update
         - travis_retry composer update -n --prefer-dist
 
     # Test dev versions
@@ -59,7 +58,6 @@ jobs:
       if: type = cron
       env: DEV
       install:
-        - composer config minimum-stability dev
         - travis_retry composer update -n --prefer-dist
 
     - stage: Code Quality
