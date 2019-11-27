@@ -348,13 +348,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(DoctrineProvider::class, $definition->getClass());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.app', (string) $arguments[0]);
+        $this->assertEquals('cache.doctrine.orm.em1.query', (string) $arguments[0]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_result_cache'));
         $this->assertEquals(DoctrineProvider::class, $definition->getClass());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.app', (string) $arguments[0]);
+        $this->assertEquals('cache.doctrine.orm.em1.result', (string) $arguments[0]);
     }
 
     public function testLoadLogging()

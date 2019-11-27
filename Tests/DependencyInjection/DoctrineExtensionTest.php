@@ -323,19 +323,22 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals(DoctrineProvider::class, $definition->getClass());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.system', (string) $arguments[0]);
+        $this->assertEquals('cache.doctrine.orm.default.metadata', (string) $arguments[0]);
+        $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_query_cache'));
         $this->assertEquals(DoctrineProvider::class, $definition->getClass());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.app', (string) $arguments[0]);
+        $this->assertEquals('cache.doctrine.orm.default.query', (string) $arguments[0]);
+        $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_result_cache'));
         $this->assertEquals(DoctrineProvider::class, $definition->getClass());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.app', (string) $arguments[0]);
+        $this->assertEquals('cache.doctrine.orm.default.result', (string) $arguments[0]);
+        $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
     }
 
     public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection()
@@ -722,38 +725,38 @@ class DoctrineExtensionTest extends TestCase
         return [
             'metadata_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.pool.cache.system',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.cache.doctrine.orm.default.metadata',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
             'query_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_query_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.pool.cache.app',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.cache.doctrine.orm.default.query',
                 'cacheName' => 'query_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
             'result_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_result_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.pool.cache.app',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.cache.doctrine.orm.default.result',
                 'cacheName' => 'result_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
 
             'metadata_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.pool.metadata_cache_pool',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.metadata_cache_pool',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'metadata_cache_pool'],
             ],
             'query_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_query_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.pool.query_cache_pool',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.query_cache_pool',
                 'cacheName' => 'query_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'query_cache_pool'],
             ],
             'result_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_result_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.pool.result_cache_pool',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.result_cache_pool',
                 'cacheName' => 'result_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'result_cache_pool'],
             ],
