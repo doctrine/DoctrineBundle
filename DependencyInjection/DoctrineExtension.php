@@ -12,6 +12,7 @@ use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\DoctrineProvider;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
@@ -723,7 +724,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 break;
 
             case 'pool':
-                $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool'] ?? $this->getPoolNameForCacheDriver($cacheName));
+                $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool'] ?? $this->createArrayAdapterCachePool($container, $objectManagerName, $cacheName));
                 break;
 
             case 'provider':
@@ -847,11 +848,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     private function createPoolCacheDefinition(ContainerBuilder $container, string $poolName) : string
     {
-        if (! class_exists(DoctrineProvider::class)) {
-            throw new LogicException('Using the "pool" cache type is only supported when symfony/cache is installed.');
-        }
-
-        $serviceId = sprintf('doctrine.orm.cache.pool.%s', $poolName);
+        $serviceId = sprintf('doctrine.orm.cache.provider.%s', $poolName);
 
         $definition = $container->register($serviceId, DoctrineProvider::class);
         $definition->addArgument(new Reference($poolName));
@@ -860,13 +857,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return $serviceId;
     }
 
-    private function getPoolNameForCacheDriver(string $driverName) : string
+    private function createArrayAdapterCachePool(ContainerBuilder $container, string $objectManagerName, string $cacheName) : string
     {
-        switch ($driverName) {
-            case 'metadata_cache':
-                return 'cache.system';
-            default:
-                return 'cache.app';
-        }
+        $id = sprintf('cache.doctrine.orm.%s.%s', $objectManagerName, str_replace('_cache', '', $cacheName));
+
+        $poolDefinition = $container->register($id, ArrayAdapter::class);
+        $poolDefinition->addTag('cache.pool');
+        $container->setDefinition($id, $poolDefinition);
+
+        return $id;
     }
 }
