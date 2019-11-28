@@ -65,12 +65,8 @@
             <argument>%doctrine.default_entity_manager%</argument>
         </service>
         <service id="Doctrine\Common\Persistence\ManagerRegistry" alias="doctrine" public="false" />
-        <service id="Symfony\Bridge\Doctrine\RegistryInterface" alias="doctrine" public="false">
-            <deprecated>The "%alias_id%" service alias is deprecated, use `Doctrine\Common\Persistence\ManagerRegistry` instead.</deprecated>
-        </service>
-        <service id="Doctrine\Bundle\DoctrineBundle\Registry" alias="doctrine" public="false">
-            <deprecated>The "%alias_id%" service alias is deprecated, use `Doctrine\Common\Persistence\ManagerRegistry` instead.</deprecated>
-        </service>
+        <service id="Symfony\Bridge\Doctrine\RegistryInterface" alias="doctrine" public="false" />
+        <service id="Doctrine\Bundle\DoctrineBundle\Registry" alias="doctrine" public="false" />
 
         <service id="doctrine.twig.doctrine_extension" class="Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension" public="false">
             <tag name="twig.extension" />
