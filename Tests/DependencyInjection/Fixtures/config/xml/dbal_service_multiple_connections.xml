@@ -21,7 +21,9 @@
                 user="sqlite_user"
                 password="sqlite_s3cr3t"
                 path="/tmp/db.sqlite"
-                memory="true" />
+                memory="true">
+                <option key="userDefinedFunctions" />
+            </connection>
             <connection
                 name="oci"
                 driver="oci8"
