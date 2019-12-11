@@ -25,14 +25,8 @@ final class ContainerRepositoryFactory implements RepositoryFactory
     /**
      * @param ContainerInterface $container A service locator containing the repositories
      */
-    public function __construct(ContainerInterface $container = null)
+    public function __construct(ContainerInterface $container)
     {
-        // When DoctrineBundle requires Symfony 3.3+, this can be removed
-        // and the $container argument can become required.
-        if ($container === null) {
-            throw new InvalidArgumentException(sprintf('The first argument of %s::__construct() is required on Symfony 3.3 or higher.', self::class));
-        }
-
         $this->container = $container;
     }
 
