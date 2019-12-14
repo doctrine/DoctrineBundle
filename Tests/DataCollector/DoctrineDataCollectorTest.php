@@ -107,7 +107,7 @@ class DoctrineDataCollectorTest extends TestCase
      */
     private function createCollector(array $managers)
     {
-        $registry = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')->getMock();
+        $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();
         $registry
             ->expects($this->any())
             ->method('getConnectionNames')
