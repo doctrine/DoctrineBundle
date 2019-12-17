@@ -27,6 +27,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use function class_exists;
+use function in_array;
 use function sprintf;
 
 /**
@@ -198,6 +199,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
     protected function getConnectionOptions($connection)
     {
         $options = $connection;
+
+        if (! isset($options['charset'])) {
+            if (isset($options['url'])) {
+                $options['charset'] = strpos($options['url'], 'mysql') === 0 ? 'utf8mb4' : 'utf8';
+            } else {
+                $options['charset'] = in_array($options['driver'], ['mysqli', 'pdo_mysql'], true) ? 'utf8mb4' : 'utf8';
+            }
+        }
 
         if (isset($options['platform_service'])) {
             $options['platform'] = new Reference($options['platform_service']);

@@ -123,6 +123,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
+                'charset' => 'utf8mb4',
             ],
             $param['master']
         );
@@ -157,6 +158,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
+                'charset' => 'utf8mb4',
             ],
             $param['global']
         );
@@ -207,6 +209,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
+                'charset' => 'utf8mb4',
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -242,6 +245,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
+                'charset' => 'utf8mb4',
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -278,6 +282,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'sqlite_db',
                 'memory' => true,
                 'defaultTableOptions' => [],
+                'charset' => 'utf8',
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
