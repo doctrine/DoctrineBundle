@@ -5,10 +5,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\Version;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomServiceRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
@@ -22,22 +20,13 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 class ServiceRepositoryTest extends TestCase
 {
-    protected function setUp()
-    {
-        parent::setUp();
-
-        if (class_exists(Version::class)) {
-            return;
-        }
-
-        $this->markTestSkipped('Doctrine ORM is not available.');
-    }
-
+    /**
+     * https://github.com/doctrine/orm/pull/7953 needed, otherwise ORM classes we define services for trigger deprecations
+     *
+     * @group legacy
+     */
     public function testRepositoryServiceWiring()
     {
-        // needed for older versions of Doctrine
-        AnnotationRegistry::registerFile(__DIR__ . '/../vendor/doctrine/orm/lib/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
-
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.name' => 'app',
             'kernel.debug' => false,

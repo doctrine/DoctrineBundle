@@ -4,11 +4,11 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
-use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\Persistence\ObjectRepository;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
@@ -18,7 +18,7 @@ class ContainerRepositoryFactoryTest extends TestCase
     public function testGetRepositoryReturnsService()
     {
         $em        = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
-        $repo      = new StubRepository($em, new ClassMetadata(''));
+        $repo      = new StubRepository();
         $container = $this->createContainer(['my_repo' => $repo]);
 
         $factory = new ContainerRepositoryFactory($container);
@@ -153,10 +153,48 @@ class ContainerRepositoryFactoryTest extends TestCase
     }
 }
 
-class StubRepository extends EntityRepository
+/**
+ * Repository implementing non-deprecated interface, as current interface implemented in ORM\EntityRepository
+ * uses deprecated one and Composer autoload triggers deprecations that can't be silenced by @group legacy
+ */
+class NonDeprecatedRepository implements ObjectRepository
+{
+    /**
+     * {@inheritDoc}
+     */
+    public function find($id)
+    {
+        return null;
+    }
+
+    public function findAll() : array
+    {
+        return [];
+    }
+
+    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null) : array
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function findOneBy(array $criteria)
+    {
+        return null;
+    }
+
+    public function getClassName() : string
+    {
+        return '';
+    }
+}
+
+class StubRepository extends NonDeprecatedRepository
 {
 }
 
-class StubServiceRepository extends EntityRepository implements ServiceEntityRepositoryInterface
+class StubServiceRepository extends NonDeprecatedRepository implements ServiceEntityRepositoryInterface
 {
 }

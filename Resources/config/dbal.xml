@@ -64,6 +64,7 @@
             <argument>%doctrine.default_connection%</argument>
             <argument>%doctrine.default_entity_manager%</argument>
         </service>
+        <service id="Doctrine\Persistence\ManagerRegistry" alias="doctrine" public="false" />
         <service id="Doctrine\Common\Persistence\ManagerRegistry" alias="doctrine" public="false" />
         <service id="Symfony\Bridge\Doctrine\RegistryInterface" alias="doctrine" public="false" />
         <service id="Doctrine\Bundle\DoctrineBundle\Registry" alias="doctrine" public="false" />

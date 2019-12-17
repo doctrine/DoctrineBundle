@@ -3,7 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 
 class ServiceEntityRepositoryTest extends TestCase

@@ -2,10 +2,10 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Mapping;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Tools\DisconnectedClassMetadataFactory;
+use Doctrine\Persistence\ManagerRegistry;
 use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;

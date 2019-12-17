@@ -2,8 +2,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Repository;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 
 /**

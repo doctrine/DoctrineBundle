@@ -4,15 +4,14 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory;
-use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Version;
+use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Persistence\Mapping\ClassMetadataFactory;
+use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Symfony\Bridge\Doctrine\CacheWarmer\ProxyCacheWarmer;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Doctrine\Logger\DbalLogger;
@@ -24,17 +23,11 @@ use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 class ContainerTest extends TestCase
 {
-    protected function setUp()
-    {
-        parent::setUp();
-
-        if (class_exists(Version::class)) {
-            return;
-        }
-
-        $this->markTestSkipped('Doctrine ORM is not available.');
-    }
-
+    /**
+     * https://github.com/doctrine/orm/pull/7953 needed, otherwise ORM classes we define services for trigger deprecations
+     *
+     * @group legacy
+     */
     public function testContainer()
     {
         $container = $this->createXmlBundleTestContainer();
