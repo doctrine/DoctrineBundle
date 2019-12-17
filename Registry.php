@@ -7,11 +7,12 @@ use Doctrine\ORM\ORMException;
 use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * References all Doctrine connections and entity managers in a given Container.
  */
-class Registry extends ManagerRegistry implements RegistryInterface
+class Registry extends ManagerRegistry implements RegistryInterface, ResetInterface
 {
     /**
      * @param string[] $connections
@@ -163,5 +164,12 @@ class Registry extends ManagerRegistry implements RegistryInterface
         @trigger_error('getEntityManagerForClass is deprecated since Symfony 2.1. Use getManagerForClass instead', E_USER_DEPRECATED);
 
         return $this->getManagerForClass($class);
+    }
+
+    public function reset() : void
+    {
+        foreach ($this->getManagerNames() as $managerName) {
+            $this->resetManager($managerName);
+        }
     }
 }
