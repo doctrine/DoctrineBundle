@@ -27,6 +27,7 @@
     "require": {
         "php": "^7.1",
         "doctrine/dbal": "^2.9.0",
+        "doctrine/persistence": "^1.3.3",
         "jdorn/sql-formatter": "^1.2.16",
         "symfony/cache": "^4.3.3|^5.0",
         "symfony/config": "^4.3.3|^5.0",

@@ -8,22 +8,10 @@ use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
-use Doctrine\ORM\Version;
 use Exception;
 
 class ConnectionFactoryTest extends TestCase
 {
-    protected function setUp()
-    {
-        parent::setUp();
-
-        if (class_exists(Version::class)) {
-            return;
-        }
-
-        $this->markTestSkipped('Doctrine ORM is not available.');
-    }
-
     /**
      * @expectedException \Doctrine\DBAL\DBALException
      */
