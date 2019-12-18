@@ -94,11 +94,11 @@
     </xsd:complexType>
 
     <xsd:complexType name="option">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
+        <xsd:complexContent>
+            <xsd:extension base="xsd:anyType">
                 <xsd:attribute name="key" type="xsd:string" use="required" />
             </xsd:extension>
-        </xsd:simpleContent>
+        </xsd:complexContent>
     </xsd:complexType>
 
     <xsd:complexType name="connection">
