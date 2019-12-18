@@ -123,17 +123,13 @@ class RegistryTest extends TestCase
         $registry->resetManager('default');
     }
 
-    /**
-     * @group legacy
-     */
     public function testReset()
     {
-        $em        = new stdClass();
         $container = $this->getMockBuilder('Symfony\Component\DependencyInjection\ContainerInterface')->getMock();
         $container->expects($this->once())
-            ->method('get')
+            ->method('initialized')
             ->with($this->equalTo('doctrine.orm.default_entity_manager'))
-            ->will($this->returnValue($em));
+            ->will($this->returnValue(false));
 
         $registry = new Registry($container, [], ['default' => 'doctrine.orm.default_entity_manager'], 'default', 'default');
         $registry->reset();
