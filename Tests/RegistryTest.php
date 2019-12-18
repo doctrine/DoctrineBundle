@@ -122,4 +122,30 @@ class RegistryTest extends TestCase
 
         $registry->resetManager('default');
     }
+
+    public function testReset()
+    {
+        $conn      = $this->getMockBuilder('Doctrine\DBAL\Connection')->disableOriginalConstructor()->getMock();
+        $em        = $this->getMockBuilder('Doctrine\ORM\EntityManager')->disableOriginalConstructor()->getMock();
+        $container = $this->getMockBuilder('Symfony\Component\DependencyInjection\ContainerInterface')->getMock();
+
+        $container->expects($this->once())
+            ->method('get')
+            ->with($this->equalTo('doctrine.orm.default_entity_manager'))
+            ->will($this->returnValue($em));
+
+        $registry  = new Registry(
+            $container,
+            [
+                'default' => $conn,
+            ],
+            [
+                'default' => 'doctrine.orm.default_entity_manager',
+            ],
+            'default',
+            'default'
+        );
+
+        $registry->reset();
+    }
 }
