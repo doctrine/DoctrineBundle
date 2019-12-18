@@ -45,6 +45,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('sqlite_s3cr3t', $config['password']);
         $this->assertSame('/tmp/db.sqlite', $config['path']);
         $this->assertTrue($config['memory']);
+        $this->assertSame(['asin' => ['callback' => 'asin', 'numArgs' => 1]], $config['driverOptions']['userDefinedFunctions']);
+        $this->assertSame('foo', $config['driverOptions']['arbitraryValue']);
 
         // doctrine.dbal.oci8_connection
         $config = $container->getDefinition('doctrine.dbal.oci_connection')->getArgument(0);
@@ -783,7 +785,18 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertNull($connConfig = $getConfiguration('connection3')->getSchemaAssetsFilter());
     }
 
-    public function testWellKnownSchemaFilterDefaultTables()
+    public static function dataWellKnownSchemaFilterServices()
+    {
+        yield ['cache', 'cache_items'];
+        yield ['lock', 'lock_keys'];
+        yield ['messenger', 'messenger_messages'];
+        yield ['session', 'sessions'];
+    }
+
+    /**
+     * @dataProvider dataWellKnownSchemaFilterServices
+     */
+    public function testWellKnownSchemaFilterDefaultTables(string $fileName, string $tableName)
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -791,13 +804,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container->addCompilerPass(new WellKnownSchemaFilterPass());
         $container->addCompilerPass(new DbalSchemaFilterPass());
 
-        $this->loadFromFile($container, 'well_known_schema_filter_default_tables');
+        $this->loadFromFile($container, 'well_known_schema_filter_default_tables_' . $fileName);
 
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.dbal.well_known_schema_asset_filter');
 
-        $this->assertSame([['cache_items', 'lock_keys', 'sessions', 'messenger_messages']], $definition->getArguments());
+        $this->assertSame([[$tableName]], $definition->getArguments());
         $this->assertSame([['connection' => 'connection1'], ['connection' => 'connection2'], ['connection' => 'connection3']], $definition->getTag('doctrine.dbal.schema_filter'));
 
         $definition = $container->getDefinition('doctrine.dbal.connection1_schema_asset_filter_manager');
@@ -806,14 +819,22 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $filter = $container->get('well_known_filter');
 
-        $this->assertFalse($filter('sessions'));
-        $this->assertFalse($filter('cache_items'));
-        $this->assertFalse($filter('lock_keys'));
-        $this->assertFalse($filter('messenger_messages'));
+        $this->assertFalse($filter($tableName));
         $this->assertTrue($filter('anything_else'));
     }
 
-    public function testWellKnownSchemaFilterOverriddenTables()
+    public static function dataWellKnownSchemaOverriddenTablesFilterServices()
+    {
+        yield ['cache', 'app_cache'];
+        yield ['lock', 'app_locks'];
+        yield ['messenger', 'app_messages'];
+        yield ['session', 'app_session'];
+    }
+
+    /**
+     * @dataProvider dataWellKnownSchemaOverriddenTablesFilterServices
+     */
+    public function testWellKnownSchemaFilterOverriddenTables(string $fileName, string $tableName)
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -821,20 +842,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container->addCompilerPass(new WellKnownSchemaFilterPass());
         $container->addCompilerPass(new DbalSchemaFilterPass());
 
-        $this->loadFromFile($container, 'well_known_schema_filter_overridden_tables');
+        $this->loadFromFile($container, 'well_known_schema_filter_overridden_tables_' . $fileName);
 
         $this->compileContainer($container);
 
         $filter = $container->get('well_known_filter');
 
-        $this->assertFalse($filter('app_session'));
-        $this->assertFalse($filter('app_cache'));
-        $this->assertFalse($filter('app_locks'));
-        $this->assertFalse($filter('app_messages'));
-        $this->assertTrue($filter('sessions'));
-        $this->assertTrue($filter('cache_items'));
-        $this->assertTrue($filter('lock_keys'));
-        $this->assertTrue($filter('messenger_messages'));
+        $this->assertFalse($filter($tableName));
     }
 
     public function testEntityListenerResolver()

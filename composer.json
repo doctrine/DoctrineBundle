@@ -34,7 +34,8 @@
         "symfony/console": "^3.4.30|^4.3.3|^5.0",
         "symfony/dependency-injection": "^4.3.3|^5.0",
         "symfony/doctrine-bridge": "^4.3.7|^5.0",
-        "symfony/framework-bundle": "^3.4.30|^4.3.3|^5.0"
+        "symfony/framework-bundle": "^3.4.30|^4.3.3|^5.0",
+        "symfony/service-contracts": "^1.1.1|^2.0"
     },
     "require-dev": {
         "doctrine/coding-standard": "^6.0",

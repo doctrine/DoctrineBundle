@@ -5,11 +5,12 @@ namespace Doctrine\Bundle\DoctrineBundle;
 use Doctrine\ORM\ORMException;
 use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * References all Doctrine connections and entity managers in a given Container.
  */
-class Registry extends ManagerRegistry
+class Registry extends ManagerRegistry implements ResetInterface
 {
     /**
      * @param string[] $connections
@@ -45,5 +46,12 @@ class Registry extends ManagerRegistry
         }
 
         throw ORMException::unknownEntityNamespace($alias);
+    }
+
+    public function reset() : void
+    {
+        foreach ($this->getManagerNames() as $managerName) {
+            $this->resetManager($managerName);
+        }
     }
 }

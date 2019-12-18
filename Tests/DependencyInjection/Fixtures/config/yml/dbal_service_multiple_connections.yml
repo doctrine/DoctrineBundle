@@ -14,6 +14,12 @@ doctrine:
                 password: sqlite_s3cr3t
                 path: /tmp/db.sqlite
                 memory: true
+                options:
+                    userDefinedFunctions:
+                        asin:
+                            callback: 'asin'
+                            numArgs: 1
+                    arbitraryValue: foo
             oci:
                 driver: oci8
                 dbname: oracle_db
