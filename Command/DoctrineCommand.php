@@ -2,11 +2,11 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Sharding\PoolingShardConnection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\EntityGenerator;
+use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use Symfony\Component\Console\Command\Command;
 

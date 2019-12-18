@@ -94,7 +94,7 @@ class CreateDatabaseDoctrineTest extends TestCase
     private function getMockContainer($connectionName, $params = null)
     {
         // Mock the container and everything you'll need here
-        $mockDoctrine = $this->getMockBuilder('Doctrine\Common\Persistence\ManagerRegistry')
+        $mockDoctrine = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')
             ->getMock();
 
         $mockDoctrine->expects($this->any())

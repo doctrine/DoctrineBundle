@@ -8,22 +8,10 @@ use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
-use Doctrine\ORM\Version;
 use Exception;
 
 class ConnectionFactoryTest extends TestCase
 {
-    protected function setUp()
-    {
-        parent::setUp();
-
-        if (class_exists(Version::class)) {
-            return;
-        }
-
-        $this->markTestSkipped('Doctrine ORM is not available.');
-    }
-
     /**
      * @expectedException \Doctrine\DBAL\DBALException
      */
@@ -53,11 +41,17 @@ class ConnectionFactoryTest extends TestCase
     public function testDefaultCharset()
     {
         $factory = new ConnectionFactory([]);
-        $params  = ['driverClass' => FakeDriver::class];
+        $params  = [
+            'driverClass' => FakeDriver::class,
+            'wrapperClass' => FakeConnection::class,
+        ];
 
-        $connection = $factory->createConnection($params);
+        $creationCount = FakeConnection::$creationCount;
+        $connection    = $factory->createConnection($params);
 
+        $this->assertInstanceof(FakeConnection::class, $connection);
         $this->assertSame('utf8', $connection->getParams()['charset']);
+        $this->assertSame(1 + $creationCount, FakeConnection::$creationCount);
     }
 
     public function testDefaultCharsetMySql()
@@ -130,5 +124,18 @@ class FakeDriver implements Driver
     public function getDatabase(Connection $conn)
     {
         return 'fake_db';
+    }
+}
+
+class FakeConnection extends Connection
+{
+    /** @var int */
+    public static $creationCount = 0;
+
+    public function __construct(array $params, FakeDriver $driver, ?Configuration $config = null, ?EventManager $eventManager = null)
+    {
+        ++self::$creationCount;
+
+        parent::__construct($params, $driver, $config, $eventManager);
     }
 }

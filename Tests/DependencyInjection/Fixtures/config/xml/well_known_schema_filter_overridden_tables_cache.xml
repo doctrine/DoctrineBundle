@@ -24,22 +24,5 @@
                 <srv:argument key="db_table">app_cache</srv:argument>
             </srv:argument>
         </srv:service>
-        <srv:service id="symfony.session" class="Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler">
-            <srv:argument />
-            <srv:argument type="collection">
-                <srv:argument key="db_table">app_session</srv:argument>
-            </srv:argument>
-        </srv:service>
-        <srv:service id="symfony.lock" class="Symfony\Component\Lock\Store\PdoStore">
-            <srv:argument />
-            <srv:argument type="collection">
-                <srv:argument key="db_table">app_locks</srv:argument>
-            </srv:argument>
-        </srv:service>
-        <srv:service id="symfony.messenger" class="Symfony\Component\Messenger\Transport\Doctrine\Connection">
-            <srv:argument type="collection">
-                <srv:argument key="table_name">app_messages</srv:argument>
-            </srv:argument>
-        </srv:service>
     </srv:services>
 </srv:container>

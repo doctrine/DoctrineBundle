@@ -5,7 +5,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\ORM\Version;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -16,15 +15,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 class TestCase extends BaseTestCase
 {
-    protected function setUp()
-    {
-        if (class_exists(Version::class)) {
-            return;
-        }
-
-        $this->markTestSkipped('Doctrine is not available.');
-    }
-
     public function createXmlBundleTestContainer()
     {
         $container = new ContainerBuilder(new ParameterBag([

@@ -145,7 +145,7 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('keep_slave')->end()
                 ->arrayNode('options')
                     ->useAttributeAsKey('key')
-                    ->prototype('scalar')->end()
+                    ->prototype('variable')->end()
                 ->end()
                 ->arrayNode('mapping_types')
                     ->useAttributeAsKey('name')

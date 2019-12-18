@@ -5,7 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
-use Doctrine\ORM\Version;
+use Doctrine\ORM\UnitOfWork;
 use LogicException;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
@@ -321,7 +321,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function ormLoad(array $config, ContainerBuilder $container)
     {
-        if (! class_exists(Version::class)) {
+        if (! class_exists(UnitOfWork::class)) {
             throw new LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
         }
 

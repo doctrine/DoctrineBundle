@@ -32,11 +32,11 @@ class WellKnownSchemaFilterPass implements CompilerPassInterface
                     break;
 
                 case PdoSessionHandler::class:
-                    $blacklist[] = $definition->getArguments()[1]['db_table'] ?? 'lock_keys';
+                    $blacklist[] = $definition->getArguments()[1]['db_table'] ?? 'sessions';
                     break;
 
                 case PdoStore::class:
-                    $blacklist[] = $definition->getArguments()[1]['db_table'] ?? 'sessions';
+                    $blacklist[] = $definition->getArguments()[1]['db_table'] ?? 'lock_keys';
                     break;
 
                 case Connection::class:

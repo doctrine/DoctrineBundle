@@ -4,7 +4,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
-use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,6 +21,11 @@ use Symfony\Component\Messenger\MessageBusInterface;
 
 class DoctrineExtensionTest extends TestCase
 {
+    /**
+     * https://github.com/doctrine/orm/pull/7953 needed, otherwise ORM classes we define services for trigger deprecations
+     *
+     * @group legacy
+     */
     public function testAutowiringAlias()
     {
         $container = $this->getContainer();
@@ -382,7 +386,7 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
-        $this->assertEquals(AbstractProxyFactory::AUTOGENERATE_EVAL, $container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
+        $this->assertEquals(3 /* \Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_EVAL */, $container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
     }
 
     public function testSingleEntityManagerWithDefaultConfiguration()

@@ -2,7 +2,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command\Proxy;
 
-use Doctrine\ORM\Version;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,14 +27,6 @@ abstract class DelegateCommand extends Command
     protected function getMinimalVersion()
     {
         return '2.3.0-DEV';
-    }
-
-    /**
-     * @return bool
-     */
-    private function isVersionCompatible()
-    {
-        return version_compare(Version::VERSION, $this->getMinimalVersion()) >= 0;
     }
 
     /**
