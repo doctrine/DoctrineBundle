@@ -3,9 +3,11 @@
 namespace Doctrine\Bundle\DoctrineBundle;
 
 use Doctrine\ORM\ORMException;
+use ProxyManager\Proxy\LazyLoadingInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Contracts\Service\ResetInterface;
+use function interface_exists;
 
 /**
  * References all Doctrine connections and entity managers in a given Container.
@@ -50,6 +52,10 @@ class Registry extends ManagerRegistry implements ResetInterface
 
     public function reset() : void
     {
+        if (! interface_exists(LazyLoadingInterface::class)) {
+            return;
+        }
+
         foreach (array_keys($this->getManagerNames()) as $managerName) {
             $this->resetManager($managerName);
         }
