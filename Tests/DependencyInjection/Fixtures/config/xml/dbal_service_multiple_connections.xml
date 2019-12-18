@@ -22,7 +22,13 @@
                 password="sqlite_s3cr3t"
                 path="/tmp/db.sqlite"
                 memory="true">
-                <option key="userDefinedFunctions" />
+                <option key="userDefinedFunctions">
+                    <asin>
+                        <callback>asin</callback>
+                        <numArgs>1</numArgs>
+                    </asin>
+                </option>
+                <option key="arbitraryValue">foo</option>
             </connection>
             <connection
                 name="oci"

@@ -45,7 +45,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('sqlite_s3cr3t', $config['password']);
         $this->assertSame('/tmp/db.sqlite', $config['path']);
         $this->assertTrue($config['memory']);
-        $this->assertArrayHasKey('userDefinedFunctions', $config['driverOptions']);
+        $this->assertSame(['asin' => ['callback' => 'asin', 'numArgs' => 1]], $config['driverOptions']['userDefinedFunctions']);
+        $this->assertSame('foo', $config['driverOptions']['arbitraryValue']);
 
         // doctrine.dbal.oci8_connection
         $config = $container->getDefinition('doctrine.dbal.oci_connection')->getArgument(0);
