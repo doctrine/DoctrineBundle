@@ -168,7 +168,7 @@ class Registry extends ManagerRegistry implements RegistryInterface, ResetInterf
 
     public function reset() : void
     {
-        foreach ($this->getManagerNames() as $managerName) {
+        foreach ($this->getManagerNames() as $managerName => $serviceId) {
             $this->resetManager($managerName);
         }
     }
