@@ -861,7 +861,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.dbal.well_known_schema_asset_filter');
 
-        $this->assertSame([['cache_items', 'lock_keys', 'sessions', 'messenger_messages']], $definition->getArguments());
+        $this->assertSame([['cache_items', 'sessions', 'lock_keys', 'messenger_messages']], $definition->getArguments());
         $this->assertSame([['connection' => 'connection1'], ['connection' => 'connection2'], ['connection' => 'connection3']], $definition->getTag('doctrine.dbal.schema_filter'));
 
         $definition = $container->getDefinition('doctrine.dbal.connection1_schema_asset_filter_manager');
