@@ -2,7 +2,10 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
+use Closure;
 use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\ORM\EntityManagerInterface;
+use ProxyManager\Proxy\LazyLoadingInterface;
 use stdClass;
 
 class RegistryTest extends TestCase
@@ -125,13 +128,33 @@ class RegistryTest extends TestCase
 
     public function testReset()
     {
-        $container = $this->getMockBuilder('Symfony\Component\DependencyInjection\ContainerInterface')->getMock();
-        $container->expects($this->once())
-            ->method('initialized')
-            ->with($this->equalTo('doctrine.orm.default_entity_manager'))
-            ->will($this->returnValue(false));
+        $noProxyManager = $this->getMockBuilder(EntityManagerInterface::class)->getMock();
+        $noProxyManager->expects($this->once())
+            ->method('clear');
 
-        $registry = new Registry($container, [], ['default' => 'doctrine.orm.default_entity_manager'], 'default', 'default');
+        $proxyManager = $this->getMockBuilder(LazyLoadingInterface::class)->getMock();
+        $proxyManager->expects($this->once())
+            ->method('setProxyInitializer')
+            ->with($this->isInstanceOf(Closure::class));
+
+        $container = $this->getMockBuilder('Symfony\Component\DependencyInjection\ContainerInterface')->getMock();
+        $container->expects($this->any())
+            ->method('initialized')
+            ->withConsecutive(['doctrine.orm.uninitialized_entity_manager'], ['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
+            ->willReturnOnConsecutiveCalls(false, true, true, true);
+
+        $container->expects($this->any())
+            ->method('get')
+            ->withConsecutive(['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
+            ->willReturnOnConsecutiveCalls($noProxyManager, $proxyManager, $proxyManager);
+
+        $entityManagers = [
+            'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
+            'noproxy' => 'doctrine.orm.noproxy_entity_manager',
+            'proxy' => 'doctrine.orm.proxy_entity_manager',
+        ];
+
+        $registry = new Registry($container, [], $entityManagers, 'default', 'default');
         $registry->reset();
     }
 }
