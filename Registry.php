@@ -7,7 +7,6 @@ use ProxyManager\Proxy\LazyLoadingInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Contracts\Service\ResetInterface;
-use function interface_exists;
 
 /**
  * References all Doctrine connections and entity managers in a given Container.
@@ -52,12 +51,25 @@ class Registry extends ManagerRegistry implements ResetInterface
 
     public function reset() : void
     {
-        if (! interface_exists(LazyLoadingInterface::class)) {
+        foreach ($this->getManagerNames() as $managerName => $serviceId) {
+            $this->resetOrClearManager($managerName, $serviceId);
+        }
+    }
+
+    private function resetOrClearManager(string $managerName, string $serviceId) : void
+    {
+        if (! $this->container->initialized($serviceId)) {
             return;
         }
 
-        foreach (array_keys($this->getManagerNames()) as $managerName) {
-            $this->resetManager($managerName);
+        $manager = $this->container->get($serviceId);
+
+        if (! $manager instanceof LazyLoadingInterface) {
+            $manager->clear();
+
+            return;
         }
+
+        $this->resetManager($managerName);
     }
 }
