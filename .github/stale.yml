@@ -2,6 +2,8 @@ onlyLabels: ['Status: Waiting feedback']
 daysUntilStale: 14
 daysUntilClose: 7
 staleLabel: 'Stale'
+exemptProjects: true
+exemptMilestones: true
 markComment: >
   This issue is still waiting on feedback. Please provide the information requested above to allow us to continue working on this ticket.
 
