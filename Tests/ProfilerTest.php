@@ -42,8 +42,6 @@ class ProfilerTest extends BaseTestCase
 
         $twigLoaderFilesystem = new FilesystemLoader(__DIR__ . '/../Resources/views/Collector');
         $twigLoaderFilesystem->addPath(__DIR__ . '/../vendor/symfony/web-profiler-bundle/Resources/views', 'WebProfiler');
-        // This is normally added by the TwigBundle TwigExtension class
-        $twigLoaderFilesystem->addPath(__DIR__ . '/../Resources/views', 'Doctrine');
         $this->twig = new Environment($twigLoaderFilesystem, ['debug' => true, 'strict_variables' => true]);
 
         $fragmentHandler = $this->getMockBuilder(FragmentHandler::class)->disableOriginalConstructor()->getMock();
