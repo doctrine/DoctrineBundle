@@ -239,7 +239,7 @@
                                 <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
                             {% endif %}
                             <td>
-                                {{ query.sql|doctrine_pretty_query(highlight_only = true) }}
+                                {{ query.sql|doctrine_prettify_sql }}
 
                                 <div>
                                     <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(query.params, 2) }}
@@ -265,15 +265,14 @@
                                 </div>
 
                                 <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
-                                    {% set formatted_sql = query.sql|doctrine_pretty_query %}
-                                    {{ formatted_sql|raw }}
-                                    <button class="btn btn-sm" data-clipboard-text="{{ formatted_sql|striptags|e('html_attr') }}">Copy</button>
+                                    {{ query.sql|doctrine_format_sql(highlight = true) }}
+                                    <button class="btn btn-sm" data-clipboard-text="{{ query.sql|doctrine_format_sql(highlight = false)|e('html_attr') }}">Copy</button>
                                 </div>
 
                                 {% if query.runnable %}
                                     <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
                                         {% set runnable_sql = (query.sql ~ ';')|doctrine_replace_query_parameters(query.params) %}
-                                        {{ runnable_sql|doctrine_pretty_query(highlight_only = true) }}
+                                        {{ runnable_sql|doctrine_prettify_sql }}
                                         <button class="btn btn-sm" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
                                     </div>
                                 {% endif %}
