@@ -105,6 +105,8 @@ Configuration Reference
                         profiling:            "%kernel.debug%"
                         # When true, profiling also collects a backtrace for each query
                         profiling_collect_backtrace: false
+                        # When true, profiling also collects schema errors for each query
+                        profiling_collect_schema_errors: true
 
                         server_version:       ~
                         driver_class:         ~
@@ -465,6 +467,7 @@ Configuration Reference
                         logging="%kernel.debug%"
                         profiling="%kernel.debug%"
                         profiling-collect-backtrace="false"
+                        profiling-collect-schema-errors="true"
                         server-version=""
                         driver-class=""
                         wrapper-class=""

@@ -19,3 +19,7 @@ doctrine:
             both:
                 logging: true
                 profiling: true
+            profile_without_schema_validator:
+                logging: false
+                profiling: true
+                profiling_collect_schema_errors: true
