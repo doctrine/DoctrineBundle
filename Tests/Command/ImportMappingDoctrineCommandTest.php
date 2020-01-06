@@ -25,7 +25,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
     /** @var CommandTester|null */
     private $commandTester;
 
-    protected function setup()
+    protected function setup() : void
     {
         $this->kernel = new ImportMappingTestingKernel();
         $this->kernel->boot();
@@ -40,7 +40,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->commandTester = new CommandTester($command);
     }
 
-    protected function tearDown()
+    protected function tearDown() : void
     {
         $fs = new Filesystem();
         if ($this->kernel !== null) {
@@ -52,7 +52,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->commandTester = null;
     }
 
-    public function testExecuteXmlWithBundle()
+    public function testExecuteXmlWithBundle() : void
     {
         $this->commandTester->execute(['name' => 'ImportMappingTestFooBundle']);
 
@@ -61,7 +61,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->assertContains('"Doctrine\Bundle\DoctrineBundle\Tests\Command\Entity\Product"', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
     }
 
-    public function testExecuteAnnotationsWithBundle()
+    public function testExecuteAnnotationsWithBundle() : void
     {
         $this->commandTester->execute([
             'name' => 'ImportMappingTestFooBundle',
@@ -77,12 +77,12 @@ class ImportMappingDoctrineCommandTest extends TestCase
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessageRegExp /The --path option is required/
      */
-    public function testExecuteThrowsExceptionWithNamespaceAndNoPath()
+    public function testExecuteThrowsExceptionWithNamespaceAndNoPath() : void
     {
         $this->commandTester->execute(['name' => 'Some\Namespace']);
     }
 
-    public function testExecuteXmlWithNamespace()
+    public function testExecuteXmlWithNamespace() : void
     {
         $this->commandTester->execute([
             'name' => 'Some\Namespace\Entity',
@@ -94,7 +94,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->assertContains('"Some\Namespace\Entity\Product"', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
     }
 
-    public function testExecuteAnnotationsWithNamespace()
+    public function testExecuteAnnotationsWithNamespace() : void
     {
         $this->commandTester->execute([
             'name' => 'Some\Namespace\Entity',
@@ -127,9 +127,9 @@ class ImportMappingTestingKernel extends Kernel
         ];
     }
 
-    public function registerContainerConfiguration(LoaderInterface $loader)
+    public function registerContainerConfiguration(LoaderInterface $loader) : void
     {
-        $loader->load(function (ContainerBuilder $container) {
+        $loader->load(function (ContainerBuilder $container) : void {
             $container->loadFromExtension('framework', ['secret' => 'F00']);
 
             $container->loadFromExtension('doctrine', [

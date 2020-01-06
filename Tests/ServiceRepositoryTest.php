@@ -25,7 +25,7 @@ class ServiceRepositoryTest extends TestCase
      *
      * @group legacy
      */
-    public function testRepositoryServiceWiring()
+    public function testRepositoryServiceWiring() : void
     {
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.name' => 'app',

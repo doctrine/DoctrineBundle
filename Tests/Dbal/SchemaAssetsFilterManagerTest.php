@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class SchemaAssetsFilterManagerTest extends TestCase
 {
-    public function testInvoke()
+    public function testInvoke() : void
     {
         $filterA = new RegexSchemaAssetFilter('~^(?!t_)~');
         $filterB = new RegexSchemaAssetFilter('~^(?!s_)~');

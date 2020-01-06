@@ -15,7 +15,7 @@ class ConnectionFactoryTest extends TestCase
     /**
      * @expectedException \Doctrine\DBAL\DBALException
      */
-    public function testContainer()
+    public function testContainer() : void
     {
         $typesConfig  = [];
         $factory      = new ConnectionFactory($typesConfig);
@@ -38,7 +38,7 @@ class ConnectionFactoryTest extends TestCase
         }
     }
 
-    public function testDefaultCharset()
+    public function testDefaultCharset() : void
     {
         $factory = new ConnectionFactory([]);
         $params  = [
@@ -54,7 +54,7 @@ class ConnectionFactoryTest extends TestCase
         $this->assertSame(1 + $creationCount, FakeConnection::$creationCount);
     }
 
-    public function testDefaultCharsetMySql()
+    public function testDefaultCharsetMySql() : void
     {
         $factory = new ConnectionFactory([]);
         $params  = ['driver' => 'pdo_mysql'];
@@ -106,12 +106,12 @@ class FakeDriver implements Driver
      * @param string|null $password
      * @param mixed[]     $driverOptions
      */
-    public function connect(array $params, $username = null, $password = null, array $driverOptions = [])
+    public function connect(array $params, $username = null, $password = null, array $driverOptions = []) : void
     {
         throw new Exception('not implemented');
     }
 
-    public function getSchemaManager(Connection $conn)
+    public function getSchemaManager(Connection $conn) : void
     {
         throw new Exception('not implemented');
     }

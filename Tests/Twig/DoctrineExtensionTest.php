@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class DoctrineExtensionTest extends TestCase
 {
-    public function testReplaceQueryParametersWithPostgresCasting()
+    public function testReplaceQueryParametersWithPostgresCasting() : void
     {
         $extension  = new DoctrineExtension();
         $query      = 'a=? OR (1)::string OR b=?';
@@ -17,7 +17,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR (1)::string OR b=2', $result);
     }
 
-    public function testReplaceQueryParametersWithStartingIndexAtOne()
+    public function testReplaceQueryParametersWithStartingIndexAtOne() : void
     {
         $extension  = new DoctrineExtension();
         $query      = 'a=? OR b=?';
@@ -30,7 +30,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR b=2', $result);
     }
 
-    public function testReplaceQueryParameters()
+    public function testReplaceQueryParameters() : void
     {
         $extension  = new DoctrineExtension();
         $query      = 'a=? OR b=?';
@@ -43,7 +43,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR b=2', $result);
     }
 
-    public function testReplaceQueryParametersWithNamedIndex()
+    public function testReplaceQueryParametersWithNamedIndex() : void
     {
         $extension  = new DoctrineExtension();
         $query      = 'a=:a OR b=:b';
@@ -56,34 +56,34 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR b=2', $result);
     }
 
-    public function testEscapeBinaryParameter()
+    public function testEscapeBinaryParameter() : void
     {
         $binaryString = pack('H*', '9d40b8c1417f42d099af4782ec4b20b6');
         $this->assertEquals('0x9D40B8C1417F42D099AF4782EC4B20B6', DoctrineExtension::escapeFunction($binaryString));
     }
 
-    public function testEscapeStringParameter()
+    public function testEscapeStringParameter() : void
     {
         $this->assertEquals("'test string'", DoctrineExtension::escapeFunction('test string'));
     }
 
-    public function testEscapeArrayParameter()
+    public function testEscapeArrayParameter() : void
     {
         $this->assertEquals("1, NULL, 'test', foo", DoctrineExtension::escapeFunction([1, null, 'test', new DummyClass('foo')]));
     }
 
-    public function testEscapeObjectParameter()
+    public function testEscapeObjectParameter() : void
     {
         $object = new DummyClass('bar');
         $this->assertEquals('bar', DoctrineExtension::escapeFunction($object));
     }
 
-    public function testEscapeNullParameter()
+    public function testEscapeNullParameter() : void
     {
         $this->assertEquals('NULL', DoctrineExtension::escapeFunction(null));
     }
 
-    public function testEscapeBooleanParameter()
+    public function testEscapeBooleanParameter() : void
     {
         $this->assertEquals('1', DoctrineExtension::escapeFunction(true));
     }

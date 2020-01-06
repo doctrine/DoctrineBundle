@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class RegexSchemaAssetFilterTest extends TestCase
 {
-    public function testShouldIncludeAsset()
+    public function testShouldIncludeAsset() : void
     {
         $filter = new RegexSchemaAssetFilter('~^(?!t_)~');
 

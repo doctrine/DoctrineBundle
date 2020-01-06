@@ -10,7 +10,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class DropDatabaseDoctrineTest extends TestCase
 {
-    public function testExecute()
+    public function testExecute() : void
     {
         $connectionName = 'default';
         $dbName         = 'test';
@@ -42,7 +42,7 @@ class DropDatabaseDoctrineTest extends TestCase
         );
     }
 
-    public function testExecuteWithoutOptionForceWillFailWithAttentionMessage()
+    public function testExecuteWithoutOptionForceWillFailWithAttentionMessage() : void
     {
         $connectionName = 'default';
         $dbName         = 'test';

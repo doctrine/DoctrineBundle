@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class YamlDoctrineExtensionTest extends AbstractDoctrineExtensionTest
 {
-    protected function loadFromFile(ContainerBuilder $container, $file)
+    protected function loadFromFile(ContainerBuilder $container, $file) : void
     {
         $loadYaml = new YamlFileLoader($container, new FileLocator(__DIR__ . '/Fixtures/config/yml'));
         $loadYaml->load($file . '.yml');

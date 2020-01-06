@@ -10,7 +10,7 @@ class TestFilter extends SQLFilter
     /**
      * Gets the SQL query part to add to a query.
      */
-    public function addFilterConstraint(ClassMetadata $targetEntity, $targetTableAlias)
+    public function addFilterConstraint(ClassMetadata $targetEntity, $targetTableAlias) : void
     {
     }
 }
