@@ -26,7 +26,7 @@ class DoctrineExtensionTest extends TestCase
      *
      * @group legacy
      */
-    public function testAutowiringAlias()
+    public function testAutowiringAlias() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -49,7 +49,7 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
-    public function testPublicServicesAndAliases()
+    public function testPublicServicesAndAliases() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -62,7 +62,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue($container->getAlias('database_connection')->isPublic());
     }
 
-    public function testDbalGenerateDefaultConnectionConfiguration()
+    public function testDbalGenerateDefaultConnectionConfiguration() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -82,7 +82,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals([], $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['driverOptions']);
     }
 
-    public function testDbalOverrideDefaultConnection()
+    public function testDbalOverrideDefaultConnection() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -100,7 +100,7 @@ class DoctrineExtensionTest extends TestCase
      * @expectedException \LogicException
      * @expectedExceptionMessage Configuring the ORM layer requires to configure the DBAL layer as well.
      */
-    public function testOrmRequiresDbal()
+    public function testOrmRequiresDbal() : void
     {
         $extension = new DoctrineExtension();
 
@@ -145,7 +145,7 @@ class DoctrineExtensionTest extends TestCase
     /**
      * @dataProvider getAutomappingConfigurations
      */
-    public function testAutomapping(array $entityManagers)
+    public function testAutomapping(array $entityManagers) : void
     {
         $extension = new DoctrineExtension();
 
@@ -194,7 +194,7 @@ class DoctrineExtensionTest extends TestCase
         );
     }
 
-    public function testDbalLoad()
+    public function testDbalLoad() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -212,7 +212,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('root', $config['user']);
     }
 
-    public function testDbalWrapperClass()
+    public function testDbalWrapperClass() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -238,7 +238,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertNull($container->getDefinition('doctrine.dbal.second_connection')->getClass());
     }
 
-    public function testDependencyInjectionConfigurationDefaults()
+    public function testDependencyInjectionConfigurationDefaults() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -345,7 +345,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
     }
 
-    public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection()
+    public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -365,7 +365,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue($calls[0][1][0]);
     }
 
-    public function testAutoGenerateProxyClasses()
+    public function testAutoGenerateProxyClasses() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -389,7 +389,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals(3 /* \Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_EVAL */, $container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
     }
 
-    public function testSingleEntityManagerWithDefaultConfiguration()
+    public function testSingleEntityManagerWithDefaultConfiguration() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -409,7 +409,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration()
+    public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -434,7 +434,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('%doctrine.orm.second_level_cache.default_cache_factory.class%', $slcDefinition->getClass());
     }
 
-    public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration()
+    public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -465,7 +465,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('YamlBundle\Cache\MyCacheFactory', $slcDefinition->getClass());
     }
 
-    public function testBundleEntityAliases()
+    public function testBundleEntityAliases() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -484,7 +484,7 @@ class DoctrineExtensionTest extends TestCase
         );
     }
 
-    public function testOverwriteEntityAliases()
+    public function testOverwriteEntityAliases() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -503,7 +503,7 @@ class DoctrineExtensionTest extends TestCase
         );
     }
 
-    public function testYamlBundleMappingDetection()
+    public function testYamlBundleMappingDetection() : void
     {
         $container = $this->getContainer('YamlBundle');
         $extension = new DoctrineExtension();
@@ -521,7 +521,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testXmlBundleMappingDetection()
+    public function testXmlBundleMappingDetection() : void
     {
         $container = $this->getContainer('XmlBundle');
         $extension = new DoctrineExtension();
@@ -548,7 +548,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testAnnotationsBundleMappingDetection()
+    public function testAnnotationsBundleMappingDetection() : void
     {
         $container = $this->getContainer('AnnotationsBundle');
         $extension = new DoctrineExtension();
@@ -575,7 +575,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testOrmMergeConfigs()
+    public function testOrmMergeConfigs() : void
     {
         $container = $this->getContainer(['XmlBundle', 'AnnotationsBundle']);
         $extension = new DoctrineExtension();
@@ -632,7 +632,7 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
-    public function testAnnotationsBundleMappingDetectionWithVendorNamespace()
+    public function testAnnotationsBundleMappingDetectionWithVendorNamespace() : void
     {
         $container = $this->getContainer('AnnotationsBundle', 'Vendor');
         $extension = new DoctrineExtension();
@@ -657,7 +657,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
     }
 
-    public function testMessengerIntegration()
+    public function testMessengerIntegration() : void
     {
         if (! interface_exists(MessageBusInterface::class)) {
             $this->markTestSkipped('Symfony Messenger component is not installed');
@@ -786,7 +786,7 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    public function testShardManager()
+    public function testShardManager() : void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -838,12 +838,12 @@ class DoctrineExtensionTest extends TestCase
         return $container;
     }
 
-    private function assertDICConstructorArguments(Definition $definition, array $args)
+    private function assertDICConstructorArguments(Definition $definition, array $args) : void
     {
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '" . $definition->getClass() . "' don't match.");
     }
 
-    private function assertDICDefinitionMethodCallAt($pos, Definition $definition, $methodName, array $params = null)
+    private function assertDICDefinitionMethodCallAt($pos, Definition $definition, $methodName, array $params = null) : void
     {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
@@ -865,7 +865,7 @@ class DoctrineExtensionTest extends TestCase
      * @param string     $methodName
      * @param array|null $params
      */
-    private function assertDICDefinitionMethodCallOnce(Definition $definition, $methodName, array $params = null)
+    private function assertDICDefinitionMethodCallOnce(Definition $definition, $methodName, array $params = null) : void
     {
         $calls  = $definition->getMethodCalls();
         $called = false;
@@ -890,7 +890,7 @@ class DoctrineExtensionTest extends TestCase
         $this->fail("Method '" . $methodName . "' is expected to be called once, definition does not contain a call though.");
     }
 
-    private function compileContainer(ContainerBuilder $container)
+    private function compileContainer(ContainerBuilder $container) : void
     {
         $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);

@@ -13,7 +13,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
      * @expectedException \RuntimeException
      * @expectedExceptionMessage Can't find base path for "Doctrine\Bundle\DoctrineBundle\Tests\Mapping\DisconnectedMetadataFactoryTest
      */
-    public function testCannotFindNamespaceAndPathForMetadata()
+    public function testCannotFindNamespaceAndPathForMetadata() : void
     {
         $class      = new ClassMetadataInfo(self::class);
         $collection = new ClassMetadataCollection([$class]);
@@ -24,7 +24,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
         $factory->findNamespaceAndPathForMetadata($collection);
     }
 
-    public function testFindNamespaceAndPathForMetadata()
+    public function testFindNamespaceAndPathForMetadata() : void
     {
         $class      = new ClassMetadataInfo('\Vendor\Package\Class');
         $collection = new ClassMetadataCollection([$class]);

@@ -15,7 +15,7 @@ class ContainerEntityListenerResolverTest extends TestCase
     /** @var ContainerInterface|PHPUnit_Framework_MockObject_MockObject */
     private $container;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         parent::setUp();
 
@@ -23,7 +23,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->resolver  = new ContainerEntityListenerResolver($this->container);
     }
 
-    public function testResolveClass()
+    public function testResolveClass() : void
     {
         $className = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $object    = $this->resolver->resolve($className);
@@ -32,7 +32,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertSame($object, $this->resolver->resolve($className));
     }
 
-    public function testRegisterClassAndResolve()
+    public function testRegisterClassAndResolve() : void
     {
         $className = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $object    = new $className();
@@ -42,7 +42,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertSame($object, $this->resolver->resolve($className));
     }
 
-    public function testRegisterServiceAndResolve()
+    public function testRegisterServiceAndResolve() : void
     {
         $className = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $serviceId = 'app.entity_listener';
@@ -68,7 +68,7 @@ class ContainerEntityListenerResolverTest extends TestCase
      * @expectedException \RuntimeException
      * @expectedExceptionMessage There is no service named
      */
-    public function testRegisterMissingServiceAndResolve()
+    public function testRegisterMissingServiceAndResolve() : void
     {
         $className = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $serviceId = 'app.entity_listener';
@@ -83,7 +83,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->resolver->resolve($className);
     }
 
-    public function testClearOne()
+    public function testClearOne() : void
     {
         $className1 = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $className2 = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener2';
@@ -106,7 +106,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertSame($obj2, $this->resolver->resolve($className2));
     }
 
-    public function testClearAll()
+    public function testClearAll() : void
     {
         $className1 = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $className2 = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener2';
@@ -133,7 +133,7 @@ class ContainerEntityListenerResolverTest extends TestCase
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage An object was expected, but got "string".
      */
-    public function testRegisterStringException()
+    public function testRegisterStringException() : void
     {
         $this->resolver->register('CompanyContractListener');
     }

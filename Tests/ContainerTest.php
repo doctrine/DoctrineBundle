@@ -26,7 +26,7 @@ class ContainerTest extends TestCase
      *
      * @group legacy
      */
-    public function testContainer()
+    public function testContainer() : void
     {
         $container = $this->createXmlBundleTestContainer();
 

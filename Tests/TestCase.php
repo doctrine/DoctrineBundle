@@ -83,7 +83,7 @@ class TestCase extends BaseTestCase
 
 class TestCaseAllPublicCompilerPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container) : void
     {
         foreach ($container->getDefinitions() as $id => $definition) {
             if (strpos($id, 'doctrine') === false) {
