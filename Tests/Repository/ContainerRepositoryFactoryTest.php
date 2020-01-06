@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
@@ -111,7 +112,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
-    private function createContainer(array $services)
+    private function createContainer(array $services) : MockObject
     {
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->expects($this->any())
@@ -128,7 +129,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         return $container;
     }
 
-    private function createEntityManager(array $entityRepositoryClasses)
+    private function createEntityManager(array $entityRepositoryClasses) : MockObject
     {
         $classMetadatas = [];
         foreach ($entityRepositoryClasses as $entityClass => $entityRepositoryClass) {

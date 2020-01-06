@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 class TestCase extends BaseTestCase
 {
-    public function createXmlBundleTestContainer()
+    public function createXmlBundleTestContainer() : ContainerBuilder
     {
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.name' => 'app',

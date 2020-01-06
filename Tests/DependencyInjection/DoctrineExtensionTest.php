@@ -107,7 +107,7 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
     }
 
-    public function getAutomappingConfigurations()
+    public function getAutomappingConfigurations() : array
     {
         return [
             [
@@ -810,7 +810,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertFalse($container->hasDefinition('doctrine.dbal.bar_shard_manager'));
     }
 
-    private function getContainer($bundles = 'YamlBundle', $vendor = null)
+    private function getContainer($bundles = 'YamlBundle', $vendor = null) : ContainerBuilder
     {
         $bundles = (array) $bundles;
 
@@ -843,7 +843,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '" . $definition->getClass() . "' don't match.");
     }
 
-    private function assertDICDefinitionMethodCallAt($pos, Definition $definition, $methodName, array $params = null) : void
+    private function assertDICDefinitionMethodCallAt(int $pos, Definition $definition, string $methodName, array $params = null) : void
     {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
@@ -861,11 +861,8 @@ class DoctrineExtensionTest extends TestCase
 
     /**
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
-     *
-     * @param string     $methodName
-     * @param array|null $params
      */
-    private function assertDICDefinitionMethodCallOnce(Definition $definition, $methodName, array $params = null) : void
+    private function assertDICDefinitionMethodCallOnce(Definition $definition, string $methodName, array $params = null) : void
     {
         $calls  = $definition->getMethodCalls();
         $called = false;
