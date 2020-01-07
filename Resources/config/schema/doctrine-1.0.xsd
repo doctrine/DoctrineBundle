@@ -37,6 +37,7 @@
         <xsd:attribute name="logging" type="xsd:string" default="false" />
         <xsd:attribute name="profiling" type="xsd:string" default="false" />
         <xsd:attribute name="profiling-collect-backtrace" type="xsd:string" default="false" />
+        <xsd:attribute name="profiling-collect-schema-errors" type="xsd:string" default="true" />
         <xsd:attribute name="server-version" type="xsd:string" />
         <xsd:attribute name="use-savepoints" type="xsd:boolean" />
         <xsd:attributeGroup ref="driver-config" />

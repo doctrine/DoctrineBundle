@@ -387,47 +387,49 @@
         {% endif %}
     {% endif %}
 
-    <h2>Entities Mapping</h2>
+    {% if collector.entities|length > 0 %}
+        <h2>Entities Mapping</h2>
 
-    {% for manager, classes in collector.entities %}
-        {% if collector.managers|length > 1 %}
-            <h3>{{ manager }} <small>entity manager</small></h3>
-        {% endif %}
+        {% for manager, classes in collector.entities %}
+            {% if collector.managers|length > 1 %}
+                <h3>{{ manager }} <small>entity manager</small></h3>
+            {% endif %}
 
-        {% if classes is empty %}
-            <div class="empty">
-                <p>No loaded entities.</p>
-            </div>
-        {% else %}
-            <table>
-                <thead>
-                <tr>
-                    <th scope="col">Class</th>
-                    <th scope="col">Mapping errors</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for class in classes %}
-                    {% set contains_errors = collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
-                    <tr class="{{ contains_errors ? 'status-error' }}">
-                        <td>{{ class }}</td>
-                        <td class="font-normal">
-                            {% if contains_errors %}
-                                <ul>
-                                    {% for error in collector.mappingErrors[manager][class] %}
-                                        <li>{{ error }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                No errors.
-                            {% endif %}
-                        </td>
+            {% if classes is empty %}
+                <div class="empty">
+                    <p>No loaded entities.</p>
+                </div>
+            {% else %}
+                <table>
+                    <thead>
+                    <tr>
+                        <th scope="col">Class</th>
+                        <th scope="col">Mapping errors</th>
                     </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    {% endfor %}
+                    </thead>
+                    <tbody>
+                    {% for class in classes %}
+                        {% set contains_errors = collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
+                        <tr class="{{ contains_errors ? 'status-error' }}">
+                            <td>{{ class }}</td>
+                            <td class="font-normal">
+                                {% if contains_errors %}
+                                    <ul>
+                                        {% for error in collector.mappingErrors[manager][class] %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    No errors.
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
     <script type="text/javascript">//<![CDATA[
         function explain(link) {

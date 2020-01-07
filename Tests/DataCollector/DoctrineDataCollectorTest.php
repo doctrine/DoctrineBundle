@@ -49,6 +49,23 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertCount(2, $entities['default']);
     }
 
+    public function testDoesNotCollectEntities() : void
+    {
+        $manager   = $this->createMock('Doctrine\ORM\EntityManager');
+        $config    = $this->createMock('Doctrine\ORM\Configuration');
+        $collector = $this->createCollector(['default' => $manager], false);
+
+        $manager->expects($this->never())
+            ->method('getMetadataFactory');
+        $manager->method('getConfiguration')
+            ->will($this->returnValue($config));
+
+        $collector->collect(new Request(), new Response());
+
+        $this->assertEmpty($collector->getMappingErrors());
+        $this->assertEmpty($collector->getEntities());
+    }
+
     public function testGetGroupedQueries()
     {
         $logger            = $this->getMockBuilder('Doctrine\DBAL\Logging\DebugStack')->getMock();
@@ -105,7 +122,7 @@ class DoctrineDataCollectorTest extends TestCase
      *
      * @return DoctrineDataCollector
      */
-    private function createCollector(array $managers)
+    private function createCollector(array $managers, bool $shouldValidateSchema = true)
     {
         $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();
         $registry
@@ -121,6 +138,6 @@ class DoctrineDataCollectorTest extends TestCase
             ->method('getManagers')
             ->will($this->returnValue($managers));
 
-        return new DoctrineDataCollector($registry);
+        return new DoctrineDataCollector($registry, $shouldValidateSchema);
     }
 }
