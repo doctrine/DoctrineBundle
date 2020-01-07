@@ -89,7 +89,7 @@ class FakeDriver implements Driver
      *
      * @link https://github.com/doctrine/DoctrineBundle/issues/673
      */
-    public function getDatabasePlatform()
+    public function getDatabasePlatform() : AbstractPlatform
     {
         if (self::$exception !== null) {
             throw self::$exception;
@@ -116,12 +116,12 @@ class FakeDriver implements Driver
         throw new Exception('not implemented');
     }
 
-    public function getName()
+    public function getName() : string
     {
         return 'FakeDriver';
     }
 
-    public function getDatabase(Connection $conn)
+    public function getDatabase(Connection $conn) : string
     {
         return 'fake_db';
     }

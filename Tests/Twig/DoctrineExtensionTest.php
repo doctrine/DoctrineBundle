@@ -94,12 +94,12 @@ class DummyClass
     /** @var string */
     protected $str;
 
-    public function __construct($str)
+    public function __construct(string $str)
     {
         $this->str = $str;
     }
 
-    public function __toString()
+    public function __toString() : string
     {
         return $this->str;
     }

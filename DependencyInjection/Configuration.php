@@ -49,7 +49,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Add DBAL section to configuration tree
      */
-    private function addDbalSection(ArrayNodeDefinition $node)
+    private function addDbalSection(ArrayNodeDefinition $node) : void
     {
         $node
             ->children()
@@ -103,10 +103,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Return the dbal connections node
-     *
-     * @return ArrayNodeDefinition
      */
-    private function getDbalConnectionsNode()
+    private function getDbalConnectionsNode() : ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder('connections');
         $node        = $treeBuilder->getRootNode();
@@ -185,7 +183,7 @@ class Configuration implements ConfigurationInterface
      *
      * These keys are available for slave configurations too.
      */
-    private function configureDbalDriverNode(ArrayNodeDefinition $node)
+    private function configureDbalDriverNode(ArrayNodeDefinition $node) : void
     {
         $node
             ->children()
@@ -295,7 +293,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Add the ORM section to configuration tree
      */
-    private function addOrmSection(ArrayNodeDefinition $node)
+    private function addOrmSection(ArrayNodeDefinition $node) : void
     {
         $node
             ->children()
@@ -377,10 +375,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Return ORM target entity resolver node
-     *
-     * @return NodeDefinition
      */
-    private function getOrmTargetEntityResolverNode()
+    private function getOrmTargetEntityResolverNode() : NodeDefinition
     {
         $treeBuilder = new TreeBuilder('resolve_target_entities');
         $node        = $treeBuilder->getRootNode();
@@ -396,10 +392,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Return ORM entity listener node
-     *
-     * @return NodeDefinition
      */
-    private function getOrmEntityListenersNode()
+    private function getOrmEntityListenersNode() : NodeDefinition
     {
         $treeBuilder = new TreeBuilder('entity_listeners');
         $node        = $treeBuilder->getRootNode();
@@ -482,10 +476,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Return ORM entity manager node
-     *
-     * @return ArrayNodeDefinition
      */
-    private function getOrmEntityManagersNode()
+    private function getOrmEntityManagersNode() : ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder('entity_managers');
         $node        = $treeBuilder->getRootNode();
@@ -644,12 +636,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Return a ORM cache driver node for an given entity manager
-     *
-     * @param string $name
-     *
-     * @return ArrayNodeDefinition
      */
-    private function getOrmCacheDriverNode($name)
+    private function getOrmCacheDriverNode(string $name) : ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder($name);
         $node        = $treeBuilder->getRootNode();
@@ -673,10 +661,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Find proxy auto generate modes for their names and int values
-     *
-     * @return array
      */
-    private function getAutoGenerateModes()
+    private function getAutoGenerateModes() : array
     {
         $constPrefix = 'AUTOGENERATE_';
         $prefixLen   = strlen($constPrefix);

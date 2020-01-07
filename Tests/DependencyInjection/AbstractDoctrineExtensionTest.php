@@ -23,7 +23,7 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 
 abstract class AbstractDoctrineExtensionTest extends TestCase
 {
-    abstract protected function loadFromFile(ContainerBuilder $container, $file);
+    abstract protected function loadFromFile(ContainerBuilder $container, string $file) : void;
 
     public function testDbalLoadFromXmlMultipleConnections() : void
     {
@@ -1019,8 +1019,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setRepositoryFactory', ['repository_factory']);
     }
 
-    private function loadContainer($fixture, array $bundles = ['YamlBundle'], CompilerPassInterface $compilerPass = null)
-    {
+    private function loadContainer(
+        string $fixture,
+        array $bundles = ['YamlBundle'],
+        CompilerPassInterface $compilerPass = null
+    ) : ContainerBuilder {
         $container = $this->getContainer($bundles);
         $container->registerExtension(new DoctrineExtension());
 
@@ -1035,7 +1038,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         return $container;
     }
 
-    private function getContainer(array $bundles)
+    private function getContainer(array $bundles) : ContainerBuilder
     {
         $map = [];
         foreach ($bundles as $bundle) {
@@ -1065,21 +1068,23 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * Assertion on the Class of a DIC Service Definition.
-     *
-     * @param string $expectedClass
      */
-    private function assertDICDefinitionClass(Definition $definition, $expectedClass) : void
+    private function assertDICDefinitionClass(Definition $definition, string $expectedClass) : void
     {
         $this->assertEquals($expectedClass, $definition->getClass(), 'Expected Class of the DIC Container Service Definition is wrong.');
     }
 
-    private function assertDICConstructorArguments(Definition $definition, $args) : void
+    private function assertDICConstructorArguments(Definition $definition, array $args) : void
     {
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '" . $definition->getClass() . "' don't match.");
     }
 
-    private function assertDICDefinitionMethodCallAt($pos, Definition $definition, $methodName, array $params = null) : void
-    {
+    private function assertDICDefinitionMethodCallAt(
+        int $pos,
+        Definition $definition,
+        string $methodName,
+        array $params = null
+    ) : void {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
             $this->fail(sprintf('Method call at position %s not found!', $pos));
@@ -1098,12 +1103,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
-     *
-     * @param string $methodName
-     * @param array  $params
      */
-    private function assertDICDefinitionMethodCallOnce(Definition $definition, $methodName, array $params = null) : void
-    {
+    private function assertDICDefinitionMethodCallOnce(
+        Definition $definition,
+        string $methodName,
+        array $params = null
+    ) : void {
         $calls  = $definition->getMethodCalls();
         $called = false;
         foreach ($calls as $call) {
@@ -1127,8 +1132,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->fail("Method '" . $methodName . "' is expected to be called once, definition does not contain a call though.");
     }
 
-    private function assertDICDefinitionMethodCallCount(Definition $definition, $methodName, array $params = [], $nbCalls = 1) : void
-    {
+    private function assertDICDefinitionMethodCallCount(
+        Definition $definition,
+        string $methodName,
+        array $params = [],
+        int $nbCalls = 1
+    ) : void {
         $calls  = $definition->getMethodCalls();
         $called = 0;
         foreach ($calls as $call) {
@@ -1151,12 +1160,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * Assertion for the DI Container, check if the given definition does not contain a method call with the given parameters.
-     *
-     * @param string $methodName
-     * @param array  $params
      */
-    private function assertDICDefinitionNoMethodCall(Definition $definition, $methodName, array $params = null) : void
-    {
+    private function assertDICDefinitionNoMethodCall(
+        Definition $definition,
+        string $methodName,
+        array $params = null
+    ) : void {
         $calls = $definition->getMethodCalls();
         foreach ($calls as $call) {
             if ($call[0] !== $methodName) {

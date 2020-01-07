@@ -86,12 +86,7 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame(1, $groupedQueries['default'][1]['count']);
     }
 
-    /**
-     * @param string $entityFQCN
-     *
-     * @return ClassMetadataInfo
-     */
-    private function createEntityMetadata($entityFQCN)
+    private function createEntityMetadata(string $entityFQCN) : ClassMetadataInfo
     {
         $metadata            = new ClassMetadataInfo($entityFQCN);
         $metadata->name      = $entityFQCN;
@@ -100,12 +95,7 @@ class DoctrineDataCollectorTest extends TestCase
         return $metadata;
     }
 
-    /**
-     * @param array $managers
-     *
-     * @return DoctrineDataCollector
-     */
-    private function createCollector(array $managers)
+    private function createCollector(array $managers) : DoctrineDataCollector
     {
         $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();
         $registry

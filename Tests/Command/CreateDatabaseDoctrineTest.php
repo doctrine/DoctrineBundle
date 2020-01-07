@@ -3,8 +3,8 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_MockObject_MockObject;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -86,12 +86,9 @@ class CreateDatabaseDoctrineTest extends TestCase
     }
 
     /**
-     * @param string       $connectionName Connection name
-     * @param mixed[]|null $params         Connection parameters
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @param mixed[]|null $params Connection parameters
      */
-    private function getMockContainer($connectionName, $params = null)
+    private function getMockContainer(string $connectionName, array $params = null) : MockObject
     {
         // Mock the container and everything you'll need here
         $mockDoctrine = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')
