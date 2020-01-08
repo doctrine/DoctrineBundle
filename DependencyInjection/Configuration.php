@@ -670,6 +670,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('type')->defaultNull()->end()
                 ->scalarNode('id')->end()
                 ->scalarNode('pool')->end()
+                ->scalarNode('cache_provider')->end()
             ->end();
 
         return $node;
