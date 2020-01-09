@@ -16,13 +16,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CreateDatabaseDoctrineCommand extends DoctrineCommand
 {
+    /** @var string */
+    protected static $defaultName = 'doctrine:database:create';
+
     /**
      * {@inheritDoc}
      */
     protected function configure()
     {
         $this
-            ->setName('doctrine:database:create')
             ->setDescription('Creates the configured database')
             ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')

@@ -22,6 +22,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ImportMappingDoctrineCommand extends DoctrineCommand
 {
+    /** @var string */
+    protected static $defaultName = 'doctrine:mapping:import';
+
     /** @var string[] */
     private $bundles;
 
@@ -41,7 +44,6 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
     protected function configure()
     {
         $this
-            ->setName('doctrine:mapping:import')
             ->addArgument('name', InputArgument::REQUIRED, 'The bundle or namespace to import the mapping information to')
             ->addArgument('mapping-type', InputArgument::OPTIONAL, 'The mapping type to export the imported mapping information to')
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')

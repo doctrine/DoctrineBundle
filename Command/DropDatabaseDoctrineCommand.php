@@ -20,13 +20,15 @@ class DropDatabaseDoctrineCommand extends DoctrineCommand
 
     const RETURN_CODE_NO_FORCE = 2;
 
+    /** @var string */
+    protected static $defaultName = 'doctrine:database:drop';
+
     /**
      * {@inheritDoc}
      */
     protected function configure()
     {
         $this
-            ->setName('doctrine:database:drop')
             ->setDescription('Drops the configured database')
             ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
