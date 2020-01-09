@@ -737,10 +737,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool'] ?? $this->createArrayAdapterCachePool($container, $objectManagerName, $cacheName));
                 break;
 
-            case 'provider':
-                $serviceId = sprintf('doctrine_cache.providers.%s', $cacheDriver['cache_provider']);
-                break;
-
             default:
                 throw new \InvalidArgumentException(sprintf(
                     'Unknown cache of type "%s" configured for cache "%s" in entity manager "%s".',
