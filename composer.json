@@ -46,6 +46,7 @@
         "phpunit/phpunit": "^7.5",
         "symfony/phpunit-bridge": "^4.2",
         "symfony/property-info": "^3.4.30|^4.3.3",
+        "symfony/proxy-manager-bridge": "^3.4|^4|^5",
         "symfony/twig-bridge": "^3.4|^4.1",
         "symfony/validator": "^3.4.30|^4.3.3",
         "symfony/web-profiler-bundle": "^3.4.30|^4.3.3",

@@ -2,24 +2,19 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
-use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
-use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * @group legacy
  */
 class ImportMappingDoctrineCommandTest extends TestCase
 {
-    /** @var ImportMappingTestingKernel|null */
+    /** @var TestKernel|null */
     private $kernel;
 
     /** @var CommandTester|null */
@@ -27,7 +22,14 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
     protected function setup()
     {
-        $this->kernel = new ImportMappingTestingKernel();
+        $this->kernel = new class() extends TestKernel {
+            public function registerBundles() : iterable
+            {
+                yield from parent::registerBundles();
+                yield new ImportMappingTestFooBundle();
+            }
+        };
+
         $this->kernel->boot();
 
         $connection = $this->kernel->getContainer()
@@ -105,60 +107,6 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $expectedMetadataPath = $this->kernel->getProjectDir() . '/src/Entity/Product.php';
         $this->assertFileExists($expectedMetadataPath);
         $this->assertContains('namespace Some\Namespace\Entity;', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
-    }
-}
-
-class ImportMappingTestingKernel extends Kernel
-{
-    /** @var string|null */
-    private $projectDir;
-
-    public function __construct()
-    {
-        parent::__construct('test', true);
-    }
-
-    public function registerBundles() : iterable
-    {
-        return [
-            new FrameworkBundle(),
-            new DoctrineBundle(),
-            new ImportMappingTestFooBundle(),
-        ];
-    }
-
-    public function registerContainerConfiguration(LoaderInterface $loader)
-    {
-        $loader->load(function (ContainerBuilder $container) {
-            // @todo Setting the kernel.name parameter can be removed once the dependency on DoctrineCacheBundle has been dropped
-            $container->setParameter('kernel.name', 'foo');
-            $container->loadFromExtension('framework', ['secret' => 'F00']);
-
-            $container->loadFromExtension('doctrine', [
-                'dbal' => [
-                    'driver' => 'pdo_sqlite',
-                    'path' => $this->getCacheDir() . '/testing.db',
-                ],
-                'orm' => [],
-            ]);
-
-            // Register a NullLogger to avoid getting the stderr default logger of FrameworkBundle
-            $container->register('logger', NullLogger::class);
-        });
-    }
-
-    public function getProjectDir() : string
-    {
-        if ($this->projectDir === null) {
-            $this->projectDir = sys_get_temp_dir() . '/sf_kernel_' . md5(mt_rand());
-        }
-
-        return $this->projectDir;
-    }
-
-    public function getRootDir() : string
-    {
-        return $this->getProjectDir();
     }
 }
 
