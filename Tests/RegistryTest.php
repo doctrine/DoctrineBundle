@@ -4,8 +4,12 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Closure;
 use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\ORM\EntityManagerInterface;
+use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
+use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
 use ProxyManager\Proxy\LazyLoadingInterface;
+use ProxyManager\Proxy\ProxyInterface;
 use stdClass;
 
 class RegistryTest extends TestCase
@@ -132,7 +136,7 @@ class RegistryTest extends TestCase
         $noProxyManager->expects($this->once())
             ->method('clear');
 
-        $proxyManager = $this->getMockBuilder(LazyLoadingInterface::class)->getMock();
+        $proxyManager = $this->getMockBuilder([LazyLoadingInterface::class, EntityManagerInterface::class])->getMock();
         $proxyManager->expects($this->once())
             ->method('setProxyInitializer')
             ->with($this->isInstanceOf(Closure::class));
@@ -156,5 +160,34 @@ class RegistryTest extends TestCase
 
         $registry = new Registry($container, [], $entityManagers, 'default', 'default');
         $registry->reset();
+    }
+
+    public function testIdentityMapsStayConsistentAfterReset()
+    {
+        $kernel = new TestKernel();
+        $kernel->boot();
+
+        $container     = $kernel->getContainer();
+        $registry      = $container->get('doctrine');
+        $entityManager = $container->get('doctrine.orm.default_entity_manager');
+        $repository    = $entityManager->getRepository(TestCustomClassRepoEntity::class);
+
+        $this->assertInstanceOf(ProxyInterface::class, $entityManager);
+        assert($entityManager instanceof EntityManagerInterface);
+        assert($registry instanceof Registry);
+        assert($repository instanceof TestCustomClassRepoRepository);
+
+        $entity = new TestCustomClassRepoEntity();
+        $repository->getEntityManager()->persist($entity);
+
+        $this->assertTrue($entityManager->getUnitOfWork()->isEntityScheduled($entity));
+        $this->assertTrue($repository->getEntityManager()->getUnitOfWork()->isEntityScheduled($entity));
+
+        $registry->reset();
+
+        $this->assertFalse($entityManager->getUnitOfWork()->isEntityScheduled($entity));
+        $this->assertFalse($repository->getEntityManager()->getUnitOfWork()->isEntityScheduled($entity));
+
+        $entityManager->flush();
     }
 }
