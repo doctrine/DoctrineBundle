@@ -23,9 +23,9 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 
 abstract class AbstractDoctrineExtensionTest extends TestCase
 {
-    abstract protected function loadFromFile(ContainerBuilder $container, $file);
+    abstract protected function loadFromFile(ContainerBuilder $container, string $file) : void;
 
-    public function testDbalLoadFromXmlMultipleConnections()
+    public function testDbalLoadFromXmlMultipleConnections() : void
     {
         $container = $this->loadContainer('dbal_service_multiple_connections');
 
@@ -94,7 +94,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('utf8', $config['charset']);
     }
 
-    public function testDbalLoadFromXmlSingleConnections()
+    public function testDbalLoadFromXmlSingleConnections() : void
     {
         $container = $this->loadContainer('dbal_service_single_connection');
 
@@ -108,7 +108,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('5.6.20', $config['serverVersion']);
     }
 
-    public function testDbalLoadSingleMasterSlaveConnection()
+    public function testDbalLoadSingleMasterSlaveConnection() : void
     {
         $container = $this->loadContainer('dbal_service_single_master_slave_connection');
 
@@ -142,7 +142,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
 
-    public function testDbalLoadPoolShardingConnection()
+    public function testDbalLoadPoolShardingConnection() : void
     {
         $container = $this->loadContainer('dbal_service_pool_sharding_connection');
 
@@ -177,7 +177,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
 
-    public function testDbalLoadSavepointsForNestedTransactions()
+    public function testDbalLoadSavepointsForNestedTransactions() : void
     {
         $container = $this->loadContainer('dbal_savepoints');
 
@@ -193,7 +193,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertCount(0, $calls);
     }
 
-    public function testLoadSimpleSingleConnection()
+    public function testLoadSimpleSingleConnection() : void
     {
         $container = $this->loadContainer('orm_service_simple_single_entity_manager');
 
@@ -228,7 +228,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     /**
      * The PDO driver doesn't require a database name to be to set when connecting to a database server
      */
-    public function testLoadSimpleSingleConnectionWithoutDbName()
+    public function testLoadSimpleSingleConnectionWithoutDbName() : void
     {
         $container = $this->loadContainer('orm_service_simple_single_entity_manager_without_dbname');
 
@@ -263,7 +263,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testLoadSingleConnection()
+    public function testLoadSingleConnection() : void
     {
         $container = $this->loadContainer('orm_service_single_entity_manager');
 
@@ -299,7 +299,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($configDef, 'setDefaultRepositoryClassName', ['Acme\Doctrine\Repository']);
     }
 
-    public function testLoadMultipleConnections()
+    public function testLoadMultipleConnections() : void
     {
         $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
@@ -359,7 +359,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('cache.doctrine.orm.em1.result', (string) $arguments[0]);
     }
 
-    public function testLoadLogging()
+    public function testLoadLogging() : void
     {
         $container = $this->loadContainer('dbal_logging');
 
@@ -379,7 +379,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.chain.both')]);
     }
 
-    public function testEntityManagerMetadataCacheDriverConfiguration()
+    public function testEntityManagerMetadataCacheDriverConfiguration() : void
     {
         $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
@@ -390,7 +390,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionClass($definition, DoctrineProvider::class);
     }
 
-    public function testDependencyInjectionImportsOverrideDefaults()
+    public function testDependencyInjectionImportsOverrideDefaults() : void
     {
         $container = $this->loadContainer('orm_imports');
 
@@ -401,7 +401,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setAutoGenerateProxyClasses', ['%doctrine.orm.auto_generate_proxy_classes%']);
     }
 
-    public function testSingleEntityManagerMultipleMappingBundleDefinitions()
+    public function testSingleEntityManagerMultipleMappingBundleDefinitions() : void
     {
         $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
 
@@ -439,7 +439,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testMultipleEntityManagersMappingBundleDefinitions()
+    public function testMultipleEntityManagersMappingBundleDefinitions() : void
     {
         $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
 
@@ -481,7 +481,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testSingleEntityManagerDefaultTableOptions()
+    public function testSingleEntityManagerDefaultTableOptions() : void
     {
         $container = $this->loadContainer('orm_single_em_default_table_options', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
 
@@ -500,7 +500,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('InnoDB', $defaults['engine']);
     }
 
-    public function testSetTypes()
+    public function testSetTypes() : void
     {
         $container = $this->loadContainer('dbal_types');
 
@@ -511,7 +511,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('%doctrine.dbal.connection_factory.types%', $container->getDefinition('doctrine.dbal.connection_factory')->getArgument(0));
     }
 
-    public function testSetCustomFunctions()
+    public function testSetCustomFunctions() : void
     {
         $container = $this->loadContainer('orm_functions');
 
@@ -521,7 +521,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomDatetimeFunction', ['test_datetime', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestDatetimeFunction']);
     }
 
-    public function testSetNamingStrategy()
+    public function testSetNamingStrategy() : void
     {
         $container = $this->loadContainer('orm_namingstrategy');
 
@@ -532,7 +532,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($def2, 'setNamingStrategy', [0 => new Reference('doctrine.orm.naming_strategy.underscore')]);
     }
 
-    public function testSetQuoteStrategy()
+    public function testSetQuoteStrategy() : void
     {
         $container = $this->loadContainer('orm_quotestrategy');
 
@@ -543,7 +543,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($def2, 'setQuoteStrategy', [0 => new Reference('doctrine.orm.quote_strategy.ansi')]);
     }
 
-    public function testSecondLevelCache()
+    public function testSecondLevelCache() : void
     {
         $container = $this->loadContainer('orm_second_level_cache');
 
@@ -601,7 +601,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.default_second_level_cache.region_cache_driver', $slcFactoryArgs[1]);
     }
 
-    public function testSingleEMSetCustomFunctions()
+    public function testSingleEMSetCustomFunctions() : void
     {
         $container = $this->loadContainer('orm_single_em_dql_functions');
 
@@ -609,7 +609,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomStringFunction', ['test_string', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction']);
     }
 
-    public function testAddCustomHydrationMode()
+    public function testAddCustomHydrationMode() : void
     {
         $container = $this->loadContainer('orm_hydration_mode');
 
@@ -617,7 +617,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomHydrationMode', ['test_hydrator', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator']);
     }
 
-    public function testAddFilter()
+    public function testAddFilter() : void
     {
         $container = $this->loadContainer('orm_filters');
 
@@ -637,7 +637,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertCount(2, $entityManager->getFilters()->getEnabledFilters());
     }
 
-    public function testResolveTargetEntity()
+    public function testResolveTargetEntity() : void
     {
         $container = $this->loadContainer('orm_resolve_target_entity');
 
@@ -647,7 +647,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(['doctrine.event_subscriber' => [[]]], $definition->getTags());
     }
 
-    public function testAttachEntityListeners()
+    public function testAttachEntityListeners() : void
     {
         $container = $this->loadContainer('orm_attach_entity_listener');
 
@@ -718,7 +718,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testDbalAutoCommit()
+    public function testDbalAutoCommit() : void
     {
         $container = $this->loadContainer('dbal_auto_commit');
 
@@ -726,7 +726,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setAutoCommit', [false]);
     }
 
-    public function testDbalOracleConnectstring()
+    public function testDbalOracleConnectstring() : void
     {
         $container = $this->loadContainer('dbal_oracle_connectstring');
 
@@ -734,7 +734,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('scott@sales-server:1521/sales.us.example.com', $config['connectstring']);
     }
 
-    public function testDbalOracleInstancename()
+    public function testDbalOracleInstancename() : void
     {
         $container = $this->loadContainer('dbal_oracle_instancename');
 
@@ -742,7 +742,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('mySuperInstance', $config['instancename']);
     }
 
-    public function testDbalSchemaFilterNewConfig()
+    public function testDbalSchemaFilterNewConfig() : void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -796,7 +796,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     /**
      * @dataProvider dataWellKnownSchemaFilterServices
      */
-    public function testWellKnownSchemaFilterDefaultTables(string $fileName, string $tableName)
+    public function testWellKnownSchemaFilterDefaultTables(string $fileName, string $tableName) : void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -834,7 +834,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     /**
      * @dataProvider dataWellKnownSchemaOverriddenTablesFilterServices
      */
-    public function testWellKnownSchemaFilterOverriddenTables(string $fileName, string $tableName)
+    public function testWellKnownSchemaFilterOverriddenTables(string $fileName, string $tableName) : void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -851,7 +851,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertFalse($filter($tableName));
     }
 
-    public function testEntityListenerResolver()
+    public function testEntityListenerResolver() : void
     {
         $container = $this->loadContainer('orm_entity_listener_resolver', ['YamlBundle'], new EntityListenerPass());
 
@@ -868,7 +868,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($listener, 'register', [new Reference('entity_listener2')]);
     }
 
-    public function testAttachEntityListenerTag()
+    public function testAttachEntityListenerTag() : void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -900,7 +900,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($attachListener, 'addEntityListener', ['My/Entity2', 'EntityListener2', 'preFlush', 'preFlushHandler']);
     }
 
-    public function testAttachEntityListenersTwoConnections()
+    public function testAttachEntityListenersTwoConnections() : void
     {
         $container = $this->getContainer(['YamlBundle']);
         $loader    = new DoctrineExtension();
@@ -920,7 +920,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($foobarEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em2_listeners.attach_entity_listeners')]);
     }
 
-    public function testAttachLazyEntityListener()
+    public function testAttachLazyEntityListener() : void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -947,7 +947,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($resolver2, 'registerService', ['EntityListener2', 'entity_listener2']);
     }
 
-    public function testAttachLazyEntityListenerForCustomResolver()
+    public function testAttachLazyEntityListenerForCustomResolver() : void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -969,7 +969,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage EntityListenerServiceResolver
      */
-    public function testLazyEntityListenerResolverWithoutCorrectInterface()
+    public function testLazyEntityListenerResolverWithoutCorrectInterface() : void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -981,7 +981,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
     }
 
-    public function testPrivateLazyEntityListener()
+    public function testPrivateLazyEntityListener() : void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -999,7 +999,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessageRegExp /The service ".*" must not be abstract as this entity listener is lazy-loaded/
      */
-    public function testAbstractLazyEntityListener()
+    public function testAbstractLazyEntityListener() : void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -1011,7 +1011,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
     }
 
-    public function testRepositoryFactory()
+    public function testRepositoryFactory() : void
     {
         $container = $this->loadContainer('orm_repository_factory');
 
@@ -1019,8 +1019,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setRepositoryFactory', ['repository_factory']);
     }
 
-    private function loadContainer($fixture, array $bundles = ['YamlBundle'], CompilerPassInterface $compilerPass = null)
-    {
+    private function loadContainer(
+        string $fixture,
+        array $bundles = ['YamlBundle'],
+        CompilerPassInterface $compilerPass = null
+    ) : ContainerBuilder {
         $container = $this->getContainer($bundles);
         $container->registerExtension(new DoctrineExtension());
 
@@ -1035,7 +1038,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         return $container;
     }
 
-    private function getContainer(array $bundles)
+    private function getContainer(array $bundles) : ContainerBuilder
     {
         $map = [];
         foreach ($bundles as $bundle) {
@@ -1065,21 +1068,23 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * Assertion on the Class of a DIC Service Definition.
-     *
-     * @param string $expectedClass
      */
-    private function assertDICDefinitionClass(Definition $definition, $expectedClass)
+    private function assertDICDefinitionClass(Definition $definition, string $expectedClass) : void
     {
         $this->assertEquals($expectedClass, $definition->getClass(), 'Expected Class of the DIC Container Service Definition is wrong.');
     }
 
-    private function assertDICConstructorArguments(Definition $definition, $args)
+    private function assertDICConstructorArguments(Definition $definition, array $args) : void
     {
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '" . $definition->getClass() . "' don't match.");
     }
 
-    private function assertDICDefinitionMethodCallAt($pos, Definition $definition, $methodName, array $params = null)
-    {
+    private function assertDICDefinitionMethodCallAt(
+        int $pos,
+        Definition $definition,
+        string $methodName,
+        array $params = null
+    ) : void {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
             $this->fail(sprintf('Method call at position %s not found!', $pos));
@@ -1098,12 +1103,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
-     *
-     * @param string $methodName
-     * @param array  $params
      */
-    private function assertDICDefinitionMethodCallOnce(Definition $definition, $methodName, array $params = null)
-    {
+    private function assertDICDefinitionMethodCallOnce(
+        Definition $definition,
+        string $methodName,
+        array $params = null
+    ) : void {
         $calls  = $definition->getMethodCalls();
         $called = false;
         foreach ($calls as $call) {
@@ -1127,8 +1132,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->fail("Method '" . $methodName . "' is expected to be called once, definition does not contain a call though.");
     }
 
-    private function assertDICDefinitionMethodCallCount(Definition $definition, $methodName, array $params = [], $nbCalls = 1)
-    {
+    private function assertDICDefinitionMethodCallCount(
+        Definition $definition,
+        string $methodName,
+        array $params = [],
+        int $nbCalls = 1
+    ) : void {
         $calls  = $definition->getMethodCalls();
         $called = 0;
         foreach ($calls as $call) {
@@ -1151,12 +1160,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * Assertion for the DI Container, check if the given definition does not contain a method call with the given parameters.
-     *
-     * @param string $methodName
-     * @param array  $params
      */
-    private function assertDICDefinitionNoMethodCall(Definition $definition, $methodName, array $params = null)
-    {
+    private function assertDICDefinitionNoMethodCall(
+        Definition $definition,
+        string $methodName,
+        array $params = null
+    ) : void {
         $calls = $definition->getMethodCalls();
         foreach ($calls as $call) {
             if ($call[0] !== $methodName) {
@@ -1171,7 +1180,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         }
     }
 
-    private function compileContainer(ContainerBuilder $container)
+    private function compileContainer(ContainerBuilder $container) : void
     {
         $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);

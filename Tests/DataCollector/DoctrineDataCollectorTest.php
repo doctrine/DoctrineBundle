@@ -14,7 +14,7 @@ class DoctrineDataCollectorTest extends TestCase
     const FIRST_ENTITY  = 'TestBundle\Test\Entity\Test1';
     const SECOND_ENTITY = 'TestBundle\Test\Entity\Test2';
 
-    public function testCollectEntities()
+    public function testCollectEntities() : void
     {
         $manager   = $this->getMockBuilder('Doctrine\ORM\EntityManager')->disableOriginalConstructor()->getMock();
         $config    = $this->getMockBuilder('Doctrine\ORM\Configuration')->getMock();
@@ -66,7 +66,7 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertEmpty($collector->getEntities());
     }
 
-    public function testGetGroupedQueries()
+    public function testGetGroupedQueries() : void
     {
         $logger            = $this->getMockBuilder('Doctrine\DBAL\Logging\DebugStack')->getMock();
         $logger->queries   = [];
@@ -103,12 +103,7 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame(1, $groupedQueries['default'][1]['count']);
     }
 
-    /**
-     * @param string $entityFQCN
-     *
-     * @return ClassMetadataInfo
-     */
-    private function createEntityMetadata($entityFQCN)
+    private function createEntityMetadata(string $entityFQCN) : ClassMetadataInfo
     {
         $metadata            = new ClassMetadataInfo($entityFQCN);
         $metadata->name      = $entityFQCN;
@@ -117,12 +112,7 @@ class DoctrineDataCollectorTest extends TestCase
         return $metadata;
     }
 
-    /**
-     * @param array $managers
-     *
-     * @return DoctrineDataCollector
-     */
-    private function createCollector(array $managers, bool $shouldValidateSchema = true)
+    private function createCollector(array $managers, bool $shouldValidateSchema = true) : DoctrineDataCollector
     {
         $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();
         $registry

@@ -27,13 +27,8 @@ class DoctrineExtension extends AbstractExtension
 
     /**
      * Get the possible combinations of elements from the given array
-     *
-     * @param array $elements
-     * @param int   $combinationsLevel
-     *
-     * @return array
      */
-    private function getPossibleCombinations(array $elements, $combinationsLevel)
+    private function getPossibleCombinations(array $elements, int $combinationsLevel) : array
     {
         $baseCount = count($elements);
         $result    = [];

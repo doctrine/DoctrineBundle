@@ -8,13 +8,13 @@ use Doctrine\ORM\Query\SqlWalker;
 
 class TestStringFunction extends FunctionNode
 {
-    public function getSql(SqlWalker $sqlWalker)
+    public function getSql(SqlWalker $sqlWalker) : string
     {
         return '';
     }
 
-    public function parse(Parser $parser)
+    public function parse(Parser $parser) : void
     {
-        return '';
+        return;
     }
 }

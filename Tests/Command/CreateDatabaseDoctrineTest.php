@@ -3,21 +3,21 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_MockObject_MockObject;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class CreateDatabaseDoctrineTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown() : void
     {
         @unlink(sys_get_temp_dir() . '/test');
         @unlink(sys_get_temp_dir() . '/shard_1');
         @unlink(sys_get_temp_dir() . '/shard_2');
     }
 
-    public function testExecute()
+    public function testExecute() : void
     {
         $connectionName = 'default';
         $dbName         = 'test';
@@ -41,7 +41,7 @@ class CreateDatabaseDoctrineTest extends TestCase
         $this->assertContains('Created database ' . sys_get_temp_dir() . '/' . $dbName . ' for connection named ' . $connectionName, $commandTester->getDisplay());
     }
 
-    public function testExecuteWithShardOption()
+    public function testExecuteWithShardOption() : void
     {
         $connectionName = 'default';
         $params         = [
@@ -86,12 +86,9 @@ class CreateDatabaseDoctrineTest extends TestCase
     }
 
     /**
-     * @param string       $connectionName Connection name
-     * @param mixed[]|null $params         Connection parameters
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @param mixed[]|null $params Connection parameters
      */
-    private function getMockContainer($connectionName, $params = null)
+    private function getMockContainer(string $connectionName, array $params = null) : MockObject
     {
         // Mock the container and everything you'll need here
         $mockDoctrine = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')

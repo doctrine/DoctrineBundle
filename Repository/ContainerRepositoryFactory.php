@@ -32,7 +32,7 @@ final class ContainerRepositoryFactory implements RepositoryFactory
     /**
      * {@inheritdoc}
      */
-    public function getRepository(EntityManagerInterface $entityManager, $entityName)
+    public function getRepository(EntityManagerInterface $entityManager, $entityName) : ObjectRepository
     {
         $metadata            = $entityManager->getClassMetadata($entityName);
         $repositoryServiceId = $metadata->customRepositoryClassName;
@@ -65,8 +65,10 @@ final class ContainerRepositoryFactory implements RepositoryFactory
         return $this->getOrCreateRepository($entityManager, $metadata);
     }
 
-    private function getOrCreateRepository(EntityManagerInterface $entityManager, ClassMetadata $metadata)
-    {
+    private function getOrCreateRepository(
+        EntityManagerInterface $entityManager,
+        ClassMetadata $metadata
+    ) : ObjectRepository {
         $repositoryHash = $metadata->getName() . spl_object_hash($entityManager);
         if (isset($this->managedRepositories[$repositoryHash])) {
             return $this->managedRepositories[$repositoryHash];

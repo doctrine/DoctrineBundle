@@ -17,7 +17,7 @@ class CustomEntityListenerServiceResolver implements EntityListenerServiceResolv
     /**
      * {@inheritdoc}
      */
-    public function clear($className = null)
+    public function clear($className = null) : void
     {
         $this->resolver->clear($className);
     }
@@ -33,7 +33,7 @@ class CustomEntityListenerServiceResolver implements EntityListenerServiceResolv
     /**
      * {@inheritdoc}
      */
-    public function register($object)
+    public function register($object) : void
     {
         $this->resolver->register($object);
     }
@@ -41,7 +41,7 @@ class CustomEntityListenerServiceResolver implements EntityListenerServiceResolv
     /**
      * {@inheritdoc}
      */
-    public function registerService($className, $serviceId)
+    public function registerService($className, $serviceId) : void
     {
         $this->resolver->registerService($className, $serviceId);
     }

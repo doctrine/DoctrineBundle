@@ -12,7 +12,7 @@ class ServiceEntityRepositoryTest extends TestCase
      * @expectedException \LogicException
      * @expectedExceptionMessage Could not find the entity manager for class "Doctrine\Bundle\DoctrineBundle\Tests\Repository\TestEntity". Check your Doctrine configuration to make sure it is configured to load this entity’s metadata.
      */
-    public function testConstructorThrowsExceptionWhenNoManagerFound()
+    public function testConstructorThrowsExceptionWhenNoManagerFound() : void
     {
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         new ServiceEntityRepository($registry, TestEntity::class);

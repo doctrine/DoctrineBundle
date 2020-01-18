@@ -11,7 +11,7 @@ final class ServiceRepositoryCompilerPass implements CompilerPassInterface
 {
     const REPOSITORY_SERVICE_TAG = 'doctrine.repository_service';
 
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container) : void
     {
         // when ORM is not enabled
         if (! $container->hasDefinition('doctrine.orm.container_repository_factory')) {

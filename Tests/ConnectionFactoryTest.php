@@ -15,7 +15,7 @@ class ConnectionFactoryTest extends TestCase
     /**
      * @expectedException \Doctrine\DBAL\DBALException
      */
-    public function testContainer()
+    public function testContainer() : void
     {
         $typesConfig  = [];
         $factory      = new ConnectionFactory($typesConfig);
@@ -38,7 +38,7 @@ class ConnectionFactoryTest extends TestCase
         }
     }
 
-    public function testDefaultCharset()
+    public function testDefaultCharset() : void
     {
         $factory = new ConnectionFactory([]);
         $params  = [
@@ -54,7 +54,7 @@ class ConnectionFactoryTest extends TestCase
         $this->assertSame(1 + $creationCount, FakeConnection::$creationCount);
     }
 
-    public function testDefaultCharsetMySql()
+    public function testDefaultCharsetMySql() : void
     {
         $factory = new ConnectionFactory([]);
         $params  = ['driver' => 'pdo_mysql'];
@@ -89,7 +89,7 @@ class FakeDriver implements Driver
      *
      * @link https://github.com/doctrine/DoctrineBundle/issues/673
      */
-    public function getDatabasePlatform()
+    public function getDatabasePlatform() : AbstractPlatform
     {
         if (self::$exception !== null) {
             throw self::$exception;
@@ -106,22 +106,22 @@ class FakeDriver implements Driver
      * @param string|null $password
      * @param mixed[]     $driverOptions
      */
-    public function connect(array $params, $username = null, $password = null, array $driverOptions = [])
+    public function connect(array $params, $username = null, $password = null, array $driverOptions = []) : void
     {
         throw new Exception('not implemented');
     }
 
-    public function getSchemaManager(Connection $conn)
+    public function getSchemaManager(Connection $conn) : void
     {
         throw new Exception('not implemented');
     }
 
-    public function getName()
+    public function getName() : string
     {
         return 'FakeDriver';
     }
 
-    public function getDatabase(Connection $conn)
+    public function getDatabase(Connection $conn) : string
     {
         return 'fake_db';
     }

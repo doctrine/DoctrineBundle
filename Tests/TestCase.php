@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 class TestCase extends BaseTestCase
 {
-    public function createXmlBundleTestContainer()
+    public function createXmlBundleTestContainer() : ContainerBuilder
     {
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.name' => 'app',
@@ -83,7 +83,7 @@ class TestCase extends BaseTestCase
 
 class TestCaseAllPublicCompilerPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container) : void
     {
         foreach ($container->getDefinitions() as $id => $definition) {
             if (strpos($id, 'doctrine') === false) {

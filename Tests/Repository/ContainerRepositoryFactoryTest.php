@@ -9,13 +9,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
 
 class ContainerRepositoryFactoryTest extends TestCase
 {
-    public function testGetRepositoryReturnsService()
+    public function testGetRepositoryReturnsService() : void
     {
         $em        = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
         $repo      = new StubRepository();
@@ -25,7 +26,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->assertSame($repo, $factory->getRepository($em, 'Foo\CoolEntity'));
     }
 
-    public function testGetRepositoryReturnsEntityRepository()
+    public function testGetRepositoryReturnsEntityRepository() : void
     {
         $container = $this->createContainer([]);
         $em        = $this->createEntityManager(['Foo\BoringEntity' => null]);
@@ -37,7 +38,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->assertSame($actualRepo, $factory->getRepository($em, 'Foo\BoringEntity'));
     }
 
-    public function testCustomRepositoryIsReturned()
+    public function testCustomRepositoryIsReturned() : void
     {
         $container = $this->createContainer([]);
         $em        = $this->createEntityManager([
@@ -55,7 +56,7 @@ class ContainerRepositoryFactoryTest extends TestCase
      * @expectedException \RuntimeException
      * @expectedExceptionMessage The service "my_repo" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).
      */
-    public function testServiceRepositoriesMustExtendObjectRepository()
+    public function testServiceRepositoriesMustExtendObjectRepository() : void
     {
         $repo = new stdClass();
 
@@ -67,7 +68,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
-    public function testServiceRepositoriesCanNotExtendsEntityRepository()
+    public function testServiceRepositoriesCanNotExtendsEntityRepository() : void
     {
         $repo = $this->getMockBuilder(ObjectRepository::class)->getMock();
 
@@ -85,7 +86,7 @@ class ContainerRepositoryFactoryTest extends TestCase
      * @expectedException \RuntimeException
      * @expectedExceptionMessage The "Doctrine\Bundle\DoctrineBundle\Tests\Repository\StubServiceRepository" entity repository implements "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
      */
-    public function testRepositoryMatchesServiceInterfaceButServiceNotFound()
+    public function testRepositoryMatchesServiceInterfaceButServiceNotFound() : void
     {
         $container = $this->createContainer([]);
 
@@ -101,7 +102,7 @@ class ContainerRepositoryFactoryTest extends TestCase
      * @expectedException \RuntimeException
      * @expectedExceptionMessage The "Foo\CoolEntity" entity has a repositoryClass set to "not_a_real_class", but this is not a valid class. Check your class naming. If this is meant to be a service id, make sure this service exists and is tagged with "doctrine.repository_service".
      */
-    public function testCustomRepositoryIsNotAValidClass()
+    public function testCustomRepositoryIsNotAValidClass() : void
     {
         $container = $this->createContainer([]);
 
@@ -111,7 +112,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
-    private function createContainer(array $services)
+    private function createContainer(array $services) : MockObject
     {
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->expects($this->any())
@@ -128,7 +129,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         return $container;
     }
 
-    private function createEntityManager(array $entityRepositoryClasses)
+    private function createEntityManager(array $entityRepositoryClasses) : MockObject
     {
         $classMetadatas = [];
         foreach ($entityRepositoryClasses as $entityClass => $entityRepositoryClass) {
