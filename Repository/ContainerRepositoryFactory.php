@@ -18,7 +18,7 @@ final class ContainerRepositoryFactory implements RepositoryFactory
     /** @var ObjectRepository[] */
     private $managedRepositories = [];
 
-    /** @var ContainerInterface|null */
+    /** @var ContainerInterface */
     private $container;
 
     /**
@@ -40,7 +40,7 @@ final class ContainerRepositoryFactory implements RepositoryFactory
         $customRepositoryName = $metadata->customRepositoryClassName;
         if ($customRepositoryName !== null) {
             // fetch from the container
-            if ($this->container && $this->container->has($customRepositoryName)) {
+            if ($this->container->has($customRepositoryName)) {
                 $repository = $this->container->get($customRepositoryName);
 
                 if (! $repository instanceof ObjectRepository) {
