@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory;
+use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use function class_exists;
 use function sprintf;
@@ -842,11 +842,17 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->removeDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager');
         }
 
+        $transportFactoryDefinition = $container->getDefinition('messenger.transport.doctrine.factory');
         if (! class_exists(DoctrineTransportFactory::class)) {
-            return;
+            // If symfony/messenger < 5.1
+            if (class_exists(\Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory::class)) {
+                $transportFactoryDefinition->setClass(\Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory::class);
+            } else {
+                // Dont add the tag
+                return;
+            }
         }
 
-        $transportFactoryDefinition = $container->getDefinition('messenger.transport.doctrine.factory');
         $transportFactoryDefinition->addTag('messenger.transport_factory');
     }
 
