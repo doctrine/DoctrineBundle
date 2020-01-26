@@ -20,7 +20,9 @@ class DoctrineExtension extends AbstractExtension
     public function getFilters()
     {
         return [
-            new TwigFilter('doctrine_pretty_query', [$this, 'formatQuery'], ['is_safe' => ['html']]),
+            new TwigFilter('doctrine_pretty_query', [$this, 'formatQuery'], ['is_safe' => ['html'], 'deprecated' => true]),
+            new TwigFilter('doctrine_prettify_sql', [$this, 'prettifySql'], ['is_safe' => ['html']]),
+            new TwigFilter('doctrine_format_sql', [$this, 'formatSql'], ['is_safe' => ['html']]),
             new TwigFilter('doctrine_replace_query_parameters', [$this, 'replaceQueryParameters']),
         ];
     }
@@ -164,16 +166,9 @@ class DoctrineExtension extends AbstractExtension
      */
     public function formatQuery($sql, $highlightOnly = false)
     {
-        SqlFormatter::$pre_attributes            = 'class="highlight highlight-sql"';
-        SqlFormatter::$quote_attributes          = 'class="string"';
-        SqlFormatter::$backtick_quote_attributes = 'class="string"';
-        SqlFormatter::$reserved_attributes       = 'class="keyword"';
-        SqlFormatter::$boundary_attributes       = 'class="symbol"';
-        SqlFormatter::$number_attributes         = 'class="number"';
-        SqlFormatter::$word_attributes           = 'class="word"';
-        SqlFormatter::$error_attributes          = 'class="error"';
-        SqlFormatter::$comment_attributes        = 'class="comment"';
-        SqlFormatter::$variable_attributes       = 'class="variable"';
+        @trigger_error(sprintf('The "%s()" method is deprecated and will be removed in DoctrineBundle 3.0.', __METHOD__), E_USER_DEPRECATED);
+
+        $this->setUpSqlFormatter();
 
         if ($highlightOnly) {
             $html = SqlFormatter::highlight($sql);
@@ -184,6 +179,34 @@ class DoctrineExtension extends AbstractExtension
         }
 
         return $html;
+    }
+
+    public function prettifySql(string $sql) : string
+    {
+        $this->setUpSqlFormatter();
+
+        return SqlFormatter::highlight($sql);
+    }
+
+    public function formatSql(string $sql, bool $highlight) : string
+    {
+        $this->setUpSqlFormatter();
+
+        return SqlFormatter::format($sql, $highlight);
+    }
+
+    private function setUpSqlFormatter() : void
+    {
+        SqlFormatter::$pre_attributes            = 'class="highlight highlight-sql"';
+        SqlFormatter::$quote_attributes          = 'class="string"';
+        SqlFormatter::$backtick_quote_attributes = 'class="string"';
+        SqlFormatter::$reserved_attributes       = 'class="keyword"';
+        SqlFormatter::$boundary_attributes       = 'class="symbol"';
+        SqlFormatter::$number_attributes         = 'class="number"';
+        SqlFormatter::$word_attributes           = 'class="word"';
+        SqlFormatter::$error_attributes          = 'class="error"';
+        SqlFormatter::$comment_attributes        = 'class="comment"';
+        SqlFormatter::$variable_attributes       = 'class="variable"';
     }
 
     /**
