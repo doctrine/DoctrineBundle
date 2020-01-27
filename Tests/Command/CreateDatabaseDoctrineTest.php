@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
+use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
@@ -41,7 +42,10 @@ class CreateDatabaseDoctrineTest extends TestCase
         $this->assertContains('Created database ' . sys_get_temp_dir() . '/' . $dbName . ' for connection named ' . $connectionName, $commandTester->getDisplay());
     }
 
-    public function testExecuteWithShardOption() : void
+    /**
+     * @dataProvider provideShardOption
+     */
+    public function testExecuteWithShardAlias(string $shardOption) : void
     {
         $connectionName = 'default';
         $params         = [
@@ -75,14 +79,20 @@ class CreateDatabaseDoctrineTest extends TestCase
         $command = $application->find('doctrine:database:create');
 
         $commandTester = new CommandTester($command);
-        $commandTester->execute(['command' => $command->getName(), '--shard' => 1]);
+        $commandTester->execute(['command' => $command->getName(), $shardOption => 1]);
 
         $this->assertContains('Created database ' . sys_get_temp_dir() . '/shard_1 for connection named ' . $connectionName, $commandTester->getDisplay());
 
         $commandTester = new CommandTester($command);
-        $commandTester->execute(['command' => $command->getName(), '--shard' => 2]);
+        $commandTester->execute(['command' => $command->getName(), $shardOption => 2]);
 
         $this->assertContains('Created database ' . sys_get_temp_dir() . '/shard_2 for connection named ' . $connectionName, $commandTester->getDisplay());
+    }
+
+    public function provideShardOption() : Generator
+    {
+        yield 'full name' => ['--shard'];
+        yield 'short name' => ['-s'];
     }
 
     /**
