@@ -3,6 +3,8 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
+use Doctrine\DBAL\DBALException;
+use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
@@ -10,7 +12,10 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class DropDatabaseDoctrineTest extends TestCase
 {
-    public function testExecute() : void
+    /**
+     * @dataProvider provideForceOption
+     */
+    public function testExecute(array $options) : void
     {
         $connectionName = 'default';
         $dbName         = 'test';
@@ -29,7 +34,7 @@ class DropDatabaseDoctrineTest extends TestCase
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
-            array_merge(['command' => $command->getName(), '--force' => true])
+            array_merge(['command' => $command->getName()], $options)
         );
 
         $this->assertContains(
@@ -40,6 +45,15 @@ class DropDatabaseDoctrineTest extends TestCase
             ),
             $commandTester->getDisplay()
         );
+    }
+
+    /**
+     * @dataProvider provideIncompatibleDriverOptions
+     */
+    public function testItThrowsWhenUsingIfExistsWithAnIncompatibleDriver(array $options) : void
+    {
+        static::expectException(DBALException::class);
+        $this->testExecute($options);
     }
 
     public function testExecuteWithoutOptionForceWillFailWithAttentionMessage() : void
@@ -72,6 +86,32 @@ class DropDatabaseDoctrineTest extends TestCase
             $commandTester->getDisplay()
         );
         $this->assertContains('Please run the operation with --force to execute', $commandTester->getDisplay());
+    }
+
+    public function provideForceOption() : Generator
+    {
+        yield 'full name' => [
+            ['--force' => true],
+        ];
+        yield 'short name' => [
+            ['-f' => true],
+        ];
+    }
+
+    public function provideIncompatibleDriverOptions() : Generator
+    {
+        yield 'full name' => [
+            [
+                '--force' => true,
+                '--if-exists' => true,
+            ],
+        ];
+        yield 'short name' => [
+            [
+                '-f' => true,
+                '--if-exists' => true,
+            ],
+        ];
     }
 
     /**
