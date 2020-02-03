@@ -8,7 +8,7 @@
 
     <services>
         <service id="entity_listener1" class="EntityListener" abstract="true">
-            <tag name="doctrine.orm.entity_listener" lazy="true" />
+            <tag name="doctrine.orm.entity_listener" />
         </service>
     </services>
 
