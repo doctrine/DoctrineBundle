@@ -162,7 +162,7 @@ class RegistryTest extends TestCase
         $registry->reset();
     }
 
-    public function testIdentityMapsStayConsistentAfterReset()
+    public function testIdentityMapsStayConsistentAfterReset() : void
     {
         $kernel = new TestKernel();
         $kernel->boot();
