@@ -21,7 +21,7 @@ class ProfilerController implements ContainerAwareInterface
     /**
      * {@inheritDoc}
      */
-    public function setContainer(ContainerInterface $container = null)
+    public function setContainer(ContainerInterface $container = null) : void
     {
         $this->container = $container;
     }
@@ -35,7 +35,7 @@ class ProfilerController implements ContainerAwareInterface
      *
      * @return Response A Response instance
      */
-    public function explainAction($token, $connectionName, $query)
+    public function explainAction($token, $connectionName, $query) : void
     {
         /** @var Profiler $profiler */
         $profiler = $this->container->get('profiler');
@@ -77,7 +77,7 @@ class ProfilerController implements ContainerAwareInterface
     /**
      * @param mixed[] $query
      */
-    private function explainSQLitePlatform(Connection $connection, array $query)
+    private function explainSQLitePlatform(Connection $connection, array $query) : void
     {
         $params = $query['params'];
 
@@ -89,7 +89,7 @@ class ProfilerController implements ContainerAwareInterface
             ->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    private function explainSQLServerPlatform(Connection $connection, $query)
+    private function explainSQLServerPlatform(Connection $connection, $query) : void
     {
         if (stripos($query['sql'], 'SELECT') === 0) {
             $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . '; SET STATISTICS PROFILE OFF;';
@@ -109,7 +109,7 @@ class ProfilerController implements ContainerAwareInterface
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    private function explainOtherPlatform(Connection $connection, $query)
+    private function explainOtherPlatform(Connection $connection, $query) : void
     {
         $params = $query['params'];
 
