@@ -34,13 +34,13 @@ abstract class DoctrineCommand extends Command
      */
     protected function getEntityGenerator()
     {
-        $entityGenerator = new EntityGenerator();
-        $entityGenerator->setGenerateAnnotations(false);
-        $entityGenerator->setGenerateStubMethods(true);
-        $entityGenerator->setRegenerateEntityIfExists(false);
-        $entityGenerator->setUpdateEntityIfExists(true);
-        $entityGenerator->setNumSpaces(4);
-        $entityGenerator->setAnnotationPrefix('ORM\\');
+        $entityGenerator = new EntityGenerator()
+            ->setGenerateAnnotations(false)
+            ->setGenerateStubMethods(true)
+            ->setRegenerateEntityIfExists(false)
+            ->setUpdateEntityIfExists(true)
+            ->setNumSpaces(4)
+            ->setAnnotationPrefix('ORM\\');
 
         return $entityGenerator;
     }
