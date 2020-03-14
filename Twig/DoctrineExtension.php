@@ -98,7 +98,7 @@ class DoctrineExtension extends AbstractExtension
                     $value = static::escapeFunction($value);
                 }
 
-                $result = implode(', ', $result);
+                $result = implode(', ', $result) ?: 'NULL';
                 break;
 
             case is_object($result):

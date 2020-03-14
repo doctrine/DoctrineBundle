@@ -56,6 +56,18 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR b=2', $result);
     }
 
+    public function testReplaceQueryParametersWithEmptyArray() : void
+    {
+        $extension  = new DoctrineExtension();
+        $query      = 'IN (?)';
+        $parameters = [
+            [],
+        ];
+
+        $result = $extension->replaceQueryParameters($query, $parameters);
+        $this->assertEquals('IN (NULL)', $result);
+    }
+
     public function testEscapeBinaryParameter() : void
     {
         $binaryString = pack('H*', '9d40b8c1417f42d099af4782ec4b20b6');
@@ -69,7 +81,7 @@ class DoctrineExtensionTest extends TestCase
 
     public function testEscapeArrayParameter() : void
     {
-        $this->assertEquals("1, NULL, 'test', foo", DoctrineExtension::escapeFunction([1, null, 'test', new DummyClass('foo')]));
+        $this->assertEquals("1, NULL, 'test', foo, NULL", DoctrineExtension::escapeFunction([1, null, 'test', new DummyClass('foo'), []]));
     }
 
     public function testEscapeObjectParameter() : void
