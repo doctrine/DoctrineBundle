@@ -93,9 +93,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $loader->load('dbal.xml');
 
         if (method_exists(Alias::class, 'setDeprecated')) {
-            $container->getAlias('Symfony\Bridge\Doctrine\RegistryInterface')->setDeprecated(true, 'The "%alias_id%" service alias is deprecated, use `Doctrine\Persistence\ManagerRegistry` instead.');
-            $container->getAlias('Doctrine\Bundle\DoctrineBundle\Registry')->setDeprecated(true, 'The "%alias_id%" service alias is deprecated, use `Doctrine\Persistence\ManagerRegistry` instead.');
-            $container->getAlias('Doctrine\Common\Persistence\ManagerRegistry')->setDeprecated(true, 'The "%alias_id%" service alias is deprecated, use `Doctrine\Persistence\ManagerRegistry` instead.');
+            $container->getAlias('Symfony\Bridge\Doctrine\RegistryInterface')->setDeprecated(true, 'The "%alias_id%" service alias is deprecated, use "Doctrine\Persistence\ManagerRegistry" instead.');
+            $container->getAlias('Doctrine\Bundle\DoctrineBundle\Registry')->setDeprecated(true, 'The "%alias_id%" service alias is deprecated, use "Doctrine\Persistence\ManagerRegistry" instead.');
+            $container->getAlias('Doctrine\Common\Persistence\ManagerRegistry')->setDeprecated(true, 'The "%alias_id%" service alias is deprecated, use "Doctrine\Persistence\ManagerRegistry" instead.');
         }
 
         if (empty($config['default_connection'])) {
@@ -355,7 +355,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $loader->load('orm.xml');
 
         if (method_exists(Alias::class, 'setDeprecated')) {
-            $container->getAlias('Doctrine\Common\Persistence\ObjectManager')->setDeprecated(true, 'The "%alias_id%" service alias is deprecated, use `Doctrine\ORM\EntityManagerInterface` instead.');
+            $container->getAlias('Doctrine\Common\Persistence\ObjectManager')->setDeprecated(true, 'The "%alias_id%" service alias is deprecated, use "Doctrine\ORM\EntityManagerInterface" instead.');
         }
 
         if (class_exists(AbstractType::class)) {
