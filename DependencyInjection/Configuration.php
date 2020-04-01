@@ -699,16 +699,16 @@ class Configuration implements ConfigurationInterface
      * introduced at the same time. By checking if getDefinition() exists,
      * we can determine the correct param count to use when calling setDeprecated.
      */
-    private function getCommentedParamDeprecationMsg(): array
+    private function getCommentedParamDeprecationMsg() : array
     {
         if (method_exists(BaseNode::class, 'getDefinition')) {
             return [
                 'doctrine/doctrine-bundle',
                 '2.0',
-                'Type commenting features removed; the corresponding config parameter was deprecated and will be dropped in 3.0.'
+                'Type commenting features removed; the corresponding config parameter was deprecated and will be dropped in 3.0.',
             ];
         }
 
-        return [];
+        return [null];
     }
 }
