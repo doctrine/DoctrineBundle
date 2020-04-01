@@ -92,7 +92,7 @@ class Configuration implements ConfigurationInterface
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
                                 ->booleanNode('commented')->setDeprecated(
-                                    'doctrine/DoctrineBundle',
+                                    'doctrine/doctrine-bundle',
                                     '2.0',
                                     'Type commenting features removed; the corresponding config parameter was deprecated and will be dropped in 3.0.'
                                 )->end()
