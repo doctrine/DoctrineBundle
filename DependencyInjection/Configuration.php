@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Doctrine\ORM\EntityManager;
 use ReflectionClass;
+use Symfony\Component\Config\Definition\BaseNode;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -91,11 +92,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
-                                ->booleanNode('commented')->setDeprecated(
-                                    'doctrine/doctrine-bundle',
-                                    '2.0',
-                                    'Type commenting features removed; the corresponding config parameter was deprecated and will be dropped in 3.0.'
-                                )->end()
+                                ->booleanNode('commented')->setDeprecated(...$this->getCommentedParamDeprecationMsg())->end()
                             ->end()
                         ->end()
                     ->end()
@@ -692,5 +689,26 @@ class Configuration implements ConfigurationInterface
             'names' => $namesArray,
             'values' => $valuesArray,
         ];
+    }
+
+    /**
+     * Returns the correct deprecation param's as an array for setDeprecated.
+     *
+     * Symfony/Config v5.1 introduces a deprecation notice when calling
+     * setDeprecation() with less than 3 args and the getDefinition method was
+     * introduced at the same time. By checking if getDefinition() exists,
+     * we can determine the correct param count to use when calling setDeprecated.
+     */
+    private function getCommentedParamDeprecationMsg(): array
+    {
+        if (method_exists(BaseNode::class, 'getDefinition')) {
+            return [
+                'doctrine/doctrine-bundle',
+                '2.0',
+                'Type commenting features removed; the corresponding config parameter was deprecated and will be dropped in 3.0.'
+            ];
+        }
+
+        return [];
     }
 }
