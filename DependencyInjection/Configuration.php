@@ -695,15 +695,15 @@ class Configuration implements ConfigurationInterface
      * Returns the correct deprecation param's as an array for setDeprecated.
      *
      * Symfony/Config v5.1 introduces a deprecation notice when calling
-     * setDeprecation() with less than 3 args and the getDefinition method was
-     * introduced at the same time. By checking if getDefinition() exists,
+     * setDeprecation() with less than 3 args and the getDeprecation method was
+     * introduced at the same time. By checking if getDeprecation() exists,
      * we can determine the correct param count to use when calling setDeprecated.
      */
     private function getCommentedParamDeprecationMsg() : array
     {
-        $msg = 'The doctrine-bundle type commenting features removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.';
+        $msg = 'The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.';
 
-        if (method_exists(BaseNode::class, 'getDefinition')) {
+        if (method_exists(BaseNode::class, 'getDeprecation')) {
             return [
                 'doctrine/doctrine-bundle',
                 '2.0',
