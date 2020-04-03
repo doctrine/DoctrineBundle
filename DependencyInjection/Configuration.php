@@ -701,16 +701,16 @@ class Configuration implements ConfigurationInterface
      */
     private function getCommentedParamDeprecationMsg() : array
     {
-        $msg = 'The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.';
+        $message = 'The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.';
 
         if (method_exists(BaseNode::class, 'getDeprecation')) {
             return [
                 'doctrine/doctrine-bundle',
                 '2.0',
-                $msg,
+                $message,
             ];
         }
 
-        return [$msg];
+        return [$message];
     }
 }
