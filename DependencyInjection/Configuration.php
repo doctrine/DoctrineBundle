@@ -204,7 +204,7 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('memory')->end()
                 ->scalarNode('unix_socket')->info('The unix socket to use for MySQL')->end()
                 ->booleanNode('persistent')->info('True to use as persistent connection for the ibm_db2 driver')->end()
-                ->scalarNode('protocol')->info('The protocol to use for the ibm_db2 driver (default to TCPIP if ommited)')->end()
+                ->scalarNode('protocol')->info('The protocol to use for the ibm_db2 driver (default to TCPIP if omitted)')->end()
                 ->booleanNode('service')
                     ->info('True to use SERVICE_NAME as connection parameter instead of SID for Oracle')
                 ->end()
