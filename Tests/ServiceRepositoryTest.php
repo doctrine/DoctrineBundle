@@ -50,21 +50,22 @@ class ServiceRepositoryTest extends TestCase
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
-        $extension->load([[
-            'dbal' => [
-                'driver' => 'pdo_sqlite',
-                'charset' => 'UTF8',
-            ],
-            'orm' => [
-                'mappings' => [
-                    'RepositoryServiceBundle' => [
-                        'type' => 'annotation',
-                        'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/RepositoryServiceBundle/Entity',
-                        'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
+        $extension->load([
+            [
+                'dbal' => [
+                    'driver' => 'pdo_sqlite',
+                    'charset' => 'UTF8',
+                ],
+                'orm' => [
+                    'mappings' => [
+                        'RepositoryServiceBundle' => [
+                            'type' => 'annotation',
+                            'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/RepositoryServiceBundle/Entity',
+                            'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
+                        ],
                     ],
                 ],
             ],
-        ],
         ], $container);
 
         $def = $container->register(TestCustomServiceRepoRepository::class, TestCustomServiceRepoRepository::class)

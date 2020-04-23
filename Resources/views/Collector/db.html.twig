@@ -112,7 +112,7 @@
     {% set profiler_markup_version = profiler_markup_version|default(1) %}
 
     {% if 'explain' == page %}
-        {{ render(controller('DoctrineBundle:Profiler:explain', {
+        {{ render(controller('Doctrine\\Bundle\\DoctrineBundle\\Controller\\ProfilerController::explainAction', {
             token: token,
             panel: 'db',
             connectionName: request.query.get('connection'),

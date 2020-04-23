@@ -32,37 +32,39 @@ class TestCase extends BaseTestCase
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
-        $extension->load([[
-            'dbal' => [
-                'connections' => [
-                    'default' => [
-                        'driver' => 'pdo_mysql',
-                        'charset' => 'UTF8',
-                        'platform-service' => 'my.platform',
+        $extension->load([
+            [
+                'dbal' => [
+                    'connections' => [
+                        'default' => [
+                            'driver' => 'pdo_mysql',
+                            'charset' => 'UTF8',
+                            'platform-service' => 'my.platform',
+                        ],
                     ],
-                ],
-                'default_connection' => 'default',
-                'types' => [
-                    'test' => [
-                        'class' => TestType::class,
-                    ],
-                ],
-            ], 'orm' => [
-                'default_entity_manager' => 'default',
-                'entity_managers' => [
-                    'default' => [
-                        'mappings' => [
-                            'XmlBundle' => [
-                                'type' => 'xml',
-                                'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine',
-                                'prefix' => 'Fixtures\Bundles\XmlBundle\Entity',
-                            ],
+                    'default_connection' => 'default',
+                    'types' => [
+                        'test' => [
+                            'class' => TestType::class,
                         ],
                     ],
                 ],
-                'resolve_target_entities' => ['Symfony\Component\Security\Core\User\UserInterface' => 'stdClass'],
+                'orm' => [
+                    'default_entity_manager' => 'default',
+                    'entity_managers' => [
+                        'default' => [
+                            'mappings' => [
+                                'XmlBundle' => [
+                                    'type' => 'xml',
+                                    'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine',
+                                    'prefix' => 'Fixtures\Bundles\XmlBundle\Entity',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'resolve_target_entities' => ['Symfony\Component\Security\Core\User\UserInterface' => 'stdClass'],
+                ],
             ],
-        ],
         ], $container);
 
         $container->setDefinition('my.platform', new Definition('Doctrine\DBAL\Platforms\MySqlPlatform'))->setPublic(true);

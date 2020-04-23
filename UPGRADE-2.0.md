@@ -61,3 +61,31 @@ Types
    the type.
  * The `commented` configuration option for types will be dropped in a future
    release. You should not use it.
+
+UnitOfWork cleared between each request
+---------------------------------------
+If all of these are true:
+* You call `Symfony\Bundle\FrameworkBundle\Client::disableReboot()` in your test case
+* Trigger multiple HTTP requests (via `Symfony\Bundle\FrameworkBundle\Client::request()` etc.) within your test case
+* Your test case relies on Doctrine ORM keeping references to old entities between requests (this is most obvious when calling `Doctrine\Persistence\ObjectManager::refresh`)
+
+Your test case will fail since `DoctrineBundle` 2.0.3, as identity map is now cleared between each request 
+to better simulate real requests and avoid memory leaks. You have two options to solve this:
+
+1. Change your test cases with new behaviour in mind. In a lot of cases this just means to replace `ObjectManager::refresh($entity)` with `$entity = ObjectManager::find($entity->getId())`. This is the recommended solution.
+2. Write a compiler pass which restores old behaviour, e.g. by adding the following to your `Kernel` class:
+```php
+protected function build(\Symfony\Component\DependencyInjection\ContainerBuilder $container)
+{
+    parent::build($container);
+
+    if ($this->environment === 'test') {
+        $container->addCompilerPass(new class implements \Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface {
+            public function process(\Symfony\Component\DependencyInjection\ContainerBuilder $container)
+            {
+                $container->getDefinition('doctrine')->clearTag('kernel.reset');
+            }
+        }, \Symfony\Component\DependencyInjection\Compiler\PassConfig::TYPE_BEFORE_OPTIMIZATION, 1);
+    }
+}
+```
