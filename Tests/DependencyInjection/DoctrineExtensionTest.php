@@ -355,13 +355,14 @@ class DoctrineExtensionTest extends TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $extension->load([[
-            'dbal' => [
-                'connections' => [
-                    'default' => ['password' => 'foo', 'use_savepoints' => true],
+        $extension->load([
+            [
+                'dbal' => [
+                    'connections' => [
+                        'default' => ['password' => 'foo', 'use_savepoints' => true],
+                    ],
                 ],
             ],
-        ],
         ], $container);
 
         $calls = $container->getDefinition('doctrine.dbal.default_connection')->getMethodCalls();
