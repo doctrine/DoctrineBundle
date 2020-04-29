@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Doctrine\ORM\EntityManager;
 use ReflectionClass;
+use Symfony\Component\Config\Definition\BaseNode;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -91,7 +92,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
-                                ->booleanNode('commented')->setDeprecated()->end()
+                                ->booleanNode('commented')->setDeprecated(...$this->getCommentedParamDeprecationMsg())->end()
                             ->end()
                         ->end()
                     ->end()
@@ -684,5 +685,28 @@ class Configuration implements ConfigurationInterface
             'names' => $namesArray,
             'values' => $valuesArray,
         ];
+    }
+
+    /**
+     * Returns the correct deprecation param's as an array for setDeprecated.
+     *
+     * Symfony/Config v5.1 introduces a deprecation notice when calling
+     * setDeprecation() with less than 3 args and the getDeprecation method was
+     * introduced at the same time. By checking if getDeprecation() exists,
+     * we can determine the correct param count to use when calling setDeprecated.
+     */
+    private function getCommentedParamDeprecationMsg() : array
+    {
+        $message = 'The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.';
+
+        if (method_exists(BaseNode::class, 'getDeprecation')) {
+            return [
+                'doctrine/doctrine-bundle',
+                '2.0',
+                $message,
+            ];
+        }
+
+        return [$message];
     }
 }
