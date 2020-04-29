@@ -13,4 +13,6 @@ services:
         public: true
 
     symfony.messenger:
-        class: 'Symfony\Component\Messenger\Bridge\Doctrine\Transport\Connection'
+        class: 'Symfony\Component\Messenger\Transport\Doctrine\Connection'
+        arguments:
+            - table_name: app_messages

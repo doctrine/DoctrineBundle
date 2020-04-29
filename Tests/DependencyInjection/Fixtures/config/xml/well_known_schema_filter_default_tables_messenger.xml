@@ -16,6 +16,6 @@
 
     <srv:services>
         <srv:service id="well_known_filter" alias="doctrine.dbal.well_known_schema_asset_filter" public="true" />
-        <srv:service id="symfony.messenger" class="Symfony\Component\Messenger\Transport\Doctrine\Connection" />
+        <srv:service id="symfony.messenger" class="Symfony\Component\Messenger\Bridge\Doctrine\Transport\Connection" />
     </srv:services>
 </srv:container>
