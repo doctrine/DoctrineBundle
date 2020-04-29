@@ -644,7 +644,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.orm.listeners.resolve_target_entity');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addResolveTargetEntity', ['Symfony\Component\Security\Core\User\UserInterface', 'MyUserClass', []]);
 
-        $this->assertEquals(['doctrine.event_subscriber' => [[]]], $definition->getTags());
+        $tags = $definition->getTags();
+        unset($tags['container.no_preload']);
+        $this->assertEquals(['doctrine.event_subscriber' => [[]]], $tags);
     }
 
     public function testAttachEntityListeners() : void
@@ -655,7 +657,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $methodCalls = $definition->getMethodCalls();
 
         $this->assertDICDefinitionMethodCallCount($definition, 'addEntityListener', [], 6);
-        $this->assertEquals(['doctrine.event_listener' => [ ['event' => 'loadClassMetadata'] ] ], $definition->getTags());
+        $tags = $definition->getTags();
+        unset($tags['container.no_preload']);
+        $this->assertEquals(['doctrine.event_listener' => [ ['event' => 'loadClassMetadata'] ] ], $tags);
 
         $this->assertEquals($methodCalls[0], [
             'addEntityListener',
@@ -790,6 +794,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         yield ['cache', 'cache_items'];
         yield ['lock', 'lock_keys'];
         yield ['messenger', 'messenger_messages'];
+        yield ['messenger_legacy', 'messenger_messages'];
         yield ['session', 'sessions'];
     }
 
