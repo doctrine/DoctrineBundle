@@ -31,8 +31,7 @@ Full example:
     .. code-block:: yaml
 
         services:
-            user_listener:
-                class: \UserListener
+            UserListener:
                 tags:
                     # Minimal configuration below
                     - { name: doctrine.orm.entity_listener }
@@ -46,7 +45,7 @@ Full example:
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
             <services>
-                <service id="user_listener" class="UserListener">
+                <service id="UserListener">
                     <!-- entity_manager attribute is optional -->
                     <tag name="doctrine.orm.entity_listener" entity_manager="custom" />
                 </service>
@@ -62,8 +61,7 @@ definition:
     .. code-block:: yaml
 
         services:
-            user_listener:
-                class: \UserListener
+            UserListener:
                 tags:
                     -
                         name: doctrine.orm.entity_listener
@@ -81,7 +79,7 @@ definition:
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
             <services>
-                <service id="user_listener" class="UserListener">
+                <service id="UserListener">
                     <!-- entity_manager attribute is optional -->
                     <!-- method attribute is optional -->
                     <tag
@@ -116,8 +114,7 @@ are only instantiated when they are actually used.
     .. code-block:: yaml
 
         services:
-            lazy_user_listener:
-                class: \UserListener
+            UserListener:
                 tags:
                     - { name: doctrine.orm.entity_listener, lazy: true }
                     
@@ -129,7 +126,7 @@ are only instantiated when they are actually used.
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
             <services>
-                <service id="lazy_user_listener" class="UserListener">
+                <service id="UserListener">
                     <tag name="doctrine.orm.entity_listener" event="preUpdate" entity="App\Entity\User" lazy="true" />            
                 </service>
             </services>
