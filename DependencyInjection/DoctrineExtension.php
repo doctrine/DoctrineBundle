@@ -12,6 +12,8 @@ use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
+use Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaSubscriber;
+use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\DoctrineProvider;
@@ -337,6 +339,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (class_exists(AbstractType::class)) {
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
+        }
+
+        // available in Symfony 5.1 and higher
+        if (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
+            $container->removeDefinition('doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber');
         }
 
         $entityManagers = [];
@@ -840,6 +847,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (! class_exists(DoctrineClearEntityManagerWorkerSubscriber::class)) {
             $container->removeDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager');
+        }
+
+        // available in Symfony 5.1 and higher
+        if (! class_exists(MessengerTransportDoctrineSchemaSubscriber::class)) {
+            $container->removeDefinition('doctrine.orm.messenger.doctrine_schema_subscriber');
         }
 
         $transportFactoryDefinition = $container->getDefinition('messenger.transport.doctrine.factory');
