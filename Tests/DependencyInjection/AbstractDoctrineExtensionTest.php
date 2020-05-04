@@ -643,8 +643,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.listeners.resolve_target_entity');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addResolveTargetEntity', ['Symfony\Component\Security\Core\User\UserInterface', 'MyUserClass', []]);
-
-        $this->assertEquals(['doctrine.event_subscriber' => [[]]], $definition->getTags());
+        $this->assertSame([ [] ], $definition->getTags()['doctrine.event_subscriber']);
     }
 
     public function testAttachEntityListeners() : void
@@ -655,7 +654,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $methodCalls = $definition->getMethodCalls();
 
         $this->assertDICDefinitionMethodCallCount($definition, 'addEntityListener', [], 6);
-        $this->assertEquals(['doctrine.event_listener' => [ ['event' => 'loadClassMetadata'] ] ], $definition->getTags());
+        $this->assertSame([ ['event' => 'loadClassMetadata'] ], $definition->getTags()['doctrine.event_listener']);
 
         $this->assertEquals($methodCalls[0], [
             'addEntityListener',
