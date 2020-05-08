@@ -40,5 +40,10 @@
             <tag name="kernel.event_subscriber" />
             <argument type="service" id="doctrine" />
         </service>
+
+        <service id="doctrine.orm.messenger.doctrine_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaSubscriber">
+            <argument type="tagged" tag="messenger.receiver" />
+            <tag name="doctrine.event_subscriber" />
+        </service>
     </services>
 </container>
