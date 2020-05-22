@@ -99,6 +99,63 @@ class DoctrineExtensionTest extends TestCase
     {
         $this->assertEquals('1', DoctrineExtension::escapeFunction(true));
     }
+
+    /**
+     * @group legacy
+     */
+    public function testItHighlightsSqlQueriesUsingCssClasses() : void
+    {
+        $extension = new DoctrineExtension();
+        self::assertStringContainsString(
+            'class=',
+            $extension->formatQuery('CREATE DATABASE 📚;')
+        );
+        self::assertStringContainsString(
+            'class=',
+            $extension->formatSql('CREATE DATABASE 📚;', true)
+        );
+    }
+
+    /**
+     * @group legacy
+     */
+    public function testItDoesNotOutputDuplicatePreTags() : void
+    {
+        $extension = new DoctrineExtension();
+        self::assertSame(
+            1,
+            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<pre')
+        );
+        self::assertSame(
+            1,
+            substr_count($extension->formatSQL('CREATE DATABASE 📚;', true), '<pre')
+        );
+    }
+
+    /**
+     * @group legacy
+     */
+    public function testItUsesCssOnTheDivTag() : void
+    {
+        $extension = new DoctrineExtension();
+        self::assertSame(
+            1,
+            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<div class=')
+        );
+        self::assertSame(
+            1,
+            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<pre>')
+        );
+    }
+
+    public function testItUsesCssOnThePreTag() : void
+    {
+        $extension = new DoctrineExtension();
+        self::assertSame(
+            1,
+            substr_count($extension->formatSQL('CREATE DATABASE 📚;', true), '<pre class=')
+        );
+    }
 }
 
 class DummyClass

@@ -28,7 +28,7 @@
         "php": "^7.1",
         "doctrine/dbal": "^2.9.0",
         "doctrine/persistence": "^1.3.3",
-        "jdorn/sql-formatter": "^1.2.16",
+        "doctrine/sql-formatter": "^1.0.1",
         "symfony/cache": "^4.3.3|^5.0",
         "symfony/config": "^4.3.3|^5.0",
         "symfony/console": "^3.4.30|^4.3.3|^5.0",
