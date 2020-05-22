@@ -87,14 +87,18 @@ class ProfilerTest extends BaseTestCase
             'queries' => $this->logger->queries,
         ]);
 
-        $output = str_replace(["\e[37m", "\e[0m", "\e[32;1m", "\e[34;1m"], '', $output);
-        $this->assertContains("SELECT * FROM foo WHERE bar IN ('foo', 'bar') AND \"\" >= \"\";", $output);
-
-        $expectedEscapedSql = 'SELECT&#x20;&#x0A;&#x20;&#x20;&#x2A;&#x20;&#x0A;FROM&#x20;&#x0A;&#x20;&#x20;foo&#x20;&#x0A;WHERE&#x20;&#x0A;&#x20;&#x20;bar&#x20;IN&#x20;&#x28;&#x3F;,&#x20;&#x3F;&#x29;&#x20;&#x0A;&#x20;&#x20;AND&#x20;&quot;&quot;&#x20;&gt;&#x3D;&#x20;&quot;&quot;';
-        $this->assertContains($expectedEscapedSql, $output);
+        $expectedEscapedSql = 'SELECT&#x0A;&#x20;&#x20;&#x2A;&#x0A;FROM&#x0A;&#x20;&#x20;foo&#x0A;WHERE&#x0A;&#x20;&#x20;bar&#x20;IN&#x20;&#x28;&#x3F;,&#x20;&#x3F;&#x29;&#x0A;&#x20;&#x20;AND&#x20;&quot;&quot;&#x20;&gt;&#x3D;&#x20;&quot;&quot;';
         $this->assertSame(
-            "SELECT \n  * \nFROM \n  foo \nWHERE \n  bar IN (?, ?) \n  AND \"\" >= \"\"",
+            "SELECT\n  *\nFROM\n  foo\nWHERE\n  bar IN (?, ?)\n  AND \"\" >= \"\"",
             html_entity_decode($expectedEscapedSql)
         );
+
+        $this->assertContains($expectedEscapedSql, $output);
+
+        $this->assertSame(1, preg_match('/' . str_replace(
+            ' ',
+            '.*',
+            preg_quote('SELECT * FROM foo WHERE bar IN ( ? , ? )')
+        ) . '/', $output));
     }
 }

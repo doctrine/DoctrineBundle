@@ -2,7 +2,9 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Twig;
 
-use SqlFormatter;
+use Doctrine\SqlFormatter\HtmlHighlighter;
+use Doctrine\SqlFormatter\NullHighlighter;
+use Doctrine\SqlFormatter\SqlFormatter;
 use Symfony\Component\VarDumper\Cloner\Data;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -12,6 +14,9 @@ use Twig\TwigFilter;
  */
 class DoctrineExtension extends AbstractExtension
 {
+    /** @var SqlFormatter */
+    private $sqlFormatter;
+
     /**
      * Define our functions
      *
@@ -168,45 +173,46 @@ class DoctrineExtension extends AbstractExtension
     {
         @trigger_error(sprintf('The "%s()" method is deprecated and will be removed in DoctrineBundle 3.0.', __METHOD__), E_USER_DEPRECATED);
 
-        $this->setUpSqlFormatter();
+        $this->setUpSqlFormatter(true, true);
 
         if ($highlightOnly) {
-            $html = SqlFormatter::highlight($sql);
-            $html = preg_replace('/<pre class=".*">([^"]*+)<\/pre>/Us', '\1', $html);
-        } else {
-            $html = SqlFormatter::format($sql);
-            $html = preg_replace('/<pre class="(.*)">([^"]*+)<\/pre>/Us', '<div class="\1"><pre>\2</pre></div>', $html);
+            return $this->sqlFormatter->highlight($sql);
         }
 
-        return $html;
+        return sprintf(
+            '<div class="highlight highlight-sql"><pre>%s</pre></div>',
+            $this->sqlFormatter->format($sql)
+        );
     }
 
     public function prettifySql(string $sql) : string
     {
         $this->setUpSqlFormatter();
 
-        return SqlFormatter::highlight($sql);
+        return $this->sqlFormatter->highlight($sql);
     }
 
     public function formatSql(string $sql, bool $highlight) : string
     {
-        $this->setUpSqlFormatter();
+        $this->setUpSqlFormatter($highlight);
 
-        return SqlFormatter::format($sql, $highlight);
+        return $this->sqlFormatter->format($sql);
     }
 
-    private function setUpSqlFormatter() : void
+    private function setUpSqlFormatter(bool $highlight = true, bool $legacy = false) : void
     {
-        SqlFormatter::$pre_attributes            = 'class="highlight highlight-sql"';
-        SqlFormatter::$quote_attributes          = 'class="string"';
-        SqlFormatter::$backtick_quote_attributes = 'class="string"';
-        SqlFormatter::$reserved_attributes       = 'class="keyword"';
-        SqlFormatter::$boundary_attributes       = 'class="symbol"';
-        SqlFormatter::$number_attributes         = 'class="number"';
-        SqlFormatter::$word_attributes           = 'class="word"';
-        SqlFormatter::$error_attributes          = 'class="error"';
-        SqlFormatter::$comment_attributes        = 'class="comment"';
-        SqlFormatter::$variable_attributes       = 'class="variable"';
+        $this->sqlFormatter = new SqlFormatter($highlight ? new HtmlHighlighter([
+            HtmlHighlighter::HIGHLIGHT_PRE            => 'class="highlight highlight-sql"',
+            HtmlHighlighter::HIGHLIGHT_QUOTE          => 'class="string"',
+            HtmlHighlighter::HIGHLIGHT_BACKTICK_QUOTE => 'class="string"',
+            HtmlHighlighter::HIGHLIGHT_RESERVED       => 'class="keyword"',
+            HtmlHighlighter::HIGHLIGHT_BOUNDARY       => 'class="symbol"',
+            HtmlHighlighter::HIGHLIGHT_NUMBER         => 'class="number"',
+            HtmlHighlighter::HIGHLIGHT_WORD           => 'class="word"',
+            HtmlHighlighter::HIGHLIGHT_ERROR          => 'class="error"',
+            HtmlHighlighter::HIGHLIGHT_COMMENT        => 'class="comment"',
+            HtmlHighlighter::HIGHLIGHT_VARIABLE       => 'class="variable"',
+        ], ! $legacy) : new NullHighlighter());
     }
 
     /**
