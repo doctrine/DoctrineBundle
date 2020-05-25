@@ -95,8 +95,9 @@ Configuration Reference
                         platform_service:     ~
                         auto_commit:          ~
 
-                        # If set to "/^sf2_/" all tables not prefixed with "sf2_" will be ignored by the schema
-                        # tool. This is for custom tables which should not be altered automatically.
+                        # If set to "/^sf2_/" all tables, and any named objects such as sequences
+                        # not prefixed with "sf2_" will be ignored by the schema tool.
+                        # This is for custom tables which should not be altered automatically.
                         schema_filter:        ~
 
                         # When true, queries are logged to a "doctrine" monolog channel
