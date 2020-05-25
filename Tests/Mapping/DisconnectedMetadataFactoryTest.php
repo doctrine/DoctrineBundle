@@ -5,10 +5,20 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 use Doctrine\Bundle\DoctrineBundle\Mapping\ClassMetadataCollection;
 use Doctrine\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 
 class DisconnectedMetadataFactoryTest extends TestCase
 {
+    public static function setUpBeforeClass()
+    {
+        if (interface_exists(EntityManagerInterface::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test requires ORM');
+    }
+
     /**
      * @expectedException \RuntimeException
      * @expectedExceptionMessage Can't find base path for "Doctrine\Bundle\DoctrineBundle\Tests\Mapping\DisconnectedMetadataFactoryTest

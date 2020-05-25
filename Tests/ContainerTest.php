@@ -9,6 +9,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
@@ -23,6 +24,15 @@ use Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface;
 
 class ContainerTest extends TestCase
 {
+    public static function setUpBeforeClass()
+    {
+        if (interface_exists(EntityManagerInterface::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test requires ORM');
+    }
+
     /**
      * https://github.com/doctrine/orm/pull/7953 needed, otherwise ORM classes we define services for trigger deprecations
      *
