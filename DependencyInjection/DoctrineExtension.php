@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\UnitOfWork;
 use LogicException;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
@@ -363,7 +364,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->setParameter('doctrine.orm.' . $key, $config[$key]);
         }
 
-        $container->setAlias('doctrine.orm.entity_manager', sprintf('doctrine.orm.%s_entity_manager', $config['default_entity_manager']));
+        $container->setAlias('doctrine.orm.entity_manager', $defaultEntityManagerDefinitionId = sprintf('doctrine.orm.%s_entity_manager', $config['default_entity_manager']));
         $container->getAlias('doctrine.orm.entity_manager')->setPublic(true);
 
         $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $container->getParameter('kernel.bundles'));
@@ -397,6 +398,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->registerForAutoconfiguration(EventSubscriberInterface::class)
             ->addTag('doctrine.event_subscriber');
+
+        /**
+         * @see DoctrineBundle::boot()
+         */
+        $container->getDefinition($defaultEntityManagerDefinitionId)
+            ->addTag('container.preload', [
+                'class' => Autoloader::class,
+            ]);
     }
 
     /**

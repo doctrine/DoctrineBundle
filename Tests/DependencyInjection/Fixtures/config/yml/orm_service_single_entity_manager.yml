@@ -10,7 +10,7 @@ doctrine:
                 memory: true
 
     orm:
-        default_entity_manager: dm2
+        default_entity_manager: default
         proxy_namespace: Proxies
         auto_generate_proxy_classes: true
         entity_managers:
