@@ -28,6 +28,9 @@ script:
   - ./vendor/bin/phpunit -v
 
 jobs:
+  allow_failures:
+    - php: nightly
+
   include:
     # Tests the lowest set of dependencies
     - php: 7.1
@@ -60,6 +63,13 @@ jobs:
     - php: 7.3
       if: type = cron
       env: DEV
+      install:
+        - travis_retry composer update -n --prefer-dist
+
+    # Test against PHP 8
+    - php: nightly
+      before_install:
+        - composer config platform.php 7.4.99
       install:
         - travis_retry composer update -n --prefer-dist
 
