@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubscriberPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\Alias;
@@ -18,6 +19,9 @@ class CacheSchemaSubscriberTest extends TestCase
     {
         if (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
             $this->markTestSkipped('This test requires Symfony 5.1 or higher');
+        }
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
         }
 
         $container = new ContainerBuilder(new ParameterBag([
