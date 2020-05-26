@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -19,6 +20,15 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
     /** @var CommandTester|null */
     private $commandTester;
+
+    public static function setUpBeforeClass()
+    {
+        if (interface_exists(EntityManagerInterface::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test requires ORM');
+    }
 
     protected function setup()
     {

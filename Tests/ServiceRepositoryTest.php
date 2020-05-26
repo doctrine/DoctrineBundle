@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
@@ -20,6 +21,15 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 class ServiceRepositoryTest extends TestCase
 {
+    public static function setUpBeforeClass()
+    {
+        if (interface_exists(EntityManagerInterface::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test requires ORM');
+    }
+
     /**
      * https://github.com/doctrine/orm/pull/7953 needed, otherwise ORM classes we define services for trigger deprecations
      *
