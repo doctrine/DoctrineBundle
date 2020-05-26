@@ -56,6 +56,10 @@ class DoctrineDataCollectorTest extends TestCase
 
     public function testDoesNotCollectEntities() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $manager   = $this->createMock('Doctrine\ORM\EntityManager');
         $config    = $this->createMock('Doctrine\ORM\Configuration');
         $collector = $this->createCollector(['default' => $manager], false);
