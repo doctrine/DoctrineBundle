@@ -68,8 +68,10 @@ jobs:
 
     # Test against PHP 8
     - php: nightly
+      env: SYMFONY_DEPRECATIONS_HELPER=weak
       before_install:
         - composer config platform.php 7.4.99
+        - composer remove --dev doctrine/orm --no-update
       install:
         - travis_retry composer update -n --prefer-dist
 

@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Container\ContainerInterface;
@@ -14,6 +15,15 @@ class ContainerEntityListenerResolverTest extends TestCase
 
     /** @var ContainerInterface|PHPUnit_Framework_MockObject_MockObject */
     private $container;
+
+    public static function setUpBeforeClass() : void
+    {
+        if (interface_exists(EntityManagerInterface::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test requires ORM');
+    }
 
     protected function setUp() : void
     {
