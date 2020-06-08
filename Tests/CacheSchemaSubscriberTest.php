@@ -65,7 +65,7 @@ class CacheSchemaSubscriberTest extends TestCase
         $container->register('uses_my_cache_adapter', 'stdClass')
             ->addArgument(new Reference('my_cache_adapter'))
             ->setPublic(true);
-        $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_OPTIMIZE, -10);
+        $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_BEFORE_REMOVING, -10);
         $container->compile();
 
         // check that PdoAdapter service is injected as an argument
