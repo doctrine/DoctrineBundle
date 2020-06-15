@@ -41,7 +41,7 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new ServiceRepositoryCompilerPass());
         $container->addCompilerPass(new WellKnownSchemaFilterPass());
         $container->addCompilerPass(new DbalSchemaFilterPass());
-        $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_OPTIMIZE, -10);
+        $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_BEFORE_REMOVING, -10);
     }
 
     /**
