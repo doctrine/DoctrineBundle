@@ -124,6 +124,7 @@ class Configuration implements ConfigurationInterface
             ->fixXmlConfig('slave')
             ->fixXmlConfig('shard')
             ->fixXmlConfig('default_table_option')
+            ->fixXmlConfig('factory_argument')
             ->children()
                 ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
                 ->scalarNode('platform_service')->end()
@@ -157,6 +158,10 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('default_table_options')
                     ->info("This option is used by the schema-tool and affects generated SQL. Possible keys include 'charset','collate', and 'engine'.")
                     ->useAttributeAsKey('name')
+                    ->prototype('scalar')->end()
+                ->end()
+                ->scalarNode('factory')->end()
+                ->arrayNode('factory_arguments')
                     ->prototype('scalar')->end()
                 ->end()
             ->end();

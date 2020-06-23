@@ -40,6 +40,7 @@
         <xsd:attribute name="profiling-collect-schema-errors" type="xsd:string" default="true" />
         <xsd:attribute name="server-version" type="xsd:string" />
         <xsd:attribute name="use-savepoints" type="xsd:boolean" />
+        <xsd:attribute name="factory" type="xsd:string" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:attributeGroup>
 
@@ -80,6 +81,7 @@
             <xsd:element name="slave" type="slave" />
             <xsd:element name="shard" type="shard" />
             <xsd:element name="default-table-option" type="named_scalar" />
+            <xsd:element name="factory-argument" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
         </xsd:choice>
     </xsd:group>
 

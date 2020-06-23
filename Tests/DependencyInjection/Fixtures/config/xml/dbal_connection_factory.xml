@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<srv:container xmlns="http://symfony.com/schema/dic/doctrine"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:srv="http://symfony.com/schema/dic/services"
+               xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
+                        http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
+
+    <config>
+        <dbal factory="my_connection_factory">
+            <factory-argument>my_database_id</factory-argument>
+            <factory-argument>21</factory-argument>
+        </dbal>
+    </config>
+</srv:container>

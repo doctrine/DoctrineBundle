@@ -118,6 +118,20 @@ class DoctrineExtension extends AbstractDoctrineExtension
     protected function loadDbalConnection($name, array $connection, ContainerBuilder $container)
     {
         $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new ChildDefinition('doctrine.dbal.connection.configuration'));
+        $connectionServiceId = sprintf('doctrine.dbal.%s_connection', $name);
+
+        if (isset($connection['factory'])) {
+            $definition = new Definition();
+            $definition
+                ->setPublic(true)
+                ->setFactory(new Reference($connection['factory']))
+                ->setArguments($connection['factory_arguments']);
+
+            $container->setDefinition($connectionServiceId, $definition);
+
+            return;
+        }
+
         $logger        = null;
         if ($connection['logging']) {
             $logger = new Reference('doctrine.dbal.logger');
@@ -178,7 +192,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $options = $this->getConnectionOptions($connection);
 
         $def = $container
-            ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), new ChildDefinition('doctrine.dbal.connection'))
+            ->setDefinition($connectionServiceId, new ChildDefinition('doctrine.dbal.connection'))
             ->setPublic(true)
             ->setArguments([
                 $options,
@@ -201,7 +215,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             return;
         }
 
-        $shardManagerDefinition = new Definition($options['shardManagerClass'], [new Reference(sprintf('doctrine.dbal.%s_connection', $name))]);
+        $shardManagerDefinition = new Definition($options['shardManagerClass'], [new Reference($connectionServiceId)]);
         $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
     }
 

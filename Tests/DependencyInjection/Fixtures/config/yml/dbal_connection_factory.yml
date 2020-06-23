@@ -1,0 +1,6 @@
+doctrine:
+  dbal:
+    factory: my_connection_factory
+    factory_arguments:
+      - my_database_id
+      - 21

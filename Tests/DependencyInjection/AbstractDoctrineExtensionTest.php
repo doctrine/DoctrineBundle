@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPa
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\TestCase;
@@ -125,6 +126,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
+                'factory_arguments' => [],
             ],
             $param['master']
         );
@@ -159,6 +161,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
+                'factory_arguments' => [],
             ],
             $param['global']
         );
@@ -209,6 +212,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
+                'factory_arguments' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -244,6 +248,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
+                'factory_arguments' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -280,6 +285,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'sqlite_db',
                 'memory' => true,
                 'defaultTableOptions' => [],
+                'factory_arguments' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -1022,6 +1028,31 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setRepositoryFactory', ['repository_factory']);
+    }
+
+    public function testConnectionFactoryWithParameters(): void
+    {
+        $container = $this->getContainer([]);
+        $container->registerExtension(new DoctrineExtension());
+        $this->loadFromFile($container, 'dbal_connection_factory');
+
+        $mockConnection = $this->createMock(Connection::class);
+        $actualDatabaseId = null;
+        $actualDatabaseIndex = null;
+        $container->set('my_connection_factory', function(string $databaseId, int $databaseIndex) use (&$actualDatabaseId, &$actualDatabaseIndex, $mockConnection) {
+            $actualDatabaseId = $databaseId;
+            $actualDatabaseIndex = $databaseIndex;
+
+            return $mockConnection;
+        });
+
+        $this->compileContainer($container);
+
+        $actualConnection = $container->get('doctrine.dbal.default_connection');
+
+        $this->assertSame('my_database_id', $actualDatabaseId);
+        $this->assertSame(21, $actualDatabaseIndex);
+        $this->assertSame($mockConnection, $actualConnection);
     }
 
     private function loadContainer(
