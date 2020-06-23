@@ -1030,17 +1030,17 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setRepositoryFactory', ['repository_factory']);
     }
 
-    public function testConnectionFactoryWithParameters(): void
+    public function testConnectionFactoryWithParameters() : void
     {
         $container = $this->getContainer([]);
         $container->registerExtension(new DoctrineExtension());
         $this->loadFromFile($container, 'dbal_connection_factory');
 
-        $mockConnection = $this->createMock(Connection::class);
-        $actualDatabaseId = null;
+        $mockConnection      = $this->createMock(Connection::class);
+        $actualDatabaseId    = null;
         $actualDatabaseIndex = null;
-        $container->set('my_connection_factory', function(string $databaseId, int $databaseIndex) use (&$actualDatabaseId, &$actualDatabaseIndex, $mockConnection) {
-            $actualDatabaseId = $databaseId;
+        $container->set('my_connection_factory', static function (string $databaseId, int $databaseIndex) use (&$actualDatabaseId, &$actualDatabaseIndex, $mockConnection) {
+            $actualDatabaseId    = $databaseId;
             $actualDatabaseIndex = $databaseIndex;
 
             return $mockConnection;

@@ -117,7 +117,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function loadDbalConnection($name, array $connection, ContainerBuilder $container)
     {
-        $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new ChildDefinition('doctrine.dbal.connection.configuration'));
+        $configuration       = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new ChildDefinition('doctrine.dbal.connection.configuration'));
         $connectionServiceId = sprintf('doctrine.dbal.%s_connection', $name);
 
         if (isset($connection['factory'])) {
@@ -132,7 +132,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             return;
         }
 
-        $logger        = null;
+        $logger = null;
         if ($connection['logging']) {
             $logger = new Reference('doctrine.dbal.logger');
         }
