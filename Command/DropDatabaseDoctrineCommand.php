@@ -74,7 +74,7 @@ EOT
                 foreach ($shards as $shard) {
                     if ($shard['id'] === (int) $input->getOption('shard')) {
                         // Select sharded database
-                        $params = $shard;
+                        $params = array_merge($params, $shard);
                         unset($params['id']);
                         break;
                     }
