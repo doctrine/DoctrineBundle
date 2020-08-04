@@ -548,7 +548,7 @@ class Configuration implements ConfigurationInterface
                             ->append($this->getOrmCacheDriverNode('region_cache_driver'))
                             ->scalarNode('region_lock_lifetime')->defaultValue(60)->end()
                             ->booleanNode('log_enabled')->defaultValue($this->debug)->end()
-                            ->scalarNode('region_lifetime')->defaultValue(0)->end()
+                            ->scalarNode('region_lifetime')->defaultValue(3600)->end()
                             ->booleanNode('enabled')->defaultValue(true)->end()
                             ->scalarNode('factory')->end()
                         ->end()

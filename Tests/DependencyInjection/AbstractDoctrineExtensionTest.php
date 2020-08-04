@@ -668,17 +668,20 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertTrue($container->has('doctrine.orm.default_second_level_cache.region.my_query_region_filelock'));
 
         $slcFactoryDef       = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
+        $slcRegionsConfDef   = $container->getDefinition('doctrine.orm.default_second_level_cache.regions_configuration');
         $myEntityRegionDef   = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_entity_region');
         $loggerChainDef      = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_chain');
         $loggerStatisticsDef = $container->getDefinition('doctrine.orm.default_second_level_cache.logger_statistics');
         $myQueryRegionDef    = $container->getDefinition('doctrine.orm.default_second_level_cache.region.my_query_region_filelock');
         $cacheDriverDef      = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_second_level_cache.region_cache_driver'));
         $configDef           = $container->getDefinition('doctrine.orm.default_configuration');
+        $slcRegionsConfArgs  = $slcRegionsConfDef->getArguments();
         $myEntityRegionArgs  = $myEntityRegionDef->getArguments();
         $myQueryRegionArgs   = $myQueryRegionDef->getArguments();
         $slcFactoryArgs      = $slcFactoryDef->getArguments();
 
         $this->assertDICDefinitionClass($slcFactoryDef, '%doctrine.orm.second_level_cache.default_cache_factory.class%');
+        $this->assertDICDefinitionClass($slcRegionsConfDef, '%doctrine.orm.second_level_cache.regions_configuration.class%');
         $this->assertDICDefinitionClass($myQueryRegionDef, '%doctrine.orm.second_level_cache.filelock_region.class%');
         $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
         $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
@@ -687,6 +690,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
         $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', [], 3);
         $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', [], 3);
+
+        $this->assertEquals([3600, 60], $slcRegionsConfArgs);
 
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $slcFactoryArgs[0]);
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $slcFactoryArgs[1]);
