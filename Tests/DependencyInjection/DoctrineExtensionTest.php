@@ -12,6 +12,8 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Cache\Adapter\DoctrineAdapter;
+use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Cache\DoctrineProvider;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -345,6 +347,18 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
+        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
+        $arguments = $definition->getArguments();
+        $this->assertInstanceOf(Definition::class, $arguments[0]);
+        $this->assertEquals(PhpArrayAdapter::class, $arguments[0]->getClass());
+        $arguments = $arguments[0]->getArguments();
+        $this->assertSame('%kernel.cache_dir%/doctrine/orm/default_metadata.php', $arguments[0]);
+        $this->assertInstanceOf(Definition::class, $arguments[1]);
+        $this->assertEquals(DoctrineAdapter::class, $arguments[1]->getClass());
+        $arguments = $arguments[1]->getArguments();
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
+        $this->assertEquals('doctrine.orm.cache.provider.cache.doctrine.orm.default.metadata', (string) $arguments[0]);
+        $definition = $container->getDefinition((string) $arguments[0]);
         $this->assertEquals(DoctrineProvider::class, $definition->getClass());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
@@ -803,7 +817,7 @@ class DoctrineExtensionTest extends TestCase
         return [
             'metadata_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.provider.cache.doctrine.orm.default.metadata',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.cache.doctrine.orm.default.metadata.php_array',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
@@ -822,7 +836,7 @@ class DoctrineExtensionTest extends TestCase
 
             'metadata_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.provider.metadata_cache_pool',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.metadata_cache_pool.php_array',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'metadata_cache_pool'],
             ],
@@ -841,7 +855,7 @@ class DoctrineExtensionTest extends TestCase
 
             'metadata_cache_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'service_target_metadata',
+                'expectedAliasTarget' => 'service_target_metadata.php_array',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata'],
             ],

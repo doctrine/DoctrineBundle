@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
@@ -21,6 +22,8 @@ use Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaSubsc
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Cache\Adapter\DoctrineAdapter;
+use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Cache\DoctrineProvider;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
@@ -814,6 +817,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container);
         $this->loadCacheDriver('result_cache', $entityManager['name'], $entityManager['result_cache_driver'], $container);
         $this->loadCacheDriver('query_cache', $entityManager['name'], $entityManager['query_cache_driver'], $container);
+
+        if (! $container->getParameter('kernel.debug')) {
+            $this->registerMetadataPhpArrayCacheWarmer($entityManager['name'], $container);
+            $this->registerMetadataPhpArrayCache($entityManager['name'], $container);
+        }
     }
 
     /**
@@ -926,5 +934,37 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setDefinition($id, $poolDefinition);
 
         return $id;
+    }
+
+    private function registerMetadataPhpArrayCacheWarmer(string $entityManagerName, ContainerBuilder $container): void
+    {
+        $cacheWarmerDefinition = $container->register(sprintf('doctrine.orm.%s_metadata_cache.php_array_warmer', $entityManagerName), DoctrineMetadataCacheWarmer::class);
+        $cacheWarmerDefinition->setArguments([
+            new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)),
+            $this->getPhpArrayFile($entityManagerName),
+        ]);
+        $cacheWarmerDefinition->addTag('kernel.cache_warmer');
+    }
+
+    private function registerMetadataPhpArrayCache(string $entityManagerName, ContainerBuilder $container): void
+    {
+        $aliasId   = sprintf('doctrine.orm.%s_metadata_cache', $entityManagerName);
+        $serviceId = (string) $container->getAlias($aliasId);
+
+        $phpArrayAdapterDefinition = new Definition(PhpArrayAdapter::class, [
+            $this->getPhpArrayFile($entityManagerName),
+            new Definition(DoctrineAdapter::class, [new Reference($serviceId)]),
+        ]);
+
+        $serviceId .= '.php_array';
+
+        $doctrineCacheDefinition = $container->register($serviceId, DoctrineProvider::class);
+        $doctrineCacheDefinition->addArgument($phpArrayAdapterDefinition);
+        $container->setAlias($aliasId, $serviceId);
+    }
+
+    private function getPhpArrayFile(string $entityManagerName): string
+    {
+        return '%kernel.cache_dir%' . sprintf('/doctrine/orm/%s_metadata.php', $entityManagerName);
     }
 }
