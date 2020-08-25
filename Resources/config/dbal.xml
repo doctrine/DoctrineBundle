@@ -67,6 +67,7 @@
             <tag name="kernel.reset" method="reset" />
         </service>
         <service id="Doctrine\Persistence\ManagerRegistry" alias="doctrine" public="false" />
+        <service id="Doctrine\Common\Persistence\ManagerRegistry" alias="doctrine" public="false" />
 
         <service id="doctrine.twig.doctrine_extension" class="Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension" public="false">
             <tag name="twig.extension" />
