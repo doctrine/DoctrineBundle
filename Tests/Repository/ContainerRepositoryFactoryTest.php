@@ -16,6 +16,15 @@ use stdClass;
 
 class ContainerRepositoryFactoryTest extends TestCase
 {
+    public static function setUpBeforeClass() : void
+    {
+        if (interface_exists(EntityManagerInterface::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test requires ORM');
+    }
+
     public function testGetRepositoryReturnsService() : void
     {
         $em        = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);

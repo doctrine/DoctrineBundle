@@ -883,7 +883,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $definition = $container->register($serviceId, DoctrineProvider::class);
         $definition->addArgument(new Reference($poolName));
-        $definition->setPrivate(true);
 
         return $serviceId;
     }

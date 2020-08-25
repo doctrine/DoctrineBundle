@@ -9,6 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -195,6 +196,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testLoadSimpleSingleConnection() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_service_simple_single_entity_manager');
 
         $definition = $container->getDefinition('doctrine.dbal.default_connection');
@@ -230,6 +235,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      */
     public function testLoadSimpleSingleConnectionWithoutDbName() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_service_simple_single_entity_manager_without_dbname');
 
         /** @var Definition $definition */
@@ -265,6 +274,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testLoadSingleConnection() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_service_single_entity_manager');
 
         $definition = $container->getDefinition('doctrine.dbal.default_connection');
@@ -301,6 +314,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testLoadMultipleConnections() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
         $definition = $container->getDefinition('doctrine.dbal.conn1_connection');
@@ -381,6 +398,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testEntityManagerMetadataCacheDriverConfiguration() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
@@ -392,6 +413,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testDependencyInjectionImportsOverrideDefaults() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_imports');
 
         $cacheDefinition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
@@ -403,6 +428,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSingleEntityManagerMultipleMappingBundleDefinitions() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
@@ -441,6 +470,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testMultipleEntityManagersMappingBundleDefinitions() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
 
         $this->assertEquals(['em1' => 'doctrine.orm.em1_entity_manager', 'em2' => 'doctrine.orm.em2_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
@@ -483,6 +516,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSingleEntityManagerDefaultTableOptions() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_single_em_default_table_options', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
 
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
@@ -513,6 +550,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSetCustomFunctions() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_functions');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
@@ -523,6 +564,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSetNamingStrategy() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_namingstrategy');
 
         $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
@@ -534,6 +579,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSetQuoteStrategy() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_quotestrategy');
 
         $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
@@ -545,6 +594,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSecondLevelCache() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_second_level_cache');
 
         $this->assertTrue($container->has('doctrine.orm.default_configuration'));
@@ -603,6 +656,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testSingleEMSetCustomFunctions() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_single_em_dql_functions');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
@@ -611,6 +668,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAddCustomHydrationMode() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_hydration_mode');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
@@ -619,6 +680,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAddFilter() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_filters');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
@@ -639,6 +704,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testResolveTargetEntity() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_resolve_target_entity');
 
         $definition = $container->getDefinition('doctrine.orm.listeners.resolve_target_entity');
@@ -651,6 +720,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAttachEntityListeners() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_attach_entity_listener');
 
         $definition  = $container->getDefinition('doctrine.orm.default_listeners.attach_entity_listeners');
@@ -858,6 +931,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testEntityListenerResolver() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_entity_listener_resolver', ['YamlBundle'], new EntityListenerPass());
 
         $definition = $container->getDefinition('doctrine.orm.em1_configuration');
@@ -875,6 +952,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAttachEntityListenerTag() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -907,6 +988,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAttachEntityListenersTwoConnections() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer(['YamlBundle']);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -927,6 +1012,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAttachLazyEntityListener() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -954,6 +1043,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testAttachLazyEntityListenerForCustomResolver() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -976,6 +1069,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      */
     public function testLazyEntityListenerResolverWithoutCorrectInterface() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -988,6 +1085,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testPrivateLazyEntityListener() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -1006,6 +1107,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      */
     public function testAbstractEntityListener() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
         $container->registerExtension($loader);
@@ -1018,6 +1123,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testRepositoryFactory() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->loadContainer('orm_repository_factory');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');

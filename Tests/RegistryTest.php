@@ -132,6 +132,10 @@ class RegistryTest extends TestCase
 
     public function testReset() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $noProxyManager = $this->getMockBuilder(EntityManagerInterface::class)->getMock();
         $noProxyManager->expects($this->once())
             ->method('clear');
@@ -164,6 +168,10 @@ class RegistryTest extends TestCase
 
     public function testIdentityMapsStayConsistentAfterReset()
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $kernel = new TestKernel();
         $kernel->boot();
 

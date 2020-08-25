@@ -28,6 +28,10 @@ class DoctrineExtensionTest extends TestCase
      */
     public function testAutowiringAlias() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
         $config    = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
@@ -51,6 +55,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testPublicServicesAndAliases() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
         $config    = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
@@ -102,6 +110,10 @@ class DoctrineExtensionTest extends TestCase
      */
     public function testOrmRequiresDbal() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $extension = new DoctrineExtension();
 
         $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
@@ -147,6 +159,10 @@ class DoctrineExtensionTest extends TestCase
      */
     public function testAutomapping(array $entityManagers) : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $extension = new DoctrineExtension();
 
         $container = $this->getContainer([
@@ -240,6 +256,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testDependencyInjectionConfigurationDefaults() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
         $config    = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
@@ -368,6 +388,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testAutoGenerateProxyClasses() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -392,6 +416,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testSingleEntityManagerWithDefaultConfiguration() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -412,6 +440,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -437,6 +469,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -468,6 +504,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testBundleEntityAliases() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -487,6 +527,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testOverwriteEntityAliases() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -506,6 +550,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testYamlBundleMappingDetection() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer('YamlBundle');
         $extension = new DoctrineExtension();
 
@@ -524,6 +572,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testXmlBundleMappingDetection() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer('XmlBundle');
         $extension = new DoctrineExtension();
 
@@ -551,6 +603,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testAnnotationsBundleMappingDetection() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer('AnnotationsBundle');
         $extension = new DoctrineExtension();
 
@@ -578,6 +634,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testOrmMergeConfigs() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer(['XmlBundle', 'AnnotationsBundle']);
         $extension = new DoctrineExtension();
 
@@ -635,6 +695,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testAnnotationsBundleMappingDetectionWithVendorNamespace() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer('AnnotationsBundle', 'Vendor');
         $extension = new DoctrineExtension();
 
@@ -689,6 +753,10 @@ class DoctrineExtensionTest extends TestCase
 
     public function testInvalidCacheConfiguration() : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -710,6 +778,10 @@ class DoctrineExtensionTest extends TestCase
      */
     public function testCacheConfiguration(string $expectedAliasName, string $expectedAliasTarget, string $cacheName, $cacheConfig) : void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
