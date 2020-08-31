@@ -32,6 +32,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use function class_exists;
 use function sprintf;
+use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -377,7 +378,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $this->loadPropertyInfoExtractor($name, $container);
             }
 
-            $this->loadValidatorLoader($name, $container);
+            if (class_exists(DoctrineLoader::class)) {
+                $this->loadValidatorLoader($name, $container);
+            }
         }
 
         if ($config['resolve_target_entities']) {
@@ -786,7 +789,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
     private function loadPropertyInfoExtractor(string $entityManagerName, ContainerBuilder $container) : void
     {
         $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), DoctrineExtractor::class);
-        $argumentId                  = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
+
+        if ((new \ReflectionMethod(DoctrineExtractor::class, '__construct'))->getParameters()[0] === ClassMetadataFactory::class) {
+            $argumentId = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
+        } else {
+            $argumentId = sprintf('doctrine.orm.%s_entity_manager.metadata_factory', $entityManagerName);
+            $metadataFactoryDefinition = $container->register($argumentId, ClassMetadataFactory::class);
+            $metadataFactoryDefinition->setFactory([
+                new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)),
+                'getMetadataFactory',
+            ]);
+            $metadataFactoryDefinition->setPublic(false);
+        }
 
         $propertyExtractorDefinition->addArgument(new Reference($argumentId));
 

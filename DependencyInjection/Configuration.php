@@ -38,8 +38,7 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder() : TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('doctrine');
-        $rootNode    = $treeBuilder->getRootNode();
+        $rootNode = $this->getRoot('doctrine', $treeBuilder = new TreeBuilder('doctrine'));
 
         $this->addDbalSection($rootNode);
         $this->addOrmSection($rootNode);
@@ -107,8 +106,7 @@ class Configuration implements ConfigurationInterface
      */
     private function getDbalConnectionsNode() : ArrayNodeDefinition
     {
-        $treeBuilder = new TreeBuilder('connections');
-        $node        = $treeBuilder->getRootNode();
+        $node = $this->getRoot('connections');
 
         /** @var ArrayNodeDefinition $connectionNode */
         $connectionNode = $node
@@ -383,8 +381,7 @@ class Configuration implements ConfigurationInterface
      */
     private function getOrmTargetEntityResolverNode() : NodeDefinition
     {
-        $treeBuilder = new TreeBuilder('resolve_target_entities');
-        $node        = $treeBuilder->getRootNode();
+        $node = $this->getRoot('resolve_target_entities');
 
         $node
             ->useAttributeAsKey('interface')
@@ -400,8 +397,7 @@ class Configuration implements ConfigurationInterface
      */
     private function getOrmEntityListenersNode() : NodeDefinition
     {
-        $treeBuilder = new TreeBuilder('entity_listeners');
-        $node        = $treeBuilder->getRootNode();
+        $node = $this->getRoot('entity_listeners');
 
         $normalizer = static function ($mappings) {
             $entities = [];
@@ -419,7 +415,7 @@ class Configuration implements ConfigurationInterface
 
                         foreach ($eventMapping as $method) {
                             $events[] = [
-                                'type' => $eventType,
+                                'type'   => $eventType,
                                 'method' => $method,
                             ];
                         }
@@ -432,7 +428,7 @@ class Configuration implements ConfigurationInterface
                 }
 
                 $entities[] = [
-                    'class' => $entityClass,
+                    'class'    => $entityClass,
                     'listener' => $listeners,
                 ];
             }
@@ -484,8 +480,7 @@ class Configuration implements ConfigurationInterface
      */
     private function getOrmEntityManagersNode() : ArrayNodeDefinition
     {
-        $treeBuilder = new TreeBuilder('entity_managers');
-        $node        = $treeBuilder->getRootNode();
+        $node = $this->getRoot('entity_managers');
 
         $node
             ->requiresAtLeastOneElement()
@@ -644,8 +639,7 @@ class Configuration implements ConfigurationInterface
      */
     private function getOrmCacheDriverNode(string $name) : ArrayNodeDefinition
     {
-        $treeBuilder = new TreeBuilder($name);
-        $node        = $treeBuilder->getRootNode();
+        $node = $this->getRoot($name);
 
         $node
             ->addDefaultsIfNotSet()
@@ -686,9 +680,30 @@ class Configuration implements ConfigurationInterface
         }
 
         return [
-            'names' => $namesArray,
+            'names'  => $namesArray,
             'values' => $valuesArray,
         ];
+    }
+
+    /**
+     * @param string           $name
+     * @param TreeBuilder|null $treeBuilder
+     *
+     * @return ArrayNodeDefinition|NodeDefinition
+     */
+    private function getRoot(string $name, TreeBuilder $treeBuilder = null)
+    {
+        if ($treeBuilder === null) {
+            $treeBuilder = new TreeBuilder($name);
+        }
+
+        if (method_exists($treeBuilder, 'getRootNode')) {
+            $node = $treeBuilder->getRootNode();
+        } else {
+            $node = $treeBuilder->root($name);
+        }
+
+        return $node;
     }
 
     /**

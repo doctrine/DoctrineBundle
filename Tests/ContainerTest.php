@@ -68,6 +68,8 @@ class ContainerTest extends TestCase
 
         $this->assertInstanceOf(DoctrineExtractor::class, $container->get('doctrine.orm.default_entity_manager.property_info_extractor'));
 
-        $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
+        if (class_exists(DoctrineLoader::class)) {
+            $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
+        }
     }
 }
