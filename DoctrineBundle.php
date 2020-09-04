@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
+use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterUidTypePass;
 use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFactory;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
@@ -42,6 +43,10 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new WellKnownSchemaFilterPass());
         $container->addCompilerPass(new DbalSchemaFilterPass());
         $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_BEFORE_REMOVING, -10);
+
+        if (class_exists(RegisterUidTypePass::class)) {
+            $container->addCompilerPass(new RegisterUidTypePass());
+        }
     }
 
     /**
