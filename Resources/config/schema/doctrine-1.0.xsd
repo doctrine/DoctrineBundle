@@ -71,6 +71,7 @@
         <xsd:attribute name="multiple-active-result-sets" type="xsd:string" />
         <xsd:attribute name="connectstring" type="xsd:string" />
         <xsd:attribute name="instancename" type="xsd:string" />
+        <xsd:attribute name="read_only" type="xsd:boolean" />
     </xsd:attributeGroup>
 
     <xsd:group name="connection-child-config">

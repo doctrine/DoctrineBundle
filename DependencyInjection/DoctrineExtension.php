@@ -238,6 +238,17 @@ class DoctrineExtension extends AbstractDoctrineExtension
             unset($options[$old]);
         }
 
+        if (isset($options['read_only'])) {
+            if (version_compare(PHP_VERSION, '7.3.0') < 0) {
+                throw new InvalidArgumentException('To use the `read_only` option, at least PHP 7.3.0 is required!');
+            }
+
+            $options['driverOptions'][\PDO::SQLITE_ATTR_OPEN_FLAGS] = $options['read_only']
+                ? \PDO::SQLITE_OPEN_READONLY
+                : \PDO::SQLITE_OPEN_READWRITE;
+            unset($options['read_only']);
+        }
+
         if (! empty($options['slaves']) && ! empty($options['shards'])) {
             throw new InvalidArgumentException('Sharding and master-slave connection cannot be used together');
         }

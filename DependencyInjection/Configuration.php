@@ -201,6 +201,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('application_name')->end()
                 ->scalarNode('charset')->end()
                 ->scalarNode('path')->end()
+                ->booleanNode('read_only')->info('Whether to open a sqlite database in read-only mode')->end()
                 ->booleanNode('memory')->end()
                 ->scalarNode('unix_socket')->info('The unix socket to use for MySQL')->end()
                 ->booleanNode('persistent')->info('True to use as persistent connection for the ibm_db2 driver')->end()

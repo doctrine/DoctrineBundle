@@ -35,6 +35,9 @@ Configuration Reference
                         # SQLite specific
                         memory:               ~
 
+                        # SQLite specific. Whether to open the `.db`-file in read-only mode.
+                        read_only:            ~
+
                         # MySQL specific. The unix socket to use for MySQL
                         unix_socket:          ~
 
@@ -146,6 +149,7 @@ Configuration Reference
                                 charset:              ~
                                 path:                 ~
                                 memory:               ~
+                                read_only:            ~
 
                                 # MySQL specific. The unix socket to use for MySQL
                                 unix_socket:          ~
@@ -210,6 +214,7 @@ Configuration Reference
                             charset:              ~
                             path:                 ~
                             memory:               ~
+                            read_only:            ~
 
                             # MySQL specific. The unix socket to use for MySQL
                             unix_socket:          ~
@@ -445,6 +450,7 @@ Configuration Reference
                         charset="UTF8"
                         path=""
                         memory=""
+                        read_only=""
                         unix-socket=""
                         persistent=""
                         protocol=""
@@ -514,6 +520,7 @@ Configuration Reference
                             charset=""
                             path=""
                             memory=""
+                            read_only=""
                             unix-socket=""
                             persistent=""
                             protocol=""
@@ -558,6 +565,7 @@ Configuration Reference
                             charset=""
                             path=""
                             memory=""
+                            read_only=""
                             unix-socket=""
                             persistent=""
                             protocol=""

@@ -228,6 +228,27 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('root', $config['user']);
     }
 
+    public function testDbalOpensSqliteReadOnly(): void
+    {
+        if (version_compare(PHP_VERSION, '7.3.0') < 0) {
+            self::markTestSkipped('This test requires PHP 7.3.0 or higher!');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $extension->load([
+            ['dbal' => ['connections' => ['default' => ['password' => 'foo', 'read_only' => true]]]],
+            [],
+            ['dbal' => ['default_connection' => 'foo']],
+            [],
+        ], $container);
+
+        $config = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+
+        self::assertSame(\PDO::SQLITE_OPEN_READONLY, $config['driverOptions'][\PDO::SQLITE_ATTR_OPEN_FLAGS]);
+    }
+
     public function testDbalWrapperClass() : void
     {
         $container = $this->getContainer();
