@@ -37,7 +37,7 @@ class DropDatabaseDoctrineTest extends TestCase
             array_merge(['command' => $command->getName()], $options)
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             sprintf(
                 'Dropped database %s for connection named %s',
                 sys_get_temp_dir() . '/' . $dbName,
@@ -77,7 +77,7 @@ class DropDatabaseDoctrineTest extends TestCase
             array_merge(['command' => $command->getName()])
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             sprintf(
                 'Would drop the database %s for connection named %s.',
                 sys_get_temp_dir() . '/' . $dbName,
@@ -85,7 +85,10 @@ class DropDatabaseDoctrineTest extends TestCase
             ),
             $commandTester->getDisplay()
         );
-        $this->assertContains('Please run the operation with --force to execute', $commandTester->getDisplay());
+        $this->assertStringContainsString(
+            'Please run the operation with --force to execute',
+            $commandTester->getDisplay()
+        );
     }
 
     public function provideForceOption() : Generator

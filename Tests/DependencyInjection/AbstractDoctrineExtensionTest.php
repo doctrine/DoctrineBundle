@@ -647,7 +647,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(600, $myEntityRegionArgs[2]);
 
         $this->assertEquals('doctrine.orm.default_second_level_cache.region.my_query_region', $myQueryRegionArgs[0]);
-        $this->assertContains('/doctrine/orm/slc/filelock', $myQueryRegionArgs[1]);
+        $this->assertStringContainsString(
+            '/doctrine/orm/slc/filelock',
+            $myQueryRegionArgs[1]
+        );
         $this->assertEquals(60, $myQueryRegionArgs[2]);
 
         $this->assertEquals('doctrine.orm.default_second_level_cache.regions_configuration', $slcFactoryArgs[0]);
