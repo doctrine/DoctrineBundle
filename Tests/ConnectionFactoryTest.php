@@ -111,7 +111,7 @@ class FakeDriver implements Driver
         throw new Exception('not implemented');
     }
 
-    public function getSchemaManager(Connection $conn) : void
+    public function getSchemaManager(Connection $conn, ?AbstractPlatform $platform = null) : void
     {
         throw new Exception('not implemented');
     }
