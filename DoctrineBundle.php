@@ -44,9 +44,11 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new DbalSchemaFilterPass());
         $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_BEFORE_REMOVING, -10);
 
-        if (class_exists(RegisterUidTypePass::class)) {
-            $container->addCompilerPass(new RegisterUidTypePass());
+        if (! class_exists(RegisterUidTypePass::class)) {
+            return;
         }
+
+        $container->addCompilerPass(new RegisterUidTypePass());
     }
 
     /**
