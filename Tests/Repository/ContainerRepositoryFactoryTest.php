@@ -12,6 +12,7 @@ use Doctrine\Persistence\ObjectRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use RuntimeException;
 use stdClass;
 
 class ContainerRepositoryFactoryTest extends TestCase
@@ -61,10 +62,6 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->assertSame($actualRepo, $factory->getRepository($em, 'Foo\CustomNormalRepoEntity'));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage The service "my_repo" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).
-     */
     public function testServiceRepositoriesMustExtendObjectRepository() : void
     {
         $repo = new stdClass();
@@ -74,6 +71,11 @@ class ContainerRepositoryFactoryTest extends TestCase
         $em = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
 
         $factory = new ContainerRepositoryFactory($container);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(<<<'EXCEPTION'
+The service "my_repo" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).
+EXCEPTION
+        );
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
@@ -91,10 +93,6 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->assertSame($repo, $actualRepo);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage The "Doctrine\Bundle\DoctrineBundle\Tests\Repository\StubServiceRepository" entity repository implements "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
-     */
     public function testRepositoryMatchesServiceInterfaceButServiceNotFound() : void
     {
         $container = $this->createContainer([]);
@@ -104,13 +102,14 @@ class ContainerRepositoryFactoryTest extends TestCase
         ]);
 
         $factory = new ContainerRepositoryFactory($container);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(<<<'EXCEPTION'
+The "Doctrine\Bundle\DoctrineBundle\Tests\Repository\StubServiceRepository" entity repository implements "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
+EXCEPTION
+        );
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage The "Foo\CoolEntity" entity has a repositoryClass set to "not_a_real_class", but this is not a valid class. Check your class naming. If this is meant to be a service id, make sure this service exists and is tagged with "doctrine.repository_service".
-     */
     public function testCustomRepositoryIsNotAValidClass() : void
     {
         $container = $this->createContainer([]);
@@ -118,6 +117,11 @@ class ContainerRepositoryFactoryTest extends TestCase
         $em = $this->createEntityManager(['Foo\CoolEntity' => 'not_a_real_class']);
 
         $factory = new ContainerRepositoryFactory($container);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(<<<'EXCEPTION'
+The "Foo\CoolEntity" entity has a repositoryClass set to "not_a_real_class", but this is not a valid class. Check your class naming. If this is meant to be a service id, make sure this service exists and is tagged with "doctrine.repository_service".
+EXCEPTION
+        );
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 

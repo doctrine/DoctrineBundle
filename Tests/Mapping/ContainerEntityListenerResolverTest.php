@@ -4,9 +4,11 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Container\ContainerInterface;
+use RuntimeException;
 
 class ContainerEntityListenerResolverTest extends TestCase
 {
@@ -74,10 +76,6 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertSame($object, $this->resolver->resolve($className));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage There is no service named
-     */
     public function testRegisterMissingServiceAndResolve() : void
     {
         $className = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
@@ -90,6 +88,8 @@ class ContainerEntityListenerResolverTest extends TestCase
             ->with($serviceId)
             ->will($this->returnValue(false));
 
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('There is no service named');
         $this->resolver->resolve($className);
     }
 
@@ -139,12 +139,10 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertNotSame($obj2, $this->resolver->resolve($className2));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage An object was expected, but got "string".
-     */
     public function testRegisterStringException() : void
     {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('An object was expected, but got "string".');
         $this->resolver->register('CompanyContractListener');
     }
 }

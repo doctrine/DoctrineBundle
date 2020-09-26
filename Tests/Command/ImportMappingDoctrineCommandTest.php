@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -93,12 +94,10 @@ class ImportMappingDoctrineCommandTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessageRegExp /The --path option is required/
-     */
     public function testExecuteThrowsExceptionWithNamespaceAndNoPath() : void
     {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The --path option is required');
         $this->commandTester->execute(['name' => 'Some\Namespace']);
     }
 

@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\API\ExceptionConverter;
 use Doctrine\DBAL\Exception\DriverException;
@@ -13,9 +14,6 @@ use Exception;
 
 class ConnectionFactoryTest extends TestCase
 {
-    /**
-     * @expectedException \Doctrine\DBAL\DBALException
-     */
     public function testContainer() : void
     {
         $typesConfig  = [];
@@ -29,6 +27,7 @@ class ConnectionFactoryTest extends TestCase
         // put the mock into the fake driver
         FakeDriver::$exception = $exception;
 
+        $this->expectException(DBALException::class);
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);
         } catch (Exception $e) {
