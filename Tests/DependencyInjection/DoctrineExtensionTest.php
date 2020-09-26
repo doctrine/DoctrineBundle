@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
+use LogicException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -104,10 +105,6 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('foo', $container->getParameter('doctrine.default_connection'), '->load() overrides existing configuration options');
     }
 
-    /**
-     * @expectedException \LogicException
-     * @expectedExceptionMessage Configuring the ORM layer requires to configure the DBAL layer as well.
-     */
     public function testOrmRequiresDbal() : void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -116,6 +113,10 @@ class DoctrineExtensionTest extends TestCase
 
         $extension = new DoctrineExtension();
 
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'Configuring the ORM layer requires to configure the DBAL layer as well.'
+        );
         $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
     }
 

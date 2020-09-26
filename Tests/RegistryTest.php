@@ -8,7 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel
 use Doctrine\ORM\EntityManagerInterface;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
-use ProxyManager\Proxy\LazyLoadingInterface;
+use InvalidArgumentException;
 use ProxyManager\Proxy\ProxyInterface;
 use stdClass;
 
@@ -58,15 +58,13 @@ class RegistryTest extends TestCase
         $this->assertSame($conn, $registry->getConnection('default'));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Doctrine ORM Connection named "default" does not exist.
-     */
     public function testGetUnknownConnection() : void
     {
         $container = $this->getMockBuilder('Symfony\Component\DependencyInjection\ContainerInterface')->getMock();
         $registry  = new Registry($container, [], [], 'default', 'default');
 
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Doctrine ORM Connection named "default" does not exist.');
         $registry->getConnection('default');
     }
 
@@ -106,27 +104,27 @@ class RegistryTest extends TestCase
         $this->assertSame($em, $registry->getManager('default'));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Doctrine ORM Manager named "default" does not exist.
-     */
     public function testGetUnknownEntityManager() : void
     {
         $container = $this->getMockBuilder('Symfony\Component\DependencyInjection\ContainerInterface')->getMock();
         $registry  = new Registry($container, [], [], 'default', 'default');
 
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Doctrine ORM Manager named "default" does not exist.'
+        );
         $registry->getManager('default');
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Doctrine ORM Manager named "default" does not exist.
-     */
     public function testResetUnknownEntityManager() : void
     {
         $container = $this->getMockBuilder('Symfony\Component\DependencyInjection\ContainerInterface')->getMock();
         $registry  = new Registry($container, [], [], 'default', 'default');
 
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Doctrine ORM Manager named "default" does not exist.'
+        );
         $registry->resetManager('default');
     }
 
@@ -140,7 +138,7 @@ class RegistryTest extends TestCase
         $noProxyManager->expects($this->once())
             ->method('clear');
 
-        $proxyManager = $this->getMockBuilder([LazyLoadingInterface::class, EntityManagerInterface::class])->getMock();
+        $proxyManager = $this->createMock(LazyLoadingEntityManagerInterface::class);
         $proxyManager->expects($this->once())
             ->method('setProxyInitializer')
             ->with($this->isInstanceOf(Closure::class));

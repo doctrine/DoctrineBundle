@@ -10,6 +10,7 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -647,7 +648,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(600, $myEntityRegionArgs[2]);
 
         $this->assertEquals('doctrine.orm.default_second_level_cache.region.my_query_region', $myQueryRegionArgs[0]);
-        $this->assertContains('/doctrine/orm/slc/filelock', $myQueryRegionArgs[1]);
+        $this->assertStringContainsString(
+            '/doctrine/orm/slc/filelock',
+            $myQueryRegionArgs[1]
+        );
         $this->assertEquals(60, $myQueryRegionArgs[2]);
 
         $this->assertEquals('doctrine.orm.default_second_level_cache.regions_configuration', $slcFactoryArgs[0]);
@@ -1063,10 +1067,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertTrue($container->getDefinition('entity_listener')->isPublic());
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage EntityListenerServiceResolver
-     */
     public function testLazyEntityListenerResolverWithoutCorrectInterface() : void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -1080,6 +1080,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $this->loadFromFile($container, 'orm_entity_listener_lazy_resolver_without_interface');
 
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('EntityListenerServiceResolver');
         $this->compileContainer($container);
     }
 
@@ -1101,10 +1103,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertTrue($container->getDefinition('doctrine.orm.em1_entity_listener_resolver')->isPublic());
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessageRegExp /The service ".*" must not be abstract\./
-     */
     public function testAbstractEntityListener() : void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -1118,6 +1116,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $this->loadFromFile($container, 'orm_entity_listener_abstract');
 
+        $this->expectException(InvalidArgumentException::class);
+        if (method_exists($this, 'expectExceptionMessageMatches')) {
+            $this->expectExceptionMessageMatches('/The service ".*" must not be abstract\./');
+        } else {
+            $this->expectExceptionMessageRegExp('/The service ".*" must not be abstract\./');
+        }
         $this->compileContainer($container);
     }
 

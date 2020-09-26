@@ -39,7 +39,10 @@ class CreateDatabaseDoctrineTest extends TestCase
             array_merge(['command' => $command->getName()])
         );
 
-        $this->assertContains('Created database ' . sys_get_temp_dir() . '/' . $dbName . ' for connection named ' . $connectionName, $commandTester->getDisplay());
+        $this->assertStringContainsString(
+            'Created database ' . sys_get_temp_dir() . '/' . $dbName . ' for connection named ' . $connectionName,
+            $commandTester->getDisplay()
+        );
     }
 
     /**
@@ -81,12 +84,18 @@ class CreateDatabaseDoctrineTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName(), $shardOption => 1]);
 
-        $this->assertContains('Created database ' . sys_get_temp_dir() . '/shard_1 for connection named ' . $connectionName, $commandTester->getDisplay());
+        $this->assertStringContainsString(
+            'Created database ' . sys_get_temp_dir() . '/shard_1 for connection named ' . $connectionName,
+            $commandTester->getDisplay()
+        );
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName(), $shardOption => 2]);
 
-        $this->assertContains('Created database ' . sys_get_temp_dir() . '/shard_2 for connection named ' . $connectionName, $commandTester->getDisplay());
+        $this->assertStringContainsString(
+            'Created database ' . sys_get_temp_dir() . '/shard_2 for connection named ' . $connectionName,
+            $commandTester->getDisplay()
+        );
     }
 
     public function provideShardOption() : Generator
