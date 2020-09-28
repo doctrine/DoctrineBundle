@@ -46,6 +46,10 @@
                 <span class="sf-toolbar-status {{ collector.querycount > 50 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.querycount }}</span>
             </div>
             <div class="sf-toolbar-info-piece">
+                <b>Different statements</b>
+                <span class="sf-toolbar-status">{{ collector.groupedQueryCount }}</span>
+            </div>
+            <div class="sf-toolbar-info-piece">
                 <b>Query time</b>
                 <span>{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
             </div>
