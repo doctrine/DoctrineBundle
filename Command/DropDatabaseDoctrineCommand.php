@@ -66,6 +66,11 @@ EOT
             $params = $params['master'];
         }
 
+        // Since doctrine/dbal 2.11 master has been replaced by primary
+        if (isset($params['primary'])) {
+            $params = $params['primary'];
+        }
+
         if (isset($params['shards'])) {
             $shards = $params['shards'];
             // Default select global
