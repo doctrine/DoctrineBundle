@@ -43,6 +43,10 @@ EOT
     {
         DoctrineCommandHelper::setApplicationConnection($this->getApplication(), $input->getOption('connection'));
 
+        // compatibility with doctrine/dbal 2.11+
+        // where this option is also present and unsupported before we are not switching to use a ConnectionProvider
+        $input->setOption('connection', null);
+
         return parent::execute($input, $output);
     }
 }
