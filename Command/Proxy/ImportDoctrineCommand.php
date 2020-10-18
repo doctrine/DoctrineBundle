@@ -31,7 +31,7 @@ class ImportDoctrineCommand extends ImportCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        @trigger_error(sprintf('The "%s" (doctrine:database:import) command is deprecated, use a database client instead.', ImportDoctrineCommand::class), E_USER_DEPRECATED);
+        @trigger_error(sprintf('The "%s" (doctrine:database:import) command is deprecated, use a database client instead.', self::class), E_USER_DEPRECATED);
 
         DoctrineCommandHelper::setApplicationConnection($this->getApplication(), $input->getOption('connection'));
 

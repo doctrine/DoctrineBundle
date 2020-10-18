@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use RuntimeException;
 
 class DisconnectedMetadataFactoryTest extends TestCase
 {
@@ -19,10 +20,6 @@ class DisconnectedMetadataFactoryTest extends TestCase
         self::markTestSkipped('This test requires ORM');
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Can't find base path for "Doctrine\Bundle\DoctrineBundle\Tests\Mapping\DisconnectedMetadataFactoryTest
-     */
     public function testCannotFindNamespaceAndPathForMetadata() : void
     {
         $class      = new ClassMetadataInfo(self::class);
@@ -31,6 +28,11 @@ class DisconnectedMetadataFactoryTest extends TestCase
         $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();
         $factory  = new DisconnectedMetadataFactory($registry);
 
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(<<<'EXCEPTION'
+Can't find base path for "Doctrine\Bundle\DoctrineBundle\Tests\Mapping\DisconnectedMetadataFactoryTest
+EXCEPTION
+        );
         $factory->findNamespaceAndPathForMetadata($collection);
     }
 

@@ -93,7 +93,7 @@ class ProfilerTest extends BaseTestCase
             html_entity_decode($expectedEscapedSql)
         );
 
-        $this->assertContains($expectedEscapedSql, $output);
+        $this->assertStringContainsString($expectedEscapedSql, $output);
 
         $this->assertSame(1, preg_match('/' . str_replace(
             ' ',

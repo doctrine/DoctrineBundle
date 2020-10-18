@@ -4,7 +4,10 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\Driver\API\ExceptionConverter;
+use Doctrine\DBAL\Driver\Exception as TheDriverException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
@@ -12,9 +15,6 @@ use Exception;
 
 class ConnectionFactoryTest extends TestCase
 {
-    /**
-     * @expectedException \Doctrine\DBAL\DBALException
-     */
     public function testContainer() : void
     {
         $typesConfig  = [];
@@ -23,11 +23,20 @@ class ConnectionFactoryTest extends TestCase
         $config       = null;
         $eventManager = null;
         $mappingTypes = [0];
-        $exception    = new DriverException('', $this->createMock(Driver\AbstractDriverException::class));
+        $exception    = new DriverException('', $this->createMock(
+            class_exists(Driver\AbstractDriverException::class) ?
+            Driver\AbstractDriverException::class :
+            TheDriverException::class
+        ));
 
         // put the mock into the fake driver
         FakeDriver::$exception = $exception;
 
+        if (class_exists(DBALException::class)) {
+            $this->expectException(DBALException::class);
+        } else {
+            $this->expectException(\Doctrine\DBAL\Exception::class);
+        }
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);
         } catch (Exception $e) {
@@ -124,6 +133,11 @@ class FakeDriver implements Driver
     public function getDatabase(Connection $conn) : string
     {
         return 'fake_db';
+    }
+
+    public function getExceptionConverter() : ExceptionConverter
+    {
+        throw new Exception('not implemented');
     }
 }
 

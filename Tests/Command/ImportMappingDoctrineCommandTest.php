@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -70,7 +71,11 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
         $expectedMetadataPath = sys_get_temp_dir() . '/import_mapping_bundle/Resources/config/doctrine/Product.orm.xml';
         $this->assertFileExists($expectedMetadataPath);
-        $this->assertContains('"Doctrine\Bundle\DoctrineBundle\Tests\Command\Entity\Product"', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
+        $this->assertStringContainsString(
+            '"Doctrine\Bundle\DoctrineBundle\Tests\Command\Entity\Product"',
+            file_get_contents($expectedMetadataPath),
+            'Metadata contains correct namespace'
+        );
     }
 
     public function testExecuteAnnotationsWithBundle() : void
@@ -82,15 +87,17 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
         $expectedMetadataPath = sys_get_temp_dir() . '/import_mapping_bundle/Entity/Product.php';
         $this->assertFileExists($expectedMetadataPath);
-        $this->assertContains('namespace Doctrine\Bundle\DoctrineBundle\Tests\Command\Entity;', file_get_contents($expectedMetadataPath), 'File contains correct namespace');
+        $this->assertStringContainsString(
+            'namespace Doctrine\Bundle\DoctrineBundle\Tests\Command\Entity;',
+            file_get_contents($expectedMetadataPath),
+            'File contains correct namespace'
+        );
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessageRegExp /The --path option is required/
-     */
     public function testExecuteThrowsExceptionWithNamespaceAndNoPath() : void
     {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The --path option is required');
         $this->commandTester->execute(['name' => 'Some\Namespace']);
     }
 
@@ -103,7 +110,11 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
         $expectedMetadataPath = $this->kernel->getProjectDir() . '/config/doctrine/Product.orm.xml';
         $this->assertFileExists($expectedMetadataPath);
-        $this->assertContains('"Some\Namespace\Entity\Product"', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
+        $this->assertStringContainsString(
+            '"Some\Namespace\Entity\Product"',
+            file_get_contents($expectedMetadataPath),
+            'Metadata contains correct namespace'
+        );
     }
 
     public function testExecuteAnnotationsWithNamespace() : void
@@ -116,7 +127,11 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
         $expectedMetadataPath = $this->kernel->getProjectDir() . '/src/Entity/Product.php';
         $this->assertFileExists($expectedMetadataPath);
-        $this->assertContains('namespace Some\Namespace\Entity;', file_get_contents($expectedMetadataPath), 'Metadata contains correct namespace');
+        $this->assertStringContainsString(
+            'namespace Some\Namespace\Entity;',
+            file_get_contents($expectedMetadataPath),
+            'Metadata contains correct namespace'
+        );
     }
 }
 

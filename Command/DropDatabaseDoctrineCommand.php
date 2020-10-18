@@ -66,6 +66,11 @@ EOT
             $params = $params['master'];
         }
 
+        // Since doctrine/dbal 2.11 master has been replaced by primary
+        if (isset($params['primary'])) {
+            $params = $params['primary'];
+        }
+
         if (isset($params['shards'])) {
             $shards = $params['shards'];
             // Default select global
@@ -74,7 +79,7 @@ EOT
                 foreach ($shards as $shard) {
                     if ($shard['id'] === (int) $input->getOption('shard')) {
                         // Select sharded database
-                        $params = $shard;
+                        $params = array_merge($params, $shard);
                         unset($params['id']);
                         break;
                     }
