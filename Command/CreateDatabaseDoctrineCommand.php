@@ -57,6 +57,11 @@ EOT
             $params = $params['master'];
         }
 
+        // Since doctrine/dbal 2.11 master has been replaced by primary
+        if (isset($params['primary'])) {
+            $params = $params['primary'];
+        }
+
         // Cannot inject `shard` option in parent::getDoctrineConnection
         // cause it will try to connect to a non-existing database
         if (isset($params['shards'])) {
