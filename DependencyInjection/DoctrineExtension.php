@@ -2,10 +2,12 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\DBAL\Tools\Console\ConnectionProvider;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\UnitOfWork;
 use LogicException;
@@ -197,12 +199,20 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         // Create a shard_manager for this connection
-        if (! isset($options['shards'])) {
+        if (isset($options['shards'])) {
+            $shardManagerDefinition = new Definition($options['shardManagerClass'], [new Reference(sprintf('doctrine.dbal.%s_connection', $name))]);
+            $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
+        }
+
+        // dbal < 2.11 BC layer
+        if (! interface_exists(ConnectionProvider::class)) {
             return;
         }
 
-        $shardManagerDefinition = new Definition($options['shardManagerClass'], [new Reference(sprintf('doctrine.dbal.%s_connection', $name))]);
-        $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
+        $container->setDefinition(
+            ManagerRegistryAwareConnectionProvider::class,
+            new Definition(ManagerRegistryAwareConnectionProvider::class, [$container->getDefinition('doctrine')])
+        );
     }
 
     protected function getConnectionOptions($connection)
