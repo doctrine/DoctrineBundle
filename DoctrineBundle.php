@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
+use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterUidTypePass;
 use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFactory;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
@@ -36,6 +37,9 @@ class DoctrineBundle extends Bundle
         }
 
         $container->addCompilerPass(new DoctrineValidationPass('orm'));
+        if (class_exists(RegisterUidTypePass::class)) {
+            $container->addCompilerPass(new RegisterUidTypePass());
+        }
         $container->addCompilerPass(new EntityListenerPass());
         $container->addCompilerPass(new ServiceRepositoryCompilerPass());
         $container->addCompilerPass(new WellKnownSchemaFilterPass());
