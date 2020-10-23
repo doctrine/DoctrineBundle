@@ -52,15 +52,15 @@ jobs:
         - composer require --dev symfony/messenger --no-update
         - travis_retry composer update -n --prefer-dist
 
-    # Test against latest Symfony 5.0 dev
-    - php: 7.3
-      env: SYMFONY_REQUIRE="5.0.*"
+    # Test against latest Symfony 5.2 dev
+    - php: 7.4
+      env: SYMFONY_REQUIRE="5.2.*"
       install:
         - composer require --dev symfony/messenger --no-update
         - travis_retry composer update -n --prefer-dist
 
     # Test dev versions
-    - php: 7.3
+    - php: 7.4
       if: type = cron
       env: DEV
       install:
