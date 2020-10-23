@@ -43,6 +43,7 @@ class ServiceRepositoryTest extends TestCase
             'kernel.bundles' => ['RepositoryServiceBundle' => RepositoryServiceBundle::class],
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
+            'kernel.runtime_environment' => '%%env(default:kernel.environment:APP_RUNTIME_ENV)%%',
             'kernel.root_dir' => __DIR__ . '/../../../../', // src dir
             'kernel.project_dir' => __DIR__ . '/../../../../', // src dir
             'kernel.bundles_metadata' => [],
