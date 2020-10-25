@@ -11,14 +11,14 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class CreateDatabaseDoctrineTest extends TestCase
 {
-    public function tearDown() : void
+    public function tearDown(): void
     {
         @unlink(sys_get_temp_dir() . '/test');
         @unlink(sys_get_temp_dir() . '/shard_1');
         @unlink(sys_get_temp_dir() . '/shard_2');
     }
 
-    public function testExecute() : void
+    public function testExecute(): void
     {
         $connectionName = 'default';
         $dbName         = 'test';
@@ -48,7 +48,7 @@ class CreateDatabaseDoctrineTest extends TestCase
     /**
      * @dataProvider provideShardOption
      */
-    public function testExecuteWithShardAlias(string $shardOption) : void
+    public function testExecuteWithShardAlias(string $shardOption): void
     {
         $connectionName = 'default';
         $params         = [
@@ -98,7 +98,7 @@ class CreateDatabaseDoctrineTest extends TestCase
         );
     }
 
-    public function provideShardOption() : Generator
+    public function provideShardOption(): Generator
     {
         yield 'full name' => ['--shard'];
         yield 'short name' => ['-s'];
@@ -107,7 +107,7 @@ class CreateDatabaseDoctrineTest extends TestCase
     /**
      * @param mixed[]|null $params Connection parameters
      */
-    private function getMockContainer(string $connectionName, array $params = null) : MockObject
+    private function getMockContainer(string $connectionName, array $params = null): MockObject
     {
         // Mock the container and everything you'll need here
         $mockDoctrine = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')

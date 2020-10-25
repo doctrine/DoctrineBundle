@@ -11,7 +11,7 @@ use RuntimeException;
 
 class DisconnectedMetadataFactoryTest extends TestCase
 {
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         if (interface_exists(EntityManagerInterface::class)) {
             return;
@@ -20,7 +20,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
         self::markTestSkipped('This test requires ORM');
     }
 
-    public function testCannotFindNamespaceAndPathForMetadata() : void
+    public function testCannotFindNamespaceAndPathForMetadata(): void
     {
         $class      = new ClassMetadataInfo(self::class);
         $collection = new ClassMetadataCollection([$class]);
@@ -36,7 +36,7 @@ EXCEPTION
         $factory->findNamespaceAndPathForMetadata($collection);
     }
 
-    public function testFindNamespaceAndPathForMetadata() : void
+    public function testFindNamespaceAndPathForMetadata(): void
     {
         $class      = new ClassMetadataInfo('\Vendor\Package\Class');
         $collection = new ClassMetadataCollection([$class]);

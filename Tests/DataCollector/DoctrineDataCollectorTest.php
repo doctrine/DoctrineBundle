@@ -15,7 +15,7 @@ class DoctrineDataCollectorTest extends TestCase
     const FIRST_ENTITY  = 'TestBundle\Test\Entity\Test1';
     const SECOND_ENTITY = 'TestBundle\Test\Entity\Test2';
 
-    public function testCollectEntities() : void
+    public function testCollectEntities(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -54,7 +54,7 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertCount(2, $entities['default']);
     }
 
-    public function testDoesNotCollectEntities() : void
+    public function testDoesNotCollectEntities(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -75,7 +75,7 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertEmpty($collector->getEntities());
     }
 
-    public function testGetGroupedQueries() : void
+    public function testGetGroupedQueries(): void
     {
         $logger            = $this->getMockBuilder('Doctrine\DBAL\Logging\DebugStack')->getMock();
         $logger->queries   = [];
@@ -112,7 +112,7 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame(1, $groupedQueries['default'][1]['count']);
     }
 
-    private function createEntityMetadata(string $entityFQCN) : ClassMetadataInfo
+    private function createEntityMetadata(string $entityFQCN): ClassMetadataInfo
     {
         $metadata            = new ClassMetadataInfo($entityFQCN);
         $metadata->name      = $entityFQCN;
@@ -121,7 +121,7 @@ class DoctrineDataCollectorTest extends TestCase
         return $metadata;
     }
 
-    private function createCollector(array $managers, bool $shouldValidateSchema = true) : DoctrineDataCollector
+    private function createCollector(array $managers, bool $shouldValidateSchema = true): DoctrineDataCollector
     {
         $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();
         $registry

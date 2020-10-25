@@ -25,7 +25,7 @@ class ServiceEntityRepository extends EntityRepository implements ServiceEntityR
     /**
      * @param string $entityClass The class name of the entity this repository manages
      */
-    public function __construct(ManagerRegistry $registry, $entityClass)
+    public function __construct(ManagerRegistry $registry, string $entityClass)
     {
         $manager = $registry->getManagerForClass($entityClass);
 

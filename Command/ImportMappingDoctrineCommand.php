@@ -142,12 +142,14 @@ EOT
                 } else {
                     $path = $destPath . '/' . str_replace('\\', '.', $className) . '.orm.' . $type;
                 }
+
                 $output->writeln(sprintf('  > writing <comment>%s</comment>', $path));
                 $code = $exporter->exportClassMetadata($class);
                 $dir  = dirname($path);
                 if (! is_dir($dir)) {
                     mkdir($dir, 0775, true);
                 }
+
                 file_put_contents($path, $code);
                 chmod($path, 0664);
             }

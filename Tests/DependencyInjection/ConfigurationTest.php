@@ -21,7 +21,7 @@ class ConfigurationTest extends TestCase
     /**
      * @runInSeparateProcess
      */
-    public function testGetConfigTreeBuilderDoNotUseDoctrineCommon() : void
+    public function testGetConfigTreeBuilderDoNotUseDoctrineCommon(): void
     {
         $configuration = new Configuration(true);
         $configuration->getConfigTreeBuilder();

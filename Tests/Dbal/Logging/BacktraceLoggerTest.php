@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class BacktraceLoggerTest extends TestCase
 {
-    public function testBacktraceLogged() : void
+    public function testBacktraceLogged(): void
     {
         $logger = new BacktraceLogger();
         $logger->startQuery('SELECT column FROM table');

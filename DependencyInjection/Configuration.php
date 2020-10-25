@@ -10,7 +10,9 @@ use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
+
 use function array_key_exists;
+use function assert;
 use function in_array;
 use function is_array;
 
@@ -28,15 +30,12 @@ class Configuration implements ConfigurationInterface
     /**
      * @param bool $debug Whether to use the debug mode
      */
-    public function __construct($debug)
+    public function __construct(bool $debug)
     {
         $this->debug = (bool) $debug;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfigTreeBuilder() : TreeBuilder
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('doctrine');
         $rootNode    = $treeBuilder->getRootNode();
@@ -50,7 +49,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Add DBAL section to configuration tree
      */
-    private function addDbalSection(ArrayNodeDefinition $node) : void
+    private function addDbalSection(ArrayNodeDefinition $node): void
     {
         $node
             ->children()
@@ -67,9 +66,11 @@ class Configuration implements ConfigurationInterface
                             if (isset($excludedKeys[$key])) {
                                 continue;
                             }
+
                             $connection[$key] = $v[$key];
                             unset($v[$key]);
                         }
+
                         $v['default_connection'] = isset($v['default_connection']) ? (string) $v['default_connection'] : 'default';
                         $v['connections']        = [$v['default_connection'] => $connection];
 
@@ -105,16 +106,16 @@ class Configuration implements ConfigurationInterface
     /**
      * Return the dbal connections node
      */
-    private function getDbalConnectionsNode() : ArrayNodeDefinition
+    private function getDbalConnectionsNode(): ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder('connections');
         $node        = $treeBuilder->getRootNode();
 
-        /** @var ArrayNodeDefinition $connectionNode */
         $connectionNode = $node
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
             ->prototype('array');
+        assert($connectionNode instanceof ArrayNodeDefinition);
 
         $this->configureDbalDriverNode($connectionNode);
 
@@ -188,7 +189,7 @@ class Configuration implements ConfigurationInterface
      *
      * These keys are available for slave configurations too.
      */
-    private function configureDbalDriverNode(ArrayNodeDefinition $node) : void
+    private function configureDbalDriverNode(ArrayNodeDefinition $node): void
     {
         $node
             ->children()
@@ -298,7 +299,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Add the ORM section to configuration tree
      */
-    private function addOrmSection(ArrayNodeDefinition $node) : void
+    private function addOrmSection(ArrayNodeDefinition $node): void
     {
         $node
             ->children()
@@ -327,9 +328,11 @@ class Configuration implements ConfigurationInterface
                                 if (isset($excludedKeys[$key])) {
                                     continue;
                                 }
+
                                 $entityManager[$key] = $v[$key];
                                 unset($v[$key]);
                             }
+
                             $v['default_entity_manager'] = isset($v['default_entity_manager']) ? (string) $v['default_entity_manager'] : 'default';
                             $v['entity_managers']        = [$v['default_entity_manager'] => $entityManager];
 
@@ -347,9 +350,11 @@ class Configuration implements ConfigurationInterface
                                     if (is_int($v) && in_array($v, $generationModes['values']/*array(0, 1, 2, 3)*/)) {
                                         return false;
                                     }
+
                                     if (is_bool($v)) {
                                         return false;
                                     }
+
                                     if (is_string($v)) {
                                         if (in_array(strtoupper($v), $generationModes['names']/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'EVAL')*/)) {
                                             return false;
@@ -381,7 +386,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Return ORM target entity resolver node
      */
-    private function getOrmTargetEntityResolverNode() : NodeDefinition
+    private function getOrmTargetEntityResolverNode(): NodeDefinition
     {
         $treeBuilder = new TreeBuilder('resolve_target_entities');
         $node        = $treeBuilder->getRootNode();
@@ -398,7 +403,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Return ORM entity listener node
      */
-    private function getOrmEntityListenersNode() : NodeDefinition
+    private function getOrmEntityListenersNode(): NodeDefinition
     {
         $treeBuilder = new TreeBuilder('entity_listeners');
         $node        = $treeBuilder->getRootNode();
@@ -482,7 +487,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Return ORM entity manager node
      */
-    private function getOrmEntityManagersNode() : ArrayNodeDefinition
+    private function getOrmEntityManagersNode(): ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder('entity_managers');
         $node        = $treeBuilder->getRootNode();
@@ -642,7 +647,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Return a ORM cache driver node for an given entity manager
      */
-    private function getOrmCacheDriverNode(string $name) : ArrayNodeDefinition
+    private function getOrmCacheDriverNode(string $name): ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder($name);
         $node        = $treeBuilder->getRootNode();
@@ -651,7 +656,7 @@ class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet()
             ->beforeNormalization()
                 ->ifString()
-                ->then(static function ($v) : array {
+                ->then(static function ($v): array {
                     return ['type' => $v];
                 })
             ->end()
@@ -666,8 +671,10 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Find proxy auto generate modes for their names and int values
+     *
+     * @return array{names: list<string>, values: list<int>}
      */
-    private function getAutoGenerateModes() : array
+    private function getAutoGenerateModes(): array
     {
         $constPrefix = 'AUTOGENERATE_';
         $prefixLen   = strlen($constPrefix);
@@ -698,8 +705,10 @@ class Configuration implements ConfigurationInterface
      * setDeprecation() with less than 3 args and the getDeprecation method was
      * introduced at the same time. By checking if getDeprecation() exists,
      * we can determine the correct param count to use when calling setDeprecated.
+     *
+     * @return list<string>|array{0:string, 1: numeric-string, string}
      */
-    private function getCommentedParamDeprecationMsg() : array
+    private function getCommentedParamDeprecationMsg(): array
     {
         $message = 'The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.';
 

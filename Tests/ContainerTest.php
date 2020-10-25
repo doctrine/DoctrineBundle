@@ -22,7 +22,7 @@ use Symfony\Component\Cache\DoctrineProvider;
 
 class ContainerTest extends TestCase
 {
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         if (interface_exists(EntityManagerInterface::class)) {
             return;
@@ -36,7 +36,7 @@ class ContainerTest extends TestCase
      *
      * @group legacy
      */
-    public function testContainer() : void
+    public function testContainer(): void
     {
         $container = $this->createXmlBundleTestContainer();
 

@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class DoctrineExtensionTest extends TestCase
 {
-    public function testReplaceQueryParametersWithPostgresCasting() : void
+    public function testReplaceQueryParametersWithPostgresCasting(): void
     {
         $extension  = new DoctrineExtension();
         $query      = 'a=? OR (1)::string OR b=?';
@@ -17,7 +17,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR (1)::string OR b=2', $result);
     }
 
-    public function testReplaceQueryParametersWithStartingIndexAtOne() : void
+    public function testReplaceQueryParametersWithStartingIndexAtOne(): void
     {
         $extension  = new DoctrineExtension();
         $query      = 'a=? OR b=?';
@@ -30,7 +30,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR b=2', $result);
     }
 
-    public function testReplaceQueryParameters() : void
+    public function testReplaceQueryParameters(): void
     {
         $extension  = new DoctrineExtension();
         $query      = 'a=? OR b=?';
@@ -43,7 +43,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR b=2', $result);
     }
 
-    public function testReplaceQueryParametersWithNamedIndex() : void
+    public function testReplaceQueryParametersWithNamedIndex(): void
     {
         $extension  = new DoctrineExtension();
         $query      = 'a=:a OR b=:b';
@@ -56,7 +56,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR b=2', $result);
     }
 
-    public function testReplaceQueryParametersWithEmptyArray() : void
+    public function testReplaceQueryParametersWithEmptyArray(): void
     {
         $extension  = new DoctrineExtension();
         $query      = 'IN (?)';
@@ -68,34 +68,34 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('IN (NULL)', $result);
     }
 
-    public function testEscapeBinaryParameter() : void
+    public function testEscapeBinaryParameter(): void
     {
         $binaryString = pack('H*', '9d40b8c1417f42d099af4782ec4b20b6');
         $this->assertEquals('0x9D40B8C1417F42D099AF4782EC4B20B6', DoctrineExtension::escapeFunction($binaryString));
     }
 
-    public function testEscapeStringParameter() : void
+    public function testEscapeStringParameter(): void
     {
         $this->assertEquals("'test string'", DoctrineExtension::escapeFunction('test string'));
     }
 
-    public function testEscapeArrayParameter() : void
+    public function testEscapeArrayParameter(): void
     {
         $this->assertEquals("1, NULL, 'test', foo, NULL", DoctrineExtension::escapeFunction([1, null, 'test', new DummyClass('foo'), []]));
     }
 
-    public function testEscapeObjectParameter() : void
+    public function testEscapeObjectParameter(): void
     {
         $object = new DummyClass('bar');
         $this->assertEquals('bar', DoctrineExtension::escapeFunction($object));
     }
 
-    public function testEscapeNullParameter() : void
+    public function testEscapeNullParameter(): void
     {
         $this->assertEquals('NULL', DoctrineExtension::escapeFunction(null));
     }
 
-    public function testEscapeBooleanParameter() : void
+    public function testEscapeBooleanParameter(): void
     {
         $this->assertEquals('1', DoctrineExtension::escapeFunction(true));
     }
@@ -103,7 +103,7 @@ class DoctrineExtensionTest extends TestCase
     /**
      * @group legacy
      */
-    public function testItHighlightsSqlQueriesUsingCssClasses() : void
+    public function testItHighlightsSqlQueriesUsingCssClasses(): void
     {
         $extension = new DoctrineExtension();
         self::assertStringContainsString(
@@ -119,7 +119,7 @@ class DoctrineExtensionTest extends TestCase
     /**
      * @group legacy
      */
-    public function testItDoesNotOutputDuplicatePreTags() : void
+    public function testItDoesNotOutputDuplicatePreTags(): void
     {
         $extension = new DoctrineExtension();
         self::assertSame(
@@ -135,7 +135,7 @@ class DoctrineExtensionTest extends TestCase
     /**
      * @group legacy
      */
-    public function testItUsesCssOnTheDivTag() : void
+    public function testItUsesCssOnTheDivTag(): void
     {
         $extension = new DoctrineExtension();
         self::assertSame(
@@ -148,7 +148,7 @@ class DoctrineExtensionTest extends TestCase
         );
     }
 
-    public function testItUsesCssOnThePreTag() : void
+    public function testItUsesCssOnThePreTag(): void
     {
         $extension = new DoctrineExtension();
         self::assertSame(
@@ -168,7 +168,7 @@ class DummyClass
         $this->str = $str;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->str;
     }

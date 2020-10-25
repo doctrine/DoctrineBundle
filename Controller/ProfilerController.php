@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\VarDumper\Cloner\Data;
 
+use function assert;
+
 class ProfilerController implements ContainerAwareInterface
 {
     /** @var ContainerInterface */
@@ -37,8 +39,8 @@ class ProfilerController implements ContainerAwareInterface
      */
     public function explainAction($token, $connectionName, $query)
     {
-        /** @var Profiler $profiler */
         $profiler = $this->container->get('profiler');
+        assert($profiler instanceof Profiler);
         $profiler->disable();
 
         $profile = $profiler->loadProfile($token);
@@ -53,8 +55,8 @@ class ProfilerController implements ContainerAwareInterface
             return new Response('This query cannot be explained.');
         }
 
-        /** @var Connection $connection */
         $connection = $this->container->get('doctrine')->getConnection($connectionName);
+        assert($connection instanceof Connection);
         try {
             $platform = $connection->getDatabasePlatform();
             if ($platform instanceof SqlitePlatform) {
@@ -76,8 +78,10 @@ class ProfilerController implements ContainerAwareInterface
 
     /**
      * @param mixed[] $query
+     *
+     * @return mixed[]
      */
-    private function explainSQLitePlatform(Connection $connection, array $query)
+    private function explainSQLitePlatform(Connection $connection, array $query): array
     {
         $params = $query['params'];
 
@@ -89,7 +93,10 @@ class ProfilerController implements ContainerAwareInterface
             ->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    private function explainSQLServerPlatform(Connection $connection, $query)
+    /**
+     * @return mixed[]
+     */
+    private function explainSQLServerPlatform(Connection $connection, string $query): array
     {
         if (stripos($query['sql'], 'SELECT') === 0) {
             $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . '; SET STATISTICS PROFILE OFF;';
@@ -109,7 +116,10 @@ class ProfilerController implements ContainerAwareInterface
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    private function explainOtherPlatform(Connection $connection, $query)
+    /**
+     * @return mixed[]
+     */
+    private function explainOtherPlatform(Connection $connection, string $query): array
     {
         $params = $query['params'];
 

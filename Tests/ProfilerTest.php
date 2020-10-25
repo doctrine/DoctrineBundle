@@ -32,7 +32,7 @@ class ProfilerTest extends BaseTestCase
     /** @var DoctrineDataCollector */
     private $collector;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         $this->logger = new DebugStack();
         $registry     = $this->getMockBuilder(ManagerRegistry::class)->getMock();
@@ -63,7 +63,7 @@ class ProfilerTest extends BaseTestCase
         $this->twig->addRuntimeLoader($loader);
     }
 
-    public function testRender() : void
+    public function testRender(): void
     {
         $this->logger->queries = [
             [

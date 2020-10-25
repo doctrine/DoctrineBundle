@@ -18,7 +18,7 @@ class ContainerEntityListenerResolverTest extends TestCase
     /** @var ContainerInterface|PHPUnit_Framework_MockObject_MockObject */
     private $container;
 
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         if (interface_exists(EntityManagerInterface::class)) {
             return;
@@ -27,7 +27,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         self::markTestSkipped('This test requires ORM');
     }
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -35,7 +35,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->resolver  = new ContainerEntityListenerResolver($this->container);
     }
 
-    public function testResolveClass() : void
+    public function testResolveClass(): void
     {
         $className = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $object    = $this->resolver->resolve($className);
@@ -44,7 +44,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertSame($object, $this->resolver->resolve($className));
     }
 
-    public function testRegisterClassAndResolve() : void
+    public function testRegisterClassAndResolve(): void
     {
         $className = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $object    = new $className();
@@ -54,7 +54,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertSame($object, $this->resolver->resolve($className));
     }
 
-    public function testRegisterServiceAndResolve() : void
+    public function testRegisterServiceAndResolve(): void
     {
         $className = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $serviceId = 'app.entity_listener';
@@ -76,7 +76,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertSame($object, $this->resolver->resolve($className));
     }
 
-    public function testRegisterMissingServiceAndResolve() : void
+    public function testRegisterMissingServiceAndResolve(): void
     {
         $className = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $serviceId = 'app.entity_listener';
@@ -93,7 +93,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->resolver->resolve($className);
     }
 
-    public function testClearOne() : void
+    public function testClearOne(): void
     {
         $className1 = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $className2 = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener2';
@@ -116,7 +116,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertSame($obj2, $this->resolver->resolve($className2));
     }
 
-    public function testClearAll() : void
+    public function testClearAll(): void
     {
         $className1 = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener1';
         $className2 = '\Doctrine\Bundle\DoctrineBundle\Tests\Mapping\EntityListener2';
@@ -139,7 +139,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $this->assertNotSame($obj2, $this->resolver->resolve($className2));
     }
 
-    public function testRegisterStringException() : void
+    public function testRegisterStringException(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('An object was expected, but got "string".');

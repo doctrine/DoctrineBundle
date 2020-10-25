@@ -16,12 +16,12 @@ class ManagerRegistryAwareConnectionProvider implements ConnectionProvider
         $this->managerRegistry = $managerRegistry;
     }
 
-    public function getDefaultConnection() : Connection
+    public function getDefaultConnection(): Connection
     {
         return $this->managerRegistry->getConnection();
     }
 
-    public function getConnection(string $name) : Connection
+    public function getConnection(string $name): Connection
     {
         return $this->managerRegistry->getConnection($name);
     }

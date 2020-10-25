@@ -12,6 +12,7 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
+
 use function is_subclass_of;
 
 class ConnectionFactory
@@ -51,6 +52,7 @@ class ConnectionFactory
                     if (class_exists(DBALException::class)) {
                         throw DBALException::invalidWrapperClass($params['wrapperClass']);
                     }
+
                     throw Exception::invalidWrapperClass($params['wrapperClass']);
                 }
 
@@ -103,12 +105,13 @@ class ConnectionFactory
      * @throws DBALException
      * @throws Exception
      */
-    private function getDatabasePlatform(Connection $connection) : AbstractPlatform
+    private function getDatabasePlatform(Connection $connection): AbstractPlatform
     {
         try {
             return $connection->getDatabasePlatform();
         } catch (DriverException $driverException) {
-            $exceptionClass = class_exists(DBALException::class)? DBALException::class : Exception::class;
+            $exceptionClass = class_exists(DBALException::class) ? DBALException::class : Exception::class;
+
             throw new $exceptionClass(
                 'An exception occurred while establishing a connection to figure out your platform version.' . PHP_EOL .
                 "You can circumvent this by setting a 'server_version' configuration value" . PHP_EOL . PHP_EOL .
@@ -123,7 +126,7 @@ class ConnectionFactory
     /**
      * initialize the types
      */
-    private function initializeTypes() : void
+    private function initializeTypes(): void
     {
         foreach ($this->typesConfig as $typeName => $typeConfig) {
             if (Type::hasType($typeName)) {

@@ -37,7 +37,7 @@ class ManagerConfigurator
     /**
      * Enables filters for a given entity manager
      */
-    private function enableFilters(EntityManagerInterface $entityManager) : void
+    private function enableFilters(EntityManagerInterface $entityManager): void
     {
         if (empty($this->enabledFilters)) {
             return;
@@ -57,7 +57,7 @@ class ManagerConfigurator
     /**
      * Sets default parameters for a given filter
      */
-    private function setFilterParameters(string $name, SQLFilter $filter) : void
+    private function setFilterParameters(string $name, SQLFilter $filter): void
     {
         if (empty($this->filtersParameters[$name])) {
             return;

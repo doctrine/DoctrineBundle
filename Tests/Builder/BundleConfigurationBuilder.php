@@ -4,7 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Builder;
 
 class BundleConfigurationBuilder
 {
-    /** @var array */
+    /** @var mixed[] */
     private $configuration;
 
     public static function createBuilder()
@@ -21,7 +21,7 @@ class BundleConfigurationBuilder
         return $builder;
     }
 
-    public function addBaseConnection() : self
+    public function addBaseConnection(): self
     {
         $this->addConnection([
             'connections' => [
@@ -32,7 +32,7 @@ class BundleConfigurationBuilder
         return $this;
     }
 
-    public function addBaseEntityManager() : self
+    public function addBaseEntityManager(): self
     {
         $this->addEntityManager([
             'default_entity_manager' => 'default',
@@ -48,7 +48,7 @@ class BundleConfigurationBuilder
         return $this;
     }
 
-    public function addBaseSecondLevelCache() : self
+    public function addBaseSecondLevelCache(): self
     {
         $this->addSecondLevelCache([
             'region_cache_driver' => ['type' => 'pool', 'pool' => 'my_pool'],
@@ -60,28 +60,28 @@ class BundleConfigurationBuilder
         return $this;
     }
 
-    public function addConnection($config) : self
+    public function addConnection($config): self
     {
         $this->configuration['dbal'] = $config;
 
         return $this;
     }
 
-    public function addEntityManager($config) : self
+    public function addEntityManager($config): self
     {
         $this->configuration['orm'] = $config;
 
         return $this;
     }
 
-    public function addSecondLevelCache($config, $manager = 'default') : self
+    public function addSecondLevelCache($config, $manager = 'default'): self
     {
         $this->configuration['orm']['entity_managers'][$manager]['second_level_cache'] = $config;
 
         return $this;
     }
 
-    public function build() : array
+    public function build(): array
     {
         return $this->configuration;
     }

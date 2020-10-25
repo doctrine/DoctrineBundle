@@ -9,7 +9,7 @@ final class BacktraceLogger extends DebugStack
     /**
      * {@inheritdoc}
      */
-    public function startQuery($sql, ?array $params = null, ?array $types = null) : void
+    public function startQuery($sql, ?array $params = null, ?array $types = null): void
     {
         parent::startQuery($sql, $params, $types);
 
