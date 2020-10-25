@@ -49,7 +49,7 @@
         "symfony/validator": "^3.4.30|^4.3.3|^5.0",
         "symfony/web-profiler-bundle": "^3.4.30|^4.3.3|^5.0",
         "symfony/yaml": "^3.4.30|^4.3.3|^5.0",
-        "twig/twig": "^1.34|^2.12"
+        "twig/twig": "^1.34|^2.12|^3.0"
     },
     "config": {
         "sort-packages": true
