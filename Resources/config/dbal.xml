@@ -102,5 +102,11 @@
             <tag name="console.command" command="doctrine:query:sql" />
         </service>
 
+        <service id="Doctrine\DBAL\Tools\Console\Command\RunSqlCommand">
+            <argument type="service" id="Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider" on-invalid="null" />
+
+            <tag name="console.command" command="dbal:run-sql" />
+        </service>
+
     </services>
 </container>
