@@ -116,7 +116,7 @@ Configuration Reference
                         wrapper_class:        ~
                         shard_choser:         ~
                         shard_choser_service: ~
-                        keep_slave:           ~
+                        keep_replica:           ~
 
                         # An array of options
                         options:
@@ -135,9 +135,9 @@ Configuration Reference
                             # collate:      utf8_unicode_ci
                             # engine:       InnoDB
 
-                        slaves:
-                            # A collection of named slave connections (e.g. slave1, slave2)
-                            slave1:
+                        replicas:
+                            # A collection of named replica connections (e.g. replica1, replica2)
+                            replica1:
                                 dbname:               ~
                                 host:                 localhost
                                 port:                 ~
@@ -474,7 +474,7 @@ Configuration Reference
                         wrapper-class=""
                         shard-choser=""
                         shard-choser-service=""
-                        keep-slave=""
+                        keep-replica=""
                     >
 
                         <!-- example -->
@@ -504,8 +504,8 @@ Configuration Reference
                         <!-- sslcrl: The name of a file containing the SSL certificate revocation list (CRL) -->
                         <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
                         <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
-                        <doctrine:slave
-                            name="slave1"
+                        <doctrine:replica
+                            name="replica1"
                             dbname=""
                             host="localhost"
                             port="null"

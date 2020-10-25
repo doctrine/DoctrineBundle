@@ -7,6 +7,8 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\DBAL\Connections\MasterSlaveConnection;
+use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Tools\Console\ConnectionProvider;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\UnitOfWork;
@@ -239,7 +241,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'options' => 'driverOptions',
                 'driver_class' => 'driverClass',
                 'wrapper_class' => 'wrapperClass',
-                'keep_slave' => 'keepSlave',
+                'keep_slave' => class_exists(PrimaryReadReplicaConnection::class) ? 'keepReplica' : 'keepSlave',
+                'keep_replica' => 'keepReplica',
+                'replicas' => 'replica',
                 'shard_choser' => 'shardChoser',
                 'shard_manager_class' => 'shardManagerClass',
                 'server_version' => 'serverVersion',
@@ -254,21 +258,24 @@ class DoctrineExtension extends AbstractDoctrineExtension
             unset($options[$old]);
         }
 
-        if (! empty($options['slaves']) && ! empty($options['shards'])) {
+        if (! empty($options['slaves']) && ! empty($options['replica']) && ! empty($options['shards'])) {
             throw new InvalidArgumentException('Sharding and master-slave connection cannot be used together');
         }
 
-        if (! empty($options['slaves'])) {
+        if (! empty($options['slaves']) || ! empty($options['replica'])) {
             $nonRewrittenKeys = [
                 'driver' => true,
                 'driverOptions' => true,
                 'driverClass' => true,
                 'wrapperClass' => true,
                 'keepSlave' => true,
+                'keepReplica' => true,
                 'shardChoser' => true,
                 'platform' => true,
                 'slaves' => true,
                 'master' => true,
+                'primary' => true,
+                'replica' => true,
                 'shards' => true,
                 'serverVersion' => true,
                 'defaultTableOptions' => true,
@@ -283,16 +290,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     continue;
                 }
 
-                $options['master'][$key] = $value;
+                $options[class_exists(PrimaryReadReplicaConnection::class) ? 'primary' : 'master'][$key] = $value;
                 unset($options[$key]);
             }
 
             if (empty($options['wrapperClass'])) {
-                // Change the wrapper class only if the user does not already forced using a custom one.
-                $options['wrapperClass'] = 'Doctrine\\DBAL\\Connections\\MasterSlaveConnection';
+                // Change the wrapper class only if user did not configure custom one.
+                $options['wrapperClass'] = class_exists(PrimaryReadReplicaConnection::class) ?
+                    PrimaryReadReplicaConnection::class : // dbal >= 2.11
+                    MasterSlaveConnection::class; // dbal < 2.11
             }
         } else {
-            unset($options['slaves']);
+            unset($options['slaves'], $options['replica']);
         }
 
         if (! empty($options['shards'])) {
@@ -302,9 +311,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'driverClass' => true,
                 'wrapperClass' => true,
                 'keepSlave' => true,
+                'keepReplica' => true,
                 'shardChoser' => true,
                 'platform' => true,
                 'slaves' => true,
+                'replica' => true,
                 'global' => true,
                 'shards' => true,
                 'serverVersion' => true,
