@@ -261,7 +261,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (! empty($options['slaves'])) {
             $nonRewrittenKeys = [
                 'driver' => true,
-                'driverOptions' => true,
                 'driverClass' => true,
                 'wrapperClass' => true,
                 'keepSlave' => true,
