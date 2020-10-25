@@ -17,10 +17,8 @@ class Registry extends ManagerRegistry implements ResetInterface
     /**
      * @param string[] $connections
      * @param string[] $entityManagers
-     * @param string   $defaultConnection
-     * @param string   $defaultEntityManager
      */
-    public function __construct(ContainerInterface $container, array $connections, array $entityManagers, $defaultConnection, $defaultEntityManager)
+    public function __construct(ContainerInterface $container, array $connections, array $entityManagers, string $defaultConnection, string $defaultEntityManager)
     {
         $this->container = $container;
 
@@ -50,14 +48,14 @@ class Registry extends ManagerRegistry implements ResetInterface
         throw ORMException::unknownEntityNamespace($alias);
     }
 
-    public function reset() : void
+    public function reset(): void
     {
         foreach ($this->getManagerNames() as $managerName => $serviceId) {
             $this->resetOrClearManager($managerName, $serviceId);
         }
     }
 
-    private function resetOrClearManager(string $managerName, string $serviceId) : void
+    private function resetOrClearManager(string $managerName, string $serviceId): void
     {
         if (! $this->container->initialized($serviceId)) {
             return;

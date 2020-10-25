@@ -26,7 +26,7 @@ class XMLSchemaTest extends TestCase
     /**
      * @dataProvider dataValidateSchemaFiles
      */
-    public function testValidateSchema($file) : void
+    public function testValidateSchema($file): void
     {
         $found = false;
         $dom   = new DOMDocument('1.0', 'UTF-8');

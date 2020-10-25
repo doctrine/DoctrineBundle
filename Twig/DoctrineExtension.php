@@ -33,48 +33,6 @@ class DoctrineExtension extends AbstractExtension
     }
 
     /**
-     * Get the possible combinations of elements from the given array
-     */
-    private function getPossibleCombinations(array $elements, int $combinationsLevel) : array
-    {
-        $baseCount = count($elements);
-        $result    = [];
-
-        if ($combinationsLevel === 1) {
-            foreach ($elements as $element) {
-                $result[] = [$element];
-            }
-
-            return $result;
-        }
-
-        $nextLevelElements = $this->getPossibleCombinations($elements, $combinationsLevel - 1);
-
-        foreach ($nextLevelElements as $nextLevelElement) {
-            $lastElement = $nextLevelElement[$combinationsLevel - 2];
-            $found       = false;
-
-            foreach ($elements as $key => $element) {
-                if ($element === $lastElement) {
-                    $found = true;
-                    continue;
-                }
-
-                if ($found !== true || $key >= $baseCount) {
-                    continue;
-                }
-
-                $tmp              = $nextLevelElement;
-                $newCombination   = array_slice($tmp, 0);
-                $newCombination[] = $element;
-                $result[]         = array_slice($newCombination, 0);
-            }
-        }
-
-        return $result;
-    }
-
-    /**
      * Escape parameters of a SQL query
      * DON'T USE THIS FUNCTION OUTSIDE ITS INTENDED SCOPE
      *
@@ -185,21 +143,21 @@ class DoctrineExtension extends AbstractExtension
         );
     }
 
-    public function prettifySql(string $sql) : string
+    public function prettifySql(string $sql): string
     {
         $this->setUpSqlFormatter();
 
         return $this->sqlFormatter->highlight($sql);
     }
 
-    public function formatSql(string $sql, bool $highlight) : string
+    public function formatSql(string $sql, bool $highlight): string
     {
         $this->setUpSqlFormatter($highlight);
 
         return $this->sqlFormatter->format($sql);
     }
 
-    private function setUpSqlFormatter(bool $highlight = true, bool $legacy = false) : void
+    private function setUpSqlFormatter(bool $highlight = true, bool $legacy = false): void
     {
         $this->sqlFormatter = new SqlFormatter($highlight ? new HtmlHighlighter([
             HtmlHighlighter::HIGHLIGHT_PRE            => 'class="highlight highlight-sql"',

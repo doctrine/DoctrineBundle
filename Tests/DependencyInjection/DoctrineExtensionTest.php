@@ -27,7 +27,7 @@ class DoctrineExtensionTest extends TestCase
      *
      * @group legacy
      */
-    public function testAutowiringAlias() : void
+    public function testAutowiringAlias(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -54,7 +54,7 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
-    public function testPublicServicesAndAliases() : void
+    public function testPublicServicesAndAliases(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -71,7 +71,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue($container->getAlias('database_connection')->isPublic());
     }
 
-    public function testDbalGenerateDefaultConnectionConfiguration() : void
+    public function testDbalGenerateDefaultConnectionConfiguration(): void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -91,7 +91,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals([], $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0)['driverOptions']);
     }
 
-    public function testDbalOverrideDefaultConnection() : void
+    public function testDbalOverrideDefaultConnection(): void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -105,7 +105,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('foo', $container->getParameter('doctrine.default_connection'), '->load() overrides existing configuration options');
     }
 
-    public function testOrmRequiresDbal() : void
+    public function testOrmRequiresDbal(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -120,7 +120,7 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
     }
 
-    public function getAutomappingConfigurations() : array
+    public function getAutomappingConfigurations(): array
     {
         return [
             [
@@ -158,7 +158,7 @@ class DoctrineExtensionTest extends TestCase
     /**
      * @dataProvider getAutomappingConfigurations
      */
-    public function testAutomapping(array $entityManagers) : void
+    public function testAutomapping(array $entityManagers): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -211,7 +211,7 @@ class DoctrineExtensionTest extends TestCase
         );
     }
 
-    public function testDbalLoad() : void
+    public function testDbalLoad(): void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -229,7 +229,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('root', $config['user']);
     }
 
-    public function testDbalWrapperClass() : void
+    public function testDbalWrapperClass(): void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -255,7 +255,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertNull($container->getDefinition('doctrine.dbal.second_connection')->getClass());
     }
 
-    public function testDependencyInjectionConfigurationDefaults() : void
+    public function testDependencyInjectionConfigurationDefaults(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -366,7 +366,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
     }
 
-    public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection() : void
+    public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection(): void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -387,7 +387,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue($calls[0][1][0]);
     }
 
-    public function testAutoGenerateProxyClasses() : void
+    public function testAutoGenerateProxyClasses(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -415,7 +415,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals(3 /* \Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_EVAL */, $container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
     }
 
-    public function testSingleEntityManagerWithDefaultConfiguration() : void
+    public function testSingleEntityManagerWithDefaultConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -439,7 +439,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration() : void
+    public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -468,7 +468,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('%doctrine.orm.second_level_cache.default_cache_factory.class%', $slcDefinition->getClass());
     }
 
-    public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration() : void
+    public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -503,7 +503,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('YamlBundle\Cache\MyCacheFactory', $slcDefinition->getClass());
     }
 
-    public function testBundleEntityAliases() : void
+    public function testBundleEntityAliases(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -526,7 +526,7 @@ class DoctrineExtensionTest extends TestCase
         );
     }
 
-    public function testOverwriteEntityAliases() : void
+    public function testOverwriteEntityAliases(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -549,7 +549,7 @@ class DoctrineExtensionTest extends TestCase
         );
     }
 
-    public function testYamlBundleMappingDetection() : void
+    public function testYamlBundleMappingDetection(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -571,7 +571,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testXmlBundleMappingDetection() : void
+    public function testXmlBundleMappingDetection(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -602,7 +602,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testAnnotationsBundleMappingDetection() : void
+    public function testAnnotationsBundleMappingDetection(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -633,7 +633,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    public function testOrmMergeConfigs() : void
+    public function testOrmMergeConfigs(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -694,7 +694,7 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
-    public function testAnnotationsBundleMappingDetectionWithVendorNamespace() : void
+    public function testAnnotationsBundleMappingDetectionWithVendorNamespace(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -723,7 +723,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
     }
 
-    public function testMessengerIntegration() : void
+    public function testMessengerIntegration(): void
     {
         if (! interface_exists(MessageBusInterface::class)) {
             $this->markTestSkipped('Symfony Messenger component is not installed');
@@ -752,7 +752,7 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
-    public function testInvalidCacheConfiguration() : void
+    public function testInvalidCacheConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -777,7 +777,7 @@ class DoctrineExtensionTest extends TestCase
      *
      * @dataProvider cacheConfigurationProvider
      */
-    public function testCacheConfiguration(string $expectedAliasName, string $expectedAliasTarget, string $cacheName, $cacheConfig) : void
+    public function testCacheConfiguration(string $expectedAliasName, string $expectedAliasTarget, string $cacheName, $cacheConfig): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -798,7 +798,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals($expectedAliasTarget, (string) $alias);
     }
 
-    public static function cacheConfigurationProvider() : array
+    public static function cacheConfigurationProvider(): array
     {
         return [
             'metadata_cache_default' => [
@@ -860,7 +860,7 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    public function testShardManager() : void
+    public function testShardManager(): void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -884,7 +884,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertFalse($container->hasDefinition('doctrine.dbal.bar_shard_manager'));
     }
 
-    private function getContainer($bundles = 'YamlBundle', $vendor = null) : ContainerBuilder
+    private function getContainer($bundles = 'YamlBundle', $vendor = null): ContainerBuilder
     {
         $bundles = (array) $bundles;
 
@@ -912,12 +912,12 @@ class DoctrineExtensionTest extends TestCase
         return $container;
     }
 
-    private function assertDICConstructorArguments(Definition $definition, array $args) : void
+    private function assertDICConstructorArguments(Definition $definition, array $args): void
     {
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '" . $definition->getClass() . "' don't match.");
     }
 
-    private function assertDICDefinitionMethodCallAt(int $pos, Definition $definition, string $methodName, array $params = null) : void
+    private function assertDICDefinitionMethodCallAt(int $pos, Definition $definition, string $methodName, array $params = null): void
     {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
@@ -936,7 +936,7 @@ class DoctrineExtensionTest extends TestCase
     /**
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
      */
-    private function assertDICDefinitionMethodCallOnce(Definition $definition, string $methodName, array $params = null) : void
+    private function assertDICDefinitionMethodCallOnce(Definition $definition, string $methodName, array $params = null): void
     {
         $calls  = $definition->getMethodCalls();
         $called = false;
@@ -954,6 +954,7 @@ class DoctrineExtensionTest extends TestCase
                 }
             }
         }
+
         if ($called) {
             return;
         }
@@ -961,7 +962,7 @@ class DoctrineExtensionTest extends TestCase
         $this->fail("Method '" . $methodName . "' is expected to be called once, definition does not contain a call though.");
     }
 
-    private function compileContainer(ContainerBuilder $container) : void
+    private function compileContainer(ContainerBuilder $container): void
     {
         $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);

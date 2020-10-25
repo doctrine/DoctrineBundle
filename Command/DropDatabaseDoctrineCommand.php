@@ -57,6 +57,7 @@ EOT
         if (empty($connectionName)) {
             $connectionName = $this->getDoctrine()->getDefaultConnectionName();
         }
+
         $connection = $this->getDoctrineConnection($connectionName);
 
         $ifExists = $input->getOption('if-exists');
@@ -91,6 +92,7 @@ EOT
         if (! $name) {
             throw new InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
+
         unset($params['dbname'], $params['url']);
 
         if (! $input->getOption('force')) {

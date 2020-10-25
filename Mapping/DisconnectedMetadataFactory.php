@@ -128,7 +128,7 @@ class DisconnectedMetadataFactory
      *
      * @throws RuntimeException When base path not found.
      */
-    private function getBasePathForClass(string $name, string $namespace, string $path) : string
+    private function getBasePathForClass(string $name, string $namespace, string $path): string
     {
         $namespace   = str_replace('\\', '/', $namespace);
         $search      = str_replace('\\', '/', $path);
@@ -141,7 +141,7 @@ class DisconnectedMetadataFactory
         return $destination;
     }
 
-    private function getMetadataForNamespace(string $namespace) : ClassMetadataCollection
+    private function getMetadataForNamespace(string $namespace): ClassMetadataCollection
     {
         $metadata = [];
         foreach ($this->getAllMetadata() as $m) {
@@ -155,7 +155,7 @@ class DisconnectedMetadataFactory
         return new ClassMetadataCollection($metadata);
     }
 
-    private function getMetadataForClass(string $entity) : ClassMetadataCollection
+    private function getMetadataForClass(string $entity): ClassMetadataCollection
     {
         foreach ($this->registry->getManagers() as $em) {
             $cmf = new DisconnectedClassMetadataFactory();
@@ -172,7 +172,7 @@ class DisconnectedMetadataFactory
     /**
      * @return ClassMetadata[]
      */
-    private function getAllMetadata() : array
+    private function getAllMetadata(): array
     {
         $metadata = [];
         foreach ($this->registry->getManagers() as $em) {

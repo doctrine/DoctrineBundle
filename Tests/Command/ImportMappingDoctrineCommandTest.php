@@ -22,7 +22,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
     /** @var CommandTester|null */
     private $commandTester;
 
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         if (interface_exists(EntityManagerInterface::class)) {
             return;
@@ -31,10 +31,10 @@ class ImportMappingDoctrineCommandTest extends TestCase
         self::markTestSkipped('This test requires ORM');
     }
 
-    protected function setup() : void
+    protected function setup(): void
     {
-        $this->kernel = new class() extends TestKernel {
-            public function registerBundles() : iterable
+        $this->kernel = new class () extends TestKernel {
+            public function registerBundles(): iterable
             {
                 yield from parent::registerBundles();
                 yield new ImportMappingTestFooBundle();
@@ -53,7 +53,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->commandTester = new CommandTester($command);
     }
 
-    protected function tearDown() : void
+    protected function tearDown(): void
     {
         $fs = new Filesystem();
         if ($this->kernel !== null) {
@@ -65,7 +65,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->commandTester = null;
     }
 
-    public function testExecuteXmlWithBundle() : void
+    public function testExecuteXmlWithBundle(): void
     {
         $this->commandTester->execute(['name' => 'ImportMappingTestFooBundle']);
 
@@ -78,7 +78,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         );
     }
 
-    public function testExecuteAnnotationsWithBundle() : void
+    public function testExecuteAnnotationsWithBundle(): void
     {
         $this->commandTester->execute([
             'name' => 'ImportMappingTestFooBundle',
@@ -94,14 +94,14 @@ class ImportMappingDoctrineCommandTest extends TestCase
         );
     }
 
-    public function testExecuteThrowsExceptionWithNamespaceAndNoPath() : void
+    public function testExecuteThrowsExceptionWithNamespaceAndNoPath(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The --path option is required');
         $this->commandTester->execute(['name' => 'Some\Namespace']);
     }
 
-    public function testExecuteXmlWithNamespace() : void
+    public function testExecuteXmlWithNamespace(): void
     {
         $this->commandTester->execute([
             'name' => 'Some\Namespace\Entity',
@@ -117,7 +117,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         );
     }
 
-    public function testExecuteAnnotationsWithNamespace() : void
+    public function testExecuteAnnotationsWithNamespace(): void
     {
         $this->commandTester->execute([
             'name' => 'Some\Namespace\Entity',
@@ -137,7 +137,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
 class ImportMappingTestFooBundle extends Bundle
 {
-    public function getPath() : string
+    public function getPath(): string
     {
         return sys_get_temp_dir() . '/import_mapping_bundle';
     }

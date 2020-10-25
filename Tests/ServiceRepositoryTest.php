@@ -21,7 +21,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 class ServiceRepositoryTest extends TestCase
 {
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         if (interface_exists(EntityManagerInterface::class)) {
             return;
@@ -35,7 +35,7 @@ class ServiceRepositoryTest extends TestCase
      *
      * @group legacy
      */
-    public function testRepositoryServiceWiring() : void
+    public function testRepositoryServiceWiring(): void
     {
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.name' => 'app',

@@ -19,6 +19,8 @@ use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
+use function assert;
+
 class DoctrineBundle extends Bundle
 {
     /** @var callable|null */
@@ -70,14 +72,13 @@ class DoctrineBundle extends Bundle
             // See https://github.com/symfony/symfony/pull/3419 for usage of references
             $container = &$this->container;
 
-            $proxyGenerator = static function ($proxyDir, $proxyNamespace, $class) use (&$container) {
+            $proxyGenerator = static function ($proxyDir, $proxyNamespace, $class) use (&$container): void {
                 $originalClassName = ClassUtils::getRealClass($class);
-                /** @var Registry $registry */
-                $registry = $container->get('doctrine');
+                $registry          = $container->get('doctrine');
+                assert($registry instanceof Registry);
 
-                // Tries to auto-generate the proxy file
-                /** @var EntityManager $em */
                 foreach ($registry->getManagers() as $em) {
+                    assert($em instanceof EntityManager);
                     if (! $em->getConfiguration()->getAutoGenerateProxyClasses()) {
                         continue;
                     }

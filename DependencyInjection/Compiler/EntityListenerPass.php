@@ -73,6 +73,7 @@ class EntityListenerPass implements CompilerPassInterface
                         if (! isset($lazyServiceReferencesByResolver[$resolverId])) {
                             $lazyServiceReferencesByResolver[$resolverId] = [];
                         }
+
                         $lazyServiceReferencesByResolver[$resolverId][$id] = new Reference($id);
                     } else {
                         $listener->setPublic(true);
@@ -88,7 +89,7 @@ class EntityListenerPass implements CompilerPassInterface
         }
     }
 
-    private function attachToListener(ContainerBuilder $container, string $name, string $class, array $attributes) : void
+    private function attachToListener(ContainerBuilder $container, string $name, string $class, array $attributes): void
     {
         $listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $name);
 
@@ -111,7 +112,7 @@ class EntityListenerPass implements CompilerPassInterface
         $container->findDefinition($listenerId)->addMethodCall('addEntityListener', $args);
     }
 
-    private function getResolverClass(Definition $resolver, ContainerBuilder $container, string $id) : string
+    private function getResolverClass(Definition $resolver, ContainerBuilder $container, string $id): string
     {
         $resolverClass = $this->getConcreteDefinitionClass($resolver, $container, $id);
 
@@ -123,7 +124,7 @@ class EntityListenerPass implements CompilerPassInterface
         return $resolverClass;
     }
 
-    private function getConcreteDefinitionClass(Definition $definition, ContainerBuilder $container, string $id) : string
+    private function getConcreteDefinitionClass(Definition $definition, ContainerBuilder $container, string $id): string
     {
         $class = $definition->getClass();
         if ($class) {

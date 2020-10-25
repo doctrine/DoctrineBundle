@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class ServiceEntityRepositoryTest extends TestCase
 {
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         if (interface_exists(EntityManagerInterface::class)) {
             return;
@@ -19,7 +19,7 @@ class ServiceEntityRepositoryTest extends TestCase
         self::markTestSkipped('This test requires ORM');
     }
 
-    public function testConstructorThrowsExceptionWhenNoManagerFound() : void
+    public function testConstructorThrowsExceptionWhenNoManagerFound(): void
     {
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $this->expectException(LogicException::class);

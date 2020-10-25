@@ -19,7 +19,7 @@ class TestKernel extends Kernel
         parent::__construct('test', true);
     }
 
-    public function registerBundles() : iterable
+    public function registerBundles(): iterable
     {
         return [
             new FrameworkBundle(),
@@ -27,9 +27,9 @@ class TestKernel extends Kernel
         ];
     }
 
-    public function registerContainerConfiguration(LoaderInterface $loader)
+    public function registerContainerConfiguration(LoaderInterface $loader): void
     {
-        $loader->load(static function (ContainerBuilder $container) {
+        $loader->load(static function (ContainerBuilder $container): void {
             // @todo Setting the kernel.name parameter can be removed once the dependency on DoctrineCacheBundle has been dropped
             $container->setParameter('kernel.name', 'foo');
             $container->loadFromExtension('framework', ['secret' => 'F00']);
@@ -52,7 +52,7 @@ class TestKernel extends Kernel
         });
     }
 
-    public function getProjectDir() : string
+    public function getProjectDir(): string
     {
         if ($this->projectDir === null) {
             $this->projectDir = sys_get_temp_dir() . '/sf_kernel_' . md5(mt_rand());
@@ -61,7 +61,7 @@ class TestKernel extends Kernel
         return $this->projectDir;
     }
 
-    public function getRootDir() : string
+    public function getRootDir(): string
     {
         return $this->getProjectDir();
     }

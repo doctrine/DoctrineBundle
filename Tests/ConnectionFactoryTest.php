@@ -15,7 +15,7 @@ use Exception;
 
 class ConnectionFactoryTest extends TestCase
 {
-    public function testContainer() : void
+    public function testContainer(): void
     {
         $typesConfig  = [];
         $factory      = new ConnectionFactory($typesConfig);
@@ -37,17 +37,19 @@ class ConnectionFactoryTest extends TestCase
         } else {
             $this->expectException(\Doctrine\DBAL\Exception::class);
         }
+
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);
         } catch (Exception $e) {
             $this->assertTrue(strpos($e->getMessage(), 'can circumvent this by setting') > 0);
+
             throw $e;
         } finally {
             FakeDriver::$exception = null;
         }
     }
 
-    public function testDefaultCharset() : void
+    public function testDefaultCharset(): void
     {
         $factory = new ConnectionFactory([]);
         $params  = [
@@ -63,7 +65,7 @@ class ConnectionFactoryTest extends TestCase
         $this->assertSame(1 + $creationCount, FakeConnection::$creationCount);
     }
 
-    public function testDefaultCharsetMySql() : void
+    public function testDefaultCharsetMySql(): void
     {
         $factory = new ConnectionFactory([]);
         $params  = ['driver' => 'pdo_mysql'];
@@ -98,7 +100,7 @@ class FakeDriver implements Driver
      *
      * @link https://github.com/doctrine/DoctrineBundle/issues/673
      */
-    public function getDatabasePlatform() : AbstractPlatform
+    public function getDatabasePlatform(): AbstractPlatform
     {
         if (self::$exception !== null) {
             throw self::$exception;
@@ -110,32 +112,34 @@ class FakeDriver implements Driver
     // ----- below this line follow only dummy methods to satisfy the interface requirements ----
 
     /**
+     * {@inheritdoc}
+     *
      * @param mixed[]     $params
      * @param string|null $username
      * @param string|null $password
      * @param mixed[]     $driverOptions
      */
-    public function connect(array $params, $username = null, $password = null, array $driverOptions = []) : void
+    public function connect(array $params, $username = null, $password = null, array $driverOptions = []): void
     {
         throw new Exception('not implemented');
     }
 
-    public function getSchemaManager(Connection $conn, ?AbstractPlatform $platform = null) : void
+    public function getSchemaManager(Connection $conn, ?AbstractPlatform $platform = null): void
     {
         throw new Exception('not implemented');
     }
 
-    public function getName() : string
+    public function getName(): string
     {
         return 'FakeDriver';
     }
 
-    public function getDatabase(Connection $conn) : string
+    public function getDatabase(Connection $conn): string
     {
         return 'fake_db';
     }
 
-    public function getExceptionConverter() : ExceptionConverter
+    public function getExceptionConverter(): ExceptionConverter
     {
         throw new Exception('not implemented');
     }

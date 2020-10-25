@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 class XmlDoctrineExtensionTest extends AbstractDoctrineExtensionTest
 {
-    protected function loadFromFile(ContainerBuilder $container, string $file) : void
+    protected function loadFromFile(ContainerBuilder $container, string $file): void
     {
         $loadXml = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Fixtures/config/xml'));
         $loadXml->load($file . '.xml');

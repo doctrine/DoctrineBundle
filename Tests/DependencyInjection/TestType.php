@@ -7,12 +7,12 @@ use Doctrine\DBAL\Types\Type;
 
 class TestType extends Type
 {
-    public function getName() : string
+    public function getName(): string
     {
         return 'test';
     }
 
-    public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform) : string
+    public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
         return '';
     }

@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class BundleTest extends TestCase
 {
-    public function testBuildCompilerPasses() : void
+    public function testBuildCompilerPasses(): void
     {
         $container = new ContainerBuilder();
         $bundle    = new DoctrineBundle();

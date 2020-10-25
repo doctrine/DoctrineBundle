@@ -17,7 +17,7 @@ use stdClass;
 
 class ContainerRepositoryFactoryTest extends TestCase
 {
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         if (interface_exists(EntityManagerInterface::class)) {
             return;
@@ -26,7 +26,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         self::markTestSkipped('This test requires ORM');
     }
 
-    public function testGetRepositoryReturnsService() : void
+    public function testGetRepositoryReturnsService(): void
     {
         $em        = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
         $repo      = new StubRepository();
@@ -36,7 +36,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->assertSame($repo, $factory->getRepository($em, 'Foo\CoolEntity'));
     }
 
-    public function testGetRepositoryReturnsEntityRepository() : void
+    public function testGetRepositoryReturnsEntityRepository(): void
     {
         $container = $this->createContainer([]);
         $em        = $this->createEntityManager(['Foo\BoringEntity' => null]);
@@ -48,7 +48,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->assertSame($actualRepo, $factory->getRepository($em, 'Foo\BoringEntity'));
     }
 
-    public function testCustomRepositoryIsReturned() : void
+    public function testCustomRepositoryIsReturned(): void
     {
         $container = $this->createContainer([]);
         $em        = $this->createEntityManager([
@@ -62,7 +62,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->assertSame($actualRepo, $factory->getRepository($em, 'Foo\CustomNormalRepoEntity'));
     }
 
-    public function testServiceRepositoriesMustExtendObjectRepository() : void
+    public function testServiceRepositoriesMustExtendObjectRepository(): void
     {
         $repo = new stdClass();
 
@@ -79,7 +79,7 @@ EXCEPTION
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
-    public function testServiceRepositoriesCanNotExtendsEntityRepository() : void
+    public function testServiceRepositoriesCanNotExtendsEntityRepository(): void
     {
         $repo = $this->getMockBuilder(ObjectRepository::class)->getMock();
 
@@ -93,7 +93,7 @@ EXCEPTION
         $this->assertSame($repo, $actualRepo);
     }
 
-    public function testRepositoryMatchesServiceInterfaceButServiceNotFound() : void
+    public function testRepositoryMatchesServiceInterfaceButServiceNotFound(): void
     {
         $container = $this->createContainer([]);
 
@@ -110,7 +110,7 @@ EXCEPTION
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
-    public function testCustomRepositoryIsNotAValidClass() : void
+    public function testCustomRepositoryIsNotAValidClass(): void
     {
         $container = $this->createContainer([]);
 
@@ -125,7 +125,7 @@ EXCEPTION
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
-    private function createContainer(array $services) : MockObject
+    private function createContainer(array $services): MockObject
     {
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->expects($this->any())
@@ -142,7 +142,7 @@ EXCEPTION
         return $container;
     }
 
-    private function createEntityManager(array $entityRepositoryClasses) : MockObject
+    private function createEntityManager(array $entityRepositoryClasses): MockObject
     {
         $classMetadatas = [];
         foreach ($entityRepositoryClasses as $entityClass => $entityRepositoryClass) {
@@ -181,12 +181,12 @@ class NonDeprecatedRepository implements ObjectRepository
         return null;
     }
 
-    public function findAll() : array
+    public function findAll(): array
     {
         return [];
     }
 
-    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null) : array
+    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
     {
         return [];
     }
@@ -199,7 +199,7 @@ class NonDeprecatedRepository implements ObjectRepository
         return null;
     }
 
-    public function getClassName() : string
+    public function getClassName(): string
     {
         return '';
     }

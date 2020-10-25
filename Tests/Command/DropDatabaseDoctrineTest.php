@@ -16,7 +16,7 @@ class DropDatabaseDoctrineTest extends TestCase
     /**
      * @dataProvider provideForceOption
      */
-    public function testExecute(array $options) : void
+    public function testExecute(array $options): void
     {
         $connectionName = 'default';
         $dbName         = 'test';
@@ -51,17 +51,18 @@ class DropDatabaseDoctrineTest extends TestCase
     /**
      * @dataProvider provideIncompatibleDriverOptions
      */
-    public function testItThrowsWhenUsingIfExistsWithAnIncompatibleDriver(array $options) : void
+    public function testItThrowsWhenUsingIfExistsWithAnIncompatibleDriver(array $options): void
     {
         if (class_exists(DBALException::class)) {
             $this->expectException(DBALException::class);
         } else {
             $this->expectException(Exception::class);
         }
+
         $this->testExecute($options);
     }
 
-    public function testExecuteWithoutOptionForceWillFailWithAttentionMessage() : void
+    public function testExecuteWithoutOptionForceWillFailWithAttentionMessage(): void
     {
         $connectionName = 'default';
         $dbName         = 'test';
@@ -96,17 +97,18 @@ class DropDatabaseDoctrineTest extends TestCase
         );
     }
 
-    public function provideForceOption() : Generator
+    public function provideForceOption(): Generator
     {
         yield 'full name' => [
             ['--force' => true],
         ];
+
         yield 'short name' => [
             ['-f' => true],
         ];
     }
 
-    public function provideIncompatibleDriverOptions() : Generator
+    public function provideIncompatibleDriverOptions(): Generator
     {
         yield 'full name' => [
             [
@@ -114,6 +116,7 @@ class DropDatabaseDoctrineTest extends TestCase
                 '--if-exists' => true,
             ],
         ];
+
         yield 'short name' => [
             [
                 '-f' => true,
@@ -125,7 +128,7 @@ class DropDatabaseDoctrineTest extends TestCase
     /**
      * @param array|null $params Connection parameters
      */
-    private function getMockContainer(string $connectionName, array $params = null) : MockObject
+    private function getMockContainer(string $connectionName, array $params = null): MockObject
     {
         // Mock the container and everything you'll need here
         $mockDoctrine = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')

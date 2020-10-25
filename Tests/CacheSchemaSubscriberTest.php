@@ -15,11 +15,12 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class CacheSchemaSubscriberTest extends TestCase
 {
-    public function testSchemaSubscriberWiring() : void
+    public function testSchemaSubscriberWiring(): void
     {
         if (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
             $this->markTestSkipped('This test requires Symfony 5.1 or higher');
         }
+
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
         }

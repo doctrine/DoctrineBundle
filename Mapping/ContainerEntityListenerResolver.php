@@ -96,7 +96,7 @@ class ContainerEntityListenerResolver implements EntityListenerServiceResolver
         return $this->container->get($serviceId);
     }
 
-    private function normalizeClassName(string $className) : string
+    private function normalizeClassName(string $className): string
     {
         return trim($className, '\\');
     }

@@ -7,7 +7,7 @@ use Doctrine\ORM\EntityRepository;
 
 class TestCustomClassRepoRepository extends EntityRepository
 {
-    public function getEntityManager() : EntityManager
+    public function getEntityManager(): EntityManager
     {
         return parent::getEntityManager();
     }
