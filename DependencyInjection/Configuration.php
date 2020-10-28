@@ -93,7 +93,11 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
-                                ->booleanNode('commented')->setDeprecated(...$this->getCommentedParamDeprecationMsg())->end()
+                                ->booleanNode('commented')
+                                    ->setDeprecated(
+                                        ...$this->getDeprecationMsg('The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.')
+                                    )
+                                ->end()
                             ->end()
                         ->end()
                     ->end()
@@ -123,6 +127,7 @@ class Configuration implements ConfigurationInterface
             ->fixXmlConfig('option')
             ->fixXmlConfig('mapping_type')
             ->fixXmlConfig('slave')
+            ->fixXmlConfig('replica')
             ->fixXmlConfig('shard')
             ->fixXmlConfig('default_table_option')
             ->children()
@@ -146,7 +151,12 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('shard_manager_class')->end()
                 ->scalarNode('shard_choser')->end()
                 ->scalarNode('shard_choser_service')->end()
-                ->booleanNode('keep_slave')->end()
+                ->booleanNode('keep_slave')
+                    ->setDeprecated(
+                        ...$this->getDeprecationMsg('The "keep_slave" configuration key is deprecated since doctrine-bundle 2.2. Use the "keep_replica" configuration key instead.')
+                    )
+                ->end()
+                ->booleanNode('keep_replica')->end()
                 ->arrayNode('options')
                     ->useAttributeAsKey('key')
                     ->prototype('variable')->end()
@@ -162,12 +172,24 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end();
 
+        // dbal < 2.11
         $slaveNode = $connectionNode
             ->children()
                 ->arrayNode('slaves')
+                    ->setDeprecated(
+                        ...$this->getDeprecationMsg('The "slaves" configuration key will be renamed to "replicas" in doctrine-bundle 3.0. "slaves" is deprecated since doctrine-bundle 2.2.')
+                    )
                     ->useAttributeAsKey('name')
                     ->prototype('array');
         $this->configureDbalDriverNode($slaveNode);
+
+        // dbal >= 2.11
+        $replicaNode = $connectionNode
+            ->children()
+                ->arrayNode('replicas')
+                    ->useAttributeAsKey('name')
+                    ->prototype('array');
+        $this->configureDbalDriverNode($replicaNode);
 
         $shardNode = $connectionNode
             ->children()
@@ -187,7 +209,7 @@ class Configuration implements ConfigurationInterface
     /**
      * Adds config keys related to params processed by the DBAL drivers
      *
-     * These keys are available for slave configurations too.
+     * These keys are available for replica configurations too.
      */
     private function configureDbalDriverNode(ArrayNodeDefinition $node): void
     {
@@ -708,10 +730,8 @@ class Configuration implements ConfigurationInterface
      *
      * @return list<string>|array{0:string, 1: numeric-string, string}
      */
-    private function getCommentedParamDeprecationMsg(): array
+    private function getDeprecationMsg(string $message): array
     {
-        $message = 'The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.';
-
         if (method_exists(BaseNode::class, 'getDeprecation')) {
             return [
                 'doctrine/doctrine-bundle',

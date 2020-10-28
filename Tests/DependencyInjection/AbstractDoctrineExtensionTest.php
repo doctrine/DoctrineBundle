@@ -7,6 +7,8 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPa
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connections\MasterSlaveConnection;
+use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -119,8 +121,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         // doctrine.dbal.mysql_connection
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
-        $this->assertEquals('Doctrine\\DBAL\\Connections\\MasterSlaveConnection', $param['wrapperClass']);
-        $this->assertTrue($param['keepSlave']);
+        $this->assertEquals(
+            class_exists(PrimaryReadReplicaConnection::class) ?
+            PrimaryReadReplicaConnection::class : // dbal >= 2.11
+            MasterSlaveConnection::class, // dbal < 2.11,x
+            $param['wrapperClass']
+        );
+        $this->assertTrue($param['keepReplica']);
         $this->assertEquals(
             [
                 'user' => 'mysql_user',
@@ -130,18 +137,18 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
             ],
-            $param['master']
+            $param['primary'] ?? $param['master'] // TODO: Remove 'master' support here when we require dbal >= 2.11
         );
         $this->assertEquals(
             [
-                'user' => 'slave_user',
-                'password' => 'slave_s3cr3t',
+                'user' => 'replica_user',
+                'password' => 'replica_s3cr3t',
                 'port' => null,
-                'dbname' => 'slave_db',
+                'dbname' => 'replica_db',
                 'host' => 'localhost',
-                'unix_socket' => '/path/to/mysqld_slave.sock',
+                'unix_socket' => '/path/to/mysqld_replica.sock',
             ],
-            $param['slaves']['slave1']
+            $param['replica']['replica1']
         );
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
