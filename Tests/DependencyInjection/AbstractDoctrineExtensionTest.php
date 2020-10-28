@@ -126,6 +126,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
+                'driverOptions' => [],
             ],
             $param['master']
         );
