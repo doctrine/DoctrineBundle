@@ -270,14 +270,14 @@
 
                                 <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
                                     {{ query.sql|doctrine_format_sql(highlight = true) }}
-                                    <button class="btn btn-sm" data-clipboard-text="{{ query.sql|doctrine_format_sql(highlight = false)|e('html_attr') }}">Copy</button>
+                                    <button class="btn btn-sm hidden" data-clipboard-text="{{ query.sql|doctrine_format_sql(highlight = false)|e('html_attr') }}">Copy</button>
                                 </div>
 
                                 {% if query.runnable %}
                                     <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
                                         {% set runnable_sql = (query.sql ~ ';')|doctrine_replace_query_parameters(query.params) %}
                                         {{ runnable_sql|doctrine_prettify_sql }}
-                                        <button class="btn btn-sm" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
+                                        <button class="btn btn-sm hidden" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
                                     </div>
                                 {% endif %}
 
@@ -516,11 +516,14 @@
             }
         {% endif %}
 
-        document.querySelectorAll('[data-clipboard-text]').forEach(function(button) {
-            button.addEventListener('click', function() {
-                navigator.clipboard.writeText(button.getAttribute('data-clipboard-text'));
-            })
-        });
+        if (navigator.clipboard) {
+            document.querySelectorAll('[data-clipboard-text]').forEach(function(button) {
+                Sfjs.removeClass(button, 'hidden');
+                button.addEventListener('click', function() {
+                    navigator.clipboard.writeText(button.getAttribute('data-clipboard-text'));
+                })
+            });
+        }
 
         //]]></script>
 {% endblock %}
