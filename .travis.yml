@@ -19,7 +19,7 @@ env:
 before_install:
   - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{,.disabled} || echo "xdebug not available"
   - composer self-update
-  - composer global require --no-progress --no-scripts --no-plugins symfony/flex dev-master
+  - composer global require --no-progress --no-scripts --no-plugins symfony/flex
 
 install:
   - travis_retry composer update -n --prefer-dist --prefer-stable
