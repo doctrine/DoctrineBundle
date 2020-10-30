@@ -127,7 +127,7 @@ class ProfilerController implements ContainerAwareInterface
     {
         $connection->executeQuery('EXPLAIN PLAN FOR ' . $query['sql']);
 
-        return $connection->executeQuery('SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY)')
+        return $connection->executeQuery('SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY())')
             ->fetchAll(PDO::FETCH_ASSOC);
     }
 }
