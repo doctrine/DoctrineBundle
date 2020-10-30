@@ -5,38 +5,21 @@
 {% block toolbar %}
     {% if collector.querycount > 0 or collector.invalidEntityCount > 0 %}
 
-        {% set profiler_markup_version = profiler_markup_version|default(1) %}
-
         {% set icon %}
-            {% if profiler_markup_version == 1 %}
+            {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' %}
 
-                <img width="20" height="28" alt="Database" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAcCAYAAABh2p9gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQRJREFUeNpi/P//PwM1ARMDlcGogZQDlpMnT7pxc3NbA9nhQKxOpL5rQLwJiPeBsI6Ozl+YBOOOHTv+AOllQNwtLS39F2owKYZ/gRq8G4i3ggxEToggWzvc3d2Pk+1lNL4fFAs6ODi8JzdS7mMRVyDVoAMHDsANdAPiOCC+jCQvQKqBQB/BDbwBxK5AHA3E/kB8nKJkA8TMQBwLxaBIKQbi70AvTADSBiSadwFXpCikpKQU8PDwkGTaly9fHFigkaKIJid4584dkiMFFI6jkTJII0WVmpHCAixZQEXWYhDeuXMnyLsVlEQKI45qFBQZ8eRECi4DBaAlDqle/8A48ip6gAADANdQY88Uc0oGAAAAAElFTkSuQmCC" />
-                    <span class="sf-toolbar-value sf-toolbar-status {% if collector.querycount > 50 %}sf-toolbar-status-yellow{% endif %}">{{ collector.querycount }}</span>
-                    {% if collector.querycount > 0 %}
-                        <span class="sf-toolbar-info-piece-additional-detail">in {{ '%0.2f'|format(collector.time * 1000) }} ms</span>
-                    {% endif %}
-                    {% if collector.invalidEntityCount > 0 %}
-                        <span class="sf-toolbar-info-piece-additional sf-toolbar-status sf-toolbar-status-red">{{ collector.invalidEntityCount }}</span>
-                    {% endif %}
+            {{ include('@Doctrine/Collector/icon.svg') }}
 
+            {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
+                <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
+                <span class="sf-toolbar-label">errors</span>
             {% else %}
-
-                {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' %}
-
-                {{ include('@Doctrine/Collector/icon.svg') }}
-
-                {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
-                    <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
-                    <span class="sf-toolbar-label">errors</span>
-                {% else %}
-                    <span class="sf-toolbar-value">{{ collector.querycount }}</span>
-                    <span class="sf-toolbar-info-piece-additional-detail">
-                        <span class="sf-toolbar-label">in</span>
-                        <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.time * 1000) }}</span>
-                        <span class="sf-toolbar-label">ms</span>
-                    </span>
-                {% endif %}
-
+                <span class="sf-toolbar-value">{{ collector.querycount }}</span>
+                <span class="sf-toolbar-info-piece-additional-detail">
+                    <span class="sf-toolbar-label">in</span>
+                    <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.time * 1000) }}</span>
+                    <span class="sf-toolbar-label">ms</span>
+                </span>
             {% endif %}
         {% endset %}
 
@@ -84,37 +67,18 @@
 {% endblock %}
 
 {% block menu %}
-    {% set profiler_markup_version = profiler_markup_version|default(1) %}
-
-    {% if profiler_markup_version == 1 %}
-
-        <span class="label">
-            <span class="icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAABLUlEQVR42u3TP0vDQBiA8UK/gDiLzi0IhU4OEunk5OQUAhGSOBUCzqWfIKSzX8DRySF0URCcMjWLIJjFD9Cpk/D6HITecEPUuzhIAz8CIdyTP/f2iqI4qaqqDx8l5Ic2uIeP/bquezCokOAFF+oCN3t4gPzSEjc4NEPaCldQbzjELTYW0RJzHDchwwem+ons6ZBpLSJ7nueJC22h0V+FzmwWV0ee59vQNV67CGVZJmEYbkNjfpY6X6I0Qo4/3RMmTdDDspuQVsJvgkP3IdMbIkIjLPBoadG2646iKJI0Ta2wxm6OdnP0/Tk6DYJgHcfxpw21RtscDTDDnaVZ26474GkkSRIrrPEv5sgMTfHe+cA2O6wPH6vOBpYQNALneHb96XTEDI6dzpEZ0VzO0Rf3pP5LMLI4tAAAAABJRU5ErkJggg==" alt="" /></span>
-            <strong>Doctrine</strong>
+    <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }} {{ collector.querycount == 0 ? 'disabled' }}">
+        <span class="icon">{{ include('@Doctrine/Collector/icon.svg') }}</span>
+        <strong>Doctrine</strong>
+        {% if collector.invalidEntityCount %}
             <span class="count">
-                <span>{{ collector.querycount }}</span>
-                <span>{{ '%0.0f'|format(collector.time * 1000) }} ms</span>
+                <span>{{ collector.invalidEntityCount }}</span>
             </span>
-        </span>
-
-    {% else %}
-
-        <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }} {{ collector.querycount == 0 ? 'disabled' }}">
-            <span class="icon">{{ include('@Doctrine/Collector/icon.svg') }}</span>
-            <strong>Doctrine</strong>
-            {% if collector.invalidEntityCount %}
-                <span class="count">
-                    <span>{{ collector.invalidEntityCount }}</span>
-                </span>
-            {% endif %}
-        </span>
-
-    {% endif %}
+        {% endif %}
+    </span>
 {% endblock %}
 
 {% block panel %}
-    {% set profiler_markup_version = profiler_markup_version|default(1) %}
-
     {% if 'explain' == page %}
         {{ render(controller('Doctrine\\Bundle\\DoctrineBundle\\Controller\\ProfilerController::explainAction', {
             token: token,
@@ -129,22 +93,6 @@
 
 {% block queries %}
     <style>
-        {% if profiler_markup_version == 1 %}
-            .hidden { display: none; }
-            .queries-table td, .queries-table th { vertical-align: top; }
-            .queries-table td > div { margin-bottom: 6px; }
-            .highlight pre { margin: 0; white-space: pre-wrap; }
-            .highlight .keyword   { color: #8959A8; font-weight: bold; }
-            .highlight .word      { color: #222222; }
-            .highlight .variable  { color: #916319; }
-            .highlight .symbol    { color: #222222; }
-            .highlight .comment   { color: #999999; }
-            .highlight .backtick  { color: #718C00; }
-            .highlight .string    { color: #718C00; }
-            .highlight .number    { color: #F5871F; font-weight: bold; }
-            .highlight .error     { color: #C82829; }
-        {% endif %}
-
         .time-container { position: relative; }
         .time-container .nowrap { position: relative; z-index: 1; text-shadow: 0 0 2px #fff; }
         .time-bar { display: block; position: absolute; top: 0; left: 0; bottom: 0; background: #e0e0e0; }
@@ -152,46 +100,44 @@
         .sql-runnable button { align-self: end; }
     </style>
 
-    {% if profiler_markup_version > 1 %}
-        <h2>Query Metrics</h2>
+    <h2>Query Metrics</h2>
 
-        <div class="metrics">
-            <div class="metric">
-                <span class="value">{{ collector.querycount }}</span>
-                <span class="label">Database Queries</span>
-            </div>
-
-            <div class="metric">
-                <span class="value">{{ collector.groupedQueryCount }}</span>
-                <span class="label">Different statements</span>
-            </div>
-
-            <div class="metric">
-                <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
-                <span class="label">Query time</span>
-            </div>
-
-            <div class="metric">
-                <span class="value">{{ collector.invalidEntityCount }}</span>
-                <span class="label">Invalid entities</span>
-            </div>
-
-            {% if collector.cacheEnabled %}
-                <div class="metric">
-                	<span class="value">{{ collector.cacheHitsCount }}</span>
-                	<span class="label">Cache hits</span>
-                </div>
-                <div class="metric">
-                	<span class="value">{{ collector.cacheMissesCount }}</span>
-                	<span class="label">Cache misses</span>
-                </div>
-                <div class="metric">
-                	<span class="value">{{ collector.cachePutsCount }}</span>
-                	<span class="label">Cache puts</span>
-                </div>
-            {% endif %}
+    <div class="metrics">
+        <div class="metric">
+            <span class="value">{{ collector.querycount }}</span>
+            <span class="label">Database Queries</span>
         </div>
-    {% endif %}
+
+        <div class="metric">
+            <span class="value">{{ collector.groupedQueryCount }}</span>
+            <span class="label">Different statements</span>
+        </div>
+
+        <div class="metric">
+            <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
+            <span class="label">Query time</span>
+        </div>
+
+        <div class="metric">
+            <span class="value">{{ collector.invalidEntityCount }}</span>
+            <span class="label">Invalid entities</span>
+        </div>
+
+        {% if collector.cacheEnabled %}
+            <div class="metric">
+                <span class="value">{{ collector.cacheHitsCount }}</span>
+                <span class="label">Cache hits</span>
+            </div>
+            <div class="metric">
+                <span class="value">{{ collector.cacheMissesCount }}</span>
+                <span class="label">Cache misses</span>
+            </div>
+            <div class="metric">
+                <span class="value">{{ collector.cachePutsCount }}</span>
+                <span class="label">Cache puts</span>
+            </div>
+        {% endif %}
+    </div>
 
     {% set group_queries = request.query.getBoolean('group') %}
     {% if group_queries %}
@@ -250,11 +196,11 @@
                                 </div>
 
                                 <div class="text-small font-normal">
-                                    <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return toggleRunnableQuery(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
+                                    <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
 
                                     {% if query.runnable %}
                                         &nbsp;&nbsp;
-                                        <a href="#" {{ profiler_markup_version == 1 ? 'onclick="return toggleRunnableQuery(this);"' }} class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
+                                        <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
                                     {% endif %}
 
                                     {% if query.explainable %}
@@ -358,26 +304,22 @@
                 <p>Second level cache information is not available.</p>
             </div>
         {% else %}
-            {% if profiler_markup_version == 1 %}
-                {{ helper.render_simple_table('Key', 'Value', collector.cacheCounts) }}
-            {% else %}
-                <div class="metrics">
-                    <div class="metric">
-                        <span class="value">{{ collector.cacheCounts.hits }}</span>
-                        <span class="label">Hits</span>
-                    </div>
-
-                    <div class="metric">
-                        <span class="value">{{ collector.cacheCounts.misses }}</span>
-                        <span class="label">Misses</span>
-                    </div>
-
-                    <div class="metric">
-                        <span class="value">{{ collector.cacheCounts.puts }}</span>
-                        <span class="label">Puts</span>
-                    </div>
+            <div class="metrics">
+                <div class="metric">
+                    <span class="value">{{ collector.cacheCounts.hits }}</span>
+                    <span class="label">Hits</span>
                 </div>
-            {% endif %}
+
+                <div class="metric">
+                    <span class="value">{{ collector.cacheCounts.misses }}</span>
+                    <span class="label">Misses</span>
+                </div>
+
+                <div class="metric">
+                    <span class="value">{{ collector.cacheCounts.puts }}</span>
+                    <span class="label">Puts</span>
+                </div>
+            </div>
 
             {% if collector.cacheRegions.hits %}
                 <h3>Number of cache hits</h3>
@@ -496,25 +438,6 @@
                 target.appendChild(items[i]);
             }
         }
-
-        {% if profiler_markup_version == 1 %}
-            function toggleRunnableQuery(target) {
-                var targetSelector = target.getAttribute('data-toggle-selector');
-                var targetDataAltContent = target.getAttribute('data-toggle-alt-content');
-                var targetElement = document.querySelector(targetSelector);
-                target.setAttribute('data-toggle-alt-content', target.innerHTML);
-
-                if (targetElement.style.display != 'block') {
-                    targetElement.style.display = 'block';
-                    target.innerHTML = targetDataAltContent;
-                } else {
-                    targetElement.style.display = 'none';
-                    target.innerHTML = targetDataAltContent;
-                }
-
-                return false;
-            }
-        {% endif %}
 
         if (navigator.clipboard) {
             document.querySelectorAll('[data-clipboard-text]').forEach(function(button) {
