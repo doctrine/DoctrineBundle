@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Controller;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Exception;
@@ -61,6 +62,8 @@ class ProfilerController implements ContainerAwareInterface
                 $results = $this->explainSQLitePlatform($connection, $query);
             } elseif ($platform instanceof SQLServerPlatform) {
                 $results = $this->explainSQLServerPlatform($connection, $query);
+            } elseif ($platform instanceof OraclePlatform) {
+                $results = $this->explainOraclePlatform($connection, $query);
             } else {
                 $results = $this->explainOtherPlatform($connection, $query);
             }
@@ -115,6 +118,17 @@ class ProfilerController implements ContainerAwareInterface
         }
 
         return $connection->executeQuery('EXPLAIN ' . $query['sql'], $params, $query['types'])
+            ->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param mixed[] $query
+     */
+    private function explainOraclePlatform(Connection $connection, array $query)
+    {
+        $connection->executeQuery('EXPLAIN PLAN FOR ' . $query['sql']);
+
+        return $connection->executeQuery('SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY())')
             ->fetchAll(PDO::FETCH_ASSOC);
     }
 }
