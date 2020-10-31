@@ -766,6 +766,9 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
+    /**
+     * @group legacy
+     */
     public function testInvalidCacheConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -812,7 +815,16 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals($expectedAliasTarget, (string) $alias);
     }
 
-    public static function cacheConfigurationProvider(): array
+    /**
+     * @dataProvider legacyCacheConfigurationProvider
+     * @group legacy
+     */
+    public function testLegacyCacheConfiguration(string $expectedAliasName, string $expectedAliasTarget, string $cacheName, array $cacheConfig): void
+    {
+        $this->testCacheConfiguration($expectedAliasName, $expectedAliasTarget, $cacheName, $cacheConfig);
+    }
+
+    public static function legacyCacheConfigurationProvider(): array
     {
         return [
             'metadata_cache_default' => [
@@ -821,6 +833,24 @@ class DoctrineExtensionTest extends TestCase
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
+            'metadata_cache_pool' => [
+                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.metadata_cache_pool.php_array',
+                'cacheName' => 'metadata_cache_driver',
+                'cacheConfig' => ['type' => 'pool', 'pool' => 'metadata_cache_pool'],
+            ],
+            'metadata_cache_service' => [
+                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
+                'expectedAliasTarget' => 'service_target_metadata.php_array',
+                'cacheName' => 'metadata_cache_driver',
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata'],
+            ],
+        ];
+    }
+
+    public static function cacheConfigurationProvider(): array
+    {
+        return [
             'query_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_query_cache',
                 'expectedAliasTarget' => 'doctrine.orm.cache.provider.cache.doctrine.orm.default.query',
@@ -833,13 +863,6 @@ class DoctrineExtensionTest extends TestCase
                 'cacheName' => 'result_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
-
-            'metadata_cache_pool' => [
-                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.provider.metadata_cache_pool.php_array',
-                'cacheName' => 'metadata_cache_driver',
-                'cacheConfig' => ['type' => 'pool', 'pool' => 'metadata_cache_pool'],
-            ],
             'query_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_query_cache',
                 'expectedAliasTarget' => 'doctrine.orm.cache.provider.query_cache_pool',
@@ -851,13 +874,6 @@ class DoctrineExtensionTest extends TestCase
                 'expectedAliasTarget' => 'doctrine.orm.cache.provider.result_cache_pool',
                 'cacheName' => 'result_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'result_cache_pool'],
-            ],
-
-            'metadata_cache_service' => [
-                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'service_target_metadata.php_array',
-                'cacheName' => 'metadata_cache_driver',
-                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata'],
             ],
             'query_cache_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_query_cache',

@@ -818,10 +818,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->loadCacheDriver('result_cache', $entityManager['name'], $entityManager['result_cache_driver'], $container);
         $this->loadCacheDriver('query_cache', $entityManager['name'], $entityManager['query_cache_driver'], $container);
 
-        if (! $container->getParameter('kernel.debug')) {
-            $this->registerMetadataPhpArrayCacheWarmer($entityManager['name'], $container);
-            $this->registerMetadataPhpArrayCache($entityManager['name'], $container);
+        if ($container->getParameter('kernel.debug')) {
+            return;
         }
+
+        $this->registerMetadataPhpArrayCaching($entityManager['name'], $container);
     }
 
     /**
@@ -936,35 +937,24 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return $id;
     }
 
-    private function registerMetadataPhpArrayCacheWarmer(string $entityManagerName, ContainerBuilder $container): void
+    private function registerMetadataPhpArrayCaching(string $entityManagerName, ContainerBuilder $container): void
     {
-        $cacheWarmerDefinition = $container->register(sprintf('doctrine.orm.%s_metadata_cache.php_array_warmer', $entityManagerName), DoctrineMetadataCacheWarmer::class);
-        $cacheWarmerDefinition->setArguments([
-            new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)),
-            $this->getPhpArrayFile($entityManagerName),
-        ]);
-        $cacheWarmerDefinition->addTag('kernel.cache_warmer');
-    }
+        $metadataCacheAlias              = $this->getObjectManagerElementName($entityManagerName . '_metadata_cache');
+        $decoratedMetadataCacheServiceId = (string) $container->getAlias($metadataCacheAlias);
+        $phpArrayCacheDecoratorServiceId = $decoratedMetadataCacheServiceId . '.php_array';
+        $phpArrayFile                    = '%kernel.cache_dir%' . sprintf('/doctrine/orm/%s_metadata.php', $entityManagerName);
 
-    private function registerMetadataPhpArrayCache(string $entityManagerName, ContainerBuilder $container): void
-    {
-        $aliasId   = sprintf('doctrine.orm.%s_metadata_cache', $entityManagerName);
-        $serviceId = (string) $container->getAlias($aliasId);
+        $container->register(DoctrineMetadataCacheWarmer::class)
+            ->setArguments([new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)), $phpArrayFile])
+            ->addTag('kernel.cache_warmer');
 
-        $phpArrayAdapterDefinition = new Definition(PhpArrayAdapter::class, [
-            $this->getPhpArrayFile($entityManagerName),
-            new Definition(DoctrineAdapter::class, [new Reference($serviceId)]),
-        ]);
-
-        $serviceId .= '.php_array';
-
-        $doctrineCacheDefinition = $container->register($serviceId, DoctrineProvider::class);
-        $doctrineCacheDefinition->addArgument($phpArrayAdapterDefinition);
-        $container->setAlias($aliasId, $serviceId);
-    }
-
-    private function getPhpArrayFile(string $entityManagerName): string
-    {
-        return '%kernel.cache_dir%' . sprintf('/doctrine/orm/%s_metadata.php', $entityManagerName);
+        $container->setAlias($metadataCacheAlias, $phpArrayCacheDecoratorServiceId);
+        $container->register($phpArrayCacheDecoratorServiceId, DoctrineProvider::class)
+            ->addArgument(
+                new Definition(PhpArrayAdapter::class, [
+                    $phpArrayFile,
+                    new Definition(DoctrineAdapter::class, [new Reference($decoratedMetadataCacheServiceId)]),
+                ])
+            );
     }
 }
