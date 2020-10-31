@@ -95,7 +95,7 @@ class Configuration implements ConfigurationInterface
                                 ->scalarNode('class')->isRequired()->end()
                                 ->booleanNode('commented')
                                     ->setDeprecated(
-                                        ...$this->getDeprecationMsg('The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.')
+                                        ...$this->getDeprecationMsg('The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.', '2.0')
                                     )
                                 ->end()
                             ->end()
@@ -153,7 +153,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('shard_choser_service')->end()
                 ->booleanNode('keep_slave')
                     ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "keep_slave" configuration key is deprecated since doctrine-bundle 2.2. Use the "keep_replica" configuration key instead.')
+                        ...$this->getDeprecationMsg('The "keep_slave" configuration key is deprecated since doctrine-bundle 2.2. Use the "keep_replica" configuration key instead.', '2.2')
                     )
                 ->end()
                 ->booleanNode('keep_replica')->end()
@@ -177,7 +177,7 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('slaves')
                     ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "slaves" configuration key will be renamed to "replicas" in doctrine-bundle 3.0. "slaves" is deprecated since doctrine-bundle 2.2.')
+                        ...$this->getDeprecationMsg('The "slaves" configuration key will be renamed to "replicas" in doctrine-bundle 3.0. "slaves" is deprecated since doctrine-bundle 2.2.', '2.2')
                     )
                     ->useAttributeAsKey('name')
                     ->prototype('array');
@@ -730,12 +730,12 @@ class Configuration implements ConfigurationInterface
      *
      * @return list<string>|array{0:string, 1: numeric-string, string}
      */
-    private function getDeprecationMsg(string $message): array
+    private function getDeprecationMsg(string $message, string $version): array
     {
         if (method_exists(BaseNode::class, 'getDeprecation')) {
             return [
                 'doctrine/doctrine-bundle',
-                '2.0',
+                $version,
                 $message,
             ];
         }
