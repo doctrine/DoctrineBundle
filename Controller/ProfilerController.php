@@ -136,8 +136,10 @@ class ProfilerController implements ContainerAwareInterface
 
     /**
      * @param mixed[] $query
+     *
+     * @return mixed[]
      */
-    private function explainOraclePlatform(Connection $connection, array $query)
+    private function explainOraclePlatform(Connection $connection, array $query): array
     {
         $connection->executeQuery('EXPLAIN PLAN FOR ' . $query['sql']);
 
