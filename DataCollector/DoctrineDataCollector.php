@@ -6,7 +6,7 @@ use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\Configuration;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Doctrine\Persistence\ManagerRegistry;
@@ -64,7 +64,7 @@ class DoctrineDataCollector extends BaseCollector
         ];
 
         foreach ($this->registry->getManagers() as $name => $em) {
-            assert($em instanceof EntityManager);
+            assert($em instanceof EntityManagerInterface);
             if ($this->shouldValidateSchema) {
                 $entities[$name] = [];
 
@@ -101,7 +101,7 @@ class DoctrineDataCollector extends BaseCollector
             $cacheConfiguration = $emConfig->getSecondLevelCacheConfiguration();
             assert($cacheConfiguration instanceof CacheConfiguration);
             $cacheLoggerChain = $cacheConfiguration->getCacheLogger();
-            assert($cacheLoggerChain instanceof CacheLoggerChain);
+            assert($cacheLoggerChain instanceof CacheLoggerChain || $cacheConfiguration === null);
 
             if (! $cacheLoggerChain || ! $cacheLoggerChain->getLogger('statistics')) {
                 continue;
