@@ -10,7 +10,6 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Schema\AbstractAsset;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -716,7 +715,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($definition, [['soft_delete', 'myFilter'], ['myFilter' => ['myParameter' => 'myValue', 'mySecondParameter' => 'mySecondValue']]]);
 
         $entityManager = $container->get('doctrine.orm.entity_manager');
-        assert($entityManager instanceof EntityManager);
+        assert($entityManager instanceof EntityManagerInterface);
         $this->assertCount(2, $entityManager->getFilters()->getEnabledFilters());
     }
 

@@ -8,7 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPa
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Common\Util\ClassUtils;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
@@ -78,7 +78,7 @@ class DoctrineBundle extends Bundle
                 assert($registry instanceof Registry);
 
                 foreach ($registry->getManagers() as $em) {
-                    assert($em instanceof EntityManager);
+                    assert($em instanceof EntityManagerInterface);
                     if (! $em->getConfiguration()->getAutoGenerateProxyClasses()) {
                         continue;
                     }
