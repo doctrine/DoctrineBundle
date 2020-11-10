@@ -62,14 +62,22 @@ EOT
 
         $ifExists = $input->getOption('if-exists');
 
-        $params = $connection->getParams();
+        $driverOptions = [];
+        $params        = $connection->getParams();
+
+        if (isset($params['driverOptions'])) {
+            $driverOptions = $params['driverOptions'];
+        }
+
         if (isset($params['master'])) {
-            $params = $params['master'];
+            $params                  = $params['master'];
+            $params['driverOptions'] = $driverOptions;
         }
 
         // Since doctrine/dbal 2.11 master has been replaced by primary
         if (isset($params['primary'])) {
-            $params = $params['primary'];
+            $params                  = $params['primary'];
+            $params['driverOptions'] = $driverOptions;
         }
 
         if (isset($params['shards'])) {
