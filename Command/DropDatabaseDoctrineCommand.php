@@ -60,7 +60,7 @@ EOT
         $connection = $this->getDoctrineConnection($connectionName);
 
         $ifExists = $input->getOption('if-exists');
-        
+
         $driverOptions = [];
         $params        = $connection->getParams();
 
