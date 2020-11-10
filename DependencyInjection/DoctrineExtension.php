@@ -942,7 +942,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $decoratedMetadataCacheServiceId = (string) $container->getAlias($metadataCacheAlias);
         $phpArrayCacheDecoratorServiceId = $decoratedMetadataCacheServiceId . '.php_array';
         $phpArrayFile                    = '%kernel.cache_dir%' . sprintf('/doctrine/orm/%s_metadata.php', $entityManagerName);
-        $cacheWarmerServiceId            = sprintf('doctrine.orm.metadata_cache_warmer.%s', $entityManagerName);
+        $cacheWarmerServiceId            = $this->getObjectManagerElementName($entityManagerName . '_metadata_cache_warmer');
 
         $container->register($cacheWarmerServiceId, DoctrineMetadataCacheWarmer::class)
             ->setArguments([new Reference(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName)), $phpArrayFile])

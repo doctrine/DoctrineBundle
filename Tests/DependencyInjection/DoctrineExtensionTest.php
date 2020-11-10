@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\DBAL\Connection;
@@ -345,6 +346,16 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.naming_strategy.default', (string) $calls[10][1][0]);
         $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[11][1][0]);
         $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
+
+        $definition = $container->getDefinition('doctrine.orm.default_metadata_cache_warmer');
+        $this->assertSame(DoctrineMetadataCacheWarmer::class, $definition->getClass());
+        $this->assertEquals(
+            [
+                new Reference('doctrine.orm.default_entity_manager'),
+                '%kernel.cache_dir%/doctrine/orm/default_metadata.php',
+            ],
+            $definition->getArguments()
+        );
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
         $this->assertEquals(DoctrineProvider::class, $definition->getClass());
