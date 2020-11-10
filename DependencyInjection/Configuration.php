@@ -688,13 +688,6 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('pool')->end()
             ->end();
 
-        if ($name === 'metadata_cache_driver') {
-            $node->setDeprecated(...$this->getDeprecationMsg(
-                'The "metadata_cache_driver" configuration key is deprecated. PHP Array cache is now automatically registered when %kernel.debug% is false.',
-                '2.2'
-            ));
-        }
-
         return $node;
     }
 
