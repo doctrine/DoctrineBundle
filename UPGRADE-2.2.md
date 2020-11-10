@@ -13,4 +13,3 @@ Configuration
     * `doctrine.dbal.keep_slave`. Use `doctrine.dbal.keep_replica`
     
     Similarly, if you use XML configuration, please replace `<slave>` with `<replica>`.
- * The `metadata_cache_driver` configuration key has been deprecated. PHP Array cache is now automatically registered when `%kernel.debug%` is false.
