@@ -101,7 +101,7 @@ class DoctrineDataCollector extends BaseCollector
             $cacheConfiguration = $emConfig->getSecondLevelCacheConfiguration();
             assert($cacheConfiguration instanceof CacheConfiguration);
             $cacheLoggerChain = $cacheConfiguration->getCacheLogger();
-            assert($cacheLoggerChain instanceof CacheLoggerChain || $cacheConfiguration === null);
+            assert($cacheLoggerChain instanceof CacheLoggerChain || $cacheLoggerChain === null);
 
             if (! $cacheLoggerChain || ! $cacheLoggerChain->getLogger('statistics')) {
                 continue;
