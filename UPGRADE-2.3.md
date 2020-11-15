@@ -1,6 +1,15 @@
 UPGRADE FROM 2.2 to 2.3
 =======================
 
+Commands
+--------
+
+ * The `\Doctrine\Bundle\DoctrineBundle\Command\Proxy\ClearMetadataCacheDoctrineCommand` (`doctrine:cache:clear-metadata`) is deprecated, metadata cache now uses PHP Array cache which can not be cleared.
+
+Configuration
+--------
+ * The `metadata_cache_driver` configuration key has been deprecated. PHP Array cache is now automatically registered when `%kernel.debug%` is false.
+
 DependencyInjection
 --------
 
