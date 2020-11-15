@@ -41,7 +41,7 @@
         "doctrine/coding-standard": "^8.0",
         "doctrine/orm": "^2.6",
         "ocramius/proxy-manager": "^2.1",
-        "phpunit/phpunit": "^7.5 || ^9.3",
+        "phpunit/phpunit": "^7.5 || ^8.0 || ^9.3",
         "symfony/phpunit-bridge": "^4.2",
         "symfony/property-info": "^4.3.3|^5.0",
         "symfony/proxy-manager-bridge": "^3.4|^4.3.3|^5.0",
