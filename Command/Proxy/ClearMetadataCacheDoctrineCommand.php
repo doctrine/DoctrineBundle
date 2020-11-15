@@ -9,6 +9,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Command to clear the metadata cache of the various cache drivers.
+ *
+ * @deprecated
  */
 class ClearMetadataCacheDoctrineCommand extends MetadataCommand
 {
@@ -30,6 +32,8 @@ class ClearMetadataCacheDoctrineCommand extends MetadataCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        @trigger_error(sprintf('The "%s" (doctrine:cache:clear-metadata) is deprecated, metadata cache now uses PHP Array cache which can not be cleared.', self::class), E_USER_DEPRECATED);
+
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
 
         return parent::execute($input, $output);
