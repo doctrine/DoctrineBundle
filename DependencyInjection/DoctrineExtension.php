@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
@@ -11,6 +12,7 @@ use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Logging\LoggerChain;
 use Doctrine\DBAL\SQLParserUtils;
+use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Tools\Console\ConnectionProvider;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\UnitOfWork;
@@ -94,6 +96,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $chainLogger->addMethodCall('addLogger', [$logger]);
         } else {
             $chainLogger->addArgument([$logger]);
+        }
+
+        if (class_exists(ImportCommand::class)) {
+            $container->register('doctrine.database_import_command', ImportDoctrineCommand::class)
+                ->addTag('console.command', ['command' => 'doctrine:database:import']);
         }
 
         if (empty($config['default_connection'])) {

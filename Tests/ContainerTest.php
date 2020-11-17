@@ -8,6 +8,7 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Logging\LoggerChain;
+use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
@@ -34,6 +35,11 @@ class ContainerTest extends TestCase
             LoggerChain::class,
             $container->get('doctrine.dbal.logger.chain.default')
         );
+        if (class_exists(ImportCommand::class)) {
+            self::assertTrue($container->has('doctrine.database_import_command'));
+        } else {
+            self::assertFalse($container->has('doctrine.database_import_command'));
+        }
     }
 
     /**
