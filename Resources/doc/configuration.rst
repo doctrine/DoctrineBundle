@@ -887,6 +887,21 @@ You can easily define `doctrine filters`_ in your configuration file:
 
 .. _`reference-dbal-configuration`:
 
+Autowiring multiple Entity Managers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can autowire different entity managers by type-hinting your service arguments with
+the following syntax: ``Doctrine\ORM\EntityManagerInterface $<entity manager>EntityManager``.
+For example, to inject a ``purchase_logs`` entity manager use this:
+
+.. code-block:: diff
+
+    -     public function __construct(EntityManagerInterface $entityManager)
+    +     public function __construct(EntityManagerInterface $purchaseLogsEntityManager)
+        {
+            $this->entityManager = $purchaseLogsEntityManager;
+        }
+
 Doctrine DBAL Configuration
 ---------------------------
 

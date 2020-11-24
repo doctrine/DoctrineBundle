@@ -50,7 +50,49 @@ class DoctrineExtensionTest extends TestCase
 
             $alias = $container->getAlias($id);
             $this->assertEquals($target, (string) $alias, sprintf('The autowiring for `%s` should use `%s`.', $id, $target));
-            $this->assertFalse($alias->isPublic(), sprintf('The autowiring alias for `%s` should be private.', $id, $target));
+            $this->assertFalse($alias->isPublic(), sprintf('The autowiring alias for `%s` should be private.', $id));
+        }
+    }
+
+    public function testEntityManagerAutowiringAlias()
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer([
+            'YamlBundle',
+            'XmlBundle',
+        ]);
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager([
+                'entity_managers' => [
+                    'default' => [
+                        'mappings' => ['YamlBundle' => []],
+                    ],
+                    'purchase_logs' => [
+                        'mappings' => ['XmlBundle' => []],
+                    ],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $expectedAliases = [
+            EntityManagerInterface::class . ' $defaultEntityManager' => 'doctrine.orm.default_entity_manager',
+            EntityManagerInterface::class . ' $purchaseLogsEntityManager' => 'doctrine.orm.purchase_logs_entity_manager',
+        ];
+
+        foreach ($expectedAliases as $id => $target) {
+            $this->assertTrue($container->hasAlias($id), sprintf('The container should have a `%s` alias for autowiring support.', $id));
+
+            $alias = $container->getAlias($id);
+            $this->assertEquals($target, (string) $alias, sprintf('The autowiring for `%s` should use `%s`.', $id, $target));
+            $this->assertFalse($alias->isPublic(), sprintf('The autowiring alias for `%s` should be private.', $id));
         }
     }
 
