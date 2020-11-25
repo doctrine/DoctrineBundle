@@ -97,9 +97,11 @@ class ProfilerController implements ContainerAwareInterface
     }
 
     /**
+     * @param mixed[] $query
+     *
      * @return mixed[]
      */
-    private function explainSQLServerPlatform(Connection $connection, string $query): array
+    private function explainSQLServerPlatform(Connection $connection, array $query): array
     {
         if (stripos($query['sql'], 'SELECT') === 0) {
             $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . '; SET STATISTICS PROFILE OFF;';
@@ -120,9 +122,11 @@ class ProfilerController implements ContainerAwareInterface
     }
 
     /**
+     * @param mixed[] $query
+     *
      * @return mixed[]
      */
-    private function explainOtherPlatform(Connection $connection, string $query): array
+    private function explainOtherPlatform(Connection $connection, array $query): array
     {
         $params = $query['params'];
 
