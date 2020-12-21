@@ -38,7 +38,6 @@ class ServiceRepositoryTest extends TestCase
     public function testRepositoryServiceWiring(): void
     {
         $container = new ContainerBuilder(new ParameterBag([
-            'kernel.name' => 'app',
             'kernel.debug' => false,
             'kernel.bundles' => ['RepositoryServiceBundle' => RepositoryServiceBundle::class],
             'kernel.cache_dir' => sys_get_temp_dir(),
