@@ -9,9 +9,6 @@ on:
     branches:
       - "*.x"
 
-env:
-  fail-fast: true
-
 jobs:
   phpunit:
     name: "PHPUnit"
@@ -21,6 +18,7 @@ jobs:
       SYMFONY_DEPRECATIONS_HELPER: ${{matrix.symfony-deprecations-helper}}
 
     strategy:
+      fail-fast: false
       matrix:
         php-version:
           - "7.1"
