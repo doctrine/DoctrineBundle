@@ -93,6 +93,8 @@
         </service>
 
         <service id="doctrine.query_sql_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand">
+            <argument type="service" id="Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider" on-invalid="null" />
+
             <tag name="console.command" command="doctrine:query:sql" />
         </service>
 
