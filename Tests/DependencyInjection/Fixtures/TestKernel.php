@@ -35,6 +35,7 @@ class TestKernel extends Kernel
             $container->loadFromExtension('doctrine', [
                 'dbal' => ['driver' => 'pdo_sqlite'],
                 'orm' => [
+                    'auto_generate_proxy_classes' => true,
                     'mappings' => [
                         'RepositoryServiceBundle' => [
                             'type' => 'annotation',
