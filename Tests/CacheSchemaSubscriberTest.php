@@ -32,6 +32,7 @@ class CacheSchemaSubscriberTest extends TestCase
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.runtime_environment' => '%%env(default:kernel.environment:APP_RUNTIME_ENV)%%',
+            'kernel.build_dir' => __DIR__ . '/../../../../', // src dir
             'kernel.root_dir' => __DIR__ . '/../../../../', // src dir
             'kernel.project_dir' => __DIR__ . '/../../../../', // src dir
             'kernel.bundles_metadata' => [],
