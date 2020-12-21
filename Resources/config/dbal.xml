@@ -23,10 +23,8 @@
         <service id="Doctrine\DBAL\Driver\Connection" alias="database_connection" public="false" />
         <service id="Doctrine\DBAL\Connection" alias="database_connection" public="false" />
 
-        <service id="doctrine.dbal.logger.chain" class="%doctrine.dbal.logger.chain.class%" public="false" abstract="true">
-            <call method="addLogger">
-                <argument type="service" id="doctrine.dbal.logger" />
-            </call>
+        <service id="doctrine.dbal.logger.chain" class="%doctrine.dbal.logger.chain.class%" public="false" abstract="true" >
+            <!-- TODO: deprecate this service in 2.3.0 -->
         </service>
 
         <service id="doctrine.dbal.logger.profiling" class="%doctrine.dbal.logger.profiling.class%" public="false" abstract="true" />
@@ -92,10 +90,6 @@
             <argument type="service" id="doctrine" />
 
             <tag name="console.command" command="doctrine:database:drop" />
-        </service>
-
-        <service id="doctrine.database_import_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand">
-            <tag name="console.command" command="doctrine:database:import" />
         </service>
 
         <service id="doctrine.query_sql_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunSqlDoctrineCommand">

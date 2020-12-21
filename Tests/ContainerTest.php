@@ -2,10 +2,13 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKernel;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Logging\LoggerChain;
+use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
@@ -22,13 +25,21 @@ use Symfony\Component\Cache\DoctrineProvider;
 
 class ContainerTest extends TestCase
 {
-    public static function setUpBeforeClass(): void
+    public function testContainerWithDbalOnly(): void
     {
-        if (interface_exists(EntityManagerInterface::class)) {
-            return;
-        }
+        $kernel = new DbalTestKernel();
+        $kernel->boot();
 
-        self::markTestSkipped('This test requires ORM');
+        $container = $kernel->getContainer();
+        $this->assertInstanceOf(
+            LoggerChain::class,
+            $container->get('doctrine.dbal.logger.chain.default')
+        );
+        if (class_exists(ImportCommand::class)) {
+            self::assertTrue($container->has('doctrine.database_import_command'));
+        } else {
+            self::assertFalse($container->has('doctrine.database_import_command'));
+        }
     }
 
     /**
@@ -38,6 +49,10 @@ class ContainerTest extends TestCase
      */
     public function testContainer(): void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->createXmlBundleTestContainer();
 
         $this->assertInstanceOf(DbalLogger::class, $container->get('doctrine.dbal.logger'));
