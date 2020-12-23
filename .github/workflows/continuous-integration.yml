@@ -37,11 +37,6 @@ jobs:
             php-version: "7.1"
             symfony-deprecations-helper: "weak"
 
-          # Test against latest Symfony 4.3 stable
-          - symfony-require: "4.3.*"
-            php-version: "7.3"
-            deps: "normal"
-
           # Test against latest Symfony 4.4 dev
           - symfony-require: "4.4.*"
             php-version: "7.3"
@@ -90,18 +85,9 @@ jobs:
       - name: "Globally install symfony/flex"
         run: "composer global require --no-progress --no-scripts --no-plugins symfony/flex"
 
-      # to be removed when our dependencies support PHP 8
-      - name: "Pretend this is PHP 7.4"
-        run: "composer config platform.php 7.4.99"
-        if: "${{ matrix.php-version == '8.0' }}"
-
       - name: "Require symfony/messenger"
         run: "composer require --dev symfony/messenger --no-update"
         if: "${{ startsWith(matrix.symfony-require, '4.') }}"
-
-      - name: "Remove doctrine/orm"
-        run: "composer remove --dev doctrine/orm --no-update"
-        if: "${{ matrix.php-version == '8.0' }}"
 
       - name: "Install stable dependencies with composer"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
