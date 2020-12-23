@@ -40,7 +40,7 @@
     "require-dev": {
         "doctrine/coding-standard": "^8.0",
         "doctrine/orm": "^2.6",
-        "ocramius/proxy-manager": "^2.1",
+        "friendsofphp/proxy-manager-lts": "^1.0",
         "phpunit/phpunit": "^7.5 || ^8.0 || ^9.3",
         "symfony/phpunit-bridge": "^4.2",
         "symfony/property-info": "^4.3.3|^5.0",
