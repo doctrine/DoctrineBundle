@@ -412,6 +412,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
+            ->setLazy(true)
             ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
     }
 
