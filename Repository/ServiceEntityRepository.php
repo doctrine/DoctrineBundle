@@ -19,6 +19,9 @@ use LogicException;
  *         parent::__construct($registry, YourEntity::class);
  *     }
  * }
+ *
+ * @template T
+ * @template-extends EntityRepository<T>
  */
 class ServiceEntityRepository extends EntityRepository implements ServiceEntityRepositoryInterface
 {
