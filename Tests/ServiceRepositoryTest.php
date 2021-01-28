@@ -30,11 +30,6 @@ class ServiceRepositoryTest extends TestCase
         self::markTestSkipped('This test requires ORM');
     }
 
-    /**
-     * https://github.com/doctrine/orm/pull/7953 needed, otherwise ORM classes we define services for trigger deprecations
-     *
-     * @group legacy
-     */
     public function testRepositoryServiceWiring(): void
     {
         $container = new ContainerBuilder(new ParameterBag([

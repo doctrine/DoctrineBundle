@@ -150,6 +150,17 @@
         <service id="doctrine.orm.quote_strategy.default" class="%doctrine.orm.quote_strategy.default.class%" public="false" />
         <service id="doctrine.orm.quote_strategy.ansi" class="%doctrine.orm.quote_strategy.ansi.class%" public="false" />
 
+        <!-- custom id generators -->
+        <service id="doctrine.ulid_generator" class="Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator">
+            <argument type="service" id="ulid.factory" on-invalid="ignore" />
+            <tag name="doctrine.id_generator" />
+        </service>
+
+        <service id="doctrine.uuid_generator" class="Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator">
+            <argument type="service" id="uuid.factory" on-invalid="ignore" />
+            <tag name="doctrine.id_generator" />
+        </service>
+
         <!-- commands -->
         <service id="doctrine.cache_clear_metadata_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ClearMetadataCacheDoctrineCommand">
             <tag name="console.command" command="doctrine:cache:clear-metadata" />

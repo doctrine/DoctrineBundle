@@ -42,11 +42,6 @@ class ContainerTest extends TestCase
         }
     }
 
-    /**
-     * https://github.com/doctrine/orm/pull/7953 needed, otherwise ORM classes we define services for trigger deprecations
-     *
-     * @group legacy
-     */
     public function testContainer(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
