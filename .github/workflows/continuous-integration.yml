@@ -25,30 +25,36 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
-        deps:
-          - "normal"
+        dependencies:
+          - "highest"
+        stability:
+          - "stable"
         symfony-require:
           - ""
         symfony-deprecations-helper:
           - ""
         include:
           # Tests the lowest set of dependencies
-          - deps: "low"
+          - dependencies: "lowest"
+            stability: "stable"
             php-version: "7.1"
             symfony-deprecations-helper: "weak"
 
           # Test against latest Symfony 4.4 dev
           - symfony-require: "4.4.*"
+            dependencies: "highest"
             php-version: "7.3"
-            deps: "dev"
+            stability: "dev"
 
           # Test against latest Symfony 5.2 dev
           - symfony-require: "5.2.*"
+            dependencies: "highest"
             php-version: "7.3"
-            deps: "dev"
+            stability: "dev"
 
           - php-version: "8.0"
-            deps: "dev"
+            dependencies: "highest"
+            stability: "dev"
             symfony-deprecations-helper: "weak"
 
     steps:
@@ -75,13 +81,6 @@ jobs:
           ini-values: "zend.assertions=1"
           extensions: "pdo_sqlite"
 
-      - name: "Cache dependencies installed with composer"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-locked-${{ hashFiles('composer.lock') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-locked-"
-
       - name: "Globally install symfony/flex"
         run: "composer global require --no-progress --no-scripts --no-plugins symfony/flex"
 
@@ -89,17 +88,15 @@ jobs:
         run: "composer require --dev symfony/messenger --no-update"
         if: "${{ startsWith(matrix.symfony-require, '4.') }}"
 
-      - name: "Install stable dependencies with composer"
-        run: "composer update --no-interaction --prefer-dist --prefer-stable"
-        if: "${{ matrix.deps == 'normal' }}"
+      - name: "Enforce using stable dependencies"
+        run: "composer config minimum-stability stable"
+        if: "${{ matrix.stability == 'stable' }}"
 
-      - name: "Install dev dependencies with composer"
-        run: "composer update --no-interaction --prefer-dist"
-        if: "${{ matrix.deps == 'dev' }}"
-
-      - name: "Install lowest possible dependencies with composer"
-        run: "composer update --no-interaction --prefer-dist --prefer-stable --prefer-lowest"
-        if: "${{ matrix.deps == 'low' }}"
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v1"
+        with:
+          dependency-versions: "${{ matrix.dependencies }}"
+          composer-options: "--prefer-dist"
 
       - name: "Run PHPUnit"
         run: "vendor/bin/phpunit --coverage-clover=coverage.xml"
@@ -107,7 +104,7 @@ jobs:
       - name: "Upload coverage file"
         uses: "actions/upload-artifact@v2"
         with:
-          name: "phpunit-${{ matrix.php-version }}-${{ matrix.deps }}-${{ hashFiles('composer.lock') }}.coverage"
+          name: "phpunit-${{ matrix.php-version }}-${{ matrix.dependencies }}-${{ hashFiles('composer.lock') }}.coverage"
           path: "coverage.xml"
 
   upload_coverage:
