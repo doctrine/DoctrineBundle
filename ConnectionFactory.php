@@ -43,7 +43,7 @@ class ConnectionFactory
             $this->initializeTypes();
         }
 
-        if (isset($params['override_url']) && $params['override_url']) {
+        if (isset($params['override_url'], $params['url']) && $params['override_url']) {
             $params['url'] = $this->overrideUrl($params);
         }
 
