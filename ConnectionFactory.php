@@ -43,10 +43,6 @@ class ConnectionFactory
             $this->initializeTypes();
         }
 
-        if (isset($params['override_url'], $params['url']) && $params['override_url']) {
-            $params['url'] = $this->overrideUrl($params);
-        }
-
         if (! isset($params['pdo']) && ! isset($params['charset'])) {
             $wrapperClass = null;
             if (isset($params['wrapperClass'])) {
@@ -56,6 +52,10 @@ class ConnectionFactory
 
                 $wrapperClass           = $params['wrapperClass'];
                 $params['wrapperClass'] = null;
+            }
+
+            if (isset($params['override_url'], $params['url']) && $params['override_url']) {
+                $params['url'] = $this->overrideUrl($params);
             }
 
             $connection = DriverManager::getConnection($params, $config, $eventManager);
