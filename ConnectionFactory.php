@@ -134,13 +134,16 @@ class ConnectionFactory
         $this->initialized = true;
     }
 
-    private function overrideUrl(array $params): string
+    /**
+     * @param mixed[] $params
+     */
+    private function overrideUrl(array $params) : string
     {
         if (empty($params['dbname'])) {
             return $params['url'];
         }
 
-        $parsedUrl = parse_url($params['url']);
+        $parsedUrl         = parse_url($params['url']);
         $parsedUrl['path'] = sprintf('/%s', $params['dbname']);
 
         $newUrl = '';
@@ -163,7 +166,7 @@ class ConnectionFactory
                     $newUrl = sprintf('%s:%s', $newUrl, $parsedUrl[$key]);
                     break;
                 case 'host':
-                    $hostSeparator = !empty($parsedUrl['user']) ? '@' : '';
+                    $hostSeparator = ! empty($parsedUrl['user']) ? '@' : '';
 
                     $newUrl = sprintf(
                         '%s%s%s',
