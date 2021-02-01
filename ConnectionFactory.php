@@ -43,6 +43,10 @@ class ConnectionFactory
             $this->initializeTypes();
         }
 
+        if (isset($params['override_url']) && $params['override_url']) {
+            $params['url'] = $this->overrideUrl($params);
+        }
+
         if (! isset($params['pdo']) && ! isset($params['charset'])) {
             $wrapperClass = null;
             if (isset($params['wrapperClass'])) {
@@ -128,5 +132,52 @@ class ConnectionFactory
         }
 
         $this->initialized = true;
+    }
+
+    private function overrideUrl(array $params): string
+    {
+        if (empty($params['dbname'])) {
+            return $params['url'];
+        }
+
+        $parsedUrl = parse_url($params['url']);
+        $parsedUrl['path'] = sprintf('/%s', $params['dbname']);
+
+        $newUrl = '';
+
+        foreach (['scheme', 'user', 'pass', 'host', 'port', 'path', 'query'] as $key) {
+            if (empty($parsedUrl[$key])) {
+                continue;
+            }
+
+            switch ($key) {
+                case 'scheme':
+                    $newUrl = sprintf('%s://', $parsedUrl[$key]);
+                    break;
+                case 'user':
+                case 'path':
+                    $newUrl = sprintf('%s%s', $newUrl, $parsedUrl[$key]);
+                    break;
+                case 'port':
+                case 'pass':
+                    $newUrl = sprintf('%s:%s', $newUrl, $parsedUrl[$key]);
+                    break;
+                case 'host':
+                    $hostSeparator = !empty($parsedUrl['user']) ? '@' : '';
+
+                    $newUrl = sprintf(
+                        '%s%s%s',
+                        $newUrl,
+                        $hostSeparator,
+                        $parsedUrl[$key]
+                    );
+                    break;
+                case 'query':
+                    $newUrl = sprintf('%s?%s', $newUrl, $parsedUrl[$key]);
+                    break;
+            }
+        }
+
+        return $newUrl;
     }
 }

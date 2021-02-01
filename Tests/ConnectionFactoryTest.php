@@ -63,6 +63,21 @@ class ConnectionFactoryTest extends TestCase
 
         $this->assertSame('utf8mb4', $connection->getParams()['charset']);
     }
+
+    public function testUrlOverride(): void
+    {
+        $factory = new ConnectionFactory([]);
+
+        $oldUrl = 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8';
+        $expectedUrl = 'mysql://root:password@database:3306/main_test?serverVersion=mariadb-10.5.8';
+        $params = ['url' => $oldUrl, 'override_url' => true, 'dbname' => 'main_test'];
+
+        $connection = $factory->createConnection($params);
+
+        $result = $connection->getParams();
+
+        self::assertSame($expectedUrl, $result['url']);
+    }
 }
 
 /**
