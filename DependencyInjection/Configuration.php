@@ -217,10 +217,11 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->scalarNode('url')->info('A URL with connection information; any parameter value parsed from this string will override explicitly set parameters')->end()
                 ->scalarNode('dbname')->end()
-                ->scalarNode('host')->defaultValue('localhost')->end()
-                ->scalarNode('port')->defaultNull()->end()
-                ->scalarNode('user')->defaultValue('root')->end()
-                ->scalarNode('password')->defaultNull()->end()
+                ->scalarNode('host')->info('Defaults to "localhost" at runtime.')->end()
+                ->scalarNode('port')->info('Defaults to null at runtime.')->end()
+                ->scalarNode('user')->info('Defaults to "root" at runtime.')->end()
+                ->scalarNode('password')->info('Defaults to null at runtime.')->end()
+                ->booleanNode('override_url')->defaultValue(false)->info('Allows overriding parts of the "url" parameter with dbname, host, port, user, and/or password parameters.')->end()
                 ->scalarNode('application_name')->end()
                 ->scalarNode('charset')->end()
                 ->scalarNode('path')->end()
@@ -312,6 +313,16 @@ class Configuration implements ConfigurationInterface
                 ->then(static function ($v) {
                     $v['MultipleActiveResultSets'] = $v['multiple_active_result_sets'];
                     unset($v['multiple_active_result_sets']);
+
+                    return $v;
+                })
+            ->end()
+            ->beforeNormalization()
+                ->ifTrue(static function ($v) {
+                    return ! ($v['override_url'] ?? false) && isset($v['url']);
+                })
+                ->then(static function ($v) {
+                    trigger_error('Not setting doctrine.dbal.override_url to true is deprecated. True is the only value that will be supported in doctrine-bundle 3.0.', E_USER_DEPRECATED);
 
                     return $v;
                 })

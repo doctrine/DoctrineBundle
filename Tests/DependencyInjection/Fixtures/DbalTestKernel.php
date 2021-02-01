@@ -12,11 +12,16 @@ use Symfony\Component\HttpKernel\Kernel;
 
 class DbalTestKernel extends Kernel
 {
+    /** @var array<string, mixed> */
+    private $dbalConfig;
+
     /** @var string|null */
     private $projectDir;
 
-    public function __construct()
+    public function __construct(array $dbalConfig = ['driver' => 'pdo_sqlite'])
     {
+        $this->dbalConfig = $dbalConfig;
+
         parent::__construct('test', true);
     }
 
@@ -30,11 +35,11 @@ class DbalTestKernel extends Kernel
 
     public function registerContainerConfiguration(LoaderInterface $loader): void
     {
-        $loader->load(static function (ContainerBuilder $container): void {
+        $loader->load(function (ContainerBuilder $container): void {
             $container->loadFromExtension('framework', ['secret' => 'F00']);
 
             $container->loadFromExtension('doctrine', [
-                'dbal' => ['driver' => 'pdo_sqlite'],
+                'dbal' => $this->dbalConfig,
             ]);
 
             // Register a NullLogger to avoid getting the stderr default logger of FrameworkBundle

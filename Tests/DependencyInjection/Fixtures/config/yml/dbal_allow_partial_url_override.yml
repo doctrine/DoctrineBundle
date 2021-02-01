@@ -1,0 +1,5 @@
+doctrine:
+    dbal:
+        override_url: true
+        url: 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8'
+        dbname: main_test
