@@ -6,6 +6,9 @@ use Doctrine\DBAL\Schema\AbstractAsset;
 
 use function in_array;
 
+/**
+ * @deprecated Implement your own include/exclude mechanism
+ */
 class BlacklistSchemaAssetFilter
 {
     /** @var string[] */

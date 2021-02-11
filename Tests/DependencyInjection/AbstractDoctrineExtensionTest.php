@@ -889,6 +889,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @dataProvider dataWellKnownSchemaFilterServices
+     * @group legacy
      */
     public function testWellKnownSchemaFilterDefaultTables(string $fileName, string $tableName): void
     {
@@ -927,6 +928,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @dataProvider dataWellKnownSchemaOverriddenTablesFilterServices
+     * @group legacy
      */
     public function testWellKnownSchemaFilterOverriddenTables(string $fileName, string $tableName): void
     {
