@@ -9,6 +9,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
 use Fixtures\Bundles\AnnotationsBundle\AnnotationsBundle;
 use Fixtures\Bundles\AnnotationsBundle\Entity\TestCustomIdGeneratorEntity;
+use Fixtures\Bundles\AnnotationsBundle\Entity\TestServiceGeneratedValueEntity;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -81,5 +82,9 @@ class CustomIdGeneratorTest extends TestCase
 
         $metadata = $em->getClassMetadata(TestCustomIdGeneratorEntity::class);
         $this->assertInstanceOf(CustomIdGenerator::class, $metadata->idGenerator);
+
+        $metadata = $em->getClassMetadata(TestServiceGeneratedValueEntity::class);
+        $this->assertInstanceOf(CustomIdGenerator::class, $metadata->idGenerator);
+        $this->assertSame(123, $metadata->idGenerator->value);
     }
 }
