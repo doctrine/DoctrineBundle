@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
@@ -15,10 +16,13 @@ use Doctrine\DBAL\SQLParserUtils;
 use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Tools\Console\ConnectionProvider;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\UnitOfWork;
 use LogicException;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
+use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
@@ -405,6 +409,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->removeDefinition('doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber');
         }
 
+        if (! class_exists(UlidGenerator::class)) {
+            $container->removeDefinition('doctrine.ulid_generator');
+        }
+
+        if (! class_exists(UuidGenerator::class)) {
+            $container->removeDefinition('doctrine.uuid_generator');
+        }
+
         $entityManagers = [];
         foreach (array_keys($config['entity_managers']) as $name) {
             $entityManagers[$name] = sprintf('doctrine.orm.%s_entity_manager', $name);
@@ -459,6 +471,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->registerForAutoconfiguration(EventSubscriberInterface::class)
             ->addTag('doctrine.event_subscriber');
 
+        $container->registerForAutoconfiguration(AbstractIdGenerator::class)
+            ->addTag(IdGeneratorPass::ID_GENERATOR_TAG);
+
         /**
          * @see DoctrineBundle::boot()
          */
@@ -477,6 +492,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container)
     {
         $ormConfigDef = $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), new ChildDefinition('doctrine.orm.configuration'));
+        $ormConfigDef->addTag(IdGeneratorPass::CONFIGURATION_TAG);
 
         $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container);
         $this->loadOrmCacheDrivers($entityManager, $container);

@@ -8,4 +8,5 @@ configuration options, console commands and even a web debug toolbar collector.
 
     installation
     entity-listeners
+    custom-id-generators
     configuration
