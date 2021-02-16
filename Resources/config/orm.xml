@@ -137,6 +137,10 @@
             <argument type="collection" /> <!-- PdoAdapter instances -->
             <tag name="doctrine.event_subscriber" />
         </service>
+        <service id="doctrine.orm.listeners.doctrine_token_provider_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaSubscriber">
+            <argument type="tagged" tag="security.remember_me_handler" />
+            <tag name="doctrine.event_subscriber" />
+        </service>
 
         <!-- naming strategy -->
         <service id="doctrine.orm.naming_strategy.default" class="%doctrine.orm.naming_strategy.default.class%" public="false" />
