@@ -28,6 +28,7 @@ use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaSubscriber;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
+use Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaSubscriber;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\DoctrineProvider;
@@ -407,6 +408,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
         // available in Symfony 5.1 and higher
         if (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
             $container->removeDefinition('doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber');
+        }
+
+        // available in Symfony 5.3 and higher
+        if (! class_exists(RememberMeTokenProviderDoctrineSchemaSubscriber::class)) {
+            $container->removeDefinition('doctrine.orm.listeners.doctrine_token_provider_schema_subscriber');
         }
 
         if (! class_exists(UlidGenerator::class)) {
