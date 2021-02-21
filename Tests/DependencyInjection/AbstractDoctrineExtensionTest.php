@@ -1019,11 +1019,23 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $defaultEventManager = $container->getDefinition('doctrine.dbal.default_connection.event_manager');
         $this->assertDICDefinitionNoMethodCall($defaultEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em2_listeners.attach_entity_listeners')]);
-        $this->assertDICDefinitionMethodCallOnce($defaultEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em1_listeners.attach_entity_listeners')]);
+        $defaultEventManagerArguments = $defaultEventManager->getArguments();
+
+        if (isset($defaultEventManagerArguments[1][1])) {
+            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em1_listeners.attach_entity_listeners'], $defaultEventManager->getArgument(1)[1]);
+        } else {
+            $this->assertDICDefinitionMethodCallOnce($defaultEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em1_listeners.attach_entity_listeners')]);
+        }
 
         $foobarEventManager = $container->getDefinition('doctrine.dbal.foobar_connection.event_manager');
         $this->assertDICDefinitionNoMethodCall($foobarEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em1_listeners.attach_entity_listeners')]);
-        $this->assertDICDefinitionMethodCallOnce($foobarEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em2_listeners.attach_entity_listeners')]);
+        $foobarEventManagerArguments = $foobarEventManager->getArguments();
+
+        if (isset($foobarEventManagerArguments[1][1])) {
+            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em2_listeners.attach_entity_listeners'], $foobarEventManager->getArgument(1)[1]);
+        } else {
+            $this->assertDICDefinitionMethodCallOnce($foobarEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em2_listeners.attach_entity_listeners')]);
+        }
     }
 
     public function testAttachLazyEntityListener(): void
