@@ -9,6 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Logging\LoggerChain;
@@ -214,8 +215,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         // connection
         $options = $this->getConnectionOptions($connection);
 
+        $connectionId = sprintf('doctrine.dbal.%s_connection', $name);
+
         $def = $container
-            ->setDefinition(sprintf('doctrine.dbal.%s_connection', $name), new ChildDefinition('doctrine.dbal.connection'))
+            ->setDefinition($connectionId, new ChildDefinition('doctrine.dbal.connection'))
             ->setPublic(true)
             ->setArguments([
                 $options,
@@ -223,6 +226,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 new Reference(sprintf('doctrine.dbal.%s_connection.event_manager', $name)),
                 $connection['mapping_types'],
             ]);
+
+        $container
+            ->registerAliasForArgument($connectionId, Connection::class, sprintf('%sConnection', $name))
+            ->setPublic(false);
 
         // Set class in case "wrapper_class" option was used to assist IDEs
         if (isset($options['wrapperClass'])) {
@@ -235,7 +242,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         // Create a shard_manager for this connection
         if (isset($options['shards'])) {
-            $shardManagerDefinition = new Definition($options['shardManagerClass'], [new Reference(sprintf('doctrine.dbal.%s_connection', $name))]);
+            $shardManagerDefinition = new Definition($options['shardManagerClass'], [new Reference($connectionId)]);
             $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
         }
 

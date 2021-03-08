@@ -54,6 +54,36 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
+    public function testConnectionAutowiringAlias()
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection([
+                'connections' => [
+                    'default' => ['password' => 'foo'],
+                    'purchase_logs' => ['password' => 'foo'],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $expectedAliases = [
+            Connection::class . ' $defaultConnection' => 'doctrine.dbal.default_connection',
+            Connection::class . ' $purchaseLogsConnection' => 'doctrine.dbal.purchase_logs_connection',
+        ];
+
+        foreach ($expectedAliases as $id => $target) {
+            $this->assertTrue($container->hasAlias($id), sprintf('The container should have a `%s` alias for autowiring support.', $id));
+
+            $alias = $container->getAlias($id);
+            $this->assertEquals($target, (string) $alias, sprintf('The autowiring for `%s` should use `%s`.', $id, $target));
+            $this->assertFalse($alias->isPublic(), sprintf('The autowiring alias for `%s` should be private.', $id));
+        }
+    }
+
     public function testEntityManagerAutowiringAlias()
     {
         if (! interface_exists(EntityManagerInterface::class)) {

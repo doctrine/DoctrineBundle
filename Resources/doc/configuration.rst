@@ -1088,4 +1088,19 @@ which is the first one defined or the one configured via the
 Each connection is also accessible via the ``doctrine.dbal.[name]_connection``
 service where ``[name]`` is the name of the connection.
 
+Autowiring multiple Connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can autowire different connections by type-hinting your service arguments with
+the following syntax: ``Doctrine\DBAL\Connection $<connection name>Connection``.
+For example, to inject a connection with the name ``purchase_logs`` use this:
+
+.. code-block:: diff
+
+    -     public function __construct(Connection $connection)
+    +     public function __construct(Connection $purchaseLogsConnection)
+        {
+            $this->connection = $purchaseLogsConnection;
+        }
+
 .. _DBAL documentation: https://www.doctrine-project.org/projects/doctrine-dbal/en/2.10/index.html
