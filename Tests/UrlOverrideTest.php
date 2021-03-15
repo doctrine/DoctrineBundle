@@ -3,7 +3,6 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKernel;
-use Generator;
 
 class UrlOverrideTest extends TestCase
 {
@@ -12,70 +11,63 @@ class UrlOverrideTest extends TestCase
      */
     public function testConnectionConfiguration(array $config, array $expectedParams): void
     {
-        $kernel = new UrlOverrideTestKernel($config);
+        $kernel = new DbalTestKernel($config);
         $kernel->boot();
 
-        $doctrine = $kernel->getContainer()->get('doctrine');
-        $params   = $doctrine->getConnection()->getParams();
-
-        foreach ($expectedParams as $paramName => $value) {
-            self::assertSame($value, $params[$paramName]);
-        }
+        $this->assertEquals(
+            $expectedParams,
+            array_intersect_key(
+                $kernel->getContainer()->get('doctrine.dbal.default_connection')->getParams(),
+                $expectedParams
+            )
+        );
     }
 
-    public function connectionDataProvider(): Generator
+    public function connectionDataProvider(): array
     {
-        yield [
-            [
-                'override_url' => true,
-                'url' => 'mysql://database/main?serverVersion=mariadb-10.5.8',
-                'password' => 'wordPass',
-                'host' => '127.0.0.1',
+        return [
+            'override some' => [
+                [
+                    'override_url' => true,
+                    'url' => 'mysql://database/main',
+                    'password' => 'wordPass',
+                    'host' => '127.0.0.1',
+                ],
+                [
+                    'user' => 'root',
+                    'password' => 'wordPass',
+                    'host' => '127.0.0.1',
+                    'port' => null,
+                    'dbname' => 'main',
+                ],
             ],
-            [
-                'user' => 'root',
-                'password' => 'wordPass',
-                'host' => '127.0.0.1',
-                'port' => null,
-                'dbname' => 'main',
+            'override with same value as in URL' => [
+                [
+                    'override_url' => true,
+                    'url' => 'mysql://someone@database/main',
+                    'user' => 'someone',
+                ],
+                [
+                    'user' => 'someone',
+                    'password' => null,
+                    'host' => 'database',
+                    'port' => null,
+                    'dbname' => 'main',
+                ],
+            ],
+            'nothing to override' => [
+                [
+                    'override_url' => true,
+                    'url' => 'mysql://database/main',
+                ],
+                [
+                    'user' => 'root',
+                    'password' => null,
+                    'host' => 'database',
+                    'port' => null,
+                    'dbname' => 'main',
+                ],
             ],
         ];
-
-        yield [
-            [
-                'override_url' => true,
-                'url' => 'mysql://someone@database/main?serverVersion=mariadb-10.5.8',
-                'user' => 'someone',
-            ],
-            [
-                'user' => 'someone',
-                'password' => null,
-                'host' => 'database',
-                'port' => null,
-                'dbname' => 'main',
-            ],
-        ];
-
-        yield [
-            [
-                'override_url' => true,
-                'url' => 'mysql://database/main?serverVersion=mariadb-10.5.8',
-            ],
-            [
-                'user' => 'root',
-                'password' => null,
-                'host' => 'database',
-                'port' => null,
-                'dbname' => 'main',
-            ],
-        ];
-    }
-}
-
-class UrlOverrideTestKernel extends DbalTestKernel
-{
-    public function __construct(array $dbalConfig)
-    {
-        parent::__construct($dbalConfig);
     }
 }

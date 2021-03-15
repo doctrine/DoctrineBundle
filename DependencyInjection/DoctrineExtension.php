@@ -262,35 +262,26 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     protected function getConnectionOptions($connection)
     {
-        $options = $connection;
-
-        $options['connection_override_options'] = [];
+        $options = ['connection_override_options' => []] + $connection;
 
         $connectionDefaults = [
-            'dbname' => null,
             'host' => 'localhost',
             'port' => null,
             'user' => 'root',
             'password' => null,
         ];
 
-        if (($options['override_url'] ?? false)) {
-            $options['connection_override_options'] = array_intersect_key($options, $connectionDefaults);
+        if ($options['override_url']) {
+            $options['connection_override_options'] = array_intersect_key($options, ['dbname' => null] + $connectionDefaults);
         }
 
-        unset($options['override_url'], $connectionDefaults['dbname']);
+        unset($options['override_url']);
 
-        foreach ($connectionDefaults as $defaultKey => $defaultValue) {
-            if (! array_key_exists($defaultKey, $options)) {
-                $options[$defaultKey] = $defaultValue;
-            }
+        $options += $connectionDefaults;
 
-            foreach (['shards', 'replicas', 'slaves'] as $connectionKey) {
-                if (! array_key_exists($connectionKey, $options)) {
-                    continue;
-                }
-
-                $options[$connectionKey] = $this->setDefaultOnNestedConnectionOption($options[$connectionKey], $defaultKey, $defaultValue);
+        foreach (['shards', 'replicas', 'slaves'] as $connectionKey) {
+            foreach (array_keys($options[$connectionKey]) as $name) {
+                $options[$connectionKey][$name] += $connectionDefaults;
             }
         }
 
@@ -1020,22 +1011,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setDefinition($id, $poolDefinition);
 
         return $id;
-    }
-
-    /**
-     * @return array<string|int, array<string|int, mixed>>
-     */
-    private function setDefaultOnNestedConnectionOption(array $connectionOptions, string $paramName, $defaultValue): array
-    {
-        foreach ($connectionOptions as $connectionKey => $connection) {
-            if (array_key_exists($paramName, $connection)) {
-                continue;
-            }
-
-            $connectionOptions[$connectionKey][$paramName] = $defaultValue;
-        }
-
-        return $connectionOptions;
     }
 
     private function registerMetadataPhpArrayCaching(string $entityManagerName, ContainerBuilder $container): void

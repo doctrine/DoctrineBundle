@@ -319,10 +319,10 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->beforeNormalization()
                 ->ifTrue(static function ($v) {
-                    return ! ($v['override_url'] ?? false) && isset($v['url']);
+                    return empty($v['override_url']) && isset($v['url']);
                 })
                 ->then(static function ($v) {
-                    trigger_error('Not setting doctrine.dbal.override_url to true is deprecated. True is the only value that will be supported in doctrine-bundle 3.0.', E_USER_DEPRECATED);
+                    @trigger_error('Not setting doctrine.dbal.override_url to true is deprecated. True is the only value that will be supported in doctrine-bundle 3.0.', E_USER_DEPRECATED);
 
                     return $v;
                 })
