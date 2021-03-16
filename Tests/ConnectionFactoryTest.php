@@ -71,6 +71,24 @@ class ConnectionFactoryTest extends TestCase
 
         $this->assertSame('utf8mb4', $connection->getParams()['charset']);
     }
+
+    public function testConnectionOverrideOptions(): void
+    {
+        $params = [
+            'dbname' => 'main_test',
+            'host' => 'db_test',
+            'port' => 5432,
+            'user' => 'tester',
+            'password' => 'wordpass',
+        ];
+
+        $connection = (new ConnectionFactory([]))->createConnection([
+            'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
+            'connection_override_options' => $params,
+        ]);
+
+        $this->assertEquals($params, array_intersect_key($connection->getParams(), $params));
+    }
 }
 
 /**

@@ -45,8 +45,12 @@ class ConnectionFactory
             $this->initializeTypes();
         }
 
-        if (! isset($params['pdo']) && ! isset($params['charset'])) {
+        $overriddenOptions = $params['connection_override_options'] ?? [];
+        unset($params['connection_override_options']);
+
+        if (! isset($params['pdo']) && (! isset($params['charset']) || $overriddenOptions)) {
             $wrapperClass = null;
+
             if (isset($params['wrapperClass'])) {
                 if (! is_subclass_of($params['wrapperClass'], Connection::class)) {
                     if (class_exists(DBALException::class)) {
@@ -61,7 +65,7 @@ class ConnectionFactory
             }
 
             $connection = DriverManager::getConnection($params, $config, $eventManager);
-            $params     = $connection->getParams();
+            $params     = array_merge($connection->getParams(), $overriddenOptions);
             $driver     = $connection->getDriver();
 
             if ($driver instanceof AbstractMySQLDriver) {

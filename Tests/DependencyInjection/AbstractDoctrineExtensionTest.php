@@ -102,9 +102,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     public function testDbalLoadFromXmlSingleConnections(): void
     {
         $container = $this->loadContainer('dbal_service_single_connection');
-
-        // doctrine.dbal.mysql_connection
-        $config = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+        $config    = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
         $this->assertEquals('mysql_s3cr3t', $config['password']);
         $this->assertEquals('mysql_user', $config['user']);
@@ -113,12 +111,49 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('5.6.20', $config['serverVersion']);
     }
 
+    public function testDbalLoadUrlOverride(): void
+    {
+        $container = $this->loadContainer('dbal_allow_url_override');
+        $config    = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+
+        $this->assertSame('mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8', $config['url']);
+
+        $expectedOverrides = [
+            'dbname' => 'main_test',
+            'user' => 'tester',
+            'password' => 'wordpass',
+            'host' => 'localhost',
+            'port' => 4321,
+        ];
+
+        $this->assertEquals($expectedOverrides, array_intersect_key($config, $expectedOverrides));
+        $this->assertSame($expectedOverrides, $config['connection_override_options']);
+        $this->assertFalse(isset($config['override_url']));
+    }
+
+    public function testDbalLoadPartialUrlOverrideSetsDefaults(): void
+    {
+        $container = $this->loadContainer('dbal_allow_partial_url_override');
+        $config    = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+
+        $expectedDefaults = [
+            'host' => 'localhost',
+            'user' => 'root',
+            'password' => null,
+            'port' => null,
+        ];
+
+        $this->assertEquals($expectedDefaults, array_intersect_key($config, $expectedDefaults));
+        $this->assertSame('mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8', $config['url']);
+        $this->assertCount(1, $config['connection_override_options']);
+        $this->assertSame('main_test', $config['connection_override_options']['dbname']);
+        $this->assertFalse(isset($config['override_url']));
+    }
+
     public function testDbalLoadSingleMasterSlaveConnection(): void
     {
         $container = $this->loadContainer('dbal_service_single_master_slave_connection');
-
-        // doctrine.dbal.mysql_connection
-        $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+        $param     = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
         $this->assertEquals(
             class_exists(PrimaryReadReplicaConnection::class) ?
@@ -135,6 +170,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
+                'connection_override_options' => [],
             ],
             $param['primary'] ?? $param['master'] // TODO: Remove 'master' support here when we require dbal >= 2.11
         );
@@ -146,6 +182,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'replica_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld_replica.sock',
+                'override_url' => false,
             ],
             $param['replica']['replica1']
         );
@@ -155,9 +192,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     public function testDbalLoadPoolShardingConnection(): void
     {
         $container = $this->loadContainer('dbal_service_pool_sharding_connection');
-
-        // doctrine.dbal.mysql_connection
-        $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+        $param     = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
         $this->assertEquals('Doctrine\\DBAL\\Sharding\\PoolingShardConnection', $param['wrapperClass']);
         $this->assertEquals(new Reference('foo.shard_choser'), $param['shardChoser']);
@@ -169,6 +204,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
+                'connection_override_options' => [],
             ],
             $param['global']
         );
@@ -181,6 +217,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld_shard.sock',
                 'id' => 1,
+                'override_url' => false,
             ],
             $param['shards'][0]
         );
@@ -223,6 +260,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
+                'connection_override_options' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -262,6 +300,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
+                'connection_override_options' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -302,6 +341,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'sqlite_db',
                 'memory' => true,
                 'defaultTableOptions' => [],
+                'connection_override_options' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),

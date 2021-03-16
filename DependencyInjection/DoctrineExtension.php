@@ -262,7 +262,28 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     protected function getConnectionOptions($connection)
     {
-        $options = $connection;
+        $options = ['connection_override_options' => []] + $connection;
+
+        $connectionDefaults = [
+            'host' => 'localhost',
+            'port' => null,
+            'user' => 'root',
+            'password' => null,
+        ];
+
+        if ($options['override_url']) {
+            $options['connection_override_options'] = array_intersect_key($options, ['dbname' => null] + $connectionDefaults);
+        }
+
+        unset($options['override_url']);
+
+        $options += $connectionDefaults;
+
+        foreach (['shards', 'replicas', 'slaves'] as $connectionKey) {
+            foreach (array_keys($options[$connectionKey]) as $name) {
+                $options[$connectionKey][$name] += $connectionDefaults;
+            }
+        }
 
         if (isset($options['platform_service'])) {
             $options['platform'] = new Reference($options['platform_service']);

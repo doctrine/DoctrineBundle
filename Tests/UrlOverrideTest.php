@@ -1,0 +1,73 @@
+<?php
+
+namespace Doctrine\Bundle\DoctrineBundle\Tests;
+
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKernel;
+
+class UrlOverrideTest extends TestCase
+{
+    /**
+     * @dataProvider connectionDataProvider
+     */
+    public function testConnectionConfiguration(array $config, array $expectedParams): void
+    {
+        $kernel = new DbalTestKernel($config);
+        $kernel->boot();
+
+        $this->assertEquals(
+            $expectedParams,
+            array_intersect_key(
+                $kernel->getContainer()->get('doctrine.dbal.default_connection')->getParams(),
+                $expectedParams
+            )
+        );
+    }
+
+    public function connectionDataProvider(): array
+    {
+        return [
+            'override some' => [
+                [
+                    'override_url' => true,
+                    'url' => 'mysql://database/main',
+                    'password' => 'wordPass',
+                    'host' => '127.0.0.1',
+                ],
+                [
+                    'user' => 'root',
+                    'password' => 'wordPass',
+                    'host' => '127.0.0.1',
+                    'port' => null,
+                    'dbname' => 'main',
+                ],
+            ],
+            'override with same value as in URL' => [
+                [
+                    'override_url' => true,
+                    'url' => 'mysql://someone@database/main',
+                    'user' => 'someone',
+                ],
+                [
+                    'user' => 'someone',
+                    'password' => null,
+                    'host' => 'database',
+                    'port' => null,
+                    'dbname' => 'main',
+                ],
+            ],
+            'nothing to override' => [
+                [
+                    'override_url' => true,
+                    'url' => 'mysql://database/main',
+                ],
+                [
+                    'user' => 'root',
+                    'password' => null,
+                    'host' => 'database',
+                    'port' => null,
+                    'dbname' => 'main',
+                ],
+            ],
+        ];
+    }
+}
