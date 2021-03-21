@@ -56,4 +56,12 @@ class MappingDriver implements MappingDriverInterface
         $metadata->setCustomGeneratorDefinition(['instance' => $idGenerator] + $metadata->customGeneratorDefinition);
         $metadata->setIdGeneratorType(ClassMetadataInfo::GENERATOR_TYPE_NONE);
     }
+
+    /**
+     * Returns the inner driver
+     */
+    public function getDriver(): MappingDriverInterface
+    {
+        return $this->driver;
+    }
 }
