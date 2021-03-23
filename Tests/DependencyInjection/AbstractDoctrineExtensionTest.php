@@ -1204,6 +1204,21 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setRepositoryFactory', ['repository_factory']);
     }
 
+    public function testDisableSchemaValidation(): void
+    {
+        $container           = $this->loadContainer('dbal_collect_schema_errors_enable');
+        $collectorDefinition = $container->getDefinition('data_collector.doctrine');
+        $this->assertTrue($collectorDefinition->getArguments()[1]);
+
+        $container           = $this->loadContainer('dbal_collect_schema_errors_disable');
+        $collectorDefinition = $container->getDefinition('data_collector.doctrine');
+        $this->assertFalse($collectorDefinition->getArguments()[1]);
+
+        $container           = $this->loadContainer('dbal_collect_schema_errors_disable_no_profiling');
+        $collectorDefinition = $container->getDefinition('data_collector.doctrine');
+        $this->assertFalse($collectorDefinition->getArguments()[1]);
+    }
+
     private function loadContainer(
         string $fixture,
         array $bundles = ['YamlBundle'],
