@@ -1,0 +1,8 @@
+doctrine:
+    dbal:
+        default_connection: mysql
+        connections:
+            profile_without_schema_validator:
+                logging: false
+                profiling: true
+                profiling_collect_schema_errors: false

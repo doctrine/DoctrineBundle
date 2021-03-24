@@ -156,6 +156,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         unset($connection['logging']);
 
+        $dataCollectorDefinition = $container->getDefinition('data_collector.doctrine');
+        $dataCollectorDefinition->replaceArgument(1, $connection['profiling_collect_schema_errors']);
+
         if ($connection['profiling']) {
             $profilingAbstractId = $connection['profiling_collect_backtrace'] ?
                 'doctrine.dbal.logger.backtrace' :
@@ -164,9 +167,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $profilingLoggerId = $profilingAbstractId . '.' . $name;
             $container->setDefinition($profilingLoggerId, new ChildDefinition($profilingAbstractId));
             $profilingLogger = new Reference($profilingLoggerId);
-            $container->getDefinition('data_collector.doctrine')
-                ->addMethodCall('addLogger', [$name, $profilingLogger])
-                ->replaceArgument(1, $connection['profiling_collect_schema_errors']);
+            $dataCollectorDefinition->addMethodCall('addLogger', [$name, $profilingLogger]);
 
             if ($logger !== null) {
                 $chainLogger = $container->register(
