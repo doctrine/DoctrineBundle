@@ -387,6 +387,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'profiling' => true,
                 'mapping_types' => true,
                 'platform_service' => true,
+                'shardManagerClass' => true,
             ];
             foreach ($options as $key => $value) {
                 if (isset($nonRewrittenKeys[$key])) {

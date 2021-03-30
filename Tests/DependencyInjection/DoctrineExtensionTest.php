@@ -7,6 +7,8 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
+use Doctrine\DBAL\Sharding\PoolingShardManager;
+use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use LogicException;
@@ -975,8 +977,9 @@ class DoctrineExtensionTest extends TestCase
 
     public function testShardManager(): void
     {
-        $container = $this->getContainer();
-        $extension = new DoctrineExtension();
+        $container    = $this->getContainer();
+        $extension    = new DoctrineExtension();
+        $managerClass = SQLAzureShardManager::class;
 
         $config = BundleConfigurationBuilder::createBuilder()
              ->addConnection([
@@ -987,6 +990,12 @@ class DoctrineExtensionTest extends TestCase
                          ],
                      ],
                      'bar' => [],
+                     'baz' => [
+                         'shards' => [
+                             'test' => ['id' => 1],
+                         ],
+                         'shard_manager_class' => $managerClass,
+                     ],
                  ],
              ])
             ->build();
@@ -995,6 +1004,13 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertTrue($container->hasDefinition('doctrine.dbal.foo_shard_manager'));
         $this->assertFalse($container->hasDefinition('doctrine.dbal.bar_shard_manager'));
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.baz_shard_manager'));
+
+        $fooManagerDef = $container->getDefinition('doctrine.dbal.foo_shard_manager');
+        $bazManagerDef = $container->getDefinition('doctrine.dbal.baz_shard_manager');
+
+        $this->assertEquals(PoolingShardManager::class, $fooManagerDef->getClass());
+        $this->assertEquals($managerClass, $bazManagerDef->getClass());
     }
 
     private function getContainer($bundles = 'YamlBundle', $vendor = null): ContainerBuilder
