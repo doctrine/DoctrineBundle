@@ -1,5 +1,5 @@
 
-name: "Coding Standards"
+name: "Static Analysis"
 
 on:
   pull_request:
@@ -10,17 +10,17 @@ on:
       - "*.x"
 
 jobs:
-  coding-standards:
-    name: "Coding Standards"
+  static-analysis-psalm:
+    name: "Static Analysis with Psalm"
     runs-on: "ubuntu-20.04"
 
     strategy:
       matrix:
         php-version:
-          - "7.4"
+          - "7.1"
 
     steps:
-      - name: "Checkout"
+      - name: "Checkout code"
         uses: "actions/checkout@v2"
 
       - name: "Install PHP"
@@ -28,14 +28,12 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: "cs2pr"
+
+      - name: "Enforce using stable dependencies"
+        run: "composer config minimum-stability stable"
 
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v1"
-        with:
-          dependency-versions: "highest"
-          composer-options: "--prefer-stable"
 
-      # https://github.com/doctrine/.github/issues/3
-      - name: "Run PHP_CodeSniffer"
-        run: "vendor/bin/phpcs -q --no-colors --report=checkstyle | cs2pr"
+      - name: "Run a static analysis with vimeo/psalm"
+        run: "vendor/bin/psalm --show-info=false --stats --output-format=github --threads=$(nproc)"
