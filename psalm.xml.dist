@@ -9,6 +9,8 @@
     <projectFiles>
         <ignoreFiles>
             <directory name="vendor"/>
+            <!-- Deprecated command, not worth fixing -->
+            <file name="Command/ImportMappingDoctrineCommand.php"/>
         </ignoreFiles>
         <directory name="CacheWarmer"/>
         <directory name="Command"/>
