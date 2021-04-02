@@ -978,6 +978,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     private function loadMessengerServices(ContainerBuilder $container): void
     {
         // If the Messenger component is installed and the doctrine transaction middleware is available, wire it:
+        /** @psalm-suppress UndefinedClass Optional dependency */
         if (! interface_exists(MessageBusInterface::class) || ! class_exists(DoctrineTransactionMiddleware::class)) {
             return;
         }
