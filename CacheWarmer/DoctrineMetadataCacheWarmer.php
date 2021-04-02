@@ -6,8 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\CacheWarmer\AbstractPhpFileCacheWarmer;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Cache\DoctrineProvider;
 
-use function count;
 use function is_file;
 use function method_exists;
 
@@ -52,7 +52,7 @@ class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
 
         if (method_exists($metadataFactory, 'setCache')) {
             $metadataFactory->setCache($arrayAdapter);
-        } else {
+        } elseif ($metadataFactory instanceof AbstractClassMetadataFactory) {
             // BC with doctrine/persistence < 2.2
             $metadataFactory->setCacheDriver(new DoctrineProvider($arrayAdapter));
         }
