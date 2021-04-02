@@ -16,6 +16,9 @@ use function class_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 
+/**
+ * @psalm-import-type Params from \Doctrine\DBAL\DriverManager
+ */
 class DropDatabaseDoctrineTest extends TestCase
 {
     /**
@@ -136,6 +139,8 @@ class DropDatabaseDoctrineTest extends TestCase
 
     /**
      * @param list<mixed> $params Connection parameters
+     *
+     * @psalm-param Params $params
      */
     private function getMockContainer(string $connectionName, array $params): MockObject
     {

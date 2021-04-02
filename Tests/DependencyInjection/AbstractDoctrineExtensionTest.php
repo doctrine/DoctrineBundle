@@ -39,6 +39,9 @@ use function uniqid;
 
 use const DIRECTORY_SEPARATOR;
 
+/**
+ * @psalm-import-type Params from \Doctrine\DBAL\DriverManager
+ */
 abstract class AbstractDoctrineExtensionTest extends TestCase
 {
     abstract protected function loadFromFile(ContainerBuilder $container, string $file): void;
@@ -1302,6 +1305,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @param list<mixed> $params
+     *
+     * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallAt(
         int $pos,
@@ -1329,6 +1334,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
      *
      * @param list<mixed> $params
+     *
+     * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallOnce(
         Definition $definition,
@@ -1361,6 +1368,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @param list<mixed> $params
+     *
+     * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallCount(
         Definition $definition,
@@ -1393,6 +1402,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * Assertion for the DI Container, check if the given definition does not contain a method call with the given parameters.
      *
      * @param list<mixed> $params
+     *
+     * @psalm-param Params $params
      */
     private function assertDICDefinitionNoMethodCall(
         Definition $definition,
