@@ -87,7 +87,7 @@ EOT
         if (isset($params['shards'])) {
             $shards = $params['shards'];
             // Default select global
-            $params = array_merge($params, $params['global']);
+            $params = array_merge($params, $params['global'] ?? []);
             if ($input->getOption('shard')) {
                 foreach ($shards as $shard) {
                     if ($shard['id'] === (int) $input->getOption('shard')) {
