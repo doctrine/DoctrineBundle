@@ -3,10 +3,11 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
+use Doctrine\Common\EventManager;
+use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver;
-use Doctrine\DBAL\Driver\API\ExceptionConverter;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
@@ -157,11 +158,6 @@ class FakeDriver implements Driver
     public function getDatabase(Connection $conn): string
     {
         return 'fake_db';
-    }
-
-    public function getExceptionConverter(): ExceptionConverter
-    {
-        throw new Exception('not implemented');
     }
 }
 
