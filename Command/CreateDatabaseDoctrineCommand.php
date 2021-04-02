@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Sharding\PoolingShardConnection;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -104,7 +105,12 @@ EOT
         unset($params['dbname'], $params['path'], $params['url']);
 
         $tmpConnection = DriverManager::getConnection($params);
-        $tmpConnection->connect($input->getOption('shard'));
+        if ($tmpConnection instanceof PoolingShardConnection) {
+            $tmpConnection->connect($input->getOption('shard'));
+        } else {
+            $tmpConnection->connect();
+        }
+
         $shouldNotCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
 
         // Only quote if we don't have a path

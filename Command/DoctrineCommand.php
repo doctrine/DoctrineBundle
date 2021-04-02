@@ -65,11 +65,12 @@ abstract class DoctrineCommand extends Command
                 throw new LogicException(sprintf('Sharding is supported only in EntityManager of instance "%s".', EntityManagerInterface::class));
             }
 
-            if (! $manager->getConnection() instanceof PoolingShardConnection) {
+            $connection = $manager->getConnection();
+            if (! $connection instanceof PoolingShardConnection) {
                 throw new LogicException(sprintf("Connection of EntityManager '%s' must implement shards configuration.", $name));
             }
 
-            $manager->getConnection()->connect($shardId);
+            $connection->connect($shardId);
         }
 
         return $manager;
