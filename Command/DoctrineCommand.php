@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Command;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Sharding\PoolingShardConnection;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\EntityGenerator;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
@@ -60,6 +61,10 @@ abstract class DoctrineCommand extends Command
         $manager = $this->getDoctrine()->getManager($name);
 
         if ($shardId) {
+            if (! $manager instanceof EntityManagerInterface) {
+                throw new LogicException(sprintf('Sharding is supported only in EntityManager of instance "%s".', EntityManagerInterface::class));
+            }
+
             if (! $manager->getConnection() instanceof PoolingShardConnection) {
                 throw new LogicException(sprintf("Connection of EntityManager '%s' must implement shards configuration.", $name));
             }
