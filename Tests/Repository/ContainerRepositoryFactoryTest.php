@@ -15,6 +15,8 @@ use Psr\Container\ContainerInterface;
 use RuntimeException;
 use stdClass;
 
+use function interface_exists;
+
 class ContainerRepositoryFactoryTest extends TestCase
 {
     public static function setUpBeforeClass(): void
@@ -125,6 +127,9 @@ EXCEPTION
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
+    /**
+     * @param array<string, object> $services
+     */
     private function createContainer(array $services): MockObject
     {
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
@@ -142,6 +147,9 @@ EXCEPTION
         return $container;
     }
 
+    /**
+     * @param array<class-string, ?string> $entityRepositoryClasses
+     */
     private function createEntityManager(array $entityRepositoryClasses): MockObject
     {
         $classMetadatas = [];
@@ -181,11 +189,17 @@ class NonDeprecatedRepository implements ObjectRepository
         return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function findAll(): array
     {
         return [];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
     {
         return [];

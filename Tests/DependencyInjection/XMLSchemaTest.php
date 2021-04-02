@@ -6,9 +6,14 @@ use DirectoryIterator;
 use DOMDocument;
 use PHPUnit\Framework\TestCase;
 
+use function substr;
+
 class XMLSchemaTest extends TestCase
 {
-    public static function dataValidateSchemaFiles()
+    /**
+     * @return list<array{0: string}>
+     */
+    public static function dataValidateSchemaFiles(): array
     {
         $schemaFiles = [];
         $di          = new DirectoryIterator(__DIR__ . '/Fixtures/config/xml');
@@ -26,7 +31,7 @@ class XMLSchemaTest extends TestCase
     /**
      * @dataProvider dataValidateSchemaFiles
      */
-    public function testValidateSchema($file): void
+    public function testValidateSchema(string $file): void
     {
         $found = false;
         $dom   = new DOMDocument('1.0', 'UTF-8');

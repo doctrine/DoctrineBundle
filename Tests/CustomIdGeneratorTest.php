@@ -14,6 +14,11 @@ use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function assert;
+use function interface_exists;
+use function sys_get_temp_dir;
+use function uniqid;
+
 class CustomIdGeneratorTest extends TestCase
 {
     public static function setUpBeforeClass(): void

@@ -13,8 +13,23 @@ use Symfony\Component\DependencyInjection\Exception\LogicException;
 
 use function array_key_exists;
 use function assert;
+use function class_exists;
+use function constant;
 use function in_array;
 use function is_array;
+use function is_bool;
+use function is_int;
+use function is_string;
+use function key;
+use function method_exists;
+use function reset;
+use function strlen;
+use function strpos;
+use function strtoupper;
+use function substr;
+use function trigger_error;
+
+use const E_USER_DEPRECATED;
 
 /**
  * This class contains the configuration information for the bundle

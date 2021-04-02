@@ -21,6 +21,9 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 use function assert;
+use function class_exists;
+use function clearstatcache;
+use function spl_autoload_unregister;
 
 class DoctrineBundle extends Bundle
 {

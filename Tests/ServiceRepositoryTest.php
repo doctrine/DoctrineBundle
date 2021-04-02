@@ -19,6 +19,10 @@ use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function interface_exists;
+use function sys_get_temp_dir;
+use function uniqid;
+
 class ServiceRepositoryTest extends TestCase
 {
     public static function setUpBeforeClass(): void

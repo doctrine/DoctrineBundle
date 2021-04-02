@@ -13,6 +13,11 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
+use function is_a;
+use function method_exists;
+use function sprintf;
+use function substr;
+
 /**
  * Class for Symfony bundles to register entity listeners
  */
@@ -32,7 +37,7 @@ class EntityListenerPass implements CompilerPassInterface
         foreach ($resolvers as $reference) {
             $id = $reference->__toString();
             foreach ($container->getDefinition($id)->getTag('doctrine.orm.entity_listener') as $attributes) {
-                $name          = isset($attributes['entity_manager']) ? $attributes['entity_manager'] : $container->getParameter('doctrine.default_entity_manager');
+                $name          = $attributes['entity_manager'] ?? $container->getParameter('doctrine.default_entity_manager');
                 $entityManager = sprintf('doctrine.orm.%s_entity_manager', $name);
 
                 if (! $container->hasDefinition($entityManager)) {
@@ -89,6 +94,9 @@ class EntityListenerPass implements CompilerPassInterface
         }
     }
 
+    /**
+     * @param array{entity: class-string, event: string} $attributes
+     */
     private function attachToListener(ContainerBuilder $container, string $name, string $class, array $attributes): void
     {
         $listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $name);

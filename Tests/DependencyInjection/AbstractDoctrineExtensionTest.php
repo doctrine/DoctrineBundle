@@ -11,6 +11,7 @@ use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManagerInterface;
+use Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
@@ -24,7 +25,19 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 
+use function array_filter;
+use function array_intersect_key;
+use function array_keys;
+use function array_values;
 use function assert;
+use function class_exists;
+use function interface_exists;
+use function method_exists;
+use function sprintf;
+use function sys_get_temp_dir;
+use function uniqid;
+
+use const DIRECTORY_SEPARATOR;
 
 abstract class AbstractDoctrineExtensionTest extends TestCase
 {
@@ -918,7 +931,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertNull($connConfig = $getConfiguration('connection3')->getSchemaAssetsFilter());
     }
 
-    public static function dataWellKnownSchemaFilterServices()
+    public static function dataWellKnownSchemaFilterServices(): Generator
     {
         yield ['cache', 'cache_items'];
         yield ['lock', 'lock_keys'];
@@ -958,7 +971,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertTrue($filter('anything_else'));
     }
 
-    public static function dataWellKnownSchemaOverriddenTablesFilterServices()
+    public static function dataWellKnownSchemaOverriddenTablesFilterServices(): Generator
     {
         yield ['cache', 'app_cache'];
         yield ['lock', 'app_locks'];
@@ -1219,10 +1232,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertFalse($collectorDefinition->getArguments()[1]);
     }
 
+    /**
+     * @param list<string> $bundles
+     */
     private function loadContainer(
         string $fixture,
         array $bundles = ['YamlBundle'],
-        CompilerPassInterface $compilerPass = null
+        ?CompilerPassInterface $compilerPass = null
     ): ContainerBuilder {
         $container = $this->getContainer($bundles);
         $container->registerExtension(new DoctrineExtension());
@@ -1238,6 +1254,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         return $container;
     }
 
+    /**
+     * @param list<string> $bundles
+     */
     private function getContainer(array $bundles): ContainerBuilder
     {
         $map = [];
@@ -1273,16 +1292,22 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals($expectedClass, $definition->getClass(), 'Expected Class of the DIC Container Service Definition is wrong.');
     }
 
+    /**
+     * @param list<mixed> $args
+     */
     private function assertDICConstructorArguments(Definition $definition, array $args): void
     {
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '" . $definition->getClass() . "' don't match.");
     }
 
+    /**
+     * @param list<mixed> $params
+     */
     private function assertDICDefinitionMethodCallAt(
         int $pos,
         Definition $definition,
         string $methodName,
-        array $params = null
+        ?array $params = null
     ): void {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
@@ -1302,11 +1327,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
+     *
+     * @param list<mixed> $params
      */
     private function assertDICDefinitionMethodCallOnce(
         Definition $definition,
         string $methodName,
-        array $params = null
+        ?array $params = null
     ): void {
         $calls  = $definition->getMethodCalls();
         $called = false;
@@ -1332,6 +1359,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->fail("Method '" . $methodName . "' is expected to be called once, definition does not contain a call though.");
     }
 
+    /**
+     * @param list<mixed> $params
+     */
     private function assertDICDefinitionMethodCallCount(
         Definition $definition,
         string $methodName,
@@ -1361,11 +1391,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * Assertion for the DI Container, check if the given definition does not contain a method call with the given parameters.
+     *
+     * @param list<mixed> $params
      */
     private function assertDICDefinitionNoMethodCall(
         Definition $definition,
         string $methodName,
-        array $params = null
+        ?array $params = null
     ): void {
         $calls = $definition->getMethodCalls();
         foreach ($calls as $call) {
@@ -1399,7 +1431,7 @@ class DummySchemaAssetsFilter
         $this->tableToIgnore = $tableToIgnore;
     }
 
-    public function __invoke($assetName): bool
+    public function __invoke(string $assetName): bool
     {
         if ($assetName instanceof AbstractAsset) {
             $assetName = $assetName->getName();

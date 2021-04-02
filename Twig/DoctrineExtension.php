@@ -9,6 +9,23 @@ use Symfony\Component\VarDumper\Cloner\Data;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
+use function addslashes;
+use function array_key_exists;
+use function bin2hex;
+use function implode;
+use function is_array;
+use function is_bool;
+use function is_object;
+use function is_string;
+use function preg_match;
+use function preg_replace_callback;
+use function sprintf;
+use function strtoupper;
+use function substr;
+use function trigger_error;
+
+use const E_USER_DEPRECATED;
+
 /**
  * This class contains the needed functions in order to do the query highlighting
  */
@@ -83,8 +100,8 @@ class DoctrineExtension extends AbstractExtension
     /**
      * Return a query with the parameters replaced
      *
-     * @param string     $query
-     * @param array|Data $parameters
+     * @param string       $query
+     * @param mixed[]|Data $parameters
      *
      * @return string
      */

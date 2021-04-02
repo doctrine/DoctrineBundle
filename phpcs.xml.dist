@@ -13,16 +13,11 @@
     <exclude-pattern>vendor/*</exclude-pattern>
 
     <rule ref="Doctrine">
-        <exclude name="SlevomatCodingStandard.Classes.ClassConstantVisibility"/>
-        <exclude name="SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly"/>
-        <exclude name="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly.ReferenceViaFallbackGlobalName"/>
         <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes"/>
-        <exclude name="SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue"/>
         <exclude name="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceEqualOperator.RequiredNullCoalesceEqualOperator"/> <!-- PHP 7.4 required-->
         <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint"/> <!-- PHP 7.4 required-->
         <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingNativeTypeHint"/> <!-- we can do it in doctrine-bundle 3.0-->
         <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint"/> <!-- we can do it in doctrine-bundle 3.0 -->
-        <exclude name="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceOperator.NullCoalesceOperatorNotUsed"/>
         <exclude name="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming.SuperfluousSuffix"/>
         <exclude name="SlevomatCodingStandard.Classes.SuperfluousAbstractClassNaming.SuperfluousPrefix"/>
     </rule>
@@ -35,23 +30,5 @@
     </rule>
     <rule ref="SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedProperty">
         <exclude-pattern>Tests/DependencyInjection/Fixtures/*</exclude-pattern>
-    </rule>
-    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingTraversableTypeHintSpecification">
-        <exclude-pattern>Tests/*</exclude-pattern>
-    </rule>
-    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingTraversableTypeHintSpecification">
-        <exclude-pattern>DependencyInjection/*</exclude-pattern>
-        <exclude-pattern>Twig/DoctrineExtension.php</exclude-pattern>
-        <exclude-pattern>Tests/*</exclude-pattern>
-    </rule>
-    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingAnyTypeHint">
-        <exclude-pattern>DependencyInjection/*</exclude-pattern>
-        <exclude-pattern>Twig/DoctrineExtension.php</exclude-pattern>
-        <exclude-pattern>Tests/*</exclude-pattern>
-    </rule>
-    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingAnyTypeHint">
-        <exclude-pattern>DependencyInjection/*</exclude-pattern>
-        <exclude-pattern>Twig/DoctrineExtension.php</exclude-pattern>
-        <exclude-pattern>Tests/*</exclude-pattern>
     </rule>
 </ruleset>

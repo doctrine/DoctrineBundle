@@ -10,6 +10,8 @@ use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 
+use function interface_exists;
+
 class ContainerEntityListenerResolverTest extends TestCase
 {
     /** @var ContainerEntityListenerResolver */

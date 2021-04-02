@@ -11,9 +11,16 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
+use function array_merge;
+use function class_exists;
+use function sprintf;
+use function sys_get_temp_dir;
+
 class DropDatabaseDoctrineTest extends TestCase
 {
     /**
+     * @param array<string, bool> $options
+     *
      * @dataProvider provideForceOption
      */
     public function testExecute(array $options): void
@@ -49,6 +56,8 @@ class DropDatabaseDoctrineTest extends TestCase
     }
 
     /**
+     * @param array<string, bool> $options
+     *
      * @dataProvider provideIncompatibleDriverOptions
      */
     public function testItThrowsWhenUsingIfExistsWithAnIncompatibleDriver(array $options): void
@@ -126,9 +135,9 @@ class DropDatabaseDoctrineTest extends TestCase
     }
 
     /**
-     * @param array|null $params Connection parameters
+     * @param list<mixed> $params Connection parameters
      */
-    private function getMockContainer(string $connectionName, array $params = null): MockObject
+    private function getMockContainer(string $connectionName, array $params): MockObject
     {
         // Mock the container and everything you'll need here
         $mockDoctrine = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')

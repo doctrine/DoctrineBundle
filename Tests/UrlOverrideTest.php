@@ -4,9 +4,14 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKernel;
 
+use function array_intersect_key;
+
 class UrlOverrideTest extends TestCase
 {
     /**
+     * @param array<string, (bool|string|null)> $config
+     * @param array<string, (bool|string|null)> $expectedParams
+     *
      * @dataProvider connectionDataProvider
      */
     public function testConnectionConfiguration(array $config, array $expectedParams): void
@@ -23,6 +28,9 @@ class UrlOverrideTest extends TestCase
         );
     }
 
+    /**
+     * @return array<string, list<array<string, (bool|string|null)>>>
+     */
     public function connectionDataProvider(): array
     {
         return [

@@ -6,6 +6,8 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 
+use function sprintf;
+
 /**
  * Optional EntityRepository base class with a simplified constructor (for autowiring).
  *

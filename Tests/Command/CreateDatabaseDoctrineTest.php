@@ -9,6 +9,10 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
+use function array_merge;
+use function sys_get_temp_dir;
+use function unlink;
+
 class CreateDatabaseDoctrineTest extends TestCase
 {
     public function tearDown(): void
@@ -107,7 +111,7 @@ class CreateDatabaseDoctrineTest extends TestCase
     /**
      * @param mixed[]|null $params Connection parameters
      */
-    private function getMockContainer(string $connectionName, array $params = null): MockObject
+    private function getMockContainer(string $connectionName, ?array $params = null): MockObject
     {
         // Mock the container and everything you'll need here
         $mockDoctrine = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')

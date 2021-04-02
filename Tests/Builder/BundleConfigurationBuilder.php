@@ -4,15 +4,15 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Builder;
 
 class BundleConfigurationBuilder
 {
-    /** @var mixed[] */
+    /** @var array<string, mixed> */
     private $configuration;
 
-    public static function createBuilder()
+    public static function createBuilder(): self
     {
         return new self();
     }
 
-    public static function createBuilderWithBaseValues()
+    public static function createBuilderWithBaseValues(): self
     {
         $builder = new self();
         $builder->addBaseConnection();
@@ -60,27 +60,39 @@ class BundleConfigurationBuilder
         return $this;
     }
 
-    public function addConnection($config): self
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function addConnection(array $config): self
     {
         $this->configuration['dbal'] = $config;
 
         return $this;
     }
 
-    public function addEntityManager($config): self
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function addEntityManager(array $config): self
     {
         $this->configuration['orm'] = $config;
 
         return $this;
     }
 
-    public function addSecondLevelCache($config, $manager = 'default'): self
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function addSecondLevelCache(array $config, string $manager = 'default'): self
     {
         $this->configuration['orm']['entity_managers'][$manager]['second_level_cache'] = $config;
 
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function build(): array
     {
         return $this->configuration;

@@ -25,6 +25,12 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+use function array_values;
+use function class_exists;
+use function interface_exists;
+use function sprintf;
+use function sys_get_temp_dir;
+
 class DoctrineExtensionTest extends TestCase
 {
     /**
@@ -197,6 +203,9 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
     }
 
+    /**
+     * @return mixed[][][][]
+     */
     public function getAutomappingConfigurations(): array
     {
         return [
@@ -233,6 +242,8 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /**
+     * @param mixed[][][][] $entityManagers
+     *
      * @dataProvider getAutomappingConfigurations
      */
     public function testAutomapping(array $entityManagers): void
@@ -654,7 +665,7 @@ class DoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->getContainer('YamlBundle');
+        $container = $this->getContainer(['YamlBundle']);
         $extension = new DoctrineExtension();
 
         $config = BundleConfigurationBuilder::createBuilder()
@@ -676,7 +687,7 @@ class DoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->getContainer('XmlBundle');
+        $container = $this->getContainer(['XmlBundle']);
         $extension = new DoctrineExtension();
 
         $config = BundleConfigurationBuilder::createBuilder()
@@ -707,7 +718,7 @@ class DoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->getContainer('AnnotationsBundle');
+        $container = $this->getContainer(['AnnotationsBundle']);
         $extension = new DoctrineExtension();
 
         $config = BundleConfigurationBuilder::createBuilder()
@@ -799,7 +810,7 @@ class DoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->getContainer('AnnotationsBundle', 'Vendor');
+        $container = $this->getContainer(['AnnotationsBundle'], 'Vendor');
         $extension = new DoctrineExtension();
 
         $config = BundleConfigurationBuilder::createBuilder()
@@ -875,7 +886,7 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /**
-     * @param array|string $cacheConfig
+     * @param array<string, array<string, string|array{type: ?string, pool?: string}>> $cacheConfig
      *
      * @dataProvider cacheConfigurationProvider
      */
@@ -901,6 +912,8 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /**
+     * @param array<string, array<string, string|array{type: ?string, pool?: string}>> $cacheConfig
+     *
      * @dataProvider legacyCacheConfigurationProvider
      * @group legacy
      */
@@ -909,6 +922,9 @@ class DoctrineExtensionTest extends TestCase
         $this->testCacheConfiguration($expectedAliasName, $expectedAliasTarget, $cacheName, $cacheConfig);
     }
 
+    /**
+     * @return array<string, array<string, string|array{type: ?string, pool?: string}>>
+     */
     public static function legacyCacheConfigurationProvider(): array
     {
         return [
@@ -933,6 +949,9 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<string, array<string, string|array{type: ?string, pool?: string}>>
+     */
     public static function cacheConfigurationProvider(): array
     {
         return [
@@ -1013,7 +1032,10 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals($managerClass, $bazManagerDef->getClass());
     }
 
-    private function getContainer($bundles = 'YamlBundle', $vendor = null): ContainerBuilder
+    /**
+     * @param list<string> $bundles
+     */
+    private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
     {
         $bundles = (array) $bundles;
 
@@ -1040,12 +1062,18 @@ class DoctrineExtensionTest extends TestCase
         return $container;
     }
 
+    /**
+     * @param list<mixed> $args
+     */
     private function assertDICConstructorArguments(Definition $definition, array $args): void
     {
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '" . $definition->getClass() . "' don't match.");
     }
 
-    private function assertDICDefinitionMethodCallAt(int $pos, Definition $definition, string $methodName, array $params = null): void
+    /**
+     * @param list<mixed> $params
+     */
+    private function assertDICDefinitionMethodCallAt(int $pos, Definition $definition, string $methodName, ?array $params = null): void
     {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
@@ -1063,8 +1091,10 @@ class DoctrineExtensionTest extends TestCase
 
     /**
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
+     *
+     * @param list<mixed> $params
      */
-    private function assertDICDefinitionMethodCallOnce(Definition $definition, string $methodName, array $params = null): void
+    private function assertDICDefinitionMethodCallOnce(Definition $definition, string $methodName, ?array $params = null): void
     {
         $calls  = $definition->getMethodCalls();
         $called = false;

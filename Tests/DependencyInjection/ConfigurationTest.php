@@ -5,6 +5,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Configuration;
 use PHPUnit\Framework\TestCase;
 
+use function class_exists;
+
 class ConfigurationTest extends TestCase
 {
     /**

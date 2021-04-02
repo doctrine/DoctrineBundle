@@ -6,6 +6,9 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\Dbal\SchemaAssetsFilterManager;
 use PHPUnit\Framework\TestCase;
 
+use function array_filter;
+use function array_values;
+
 class SchemaAssetsFilterManagerTest extends TestCase
 {
     public function testInvoke(): void

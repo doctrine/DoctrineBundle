@@ -11,6 +11,10 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
+use function file_get_contents;
+use function interface_exists;
+use function sys_get_temp_dir;
+
 /**
  * @group legacy
  */
@@ -34,6 +38,9 @@ class ImportMappingDoctrineCommandTest extends TestCase
     protected function setup(): void
     {
         $this->kernel = new class () extends TestKernel {
+            /**
+             * @return iterable<Bundle>
+             */
             public function registerBundles(): iterable
             {
                 yield from parent::registerBundles();

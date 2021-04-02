@@ -9,6 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use RuntimeException;
 
+use function interface_exists;
+
 class DisconnectedMetadataFactoryTest extends TestCase
 {
     public static function setUpBeforeClass(): void

@@ -12,6 +12,9 @@ class TestType extends Type
         return 'test';
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
         return '';

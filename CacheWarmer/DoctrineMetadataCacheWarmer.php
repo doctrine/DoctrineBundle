@@ -7,6 +7,8 @@ use LogicException;
 use Symfony\Bundle\FrameworkBundle\CacheWarmer\AbstractPhpFileCacheWarmer;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
+use function count;
+use function is_file;
 use function method_exists;
 
 class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer

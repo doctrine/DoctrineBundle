@@ -4,6 +4,11 @@ namespace Doctrine\Bundle\DoctrineBundle\Dbal\Logging;
 
 use Doctrine\DBAL\Logging\DebugStack;
 
+use function array_shift;
+use function debug_backtrace;
+
+use const DEBUG_BACKTRACE_IGNORE_ARGS;
+
 final class BacktraceLogger extends DebugStack
 {
     /**

@@ -9,6 +9,9 @@ use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Contracts\Service\ResetInterface;
 
+use function array_keys;
+use function assert;
+
 /**
  * References all Doctrine connections and entity managers in a given Container.
  */

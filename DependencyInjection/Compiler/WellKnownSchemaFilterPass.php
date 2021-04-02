@@ -10,6 +10,8 @@ use Symfony\Component\Lock\Store\PdoStore;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\Connection;
 use Symfony\Component\Messenger\Transport\Doctrine\Connection as LegacyConnection;
 
+use function array_keys;
+
 /**
  * Blacklist tables used by well-known Symfony classes.
  *

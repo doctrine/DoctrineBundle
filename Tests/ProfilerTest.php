@@ -21,6 +21,11 @@ use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\RuntimeLoader\RuntimeLoaderInterface;
 
+use function html_entity_decode;
+use function preg_match;
+use function preg_quote;
+use function str_replace;
+
 class ProfilerTest extends BaseTestCase
 {
     /** @var DebugStack */

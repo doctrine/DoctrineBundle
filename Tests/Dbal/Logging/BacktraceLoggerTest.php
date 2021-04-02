@@ -5,6 +5,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Dbal\Logging;
 use Doctrine\Bundle\DoctrineBundle\Dbal\Logging\BacktraceLogger;
 use PHPUnit\Framework\TestCase;
 
+use function current;
+
 class BacktraceLoggerTest extends TestCase
 {
     public function testBacktraceLogged(): void

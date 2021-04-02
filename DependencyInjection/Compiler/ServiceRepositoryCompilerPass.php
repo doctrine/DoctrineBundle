@@ -7,9 +7,13 @@ use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 
+use function array_combine;
+use function array_keys;
+use function array_map;
+
 final class ServiceRepositoryCompilerPass implements CompilerPassInterface
 {
-    const REPOSITORY_SERVICE_TAG = 'doctrine.repository_service';
+    public const REPOSITORY_SERVICE_TAG = 'doctrine.repository_service';
 
     public function process(ContainerBuilder $container): void
     {

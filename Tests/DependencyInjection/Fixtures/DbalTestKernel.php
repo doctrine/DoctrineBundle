@@ -8,7 +8,12 @@ use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\HttpKernel\Kernel;
+
+use function md5;
+use function mt_rand;
+use function sys_get_temp_dir;
 
 class DbalTestKernel extends Kernel
 {
@@ -18,6 +23,9 @@ class DbalTestKernel extends Kernel
     /** @var string|null */
     private $projectDir;
 
+    /**
+     * @param array<string, mixed> $dbalConfig
+     */
     public function __construct(array $dbalConfig = ['driver' => 'pdo_sqlite'])
     {
         $this->dbalConfig = $dbalConfig;
@@ -25,6 +33,9 @@ class DbalTestKernel extends Kernel
         parent::__construct('test', true);
     }
 
+    /**
+     * @return iterable<Bundle>
+     */
     public function registerBundles(): iterable
     {
         return [

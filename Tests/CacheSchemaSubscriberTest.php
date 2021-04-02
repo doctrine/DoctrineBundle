@@ -13,6 +13,10 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 
+use function class_exists;
+use function interface_exists;
+use function sys_get_temp_dir;
+
 class CacheSchemaSubscriberTest extends TestCase
 {
     public function testSchemaSubscriberWiring(): void

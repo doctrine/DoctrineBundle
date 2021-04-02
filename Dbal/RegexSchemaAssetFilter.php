@@ -4,6 +4,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Dbal;
 
 use Doctrine\DBAL\Schema\AbstractAsset;
 
+use function preg_match;
+
 class RegexSchemaAssetFilter
 {
     /** @var string */

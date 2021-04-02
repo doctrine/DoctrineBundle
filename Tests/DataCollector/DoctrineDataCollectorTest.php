@@ -10,10 +10,12 @@ use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function interface_exists;
+
 class DoctrineDataCollectorTest extends TestCase
 {
-    const FIRST_ENTITY  = 'TestBundle\Test\Entity\Test1';
-    const SECOND_ENTITY = 'TestBundle\Test\Entity\Test2';
+    public const FIRST_ENTITY  = 'TestBundle\Test\Entity\Test1';
+    public const SECOND_ENTITY = 'TestBundle\Test\Entity\Test2';
 
     public function testCollectEntities(): void
     {
@@ -121,6 +123,9 @@ class DoctrineDataCollectorTest extends TestCase
         return $metadata;
     }
 
+    /**
+     * @param array<string, object> $managers
+     */
     private function createCollector(array $managers, bool $shouldValidateSchema = true): DoctrineDataCollector
     {
         $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();

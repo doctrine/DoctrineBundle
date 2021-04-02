@@ -7,6 +7,9 @@ use Doctrine\ORM\Id\AbstractIdGenerator;
 
 class CustomIdGenerator extends AbstractIdGenerator
 {
+    /**
+     * {@inheritdoc}
+     */
     public function generate(EntityManager $em, $entity)
     {
         return 42;

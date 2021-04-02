@@ -12,6 +12,9 @@ use InvalidArgumentException;
 use ProxyManager\Proxy\ProxyInterface;
 use stdClass;
 
+use function assert;
+use function interface_exists;
+
 class RegistryTest extends TestCase
 {
     public function testGetDefaultConnectionName(): void

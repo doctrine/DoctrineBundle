@@ -10,6 +10,15 @@ use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
+use function array_pop;
+use function class_exists;
+use function dirname;
+use function explode;
+use function implode;
+use function sprintf;
+use function str_replace;
+use function strpos;
+
 /**
  * This class provides methods to access Doctrine entity class metadata for a
  * given bundle, namespace or entity class, for generation purposes

@@ -12,6 +12,9 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function sys_get_temp_dir;
+use function uniqid;
+
 class TestCase extends BaseTestCase
 {
     public function createXmlBundleTestContainer(): ContainerBuilder

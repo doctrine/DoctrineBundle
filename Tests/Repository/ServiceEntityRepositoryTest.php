@@ -8,6 +8,8 @@ use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 
+use function interface_exists;
+
 class ServiceEntityRepositoryTest extends TestCase
 {
     public static function setUpBeforeClass(): void

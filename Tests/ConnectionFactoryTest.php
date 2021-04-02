@@ -11,6 +11,11 @@ use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Exception;
+use Throwable;
+
+use function array_intersect_key;
+use function class_exists;
+use function strpos;
 
 class ConnectionFactoryTest extends TestCase
 {
@@ -37,7 +42,7 @@ class ConnectionFactoryTest extends TestCase
 
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->assertTrue(strpos($e->getMessage(), 'can circumvent this by setting') > 0);
 
             throw $e;
@@ -165,6 +170,9 @@ class FakeConnection extends Connection
     /** @var int */
     public static $creationCount = 0;
 
+    /**
+     * {@inheritdoc}
+     */
     public function __construct(array $params, FakeDriver $driver, ?Configuration $config = null, ?EventManager $eventManager = null)
     {
         ++self::$creationCount;

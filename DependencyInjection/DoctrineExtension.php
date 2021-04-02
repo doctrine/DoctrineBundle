@@ -48,8 +48,14 @@ use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFacto
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 
+use function array_intersect_key;
+use function array_keys;
 use function class_exists;
+use function interface_exists;
+use function method_exists;
+use function reset;
 use function sprintf;
+use function str_replace;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -91,8 +97,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *
      *      <doctrine:dbal id="myconn" dbname="sfweb" user="root" />
      *
-     * @param array            $config    An array of configuration settings
-     * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param array<string, mixed> $config    An array of configuration settings
+     * @param ContainerBuilder     $container A ContainerBuilder instance
      */
     protected function dbalLoad(array $config, ContainerBuilder $container)
     {
@@ -142,9 +148,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * Loads a configured DBAL connection.
      *
-     * @param string           $name       The name of the connection
-     * @param array            $connection A dbal connection configuration.
-     * @param ContainerBuilder $container  A ContainerBuilder instance
+     * @param string               $name       The name of the connection
+     * @param array<string, mixed> $connection A dbal connection configuration.
+     * @param ContainerBuilder     $container  A ContainerBuilder instance
      */
     protected function loadDbalConnection($name, array $connection, ContainerBuilder $container)
     {
@@ -261,7 +267,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
         );
     }
 
-    protected function getConnectionOptions($connection)
+    /**
+     * @param mixed[] $connection
+     *
+     * @return mixed[]
+     *
+     * @psalm-return T
+     * @psalm-param T
+     * @template T of array<string, mixed>
+     */
+    protected function getConnectionOptions(array $connection): array
     {
         $options = ['connection_override_options' => []] + $connection;
 
@@ -421,8 +436,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *
      *     <doctrine:orm id="mydm" connection="myconn" />
      *
-     * @param array            $config    An array of configuration settings
-     * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param array<string, mixed> $config    An array of configuration settings
+     * @param ContainerBuilder     $container A ContainerBuilder instance
      */
     protected function ormLoad(array $config, ContainerBuilder $container)
     {
@@ -519,8 +534,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * Loads a configured ORM entity manager.
      *
-     * @param array            $entityManager A configured ORM entity manager.
-     * @param ContainerBuilder $container     A ContainerBuilder instance
+     * @param array<string, mixed> $entityManager A configured ORM entity manager.
+     * @param ContainerBuilder     $container     A ContainerBuilder instance
      */
     protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container)
     {
@@ -672,9 +687,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * 1. Specify a bundle and optionally details where the entity and mapping information reside.
      * 2. Specify an arbitrary mapping location.
      *
-     * @param array            $entityManager A configured ORM entity manager
-     * @param Definition       $ormConfigDef  A Definition instance
-     * @param ContainerBuilder $container     A ContainerBuilder instance
+     * @param array<string, mixed> $entityManager A configured ORM entity manager
+     * @param Definition           $ormConfigDef  A Definition instance
+     * @param ContainerBuilder     $container     A ContainerBuilder instance
      *
      * @example
      *
@@ -712,9 +727,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * Loads an ORM second level cache bundle mapping information.
      *
-     * @param array            $entityManager A configured ORM entity manager
-     * @param Definition       $ormConfigDef  A Definition instance
-     * @param ContainerBuilder $container     A ContainerBuilder instance
+     * @param array<string, mixed> $entityManager A configured ORM entity manager
+     * @param Definition           $ormConfigDef  A Definition instance
+     * @param ContainerBuilder     $container     A ContainerBuilder instance
      *
      * @example
      *  entity_managers:
@@ -759,7 +774,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ->setArguments([$entityManager['second_level_cache']['region_lifetime'], $entityManager['second_level_cache']['region_lock_lifetime']]);
 
         $slcFactoryId = sprintf('doctrine.orm.%s_second_level_cache.default_cache_factory', $entityManager['name']);
-        $factoryClass = isset($entityManager['second_level_cache']['factory']) ? $entityManager['second_level_cache']['factory'] : '%doctrine.orm.second_level_cache.default_cache_factory.class%';
+        $factoryClass = $entityManager['second_level_cache']['factory'] ?? '%doctrine.orm.second_level_cache.default_cache_factory.class%';
 
         $definition = new Definition($factoryClass, [new Reference($regionsId), new Reference($driverId)]);
 
@@ -887,8 +902,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * Loads a configured entity managers cache drivers.
      *
-     * @param array            $entityManager A configured ORM entity manager.
-     * @param ContainerBuilder $container     A ContainerBuilder instance
+     * @param array<string, mixed> $entityManager A configured ORM entity manager.
      */
     protected function loadOrmCacheDrivers(array $entityManager, ContainerBuilder $container)
     {
@@ -930,8 +944,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
     }
 
     /**
-     * @param array  $objectManager
-     * @param string $cacheName
+     * @param array<string, mixed> $objectManager
+     * @param string               $cacheName
      */
     public function loadObjectManagerCacheDriver(array $objectManager, ContainerBuilder $container, $cacheName)
     {

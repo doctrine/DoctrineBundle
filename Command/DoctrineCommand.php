@@ -10,6 +10,8 @@ use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use Symfony\Component\Console\Command\Command;
 
+use function sprintf;
+
 /**
  * Base class for Doctrine console commands to extend from.
  *

@@ -5,6 +5,9 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Twig;
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
 use PHPUnit\Framework\TestCase;
 
+use function pack;
+use function substr_count;
+
 class DoctrineExtensionTest extends TestCase
 {
     public function testReplaceQueryParametersWithPostgresCasting(): void

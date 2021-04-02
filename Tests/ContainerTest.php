@@ -23,6 +23,9 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\DoctrineProvider;
 
+use function class_exists;
+use function interface_exists;
+
 class ContainerTest extends TestCase
 {
     public function testContainerWithDbalOnly(): void

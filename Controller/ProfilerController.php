@@ -6,15 +6,16 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use Exception;
 use PDO;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\VarDumper\Cloner\Data;
+use Throwable;
 
 use function assert;
+use function stripos;
 
 class ProfilerController implements ContainerAwareInterface
 {
@@ -24,7 +25,7 @@ class ProfilerController implements ContainerAwareInterface
     /**
      * {@inheritDoc}
      */
-    public function setContainer(ContainerInterface $container = null)
+    public function setContainer(?ContainerInterface $container = null)
     {
         $this->container = $container;
     }
@@ -69,7 +70,7 @@ class ProfilerController implements ContainerAwareInterface
             } else {
                 $results = $this->explainOtherPlatform($connection, $query);
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return new Response('This query cannot be explained.');
         }
 
