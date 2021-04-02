@@ -17,6 +17,7 @@ use function is_array;
 use function is_bool;
 use function is_object;
 use function is_string;
+use function method_exists;
 use function preg_match;
 use function preg_replace_callback;
 use function sprintf;
@@ -81,8 +82,8 @@ class DoctrineExtension extends AbstractExtension
                 $result = implode(', ', $result) ?: 'NULL';
                 break;
 
-            case is_object($result):
-                $result = addslashes((string) $result);
+            case is_object($result) && method_exists($result, '__toString'):
+                $result = addslashes($result->__toString());
                 break;
 
             case $result === null:
