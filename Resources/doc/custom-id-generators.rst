@@ -32,7 +32,7 @@ are provided: ``doctrine.ulid_generator`` to generate ULIDs, and
          * @Id
          * @Column(type="uuid")
          * @ORM\GeneratedValue(strategy="CUSTOM")
-         * @ORM\CustomIdGenerator('doctrine.uuid_generator')
+         * @ORM\CustomIdGenerator("doctrine.uuid_generator")
          */
         private $id;
 
