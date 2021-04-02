@@ -13,6 +13,9 @@ use function array_merge;
 use function sys_get_temp_dir;
 use function unlink;
 
+/**
+ * @psalm-import-type Params from \Doctrine\DBAL\DriverManager
+ */
 class CreateDatabaseDoctrineTest extends TestCase
 {
     public function tearDown(): void
@@ -110,6 +113,8 @@ class CreateDatabaseDoctrineTest extends TestCase
 
     /**
      * @param mixed[]|null $params Connection parameters
+     *
+     * @psalm-param Params $params
      */
     private function getMockContainer(string $connectionName, ?array $params = null): MockObject
     {
