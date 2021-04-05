@@ -887,7 +887,7 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /**
-     * @param array<string, array<string, string|array{type: ?string, pool?: string}>> $cacheConfig
+     * @param array{pool?: string, type: ?string} $cacheConfig
      *
      * @dataProvider cacheConfigurationProvider
      */
@@ -913,7 +913,7 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /**
-     * @param array<string, array<string, string|array{type: ?string, pool?: string}>> $cacheConfig
+     * @param array{pool?: string, type: ?string} $cacheConfig
      *
      * @dataProvider legacyCacheConfigurationProvider
      * @group legacy
@@ -1038,8 +1038,6 @@ class DoctrineExtensionTest extends TestCase
      */
     private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
     {
-        $bundles = (array) $bundles;
-
         $map = [];
         foreach ($bundles as $bundle) {
             require_once __DIR__ . '/Fixtures/Bundles/' . ($vendor ? $vendor . '/' : '') . $bundle . '/' . $bundle . '.php';

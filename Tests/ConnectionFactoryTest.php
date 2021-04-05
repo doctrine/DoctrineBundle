@@ -11,6 +11,7 @@ use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Exception;
 use Throwable;
 
@@ -27,10 +28,10 @@ class ConnectionFactoryTest extends TestCase
         $params       = ['driverClass' => FakeDriver::class];
         $config       = null;
         $eventManager = null;
-        $mappingTypes = [0];
+        $mappingTypes = ['' => ''];
         $exception    = class_exists(Driver\AbstractDriverException::class) ?
             new DriverException('', $this->createMock(Driver\AbstractDriverException::class)) :
-            new DriverException($this->createMock(Driver\AbstractException::class), null);
+            new DriverException('', $this->createMock(Driver\AbstractException::class));
 
         // put the mock into the fake driver
         FakeDriver::$exception = $exception;
@@ -140,12 +141,12 @@ class FakeDriver implements Driver
      * @param string|null $password
      * @param mixed[]     $driverOptions
      */
-    public function connect(array $params, $username = null, $password = null, array $driverOptions = []): void
+    public function connect(array $params, $username = null, $password = null, array $driverOptions = []): Connection
     {
         throw new Exception('not implemented');
     }
 
-    public function getSchemaManager(Connection $conn, ?AbstractPlatform $platform = null): void
+    public function getSchemaManager(Connection $conn, ?AbstractPlatform $platform = null): AbstractSchemaManager
     {
         throw new Exception('not implemented');
     }

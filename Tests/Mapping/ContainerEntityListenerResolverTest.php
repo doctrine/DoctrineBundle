@@ -5,8 +5,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 
@@ -17,7 +17,7 @@ class ContainerEntityListenerResolverTest extends TestCase
     /** @var ContainerEntityListenerResolver */
     private $resolver;
 
-    /** @var ContainerInterface|PHPUnit_Framework_MockObject_MockObject */
+    /** @var ContainerInterface&MockObject */
     private $container;
 
     public static function setUpBeforeClass(): void
@@ -145,6 +145,7 @@ class ContainerEntityListenerResolverTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('An object was expected, but got "string".');
+        /** @psalm-suppress InvalidArgument */
         $this->resolver->register('CompanyContractListener');
     }
 }

@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\Persistence\ManagerRegistry;
 use RuntimeException;
 
 use function interface_exists;
@@ -27,7 +28,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
         $class      = new ClassMetadataInfo(self::class);
         $collection = new ClassMetadataCollection([$class]);
 
-        $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();
+        $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $factory  = new DisconnectedMetadataFactory($registry);
 
         $this->expectException(RuntimeException::class);
@@ -43,7 +44,7 @@ EXCEPTION
         $class      = new ClassMetadataInfo('\Vendor\Package\Class');
         $collection = new ClassMetadataCollection([$class]);
 
-        $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();
+        $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $factory  = new DisconnectedMetadataFactory($registry);
 
         $factory->findNamespaceAndPathForMetadata($collection, '/path/to/code');

@@ -268,13 +268,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
     }
 
     /**
-     * @param mixed[] $connection
+     * @param array<string, mixed> $connection
      *
      * @return mixed[]
-     *
-     * @psalm-return T
-     * @psalm-param T
-     * @template T of array<string, mixed>
      */
     protected function getConnectionOptions(array $connection): array
     {
@@ -656,10 +652,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
             return;
         }
 
-        if (! isset($listenerDef)) {
-            throw new InvalidArgumentException('Entity listeners configuration requires doctrine-orm 2.5.0 or newer');
-        }
-
         $entities = $entityManager['entity_listeners']['entities'];
 
         foreach ($entities as $entityListenerClass => $entity) {
@@ -946,6 +938,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * @param array<string, mixed> $objectManager
      * @param string               $cacheName
+     *
+     * @psalm-suppress MoreSpecificImplementedParamType
      */
     public function loadObjectManagerCacheDriver(array $objectManager, ContainerBuilder $container, $cacheName)
     {
@@ -967,7 +961,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     public function getConfiguration(array $config, ContainerBuilder $container): Configuration
     {
-        return new Configuration($container->getParameter('kernel.debug'));
+        return new Configuration((bool) $container->getParameter('kernel.debug'));
     }
 
     protected function getMetadataDriverClass(string $driverType): string

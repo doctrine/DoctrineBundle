@@ -3,11 +3,14 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
+use Doctrine\DBAL\Connection;
+use Doctrine\Persistence\ManagerRegistry;
 use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\DependencyInjection\Container;
 
 use function array_merge;
 use function sys_get_temp_dir;
@@ -114,12 +117,14 @@ class CreateDatabaseDoctrineTest extends TestCase
     /**
      * @param mixed[]|null $params Connection parameters
      *
+     * @return MockObject&Container
+     *
      * @psalm-param Params $params
      */
     private function getMockContainer(string $connectionName, ?array $params = null): MockObject
     {
         // Mock the container and everything you'll need here
-        $mockDoctrine = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')
+        $mockDoctrine = $this->getMockBuilder(ManagerRegistry::class)
             ->getMock();
 
         $mockDoctrine->expects($this->any())
@@ -127,7 +132,7 @@ class CreateDatabaseDoctrineTest extends TestCase
             ->withAnyParameters()
             ->willReturn($connectionName);
 
-        $mockConnection = $this->getMockBuilder('Doctrine\DBAL\Connection')
+        $mockConnection = $this->getMockBuilder(Connection::class)
             ->disableOriginalConstructor()
             ->setMethods(['getParams'])
             ->getMockForAbstractClass();
@@ -142,7 +147,7 @@ class CreateDatabaseDoctrineTest extends TestCase
             ->withAnyParameters()
             ->willReturn($mockConnection);
 
-        $mockContainer = $this->getMockBuilder('Symfony\Component\DependencyInjection\Container')
+        $mockContainer = $this->getMockBuilder(Container::class)
             ->setMethods(['get'])
             ->getMock();
 

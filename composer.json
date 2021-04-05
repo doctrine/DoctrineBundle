@@ -33,7 +33,7 @@
         "symfony/config": "^4.3.3|^5.0",
         "symfony/console": "^3.4.30|^4.3.3|^5.0",
         "symfony/dependency-injection": "^4.3.3|^5.0",
-        "symfony/doctrine-bridge": "^4.3.7|^5.0",
+        "symfony/doctrine-bridge": "^4.4.7|^5.0",
         "symfony/framework-bundle": "^3.4.30|^4.3.3|^5.0",
         "symfony/service-contracts": "^1.1.1|^2.0"
     },
@@ -42,9 +42,12 @@
         "doctrine/orm": "^2.6",
         "friendsofphp/proxy-manager-lts": "^1.0",
         "phpunit/phpunit": "^7.5 || ^8.0 || ^9.3",
-        "symfony/phpunit-bridge": "^4.2",
+        "psalm/plugin-phpunit": "^0.15.1",
+        "psalm/plugin-symfony": "^2.2.4",
+        "symfony/phpunit-bridge": "^5.2",
         "symfony/property-info": "^4.3.3|^5.0",
         "symfony/proxy-manager-bridge": "^3.4|^4.3.3|^5.0",
+        "symfony/security-bundle": "^4.4|5.0",
         "symfony/twig-bridge": "^3.4.30|^4.3.3|^5.0",
         "symfony/validator": "^3.4.30|^4.3.3|^5.0",
         "symfony/web-profiler-bundle": "^3.4.30|^4.3.3|^5.0",
@@ -61,6 +64,7 @@
     },
     "suggest": {
         "doctrine/orm": "The Doctrine ORM integration is optional in the bundle.",
+        "ext-pdo": "*",
         "symfony/web-profiler-bundle": "To use the data collector."
     },
     "autoload": {
@@ -68,10 +72,5 @@
     },
     "autoload-dev": {
         "psr-4": { "": "Tests/DependencyInjection" }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.3.x-dev"
-        }
     }
 }

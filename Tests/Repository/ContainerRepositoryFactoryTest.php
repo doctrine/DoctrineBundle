@@ -9,7 +9,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectRepository;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
@@ -130,7 +129,7 @@ EXCEPTION
     /**
      * @param array<string, object> $services
      */
-    private function createContainer(array $services): MockObject
+    private function createContainer(array $services): ContainerInterface
     {
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->expects($this->any())
@@ -150,7 +149,7 @@ EXCEPTION
     /**
      * @param array<class-string, ?string> $entityRepositoryClasses
      */
-    private function createEntityManager(array $entityRepositoryClasses): MockObject
+    private function createEntityManager(array $entityRepositoryClasses): EntityManagerInterface
     {
         $classMetadatas = [];
         foreach ($entityRepositoryClasses as $entityClass => $entityRepositoryClass) {

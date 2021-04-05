@@ -47,7 +47,7 @@ class Configuration implements ConfigurationInterface
      */
     public function __construct(bool $debug)
     {
-        $this->debug = (bool) $debug;
+        $this->debug = $debug;
     }
 
     public function getConfigTreeBuilder(): TreeBuilder
@@ -209,13 +209,18 @@ class Configuration implements ConfigurationInterface
         $shardNode = $connectionNode
             ->children()
                 ->arrayNode('shards')
-                    ->prototype('array')
-                    ->children()
-                        ->integerNode('id')
-                            ->min(1)
-                            ->isRequired()
-                        ->end()
-                    ->end();
+                    ->prototype('array');
+
+        // TODO: Remove when https://github.com/psalm/psalm-plugin-symfony/pull/168 is released
+        assert($shardNode instanceof ArrayNodeDefinition);
+
+        $shardNode
+            ->children()
+                ->integerNode('id')
+                    ->min(1)
+                    ->isRequired()
+                ->end()
+            ->end();
         $this->configureDbalDriverNode($shardNode);
 
         return $node;
