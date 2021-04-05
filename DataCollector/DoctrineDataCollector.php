@@ -309,7 +309,7 @@ class DoctrineDataCollector extends BaseCollector
 
     private function executionTimePercentage(int $executionTimeMS, int $totalExecutionTimeMS): float
     {
-        if ($totalExecutionTimeMS === 0.0 || $totalExecutionTimeMS === 0) {
+        if (! $totalExecutionTimeMS) {
             return 0;
         }
 

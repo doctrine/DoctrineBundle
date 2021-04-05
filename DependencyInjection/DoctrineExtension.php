@@ -268,13 +268,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
     }
 
     /**
-     * @param mixed[] $connection
+     * @param array<string, mixed> $connection
      *
      * @return mixed[]
-     *
-     * @psalm-return T
-     * @psalm-param T
-     * @template T of array<string, mixed>
      */
     protected function getConnectionOptions(array $connection): array
     {
@@ -654,10 +650,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (! isset($entityManager['entity_listeners'])) {
             return;
-        }
-
-        if (! isset($listenerDef)) {
-            throw new InvalidArgumentException('Entity listeners configuration requires doctrine-orm 2.5.0 or newer');
         }
 
         $entities = $entityManager['entity_listeners']['entities'];

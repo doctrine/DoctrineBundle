@@ -41,8 +41,8 @@ class ConnectionFactory
     /**
      * Create a connection by name.
      *
-     * @param mixed[]         $params
-     * @param string[]|Type[] $mappingTypes
+     * @param mixed[]               $params
+     * @param array<string, string> $mappingTypes
      *
      * @return Connection
      *

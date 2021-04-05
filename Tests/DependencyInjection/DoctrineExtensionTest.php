@@ -1038,8 +1038,6 @@ class DoctrineExtensionTest extends TestCase
      */
     private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
     {
-        $bundles = (array) $bundles;
-
         $map = [];
         foreach ($bundles as $bundle) {
             require_once __DIR__ . '/Fixtures/Bundles/' . ($vendor ? $vendor . '/' : '') . $bundle . '/' . $bundle . '.php';

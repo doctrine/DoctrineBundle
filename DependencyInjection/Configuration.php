@@ -47,7 +47,7 @@ class Configuration implements ConfigurationInterface
      */
     public function __construct(bool $debug)
     {
-        $this->debug = (bool) $debug;
+        $this->debug = $debug;
     }
 
     public function getConfigTreeBuilder(): TreeBuilder

@@ -45,10 +45,10 @@ class MappingDriver implements MappingDriverInterface
         $this->driver->loadMetadataForClass($className, $metadata);
 
         if (
-            $metadata->generatorType !== ClassMetadataInfo::GENERATOR_TYPE_CUSTOM
+            ! $metadata instanceof ClassMetadataInfo
+            || $metadata->generatorType !== ClassMetadataInfo::GENERATOR_TYPE_CUSTOM
             || ! isset($metadata->customGeneratorDefinition['class'])
             || ! $this->idGeneratorLocator->has($metadata->customGeneratorDefinition['class'])
-            || ! $metadata instanceof ClassMetadataInfo
         ) {
             return;
         }

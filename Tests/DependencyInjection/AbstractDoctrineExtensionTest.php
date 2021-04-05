@@ -10,7 +10,6 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
-use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use InvalidArgumentException;
@@ -1447,10 +1446,6 @@ class DummySchemaAssetsFilter
 
     public function __invoke(string $assetName): bool
     {
-        if ($assetName instanceof AbstractAsset) {
-            $assetName = $assetName->getName();
-        }
-
         return $assetName !== $this->tableToIgnore;
     }
 }
