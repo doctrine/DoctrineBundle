@@ -145,6 +145,7 @@ class ContainerEntityListenerResolverTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('An object was expected, but got "string".');
+        /** @psalm-suppress InvalidArgument */
         $this->resolver->register('CompanyContractListener');
     }
 }

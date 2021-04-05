@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\Dbal\BlacklistSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
@@ -970,8 +971,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $filter = $container->get('well_known_filter');
 
-        $this->assertFalse($filter($tableName));
-        $this->assertTrue($filter('anything_else'));
+        $this->assertInstanceOf(BlacklistSchemaAssetFilter::class, $filter);
+        $this->assertFalse($filter->__invoke($tableName));
+        $this->assertTrue($filter->__invoke('anything_else'));
     }
 
     public static function dataWellKnownSchemaOverriddenTablesFilterServices(): Generator
@@ -1000,7 +1002,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $filter = $container->get('well_known_filter');
 
-        $this->assertFalse($filter($tableName));
+        $this->assertInstanceOf(BlacklistSchemaAssetFilter::class, $filter);
+        $this->assertFalse($filter->__invoke($tableName));
     }
 
     public function testEntityListenerResolver(): void
@@ -1201,7 +1204,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         if (method_exists($this, 'expectExceptionMessageMatches')) {
             $this->expectExceptionMessageMatches('/The service ".*" must not be abstract\./');
-        } else {
+        } elseif (method_exists($this, 'expectExceptionMessageRegExp')) {
             $this->expectExceptionMessageRegExp('/The service ".*" must not be abstract\./');
         }
 

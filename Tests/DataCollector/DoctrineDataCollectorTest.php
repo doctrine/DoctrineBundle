@@ -3,8 +3,10 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
+use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
@@ -79,7 +81,7 @@ class DoctrineDataCollectorTest extends TestCase
 
     public function testGetGroupedQueries(): void
     {
-        $logger            = $this->getMockBuilder('Doctrine\DBAL\Logging\DebugStack')->getMock();
+        $logger            = $this->getMockBuilder(DebugStack::class)->getMock();
         $logger->queries   = [];
         $logger->queries[] = [
             'sql' => 'SELECT * FROM foo WHERE bar = :bar',
@@ -128,7 +130,7 @@ class DoctrineDataCollectorTest extends TestCase
      */
     private function createCollector(array $managers, bool $shouldValidateSchema = true): DoctrineDataCollector
     {
-        $registry = $this->getMockBuilder('Doctrine\Persistence\ManagerRegistry')->getMock();
+        $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $registry
             ->expects($this->any())
             ->method('getConnectionNames')

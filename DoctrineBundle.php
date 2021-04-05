@@ -70,8 +70,8 @@ class DoctrineBundle extends Bundle
             return;
         }
 
-        $namespace      = $this->container->getParameter('doctrine.orm.proxy_namespace');
-        $dir            = $this->container->getParameter('doctrine.orm.proxy_dir');
+        $namespace      = (string) $this->container->getParameter('doctrine.orm.proxy_namespace');
+        $dir            = (string) $this->container->getParameter('doctrine.orm.proxy_dir');
         $proxyGenerator = null;
 
         if ($this->container->getParameter('doctrine.orm.auto_generate_proxy_classes')) {

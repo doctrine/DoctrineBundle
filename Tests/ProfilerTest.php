@@ -49,7 +49,9 @@ class ProfilerTest extends BaseTestCase
         $twigLoaderFilesystem->addPath(__DIR__ . '/../vendor/symfony/web-profiler-bundle/Resources/views', 'WebProfiler');
         $this->twig = new Environment($twigLoaderFilesystem, ['debug' => true, 'strict_variables' => true]);
 
-        $fragmentHandler = $this->getMockBuilder(FragmentHandler::class)->disableOriginalConstructor()->getMock();
+        $fragmentHandler = $this->getMockBuilder(FragmentHandler::class);
+        $fragmentHandler->disableOriginalConstructor();
+        $fragmentHandler = $fragmentHandler->getMock();
         $fragmentHandler->method('render')->willReturn('');
 
         $kernelRuntime = new HttpKernelRuntime($fragmentHandler);
@@ -59,7 +61,7 @@ class ProfilerTest extends BaseTestCase
 
         $this->twig->addExtension(new CodeExtension('', '', ''));
         $this->twig->addExtension(new RoutingExtension($urlGenerator));
-        $this->twig->addExtension(new HttpKernelExtension($fragmentHandler));
+        $this->twig->addExtension(new HttpKernelExtension());
         $this->twig->addExtension(new WebProfilerExtension());
         $this->twig->addExtension(new DoctrineExtension());
 

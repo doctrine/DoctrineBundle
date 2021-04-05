@@ -42,6 +42,8 @@
         "doctrine/orm": "^2.6",
         "friendsofphp/proxy-manager-lts": "^1.0",
         "phpunit/phpunit": "^7.5 || ^8.0 || ^9.3",
+        "psalm/plugin-phpunit": "^0.15.1",
+        "psalm/plugin-symfony": "^2.2.4",
         "symfony/phpunit-bridge": "^5.2",
         "symfony/property-info": "^4.3.3|^5.0",
         "symfony/proxy-manager-bridge": "^3.4|^4.3.3|^5.0",

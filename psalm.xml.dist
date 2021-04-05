@@ -1,17 +1,20 @@
 <?xml version="1.0"?>
 <psalm
-    errorLevel="7"
-    resolveFromConfigFile="true"
+    errorLevel="6"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 >
+    <plugins>
+        <pluginClass class="Psalm\SymfonyPsalmPlugin\Plugin"/>
+        <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
+    </plugins>
     <projectFiles>
         <ignoreFiles>
             <directory name="vendor"/>
             <!-- Deprecated classes, not worth fixing -->
             <file name="Command/ImportMappingDoctrineCommand.php"/>
-            <file name="DependencyInjection/Compiler/WellKnownSchemaFilterPass.php" />
+            <file name="DependencyInjection/Compiler/WellKnownSchemaFilterPass.php"/>
         </ignoreFiles>
         <directory name="CacheWarmer"/>
         <directory name="Command"/>
@@ -29,4 +32,12 @@
         <file name="ManagerConfigurator.php"/>
         <file name="Registry.php"/>
     </projectFiles>
+    <issueHandlers>
+        <TooManyTemplateParams>
+            <errorLevel type="suppress">
+                <!-- This happens on PHP 7.1 because there is no 7.1 compatible doctrine/orm version having template annotations -->
+                <file name="Repository/ServiceEntityRepository.php"/>
+            </errorLevel>
+        </TooManyTemplateParams>
+    </issueHandlers>
 </psalm>

@@ -25,6 +25,6 @@ class RegexSchemaAssetFilter
             $assetName = $assetName->getName();
         }
 
-        return preg_match($this->filterExpression, $assetName);
+        return (bool) preg_match($this->filterExpression, $assetName);
     }
 }

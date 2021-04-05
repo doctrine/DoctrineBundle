@@ -7,6 +7,7 @@ use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PDO;
+use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,8 +46,12 @@ class ProfilerController implements ContainerAwareInterface
         assert($profiler instanceof Profiler);
         $profiler->disable();
 
-        $profile = $profiler->loadProfile($token);
-        $queries = $profile->getCollector('db')->getQueries();
+        $profile   = $profiler->loadProfile($token);
+        $collector = $profile->getCollector('db');
+
+        assert($collector instanceof DoctrineDataCollector);
+
+        $queries = $collector->getQueries();
 
         if (! isset($queries[$connectionName][$query])) {
             return new Response('This query does not exist.');

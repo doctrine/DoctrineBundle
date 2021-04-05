@@ -967,7 +967,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     public function getConfiguration(array $config, ContainerBuilder $container): Configuration
     {
-        return new Configuration($container->getParameter('kernel.debug'));
+        return new Configuration((bool) $container->getParameter('kernel.debug'));
     }
 
     protected function getMetadataDriverClass(string $driverType): string
