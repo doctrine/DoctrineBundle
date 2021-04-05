@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Persistence\Mapping\AbstractClassMetadataFactory;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -101,6 +102,8 @@ class DoctrineDataCollector extends BaseCollector
 
                 $factory   = $em->getMetadataFactory();
                 $validator = new SchemaValidator($em);
+
+                assert($factory instanceof AbstractClassMetadataFactory);
 
                 foreach ($factory->getLoadedMetadata() as $class) {
                     assert($class instanceof ClassMetadataInfo);

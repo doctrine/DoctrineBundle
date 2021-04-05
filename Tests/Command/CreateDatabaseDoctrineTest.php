@@ -117,6 +117,8 @@ class CreateDatabaseDoctrineTest extends TestCase
     /**
      * @param mixed[]|null $params Connection parameters
      *
+     * @return MockObject&Container
+     *
      * @psalm-param Params $params
      */
     private function getMockContainer(string $connectionName, ?array $params = null): MockObject

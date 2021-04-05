@@ -42,8 +42,14 @@ class Registry extends ManagerRegistry implements ResetInterface
     public function getAliasNamespace($alias)
     {
         foreach (array_keys($this->getManagers()) as $name) {
+            $objectManager = $this->getManager($name);
+
+            if (! $objectManager instanceof EntityManagerInterface) {
+                continue;
+            }
+
             try {
-                return $this->getManager($name)->getConfiguration()->getEntityNamespace($alias);
+                return $objectManager->getConfiguration()->getEntityNamespace($alias);
             } catch (ORMException $e) {
             }
         }

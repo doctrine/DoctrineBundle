@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Mapping;
 
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory as BaseClassMetadataFactory;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 
 class ClassMetadataFactory extends BaseClassMetadataFactory
 {
@@ -16,7 +17,7 @@ class ClassMetadataFactory extends BaseClassMetadataFactory
 
         $customGeneratorDefinition = $class->customGeneratorDefinition;
 
-        if (! isset($customGeneratorDefinition['instance'])) {
+        if (! isset($customGeneratorDefinition['instance']) || ! $class instanceof ClassMetadataInfo) {
             return;
         }
 

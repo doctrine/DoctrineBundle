@@ -15,6 +15,7 @@ use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationP
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterUidTypePass;
 use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFactory;
+use Symfony\Bundle\SecurityBundle\DependencyInjection\SecurityExtension;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -40,8 +41,11 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new RegisterEventListenersAndSubscribersPass('doctrine.connections', 'doctrine.dbal.%s_connection.event_manager', 'doctrine'), PassConfig::TYPE_BEFORE_OPTIMIZATION);
 
         if ($container->hasExtension('security')) {
-            /** @psalm-suppress MissingDependency We can safely assume here that if security extension exists, all security deps are installed  */
-            $container->getExtension('security')->addUserProviderFactory(new EntityFactory('entity', 'doctrine.orm.security.user.provider'));
+            $security = $container->getExtension('security');
+
+            if ($security instanceof SecurityExtension) {
+                $security->addUserProviderFactory(new EntityFactory('entity', 'doctrine.orm.security.user.provider'));
+            }
         }
 
         $container->addCompilerPass(new DoctrineValidationPass('orm'));

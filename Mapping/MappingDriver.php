@@ -48,6 +48,7 @@ class MappingDriver implements MappingDriverInterface
             $metadata->generatorType !== ClassMetadataInfo::GENERATOR_TYPE_CUSTOM
             || ! isset($metadata->customGeneratorDefinition['class'])
             || ! $this->idGeneratorLocator->has($metadata->customGeneratorDefinition['class'])
+            || ! $metadata instanceof ClassMetadataInfo
         ) {
             return;
         }

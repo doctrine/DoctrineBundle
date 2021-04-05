@@ -946,6 +946,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * @param array<string, mixed> $objectManager
      * @param string               $cacheName
+     *
+     * @psalm-suppress MoreSpecificImplementedParamType
      */
     public function loadObjectManagerCacheDriver(array $objectManager, ContainerBuilder $container, $cacheName)
     {
