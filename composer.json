@@ -63,6 +63,7 @@
     },
     "suggest": {
         "doctrine/orm": "The Doctrine ORM integration is optional in the bundle.",
+        "ext-pdo": "*",
         "symfony/web-profiler-bundle": "To use the data collector."
     },
     "autoload": {
@@ -70,10 +71,5 @@
     },
     "autoload-dev": {
         "psr-4": { "": "Tests/DependencyInjection" }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.3.x-dev"
-        }
     }
 }

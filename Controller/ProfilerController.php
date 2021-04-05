@@ -3,10 +3,13 @@
 namespace Doctrine\Bundle\DoctrineBundle\Controller;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ForwardCompatibility\Result;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use LogicException;
 use PDO;
+use PDOStatement;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -122,6 +125,16 @@ class ProfilerController implements ContainerAwareInterface
         }
 
         $stmt = $connection->executeQuery($sql, $params, $query['types']);
+
+        // DBAL 2.13 "forward compatibility" BC break handling
+        if ($stmt instanceof Result) {
+            $stmt = $stmt->getIterator();
+        }
+
+        if (! $stmt instanceof PDOStatement) {
+            throw new LogicException('We need nextRowSet() functionality feature, which is not available with current DBAL driver');
+        }
+
         $stmt->nextRowset();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
