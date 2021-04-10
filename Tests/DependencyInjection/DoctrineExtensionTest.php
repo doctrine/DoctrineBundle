@@ -10,6 +10,7 @@ use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\AttributeDriver;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -743,13 +744,47 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
+    public function testAttributesBundleMappingDetection(): void
+    {
+        if (! class_exists(AttributeDriver::class)) {
+            self::markTestSkipped('This test requires ORM 2.9 with attribute driver.');
+        }
+
+        $container = $this->getContainer(['AttributesBundle']);
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager([
+                'default_entity_manager' => 'default',
+                'entity_managers' => [
+                    'default' => [
+                        'mappings' => [
+                            'AttributesBundle' => [],
+                        ],
+                    ],
+                ],
+            ])
+            ->build();
+        $extension->load([$config], $container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', [
+            new Reference('doctrine.orm.default_attribute_metadata_driver'),
+            'Fixtures\Bundles\AttributesBundle\Entity',
+        ]);
+
+        $attributeDriver = $container->get('doctrine.orm.default_attribute_metadata_driver');
+        $this->assertInstanceOf(AttributeDriver::class, $attributeDriver);
+    }
+
     public function testOrmMergeConfigs(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->getContainer(['XmlBundle', 'AnnotationsBundle']);
+        $container = $this->getContainer(['XmlBundle', 'AnnotationsBundle', 'AttributesBundle']);
         $extension = new DoctrineExtension();
 
         $config1 = BundleConfigurationBuilder::createBuilder()
@@ -760,6 +795,7 @@ class DoctrineExtensionTest extends TestCase
                 'entity_managers' => [
                     'default' => [
                         'mappings' => [
+                            'AnnotationsBundle' => [],
                             'AnnotationsBundle' => [],
                         ],
                     ],

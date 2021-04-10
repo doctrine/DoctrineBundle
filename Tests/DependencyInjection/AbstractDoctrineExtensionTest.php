@@ -497,7 +497,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
+        $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
 
@@ -507,11 +507,16 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
 
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
+            new Reference('doctrine.orm.default_attribute_metadata_driver'),
+            'Fixtures\Bundles\AttributesBundle\Entity',
+        ]);
+
+        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_yml_metadata_driver'),
             'Fixtures\Bundles\YamlBundle\Entity',
         ]);
 
-        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', [
+        $this->assertDICDefinitionMethodCallAt(3, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_xml_metadata_driver'),
             'Fixtures\Bundles\XmlBundle',
         ]);
@@ -520,6 +525,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($annDef, [
             new Reference('doctrine.orm.metadata.annotation_reader'),
             [__DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity'],
+        ]);
+
+        $attrDef = $container->getDefinition('doctrine.orm.default_attribute_metadata_driver');
+        $this->assertDICConstructorArguments($attrDef, [
+            [__DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity'],
         ]);
 
         $ymlDef = $container->getDefinition('doctrine.orm.default_yml_metadata_driver');
@@ -539,7 +549,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
+        $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
 
         $this->assertEquals(['em1' => 'doctrine.orm.em1_entity_manager', 'em2' => 'doctrine.orm.em2_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
@@ -550,6 +560,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallAt(0, $def1, 'addDriver', [
             new Reference('doctrine.orm.em1_annotation_metadata_driver'),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
+        ]);
+
+        $this->assertDICDefinitionMethodCallAt(1, $def1, 'addDriver', [
+            new Reference('doctrine.orm.em1_attribute_metadata_driver'),
+            'Fixtures\Bundles\AttributesBundle\Entity',
         ]);
 
         $this->assertDICDefinitionMethodCallAt(0, $def2, 'addDriver', [
@@ -585,7 +600,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->loadContainer('orm_single_em_default_table_options', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
+        $container = $this->loadContainer('orm_single_em_default_table_options', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
 
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 

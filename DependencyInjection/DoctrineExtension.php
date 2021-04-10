@@ -691,7 +691,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *         MyBundle2: yml
      *         MyBundle3: { type: annotation, dir: Entities/ }
      *         MyBundle4: { type: xml, dir: Resources/config/doctrine/mapping }
-     *         MyBundle5:
+     *         MyBundle5: { type: attribute, dir: Entities/ }
+     *         MyBundle6:
      *             type: yml
      *             dir: bundle-mappings/
      *             alias: BundleAlias
@@ -714,6 +715,90 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->registerMappingDrivers($entityManager, $container);
 
         $ormConfigDef->addMethodCall('setEntityNamespaces', [$this->aliasMap]);
+    }
+
+    /**
+     * Assertion if the specified mapping information is valid.
+     *
+     * @param array  $mappingConfig
+     * @param string $objectManagerName
+     *
+     * @throws \InvalidArgumentException
+     */
+    protected function assertValidMappingConfiguration(array $mappingConfig, $objectManagerName)
+    {
+        if (!$mappingConfig['type'] || !$mappingConfig['dir'] || !$mappingConfig['prefix']) {
+            throw new \InvalidArgumentException(sprintf('Mapping definitions for Doctrine manager "%s" require at least the "type", "dir" and "prefix" options.', $objectManagerName));
+        }
+
+        if (!is_dir($mappingConfig['dir'])) {
+            throw new \InvalidArgumentException(sprintf('Specified non-existing directory "%s" as Doctrine mapping source.', $mappingConfig['dir']));
+        }
+
+        if (!in_array($mappingConfig['type'], array('xml', 'yml', 'annotation', 'php', 'staticphp', 'attribute'))) {
+            throw new \InvalidArgumentException(sprintf('Can only configure "xml", "yml", "annotation", "php" or '.
+                '"staticphp" through the DoctrineBundle. Use your own bundle to configure other metadata drivers. '.
+                'You can register them by adding a new driver to the '.
+                '"%s" service definition.', $this->getObjectManagerElementName($objectManagerName.'_metadata_driver')
+            ));
+        }
+    }
+
+    /**
+     * Register all the collected mapping information with the object manager by registering the appropriate mapping drivers.
+     *
+     * @param array            $objectManager
+     * @param ContainerBuilder $container     A ContainerBuilder instance
+     */
+    protected function registerMappingDrivers($objectManager, ContainerBuilder $container)
+    {
+        // configure metadata driver for each bundle based on the type of mapping files found
+        if ($container->hasDefinition($this->getObjectManagerElementName($objectManager['name'].'_metadata_driver'))) {
+            $chainDriverDef = $container->getDefinition($this->getObjectManagerElementName($objectManager['name'].'_metadata_driver'));
+        } else {
+            $chainDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.driver_chain.class%'));
+            $chainDriverDef->setPublic(false);
+        }
+
+        foreach ($this->drivers as $driverType => $driverPaths) {
+            $mappingService = $this->getObjectManagerElementName($objectManager['name'].'_'.$driverType.'_metadata_driver');
+            if ($container->hasDefinition($mappingService)) {
+                $mappingDriverDef = $container->getDefinition($mappingService);
+                $args = $mappingDriverDef->getArguments();
+                if ($driverType == 'annotation') {
+                    $args[1] = array_merge(array_values($driverPaths), $args[1]);
+                } else {
+                    $args[0] = array_merge(array_values($driverPaths), $args[0]);
+                }
+                $mappingDriverDef->setArguments($args);
+            } elseif ($driverType === 'attribute') {
+                $mappingDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.'.$driverType.'.class%'), array(
+                    array_values($driverPaths),
+                ));
+            } elseif ($driverType == 'annotation') {
+                $mappingDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.'.$driverType.'.class%'), array(
+                    new Reference($this->getObjectManagerElementName('metadata.annotation_reader')),
+                    array_values($driverPaths),
+                ));
+            } else {
+                $mappingDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.'.$driverType.'.class%'), array(
+                    array_values($driverPaths),
+                ));
+            }
+            $mappingDriverDef->setPublic(false);
+            if (false !== strpos($mappingDriverDef->getClass(), 'yml') || false !== strpos($mappingDriverDef->getClass(), 'xml')) {
+                $mappingDriverDef->setArguments(array(array_flip($driverPaths)));
+                $mappingDriverDef->addMethodCall('setGlobalBasename', array('mapping'));
+            }
+
+            $container->setDefinition($mappingService, $mappingDriverDef);
+
+            foreach ($driverPaths as $prefix => $driverPath) {
+                $chainDriverDef->addMethodCall('addDriver', array(new Reference($mappingService), $prefix));
+            }
+        }
+
+        $container->setDefinition($this->getObjectManagerElementName($objectManager['name'].'_metadata_driver'), $chainDriverDef);
     }
 
     /**
