@@ -796,7 +796,7 @@ class DoctrineExtensionTest extends TestCase
                     'default' => [
                         'mappings' => [
                             'AnnotationsBundle' => [],
-                            'AnnotationsBundle' => [],
+                            'AttributesBundle' => ['type' => 'attribute'],
                         ],
                     ],
                 ],
@@ -824,6 +824,10 @@ class DoctrineExtensionTest extends TestCase
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
+            new Reference('doctrine.orm.default_attribute_metadata_driver'),
+            'Fixtures\Bundles\AttributesBundle\Entity',
+        ]);
+        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_xml_metadata_driver'),
             'Fixtures\Bundles\XmlBundle\Entity',
         ]);

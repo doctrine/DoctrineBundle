@@ -7,4 +7,3 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 class AttributesBundle extends Bundle
 {
 }
-
