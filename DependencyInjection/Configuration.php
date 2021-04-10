@@ -55,10 +55,29 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('doctrine');
         $rootNode    = $treeBuilder->getRootNode();
 
+        $this->addDeprecationsSection($rootNode);
         $this->addDbalSection($rootNode);
         $this->addOrmSection($rootNode);
 
         return $treeBuilder;
+    }
+
+    /**
+     * Add Deprecations section
+     */
+    private function addDeprecationsSection(ArrayNodeDefinition $node)
+    {
+        $node
+            ->children()
+            ->arrayNode('deprecations')
+                ->treatFalseLike(['enabled' => false])
+                ->treatTrueLike(['enabled' => true])
+                ->treatNullLike(['enabled' => false])
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->scalarNode('enabled')->defaultFalse()->end()
+                ->end()
+            ->end();
     }
 
     /**

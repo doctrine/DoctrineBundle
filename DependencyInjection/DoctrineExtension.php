@@ -73,6 +73,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $configuration = $this->getConfiguration($configs, $container);
         $config        = $this->processConfiguration($configuration, $configs);
 
+        if (! empty($config['deprecations'])) {
+            $container->setParameter('doctrine.deprecations.enabled', $config['deprecations']['enabled']);
+        }
+
         if (! empty($config['dbal'])) {
             $this->dbalLoad($config['dbal'], $container);
 

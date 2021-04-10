@@ -10,6 +10,8 @@ Configuration Reference
     .. code-block:: yaml
 
         doctrine:
+            deprecations:
+                enabled: true # Recommended to disable in production to reduce overhead
             dbal:
                 default_connection:           default
 

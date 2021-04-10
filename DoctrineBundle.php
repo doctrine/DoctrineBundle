@@ -9,6 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Common\Util\ClassUtils;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
@@ -68,6 +69,10 @@ class DoctrineBundle extends Bundle
      */
     public function boot()
     {
+        if ($this->container->getParameter('doctrine.deprecations.enabled')) {
+            Deprecation::enableWithTriggerError();
+        }
+
         // Register an autoloader for proxies to avoid issues when unserializing them
         // when the ORM is used.
         if (! $this->container->hasParameter('doctrine.orm.proxy_namespace')) {
