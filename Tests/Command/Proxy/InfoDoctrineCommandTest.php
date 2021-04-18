@@ -15,7 +15,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Kernel;
 
-use array_merge;
+use function array_merge;
 
 class InfoDoctrineCommandTest extends TestCase
 {
