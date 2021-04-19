@@ -96,6 +96,16 @@ class ConnectionFactoryTest extends TestCase
 
         $this->assertEquals($params, array_intersect_key($connection->getParams(), $params));
     }
+
+    public function testDbnameSuffix(): void
+    {
+        $connection = (new ConnectionFactory([]))->createConnection([
+            'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
+            'dbname_suffix' => '_test',
+        ]);
+
+        $this->assertSame('main_test', $connection->getParams()['dbname']);
+    }
 }
 
 /**

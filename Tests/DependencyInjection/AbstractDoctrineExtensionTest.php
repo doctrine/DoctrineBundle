@@ -166,6 +166,15 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertFalse(isset($config['override_url']));
     }
 
+    public function testDbalDbnameSuffix(): void
+    {
+        $container = $this->loadContainer('dbal_dbname_suffix');
+        $config    = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+
+        $this->assertSame('mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8', $config['url']);
+        $this->assertSame('_test', $config['dbname_suffix']);
+    }
+
     public function testDbalLoadSingleMasterSlaveConnection(): void
     {
         $container = $this->loadContainer('dbal_service_single_master_slave_connection');

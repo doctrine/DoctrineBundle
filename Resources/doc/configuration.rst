@@ -31,6 +31,7 @@ Configuration Reference
                         user:                 root
                         password:             ~
                         charset:              "UTF8"
+                        dbname_suffix:        ~
 
                         # SQLite specific
                         path:                 ~
@@ -939,6 +940,7 @@ can configure. The following block shows all possible configuration keys:
                 port:                     1234
                 user:                     user
                 password:                 secret
+                dbname_suffix:            _test
                 driver:                   pdo_mysql
                 driver_class:             MyNamespace\MyDriverImpl
                 options:

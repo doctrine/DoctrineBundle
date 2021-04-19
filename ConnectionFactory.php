@@ -57,7 +57,7 @@ class ConnectionFactory
         $overriddenOptions = $params['connection_override_options'] ?? [];
         unset($params['connection_override_options']);
 
-        if (! isset($params['pdo']) && (! isset($params['charset']) || $overriddenOptions)) {
+        if (! isset($params['pdo']) && (! isset($params['charset']) || $overriddenOptions || isset($params['dbname_suffix']))) {
             $wrapperClass = null;
 
             if (isset($params['wrapperClass'])) {
@@ -76,6 +76,10 @@ class ConnectionFactory
             $connection = DriverManager::getConnection($params, $config, $eventManager);
             $params     = array_merge($connection->getParams(), $overriddenOptions);
             $driver     = $connection->getDriver();
+
+            if (isset($params['dbname']) && isset($params['dbname_suffix'])) {
+                $params['dbname'] .= $params['dbname_suffix'];
+            }
 
             if ($driver instanceof AbstractMySQLDriver) {
                 $params['charset'] = 'utf8mb4';

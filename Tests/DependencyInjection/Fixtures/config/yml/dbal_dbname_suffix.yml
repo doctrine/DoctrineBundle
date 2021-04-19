@@ -1,0 +1,4 @@
+doctrine:
+    dbal:
+        url: 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8'
+        dbname_suffix: _test
