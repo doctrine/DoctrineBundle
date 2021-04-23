@@ -972,7 +972,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     protected function getMetadataDriverClass(string $driverType): string
     {
-        return '%' . $this->getObjectManagerElementName('metadata.' . $driverType . '.class%');
+        return '%' . $this->getObjectManagerElementName('metadata.' . $driverType . '.class') . '%';
     }
 
     private function loadMessengerServices(ContainerBuilder $container): void

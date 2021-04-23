@@ -1,10 +1,6 @@
 UPGRADE FROM 2.2 to 2.3
 =======================
 
-Configuration
---------
-* Not setting `doctrine.dbal.override_url` to `true` when using a `url` parameter in a connection is deprecated.
-
 Commands
 --------
 

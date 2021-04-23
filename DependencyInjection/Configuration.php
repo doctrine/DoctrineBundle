@@ -27,9 +27,6 @@ use function strlen;
 use function strpos;
 use function strtoupper;
 use function substr;
-use function trigger_error;
-
-use const E_USER_DEPRECATED;
 
 /**
  * This class contains the configuration information for the bundle
@@ -333,16 +330,6 @@ class Configuration implements ConfigurationInterface
                 ->then(static function ($v) {
                     $v['MultipleActiveResultSets'] = $v['multiple_active_result_sets'];
                     unset($v['multiple_active_result_sets']);
-
-                    return $v;
-                })
-            ->end()
-            ->beforeNormalization()
-                ->ifTrue(static function ($v) {
-                    return empty($v['override_url']) && isset($v['url']);
-                })
-                ->then(static function ($v) {
-                    @trigger_error('Not setting doctrine.dbal.override_url to true is deprecated. True is the only value that will be supported in doctrine-bundle 3.0.', E_USER_DEPRECATED);
 
                     return $v;
                 })
