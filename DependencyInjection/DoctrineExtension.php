@@ -11,6 +11,8 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\Common\Cache\Psr6\CacheAdapter;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
@@ -18,6 +20,7 @@ use Doctrine\DBAL\Logging\LoggerChain;
 use Doctrine\DBAL\SQLParserUtils;
 use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Tools\Console\ConnectionProvider;
+use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Proxy\Autoloader;
@@ -34,9 +37,7 @@ use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscrib
 use Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaSubscriber;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Symfony\Component\Cache\Adapter\DoctrineAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
-use Symfony\Component\Cache\DoctrineProvider;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -554,8 +555,17 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $ormConfigDef = $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), new ChildDefinition('doctrine.orm.configuration'));
         $ormConfigDef->addTag(IdGeneratorPass::CONFIGURATION_TAG);
 
+        $wrapLegacyCache     = true;
+        $metadataCacheSetter = 'setMetadataCacheImpl';
+
+        $metadataCacheType = $entityManager['metadata_cache']['type'] ?? 'pool';
+        if (method_exists(OrmConfiguration::class, 'setMetadataCache') && $metadataCacheType !== 'service') {
+            $wrapLegacyCache     = false;
+            $metadataCacheSetter = 'setMetadataCache';
+        }
+
         $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container);
-        $this->loadOrmCacheDrivers($entityManager, $container);
+        $this->loadOrmCacheDrivers($entityManager, $container, $wrapLegacyCache);
 
         if (isset($entityManager['entity_listener_resolver']) && $entityManager['entity_listener_resolver']) {
             $container->setAlias(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name']), $entityManager['entity_listener_resolver']);
@@ -566,7 +576,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         $methods = [
-            'setMetadataCacheImpl' => new Reference(sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name'])),
+            $metadataCacheSetter => new Reference(sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name'])),
             'setQueryCacheImpl' => new Reference(sprintf('doctrine.orm.%s_query_cache', $entityManager['name'])),
             'setResultCacheImpl' => new Reference(sprintf('doctrine.orm.%s_result_cache', $entityManager['name'])),
             'setMetadataDriverImpl' => new Reference('doctrine.orm.' . $entityManager['name'] . '_metadata_driver'),
@@ -880,10 +890,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function loadCacheDriver($cacheName, $objectManagerName, array $cacheDriver, ContainerBuilder $container): string
+    protected function loadCacheDriver($cacheName, $objectManagerName, array $cacheDriver, ContainerBuilder $container, bool $wrapLegacyCache = true): string
     {
-        $serviceId = null;
-        $aliasId   = $this->getObjectManagerElementName(sprintf('%s_%s', $objectManagerName, $cacheName));
+        $aliasId = $this->getObjectManagerElementName(sprintf('%s_%s', $objectManagerName, $cacheName));
 
         switch ($cacheDriver['type'] ?? 'pool') {
             case 'service':
@@ -892,7 +901,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 break;
 
             case 'pool':
-                $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool'] ?? $this->createArrayAdapterCachePool($container, $objectManagerName, $cacheName));
+                $pool      = $cacheDriver['pool'] ?? $this->createArrayAdapterCachePool($container, $objectManagerName, $cacheName);
+                $serviceId = $wrapLegacyCache
+                    ? $this->createPoolCacheDefinition($container, $pool)
+                    : $pool;
 
                 break;
 
@@ -915,9 +927,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *
      * @param array<string, mixed> $entityManager A configured ORM entity manager.
      */
-    protected function loadOrmCacheDrivers(array $entityManager, ContainerBuilder $container)
+    protected function loadOrmCacheDrivers(array $entityManager, ContainerBuilder $container, bool $wrapLegacyCache = true)
     {
-        $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container);
+        $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container, $wrapLegacyCache);
         $this->loadCacheDriver('result_cache', $entityManager['name'], $entityManager['result_cache_driver'], $container);
         $this->loadCacheDriver('query_cache', $entityManager['name'], $entityManager['query_cache_driver'], $container);
 
@@ -925,7 +937,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             return;
         }
 
-        $this->registerMetadataPhpArrayCaching($entityManager['name'], $container);
+        $this->registerMetadataPhpArrayCaching($entityManager['name'], $container, $wrapLegacyCache);
     }
 
     /**
@@ -1026,7 +1038,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         $serviceId = sprintf('doctrine.orm.cache.provider.%s', $poolName);
 
-        $definition = $container->register($serviceId, DoctrineProvider::class);
+        $definition = $container->register($serviceId);
+        $definition->setFactory([DoctrineProvider::class, 'wrap']);
         $definition->addArgument(new Reference($poolName));
 
         return $serviceId;
@@ -1043,7 +1056,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return $id;
     }
 
-    private function registerMetadataPhpArrayCaching(string $entityManagerName, ContainerBuilder $container): void
+    private function registerMetadataPhpArrayCaching(string $entityManagerName, ContainerBuilder $container, bool $wrapLegacyCache = true): void
     {
         $metadataCacheAlias              = $this->getObjectManagerElementName($entityManagerName . '_metadata_cache');
         $decoratedMetadataCacheServiceId = (string) $container->getAlias($metadataCacheAlias);
@@ -1056,12 +1069,23 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ->addTag('kernel.cache_warmer', ['priority' => 1000]); // priority should be higher than ProxyCacheWarmer
 
         $container->setAlias($metadataCacheAlias, $phpArrayCacheDecoratorServiceId);
-        $container->register($phpArrayCacheDecoratorServiceId, DoctrineProvider::class)
-            ->addArgument(
-                new Definition(PhpArrayAdapter::class, [
-                    $phpArrayFile,
-                    new Definition(DoctrineAdapter::class, [new Reference($decoratedMetadataCacheServiceId)]),
-                ])
-            );
+
+        if ($wrapLegacyCache) {
+            $container->register($phpArrayCacheDecoratorServiceId, DoctrineProvider::class)
+                ->setFactory([DoctrineProvider::class, 'wrap'])
+                ->addArgument(
+                    new Definition(PhpArrayAdapter::class, [
+                        $phpArrayFile,
+                        // Wrapping the DoctrineProvider created above in a CacheAdapter unwraps the pool from the provider
+                        (new Definition())
+                            ->setFactory([CacheAdapter::class, 'wrap'])
+                            ->addArgument(new Reference($decoratedMetadataCacheServiceId)),
+                    ])
+                );
+        } else {
+            $container->register($phpArrayCacheDecoratorServiceId, PhpArrayAdapter::class)
+                ->addArgument($phpArrayFile)
+                ->addArgument(new Reference($decoratedMetadataCacheServiceId));
+        }
     }
 }

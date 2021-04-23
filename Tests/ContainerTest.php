@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\Command\Proxy\InfoDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKernel;
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
@@ -23,7 +24,7 @@ use Symfony\Bridge\Doctrine\Logger\DbalLogger;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
-use Symfony\Component\Cache\DoctrineProvider;
+use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 
 use function class_exists;
 use function interface_exists;
@@ -63,7 +64,13 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(Reader::class, $container->get('doctrine.orm.metadata.annotation_reader'));
         $this->assertInstanceOf(Configuration::class, $container->get('doctrine.orm.default_configuration'));
         $this->assertInstanceOf(MappingDriverChain::class, $container->get('doctrine.orm.default_metadata_driver'));
-        $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_metadata_cache'));
+
+        if (method_exists(Configuration::class, 'setMetadataCache')) {
+            $this->assertInstanceOf(PhpArrayAdapter::class, $container->get('doctrine.orm.default_metadata_cache'));
+        } else {
+            $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_metadata_cache'));
+        }
+
         $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_query_cache'));
         $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_result_cache'));
         $this->assertInstanceOf(EntityManager::class, $container->get('doctrine.orm.default_entity_manager'));
