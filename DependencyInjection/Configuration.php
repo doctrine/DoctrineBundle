@@ -14,6 +14,7 @@ use Symfony\Component\DependencyInjection\Exception\LogicException;
 
 use function array_intersect_key;
 use function array_keys;
+use function array_pop;
 use function assert;
 use function class_exists;
 use function constant;
@@ -245,12 +246,17 @@ class Configuration implements ConfigurationInterface
         $node
             ->validate()
             ->always(static function (array $values) {
-                $deprecatedOptions = ['override_url' => true];
-                $deprecatedValues  = array_intersect_key($values, $deprecatedOptions);
+                if (! isset($values['url'])) {
+                    return $values;
+                }
 
-                if ($deprecatedValues) {
-                    $message = count($deprecatedValues) > 1 ? 'options are' : 'option is';
-                    @trigger_error(sprintf('The "doctrine.dbal.%s" %s deprecated since DoctrineBundle 2.4, use the "doctrine.dbal.url" option instead.', implode('", "doctrine.dbal.', array_keys($deprecatedValues)), $message), E_USER_DEPRECATED);
+                $urlConflictingOptions = ['host' => true, 'port' => true, 'user' => true, 'password' => true, 'path' => true, 'dbname' => true, 'unix_socket' => true, 'memory' => true];
+                $urlConflictingValues  = array_keys(array_intersect_key($values, $urlConflictingOptions));
+
+                if ($urlConflictingValues) {
+                    $tail = count($urlConflictingValues) > 1 ? sprintf('or "%s" options', array_pop($urlConflictingValues)) : 'option';
+
+                    @trigger_error(sprintf('Setting the "doctrine.dbal.%s" %s while the "url" one is defined is deprecated since DoctrineBundle 2.4.', implode('", "', $urlConflictingValues), $tail), E_USER_DEPRECATED);
                 }
 
                 return $values;
@@ -263,7 +269,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('port')->info('Defaults to null at runtime.')->end()
                 ->scalarNode('user')->info('Defaults to "root" at runtime.')->end()
                 ->scalarNode('password')->info('Defaults to null at runtime.')->end()
-                ->booleanNode('override_url')->info('Allows overriding parts of the "url" parameter with dbname, host, port, user, and/or password parameters.')->end()
+                ->booleanNode('override_url')->setDeprecated(...$this->getDeprecationMsg('The "doctrine.dbal.override_url" configuration key is deprecated.', '2.4'))->end()
                 ->scalarNode('dbname_suffix')->end()
                 ->scalarNode('application_name')->end()
                 ->scalarNode('charset')->end()
