@@ -11,6 +11,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\Psr6\CacheAdapter;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Connection;
@@ -26,6 +27,7 @@ use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\UnitOfWork;
 use LogicException;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -1038,7 +1040,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         $serviceId = sprintf('doctrine.orm.cache.provider.%s', $poolName);
 
-        $definition = $container->register($serviceId);
+        $definition = $container->register($serviceId, CacheProvider::class);
         $definition->setFactory([DoctrineProvider::class, 'wrap']);
         $definition->addArgument(new Reference($poolName));
 
@@ -1077,7 +1079,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     new Definition(PhpArrayAdapter::class, [
                         $phpArrayFile,
                         // Wrapping the DoctrineProvider created above in a CacheAdapter unwraps the pool from the provider
-                        (new Definition())
+                        (new Definition(CacheItemPoolInterface::class))
                             ->setFactory([CacheAdapter::class, 'wrap'])
                             ->addArgument(new Reference($decoratedMetadataCacheServiceId)),
                     ])

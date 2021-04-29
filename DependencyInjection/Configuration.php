@@ -724,6 +724,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('type')->defaultNull()->end()
                 ->scalarNode('id')->end()
                 ->scalarNode('pool')->end()
+                ->scalarNode('psr6')->defaultFalse()->end()
             ->end();
 
         if ($name === 'metadata_cache_driver') {
