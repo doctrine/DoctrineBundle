@@ -28,6 +28,7 @@ use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 
 use function class_exists;
 use function interface_exists;
+use function method_exists;
 
 class ContainerTest extends TestCase
 {
