@@ -22,7 +22,6 @@ use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\UnitOfWork;
 use LogicException;
-use ReflectionClass;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -49,21 +48,14 @@ use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFacto
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 
-use function array_flip;
 use function array_intersect_key;
 use function array_keys;
-use function array_merge;
-use function array_values;
 use function class_exists;
-use function dirname;
-use function in_array;
 use function interface_exists;
-use function is_dir;
 use function method_exists;
 use function reset;
 use function sprintf;
 use function str_replace;
-use function strpos;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -880,10 +872,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         switch ($cacheDriver['type'] ?? 'pool') {
             case 'service':
                 $serviceId = $cacheDriver['id'];
+
                 break;
 
             case 'pool':
                 $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool'] ?? $this->createArrayAdapterCachePool($container, $objectManagerName, $cacheName));
+
                 break;
 
             default:
