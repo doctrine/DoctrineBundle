@@ -21,8 +21,13 @@ class UpdateSchemaDoctrineCommand extends UpdateCommand
         parent::configure();
 
         $this
-            ->setName('doctrine:schema:update')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
+            ->setName('doctrine:schema:update');
+
+        if ($this->getDefinition()->hasOption('em')) {
+            return;
+        }
+
+        $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**

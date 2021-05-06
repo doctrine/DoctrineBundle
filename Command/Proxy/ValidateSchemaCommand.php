@@ -20,8 +20,13 @@ class ValidateSchemaCommand extends DoctrineValidateSchemaCommand
         parent::configure();
 
         $this
-            ->setName('doctrine:schema:validate')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
+            ->setName('doctrine:schema:validate');
+
+        if ($this->getDefinition()->hasOption('em')) {
+            return;
+        }
+
+        $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**

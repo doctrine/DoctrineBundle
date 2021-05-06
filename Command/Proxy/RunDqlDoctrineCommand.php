@@ -21,7 +21,6 @@ class RunDqlDoctrineCommand extends RunDqlCommand
 
         $this
             ->setName('doctrine:query:dql')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
             ->setHelp(<<<EOT
 The <info>%command.name%</info> command executes the given DQL query and
 outputs the results:
@@ -39,6 +38,12 @@ show:
 <info>php %command.full_name% "SELECT u FROM UserBundle:User u" --first-result=0 --max-result=30</info>
 EOT
         );
+
+        if ($this->getDefinition()->hasOption('em')) {
+            return;
+        }
+
+        $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**
