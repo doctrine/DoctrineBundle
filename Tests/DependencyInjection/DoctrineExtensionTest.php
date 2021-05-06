@@ -751,6 +751,7 @@ class DoctrineExtensionTest extends TestCase
         if (! class_exists(AttributeDriver::class)) {
             self::markTestSkipped('This test requires ORM 2.9 with attribute driver.');
         }
+
         if (PHP_VERSION_ID < 70400) {
             self::markTestSkipped('This test requires PHP 7.4.');
         }
