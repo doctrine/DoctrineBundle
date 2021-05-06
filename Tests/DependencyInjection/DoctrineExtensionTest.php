@@ -10,6 +10,7 @@ use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -30,6 +31,8 @@ use function class_exists;
 use function interface_exists;
 use function sprintf;
 use function sys_get_temp_dir;
+
+use const PHP_VERSION_ID;
 
 class DoctrineExtensionTest extends TestCase
 {
@@ -743,13 +746,51 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
+    public function testAttributesBundleMappingDetection(): void
+    {
+        if (! class_exists(AttributeDriver::class)) {
+            self::markTestSkipped('This test requires ORM 2.9 with attribute driver.');
+        }
+
+        if (PHP_VERSION_ID < 70400) {
+            self::markTestSkipped('This test requires PHP 7.4.');
+        }
+
+        $container = $this->getContainer(['AttributesBundle']);
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager([
+                'default_entity_manager' => 'default',
+                'entity_managers' => [
+                    'default' => [
+                        'mappings' => [
+                            'AttributesBundle' => ['type' => 'attribute'],
+                        ],
+                    ],
+                ],
+            ])
+            ->build();
+        $extension->load([$config], $container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', [
+            new Reference('doctrine.orm.default_attribute_metadata_driver'),
+            'Fixtures\Bundles\AttributesBundle\Entity',
+        ]);
+
+        $attributeDriver = $container->get('doctrine.orm.default_attribute_metadata_driver');
+        $this->assertInstanceOf(AttributeDriver::class, $attributeDriver);
+    }
+
     public function testOrmMergeConfigs(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->getContainer(['XmlBundle', 'AnnotationsBundle']);
+        $container = $this->getContainer(['XmlBundle', 'AnnotationsBundle', 'AttributesBundle']);
         $extension = new DoctrineExtension();
 
         $config1 = BundleConfigurationBuilder::createBuilder()
@@ -761,6 +802,7 @@ class DoctrineExtensionTest extends TestCase
                     'default' => [
                         'mappings' => [
                             'AnnotationsBundle' => [],
+                            'AttributesBundle' => ['type' => 'attribute'],
                         ],
                     ],
                 ],
@@ -788,6 +830,10 @@ class DoctrineExtensionTest extends TestCase
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
+            new Reference('doctrine.orm.default_attribute_metadata_driver'),
+            'Fixtures\Bundles\AttributesBundle\Entity',
+        ]);
+        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_xml_metadata_driver'),
             'Fixtures\Bundles\XmlBundle\Entity',
         ]);

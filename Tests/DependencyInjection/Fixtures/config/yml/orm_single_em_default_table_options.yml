@@ -12,6 +12,7 @@ doctrine:
     orm:
         mappings:
             AnnotationsBundle: ~
+            AttributesBundle: ~
             YamlBundle:
                 dir: Resources/config/doctrine
                 alias: yml

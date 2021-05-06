@@ -8,6 +8,8 @@ doctrine:
     orm:
         mappings:
             AnnotationsBundle: ~
+            AttributesBundle:
+                type: attribute
             YamlBundle:
                 dir: Resources/config/doctrine
                 alias: yml

@@ -697,7 +697,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *         MyBundle2: yml
      *         MyBundle3: { type: annotation, dir: Entities/ }
      *         MyBundle4: { type: xml, dir: Resources/config/doctrine/mapping }
-     *         MyBundle5:
+     *         MyBundle5: { type: attribute, dir: Entities/ }
+     *         MyBundle6:
      *             type: yml
      *             dir: bundle-mappings/
      *             alias: BundleAlias
@@ -877,10 +878,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         switch ($cacheDriver['type'] ?? 'pool') {
             case 'service':
                 $serviceId = $cacheDriver['id'];
+
                 break;
 
             case 'pool':
                 $serviceId = $this->createPoolCacheDefinition($container, $cacheDriver['pool'] ?? $this->createArrayAdapterCachePool($container, $objectManagerName, $cacheName));
+
                 break;
 
             default:
