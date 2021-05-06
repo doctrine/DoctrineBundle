@@ -32,6 +32,8 @@ use function interface_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 
+use const PHP_VERSION_ID;
+
 class DoctrineExtensionTest extends TestCase
 {
     /**
@@ -748,6 +750,9 @@ class DoctrineExtensionTest extends TestCase
     {
         if (! class_exists(AttributeDriver::class)) {
             self::markTestSkipped('This test requires ORM 2.9 with attribute driver.');
+        }
+        if (PHP_VERSION_ID < 70400) {
+            self::markTestSkipped('This test requires PHP 7.4.');
         }
 
         $container = $this->getContainer(['AttributesBundle']);
