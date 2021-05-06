@@ -40,9 +40,9 @@ class InfoDoctrineCommandTest extends TestCase
     }
 
     /**
-     * @return MockObject|Kernel
+     * @return MockObject&Kernel
      */
-    private function setupKernelMocks()
+    private function setupKernelMocks(): MockObject
     {
         $configuration = new Configuration();
         $configuration->setMetadataDriverImpl(new MappingDriverChain());
@@ -59,7 +59,9 @@ class InfoDoctrineCommandTest extends TestCase
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->method('get')->willReturn($registry);
 
-        $kernel = $this->getMockBuilder(Kernel::class)->disableOriginalConstructor()->getMock();
+        $kernel = $this->getMockBuilder(Kernel::class);
+        $kernel->disableOriginalConstructor();
+        $kernel = $kernel->getMock();
         $kernel->method('getBundles')->willReturn([]);
         $kernel->method('getContainer')->willReturn($container);
 
