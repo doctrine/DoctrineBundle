@@ -20,8 +20,13 @@ class CollectionRegionDoctrineCommand extends CollectionRegionCommand
         parent::configure();
 
         $this
-            ->setName('doctrine:cache:clear-collection-region')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
+            ->setName('doctrine:cache:clear-collection-region');
+
+        if ($this->getDefinition()->hasOption('em')) {
+            return;
+        }
+
+        $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**

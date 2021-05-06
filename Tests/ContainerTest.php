@@ -2,6 +2,8 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\Command\Proxy\InfoDoctrineCommand;
+use Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKernel;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
@@ -72,6 +74,8 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(ProxyCacheWarmer::class, $container->get('doctrine.orm.proxy_cache_warmer'));
         $this->assertInstanceOf(ManagerRegistry::class, $container->get('doctrine'));
         $this->assertInstanceOf(UniqueEntityValidator::class, $container->get('doctrine.orm.validator.unique'));
+        $this->assertInstanceOf(InfoDoctrineCommand::class, $container->get('doctrine.mapping_info_command'));
+        $this->assertInstanceOf(UpdateSchemaDoctrineCommand::class, $container->get('doctrine.schema_update_command'));
 
         $this->assertSame($container->get('my.platform'), $container->get('doctrine.dbal.default_connection')->getDatabasePlatform());
 

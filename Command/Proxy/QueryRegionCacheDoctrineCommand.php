@@ -20,8 +20,13 @@ class QueryRegionCacheDoctrineCommand extends QueryRegionCommand
         parent::configure();
 
         $this
-            ->setName('doctrine:cache:clear-query-region')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
+            ->setName('doctrine:cache:clear-query-region');
+
+        if ($this->getDefinition()->hasOption('em')) {
+            return;
+        }
+
+        $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**
