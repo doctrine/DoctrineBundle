@@ -10,7 +10,7 @@ use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\AttributeDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -760,7 +760,7 @@ class DoctrineExtensionTest extends TestCase
                 'entity_managers' => [
                     'default' => [
                         'mappings' => [
-                            'AttributesBundle' => [],
+                            'AttributesBundle' => ['type' => 'attribute'],
                         ],
                     ],
                 ],
