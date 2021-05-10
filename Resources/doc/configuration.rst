@@ -22,9 +22,6 @@ Configuration Reference
                 connections:
                     # A collection of different named connections (e.g. default, conn2, etc)
                     default:
-                        # If true, allows overriding url parameters with explicitly set parameters.
-                        # "dbname", "host", "port", "user", and/or "password" can be overridden.
-                        override_url:         ~
                         dbname:               ~
                         host:                 localhost
                         port:                 ~
@@ -933,7 +930,6 @@ can configure. The following block shows all possible configuration keys:
 
         doctrine:
             dbal:
-                override_url:             true
                 url:                      mysql://user:secret@localhost:1234/otherdatabase # this would override the values below
                 dbname:                   database
                 host:                     localhost

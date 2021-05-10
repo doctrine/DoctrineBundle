@@ -275,7 +275,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function getConnectionOptions(array $connection): array
     {
-        $options = ['connection_override_options' => []] + $connection;
+        $options = $connection;
 
         $connectionDefaults = [
             'host' => 'localhost',
@@ -284,7 +284,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'password' => null,
         ];
 
-        if ($options['override_url']) {
+        if ($options['override_url'] ?? false) {
             $options['connection_override_options'] = array_intersect_key($options, ['dbname' => null] + $connectionDefaults);
         }
 
