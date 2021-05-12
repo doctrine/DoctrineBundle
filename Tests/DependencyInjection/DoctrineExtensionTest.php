@@ -2,9 +2,12 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Closure;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
@@ -14,11 +17,13 @@ use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\DoctrineAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Cache\DoctrineProvider;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -29,6 +34,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use function array_values;
 use function class_exists;
 use function interface_exists;
+use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 
@@ -1069,6 +1075,41 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertEquals(PoolingShardManager::class, $fooManagerDef->getClass());
         $this->assertEquals($managerClass, $bazManagerDef->getClass());
+    }
+
+    /** @requires PHP 8 */
+    public function testAsEntityListenerAttribute()
+    {
+        if (! method_exists(ContainerBuilder::class, 'getAutoconfiguredAttributes')) {
+            $this->markTestSkipped('symfony/dependency-injection 5.3.0 needed');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $attributes = $container->getAutoconfiguredAttributes();
+        $this->assertInstanceOf(Closure::class, $attributes[AsEntityListener::class]);
+
+        $reflector  = new ReflectionClass(Php8EntityListener::class);
+        $definition = new ChildDefinition('');
+        $attribute  = $reflector->getAttributes(AsEntityListener::class)[0]->newInstance();
+
+        $attributes[AsEntityListener::class]($definition, $attribute);
+
+        $expected = [
+            'event'          => null,
+            'method'         => null,
+            'lazy'           => null,
+            'entity_manager' => null,
+        ];
+        $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
 
     /** @param list<string> $bundles */

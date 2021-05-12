@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider;
@@ -523,6 +524,17 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->registerForAutoconfiguration(AbstractIdGenerator::class)
             ->addTag(IdGeneratorPass::ID_GENERATOR_TAG);
+
+        if (method_exists($container, 'registerAttributeForAutoconfiguration')) {
+            $container->registerAttributeForAutoconfiguration(AsEntityListener::class, static function (ChildDefinition $definition, AsEntityListener $attribute) {
+                $definition->addTag('doctrine.orm.entity_listener', [
+                    'event'          => $attribute->event,
+                    'method'         => $attribute->method,
+                    'lazy'           => $attribute->lazy,
+                    'entity_manager' => $attribute->entityManager,
+                ]);
+            });
+        }
 
         /** @see DoctrineBundle::boot() */
         $container->getDefinition($defaultEntityManagerDefinitionId)
