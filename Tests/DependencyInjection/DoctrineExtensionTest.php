@@ -9,13 +9,11 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
 use Doctrine\Common\Cache\Cache;
-use Doctrine\Common\Cache\Psr6\CacheAdapter;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
-use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use InvalidArgumentException;
@@ -451,41 +449,15 @@ class DoctrineExtensionTest extends TestCase
             $definition->getArguments()
         );
 
-        $wrapsLegacyCache = ! method_exists(Configuration::class, 'setMetadataCache');
-
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
-        if ($wrapsLegacyCache) {
-            $this->assertEquals(DoctrineProvider::class, $definition->getClass());
-            $arguments  = $definition->getArguments();
-            $definition = $arguments[0];
-            $this->assertInstanceOf(Definition::class, $definition);
-        }
-
         $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
 
         $arguments = $definition->getArguments();
         $this->assertSame('%kernel.cache_dir%/doctrine/orm/default_metadata.php', $arguments[0]);
-        if ($wrapsLegacyCache) {
-            $this->assertInstanceOf(Definition::class, $arguments[1]);
-            $this->assertEquals([CacheAdapter::class, 'wrap'], $arguments[1]->getFactory());
-            $wrappedDefinition = $arguments[1]->getArguments()[0];
-            $this->assertInstanceOf(Reference::class, $wrappedDefinition);
-            $this->assertEquals('cache.doctrine.orm.provider.default.metadata', (string) $wrappedDefinition);
-        } else {
-            $this->assertInstanceOf(Reference::class, $arguments[1]);
-            $wrappedDefinition = (string) $arguments[1];
-        }
+        $this->assertInstanceOf(Reference::class, $arguments[1]);
+        $wrappedDefinition = (string) $arguments[1];
 
         $definition = $container->getDefinition((string) $wrappedDefinition);
-
-        if ($wrapsLegacyCache) {
-            $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-            $arguments = $definition->getArguments();
-            $this->assertInstanceOf(Reference::class, $arguments[0]);
-            $this->assertEquals('cache.doctrine.orm.default.metadata', (string) $arguments[0]);
-            $definition = $container->getDefinition((string) $arguments[0]);
-        }
-
         $this->assertSame(ArrayAdapter::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_query_cache'));
@@ -869,6 +841,7 @@ class DoctrineExtensionTest extends TestCase
         foreach ($calls as $call) {
             if ($call[0] === 'setAutoGenerateProxyClasses') {
                 $this->assertFalse($container->getParameterBag()->resolveValue($call[1][0]));
+
                 break;
             }
         }
@@ -994,38 +967,28 @@ class DoctrineExtensionTest extends TestCase
     /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
     public static function legacyCacheConfigurationProvider(): array
     {
-        $usePsr6 = method_exists(Configuration::class, 'setMetadataCache');
-
         return [
             'metadata_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => $usePsr6
-                    ? 'cache.doctrine.orm.default.metadata.php_array'
-                    : 'cache.doctrine.orm.provider.default.metadata.php_array',
+                'expectedAliasTarget' => 'cache.doctrine.orm.default.metadata.php_array',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
             'metadata_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => $usePsr6
-                    ? 'metadata_cache_pool.php_array'
-                    : 'cache.doctrine.orm.provider.default.metadata.php_array',
+                'expectedAliasTarget' => 'metadata_cache_pool.php_array',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'metadata_cache_pool'],
             ],
             'metadata_cache_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => $usePsr6
-                    ? 'cache.doctrine.orm.adapter.default.metadata.php_array'
-                    : 'service_target_metadata.php_array',
+                'expectedAliasTarget' => 'cache.doctrine.orm.adapter.default.metadata.php_array',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata'],
             ],
             'metadata_psr6_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => $usePsr6
-                    ? 'service_target_metadata_psr6.php_array'
-                    : 'cache.doctrine.orm.provider.default.metadata.php_array',
+                'expectedAliasTarget' => 'service_target_metadata_psr6.php_array',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata_psr6'],
             ],

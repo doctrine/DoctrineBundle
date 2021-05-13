@@ -60,7 +60,7 @@
         "sort-packages": true
     },
     "conflict": {
-        "doctrine/orm": "<2.6",
+        "doctrine/orm": "<2.9",
         "twig/twig": "<1.34|>=2.0,<2.4"
     },
     "suggest": {

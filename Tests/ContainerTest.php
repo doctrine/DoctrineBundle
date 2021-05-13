@@ -28,7 +28,6 @@ use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 
 use function class_exists;
 use function interface_exists;
-use function method_exists;
 
 class ContainerTest extends TestCase
 {
@@ -65,13 +64,7 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(Reader::class, $container->get('doctrine.orm.metadata.annotation_reader'));
         $this->assertInstanceOf(Configuration::class, $container->get('doctrine.orm.default_configuration'));
         $this->assertInstanceOf(MappingDriverChain::class, $container->get('doctrine.orm.default_metadata_driver'));
-
-        if (method_exists(Configuration::class, 'setMetadataCache')) {
-            $this->assertInstanceOf(PhpArrayAdapter::class, $container->get('doctrine.orm.default_metadata_cache'));
-        } else {
-            $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_metadata_cache'));
-        }
-
+        $this->assertInstanceOf(PhpArrayAdapter::class, $container->get('doctrine.orm.default_metadata_cache'));
         $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_query_cache'));
         $this->assertInstanceOf(DoctrineProvider::class, $container->get('doctrine.orm.default_result_cache'));
         $this->assertInstanceOf(EntityManager::class, $container->get('doctrine.orm.default_entity_manager'));

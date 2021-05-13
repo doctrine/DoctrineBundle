@@ -12,7 +12,6 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\DriverManager;
-use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use InvalidArgumentException;
@@ -431,11 +430,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.em2_configuration', (string) $arguments[1]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
-        if (method_exists(OrmConfiguration::class, 'setMetadataCache')) {
-            $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
-        } else {
-            $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        }
+        $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_query_cache'));
         $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
@@ -479,18 +474,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
-        if (method_exists(OrmConfiguration::class, 'setMetadataCache')) {
-            $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
-        } else {
-            $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        }
+        $this->assertDICDefinitionClass($definition, PhpArrayAdapter::class);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em2_metadata_cache'));
-        if (method_exists(OrmConfiguration::class, 'setMetadataCache')) {
-            $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
-        } else {
-            $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        }
+        $this->assertDICDefinitionClass($definition, PhpArrayAdapter::class);
     }
 
     public function testDependencyInjectionImportsOverrideDefaults(): void
@@ -505,13 +492,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setAutoGenerateProxyClasses', ['%doctrine.orm.auto_generate_proxy_classes%']);
 
         $cacheDefinition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
-        if (method_exists(OrmConfiguration::class, 'setMetadataCache')) {
-            $this->assertEquals(PhpArrayAdapter::class, $cacheDefinition->getClass());
-            $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setMetadataCache', [new Reference('doctrine.orm.default_metadata_cache')]);
-        } else {
-            $this->assertEquals([DoctrineProvider::class, 'wrap'], $cacheDefinition->getFactory());
-            $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setMetadataCacheImpl', [new Reference('doctrine.orm.default_metadata_cache')]);
-        }
+        $this->assertEquals(PhpArrayAdapter::class, $cacheDefinition->getClass());
+        $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setMetadataCache', [new Reference('doctrine.orm.default_metadata_cache')]);
     }
 
     public function testSingleEntityManagerMultipleMappingBundleDefinitions(): void
@@ -1339,6 +1321,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @param list<mixed> $params
+     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallAt(
@@ -1367,6 +1350,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
      *
      * @param list<mixed> $params
+     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallOnce(
@@ -1400,6 +1384,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @param list<mixed> $params
+     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallCount(
@@ -1433,6 +1418,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * Assertion for the DI Container, check if the given definition does not contain a method call with the given parameters.
      *
      * @param list<mixed> $params
+     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionNoMethodCall(
