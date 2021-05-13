@@ -79,6 +79,7 @@ class ConnectionFactoryTest extends TestCase
         $this->assertSame('utf8mb4', $connection->getParams()['charset']);
     }
 
+    /** @group legacy */
     public function testConnectionOverrideOptions(): void
     {
         $params = [

@@ -11,10 +11,14 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
 
+use function array_intersect_key;
 use function array_key_exists;
+use function array_keys;
 use function assert;
 use function class_exists;
 use function constant;
+use function count;
+use function implode;
 use function in_array;
 use function is_array;
 use function is_bool;
@@ -23,10 +27,14 @@ use function is_string;
 use function key;
 use function method_exists;
 use function reset;
+use function sprintf;
 use function strlen;
 use function strpos;
 use function strtoupper;
 use function substr;
+use function trigger_error;
+
+use const E_USER_DEPRECATED;
 
 /**
  * This class contains the configuration information for the bundle
@@ -229,6 +237,19 @@ class Configuration implements ConfigurationInterface
     private function configureDbalDriverNode(ArrayNodeDefinition $node): void
     {
         $node
+            ->validate()
+            ->always(static function (array $values) {
+                $deprecatedOptions = ['override_url' => true];
+                $deprecatedValues  = array_intersect_key($values, $deprecatedOptions);
+
+                if ($deprecatedValues) {
+                    $message = count($deprecatedValues) > 1 ? 'options are' : 'option is';
+                    @trigger_error(sprintf('The "doctrine.dbal.%s" %s deprecated since DoctrineBundle 2.4, use the "doctrine.dbal.url" option instead.', implode('", "doctrine.dbal.', array_keys($deprecatedValues)), $message), E_USER_DEPRECATED);
+                }
+
+                return $values;
+            })
+            ->end()
             ->children()
                 ->scalarNode('url')->info('A URL with connection information; any parameter value parsed from this string will override explicitly set parameters')->end()
                 ->scalarNode('dbname')->end()
@@ -236,7 +257,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('port')->info('Defaults to null at runtime.')->end()
                 ->scalarNode('user')->info('Defaults to "root" at runtime.')->end()
                 ->scalarNode('password')->info('Defaults to null at runtime.')->end()
-                ->booleanNode('override_url')->defaultValue(false)->info('Allows overriding parts of the "url" parameter with dbname, host, port, user, and/or password parameters.')->end()
+                ->booleanNode('override_url')->info('Allows overriding parts of the "url" parameter with dbname, host, port, user, and/or password parameters.')->end()
                 ->scalarNode('dbname_suffix')->end()
                 ->scalarNode('application_name')->end()
                 ->scalarNode('charset')->end()
