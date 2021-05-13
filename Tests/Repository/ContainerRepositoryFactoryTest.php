@@ -126,9 +126,7 @@ EXCEPTION
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
-    /**
-     * @param array<string, object> $services
-     */
+    /** @param array<string, object> $services */
     private function createContainer(array $services): ContainerInterface
     {
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
@@ -146,9 +144,7 @@ EXCEPTION
         return $container;
     }
 
-    /**
-     * @param array<class-string, ?string> $entityRepositoryClasses
-     */
+    /** @param array<class-string, ?string> $entityRepositoryClasses */
     private function createEntityManager(array $entityRepositoryClasses): EntityManagerInterface
     {
         $classMetadatas = [];

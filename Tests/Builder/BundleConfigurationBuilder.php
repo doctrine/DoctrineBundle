@@ -60,9 +60,7 @@ class BundleConfigurationBuilder
         return $this;
     }
 
-    /**
-     * @param array<string, mixed> $config
-     */
+    /** @param array<string, mixed> $config */
     public function addConnection(array $config): self
     {
         $this->configuration['dbal'] = $config;
@@ -70,9 +68,7 @@ class BundleConfigurationBuilder
         return $this;
     }
 
-    /**
-     * @param array<string, mixed> $config
-     */
+    /** @param array<string, mixed> $config */
     public function addEntityManager(array $config): self
     {
         $this->configuration['orm'] = $config;
@@ -80,9 +76,7 @@ class BundleConfigurationBuilder
         return $this;
     }
 
-    /**
-     * @param array<string, mixed> $config
-     */
+    /** @param array<string, mixed> $config */
     public function addSecondLevelCache(array $config, string $manager = 'default'): self
     {
         $this->configuration['orm']['entity_managers'][$manager]['second_level_cache'] = $config;
@@ -90,9 +84,7 @@ class BundleConfigurationBuilder
         return $this;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public function build(): array
     {
         return $this->configuration;

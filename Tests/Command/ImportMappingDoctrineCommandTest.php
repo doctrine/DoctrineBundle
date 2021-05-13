@@ -15,9 +15,7 @@ use function file_get_contents;
 use function interface_exists;
 use function sys_get_temp_dir;
 
-/**
- * @group legacy
- */
+/** @group legacy */
 class ImportMappingDoctrineCommandTest extends TestCase
 {
     /** @var TestKernel|null */
@@ -38,9 +36,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
     protected function setup(): void
     {
         $this->kernel = new class () extends TestKernel {
-            /**
-             * @return iterable<Bundle>
-             */
+            /** @return iterable<Bundle> */
             public function registerBundles(): iterable
             {
                 yield from parent::registerBundles();

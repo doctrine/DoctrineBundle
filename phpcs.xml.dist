@@ -28,7 +28,4 @@
     <rule ref="Squiz.Classes.ClassFileName.NoMatch">
         <exclude-pattern>Tests/*</exclude-pattern>
     </rule>
-    <rule ref="SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedProperty">
-        <exclude-pattern>Tests/DependencyInjection/Fixtures/*</exclude-pattern>
-    </rule>
 </ruleset>

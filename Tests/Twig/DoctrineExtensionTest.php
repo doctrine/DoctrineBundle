@@ -103,9 +103,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('1', DoctrineExtension::escapeFunction(true));
     }
 
-    /**
-     * @group legacy
-     */
+    /** @group legacy */
     public function testItHighlightsSqlQueriesUsingCssClasses(): void
     {
         $extension = new DoctrineExtension();
@@ -119,9 +117,7 @@ class DoctrineExtensionTest extends TestCase
         );
     }
 
-    /**
-     * @group legacy
-     */
+    /** @group legacy */
     public function testItDoesNotOutputDuplicatePreTags(): void
     {
         $extension = new DoctrineExtension();
@@ -135,9 +131,7 @@ class DoctrineExtensionTest extends TestCase
         );
     }
 
-    /**
-     * @group legacy
-     */
+    /** @group legacy */
     public function testItUsesCssOnTheDivTag(): void
     {
         $extension = new DoctrineExtension();

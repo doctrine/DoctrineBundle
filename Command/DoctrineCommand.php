@@ -88,9 +88,7 @@ abstract class DoctrineCommand extends Command
         return $this->getDoctrine()->getConnection($name);
     }
 
-    /**
-     * @return ManagerRegistry
-     */
+    /** @return ManagerRegistry */
     protected function getDoctrine()
     {
         return $this->doctrine;

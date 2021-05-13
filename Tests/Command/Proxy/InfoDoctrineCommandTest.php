@@ -39,9 +39,7 @@ class InfoDoctrineCommandTest extends TestCase
         );
     }
 
-    /**
-     * @return MockObject&Kernel
-     */
+    /** @return MockObject&Kernel */
     private function setupKernelMocks(): MockObject
     {
         $configuration = new Configuration();

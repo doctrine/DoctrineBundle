@@ -23,9 +23,7 @@ class DbalTestKernel extends Kernel
     /** @var string|null */
     private $projectDir;
 
-    /**
-     * @param array<string, mixed> $dbalConfig
-     */
+    /** @param array<string, mixed> $dbalConfig */
     public function __construct(array $dbalConfig = ['driver' => 'pdo_sqlite'])
     {
         $this->dbalConfig = $dbalConfig;
@@ -33,9 +31,7 @@ class DbalTestKernel extends Kernel
         parent::__construct('test', true);
     }
 
-    /**
-     * @return iterable<Bundle>
-     */
+    /** @return iterable<Bundle> */
     public function registerBundles(): iterable
     {
         return [

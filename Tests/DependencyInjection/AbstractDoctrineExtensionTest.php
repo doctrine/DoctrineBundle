@@ -10,6 +10,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use InvalidArgumentException;
@@ -39,9 +40,7 @@ use function uniqid;
 
 use const DIRECTORY_SEPARATOR;
 
-/**
- * @psalm-import-type Params from \Doctrine\DBAL\DriverManager
- */
+/** @psalm-import-type Params from DriverManager */
 abstract class AbstractDoctrineExtensionTest extends TestCase
 {
     abstract protected function loadFromFile(ContainerBuilder $container, string $file): void;
@@ -1261,9 +1260,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertFalse($collectorDefinition->getArguments()[1]);
     }
 
-    /**
-     * @param list<string> $bundles
-     */
+    /** @param list<string> $bundles */
     private function loadContainer(
         string $fixture,
         array $bundles = ['YamlBundle'],
@@ -1283,9 +1280,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         return $container;
     }
 
-    /**
-     * @param list<string> $bundles
-     */
+    /** @param list<string> $bundles */
     private function getContainer(array $bundles): ContainerBuilder
     {
         $map = [];
@@ -1321,9 +1316,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals($expectedClass, $definition->getClass(), 'Expected Class of the DIC Container Service Definition is wrong.');
     }
 
-    /**
-     * @param list<mixed> $args
-     */
+    /** @param list<mixed> $args */
     private function assertDICConstructorArguments(Definition $definition, array $args): void
     {
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '" . $definition->getClass() . "' don't match.");
@@ -1331,7 +1324,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @param list<mixed> $params
-     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallAt(
@@ -1360,7 +1352,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
      *
      * @param list<mixed> $params
-     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallOnce(
@@ -1394,7 +1385,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @param list<mixed> $params
-     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallCount(
@@ -1428,7 +1418,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * Assertion for the DI Container, check if the given definition does not contain a method call with the given parameters.
      *
      * @param list<mixed> $params
-     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionNoMethodCall(

@@ -19,9 +19,7 @@ use function is_subclass_of;
 
 use const PHP_EOL;
 
-/**
- * @psalm-import-type Params from DriverManager
- */
+/** @psalm-import-type Params from DriverManager */
 class ConnectionFactory
 {
     /** @var mixed[][] */
@@ -30,9 +28,7 @@ class ConnectionFactory
     /** @var bool */
     private $initialized = false;
 
-    /**
-     * @param mixed[][] $typesConfig
-     */
+    /** @param mixed[][] $typesConfig */
     public function __construct(array $typesConfig)
     {
         $this->typesConfig = $typesConfig;
@@ -43,10 +39,9 @@ class ConnectionFactory
      *
      * @param mixed[]               $params
      * @param array<string, string> $mappingTypes
+     * @psalm-param Params $params
      *
      * @return Connection
-     *
-     * @psalm-param Params $params
      */
     public function createConnection(array $params, ?Configuration $config = null, ?EventManager $eventManager = null, array $mappingTypes = [])
     {

@@ -125,9 +125,7 @@ class DoctrineDataCollectorTest extends TestCase
         return $metadata;
     }
 
-    /**
-     * @param array<string, object> $managers
-     */
+    /** @param array<string, object> $managers */
     private function createCollector(array $managers, bool $shouldValidateSchema = true): DoctrineDataCollector
     {
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();

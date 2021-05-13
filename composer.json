@@ -38,7 +38,7 @@
         "symfony/service-contracts": "^1.1.1|^2.0"
     },
     "require-dev": {
-        "doctrine/coding-standard": "^8.0",
+        "doctrine/coding-standard": "^9.0",
         "doctrine/orm": "^2.9-dev",
         "friendsofphp/proxy-manager-lts": "^1.0",
         "phpunit/phpunit": "^7.5 || ^8.0 || ^9.3",

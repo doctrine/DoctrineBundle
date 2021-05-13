@@ -20,9 +20,7 @@ class ConfigurationTest extends TestCase
      */
     protected $preserveGlobalState = false;
 
-    /**
-     * @runInSeparateProcess
-     */
+    /** @runInSeparateProcess */
     public function testGetConfigTreeBuilderDoNotUseDoctrineCommon(): void
     {
         $configuration = new Configuration(true);
