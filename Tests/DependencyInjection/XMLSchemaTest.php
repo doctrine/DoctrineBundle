@@ -10,9 +10,7 @@ use function substr;
 
 class XMLSchemaTest extends TestCase
 {
-    /**
-     * @return list<array{0: string}>
-     */
+    /** @return list<array{0: string}> */
     public static function dataValidateSchemaFiles(): array
     {
         $schemaFiles = [];
@@ -28,9 +26,7 @@ class XMLSchemaTest extends TestCase
         return $schemaFiles;
     }
 
-    /**
-     * @dataProvider dataValidateSchemaFiles
-     */
+    /** @dataProvider dataValidateSchemaFiles */
     public function testValidateSchema(string $file): void
     {
         $found = false;

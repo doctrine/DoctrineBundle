@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\Persistence\ManagerRegistry;
 use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,9 +17,7 @@ use function array_merge;
 use function sys_get_temp_dir;
 use function unlink;
 
-/**
- * @psalm-import-type Params from \Doctrine\DBAL\DriverManager
- */
+/** @psalm-import-type Params from DriverManager */
 class CreateDatabaseDoctrineTest extends TestCase
 {
     public function tearDown(): void
@@ -55,9 +54,7 @@ class CreateDatabaseDoctrineTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider provideShardOption
-     */
+    /** @dataProvider provideShardOption */
     public function testExecuteWithShardAlias(string $shardOption): void
     {
         $connectionName = 'default';
@@ -116,10 +113,9 @@ class CreateDatabaseDoctrineTest extends TestCase
 
     /**
      * @param mixed[]|null $params Connection parameters
+     * @psalm-param Params $params
      *
      * @return MockObject&Container
-     *
-     * @psalm-param Params $params
      */
     private function getMockContainer(string $connectionName, ?array $params = null): MockObject
     {

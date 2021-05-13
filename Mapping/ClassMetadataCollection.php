@@ -15,49 +15,37 @@ class ClassMetadataCollection
     /** @var ClassMetadata[] */
     private $metadata;
 
-    /**
-     * @param ClassMetadata[] $metadata
-     */
+    /** @param ClassMetadata[] $metadata */
     public function __construct(array $metadata)
     {
         $this->metadata = $metadata;
     }
 
-    /**
-     * @return ClassMetadata[]
-     */
+    /** @return ClassMetadata[] */
     public function getMetadata()
     {
         return $this->metadata;
     }
 
-    /**
-     * @param string $path
-     */
+    /** @param string $path */
     public function setPath($path)
     {
         $this->path = $path;
     }
 
-    /**
-     * @return string
-     */
+    /** @return string */
     public function getPath()
     {
         return $this->path;
     }
 
-    /**
-     * @param string $namespace
-     */
+    /** @param string $namespace */
     public function setNamespace($namespace)
     {
         $this->namespace = $namespace;
     }
 
-    /**
-     * @return string
-     */
+    /** @return string */
     public function getNamespace()
     {
         return $this->namespace;

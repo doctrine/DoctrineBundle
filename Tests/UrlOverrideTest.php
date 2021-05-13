@@ -28,9 +28,7 @@ class UrlOverrideTest extends TestCase
         );
     }
 
-    /**
-     * @return array<string, list<array<string, (bool|string|null)>>>
-     */
+    /** @return array<string, list<array<string, (bool|string|null)>>> */
     public function connectionDataProvider(): array
     {
         return [

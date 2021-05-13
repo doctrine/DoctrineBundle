@@ -24,9 +24,7 @@ class TestKernel extends Kernel
         parent::__construct('test', true);
     }
 
-    /**
-     * @return iterable<Bundle>
-     */
+    /** @return iterable<Bundle> */
     public function registerBundles(): iterable
     {
         return [

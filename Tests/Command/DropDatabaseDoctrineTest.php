@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use Generator;
@@ -19,9 +20,7 @@ use function class_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 
-/**
- * @psalm-import-type Params from \Doctrine\DBAL\DriverManager
- */
+/** @psalm-import-type Params from DriverManager */
 class DropDatabaseDoctrineTest extends TestCase
 {
     /**
@@ -142,10 +141,9 @@ class DropDatabaseDoctrineTest extends TestCase
 
     /**
      * @param list<mixed> $params Connection parameters
+     * @psalm-param Params $params
      *
      * @return MockObject&Container
-     *
-     * @psalm-param Params $params
      */
     private function getMockContainer(string $connectionName, array $params): MockObject
     {

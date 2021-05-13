@@ -33,9 +33,7 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
     /** @var string[] */
     private $bundles;
 
-    /**
-     * @param string[] $bundles
-     */
+    /** @param string[] $bundles */
     public function __construct(ManagerRegistry $doctrine, array $bundles)
     {
         parent::__construct($doctrine);

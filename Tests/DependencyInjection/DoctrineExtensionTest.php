@@ -203,9 +203,7 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
     }
 
-    /**
-     * @return mixed[][][][]
-     */
+    /** @return mixed[][][][] */
     public function getAutomappingConfigurations(): array
     {
         return [
@@ -863,9 +861,7 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
-    /**
-     * @group legacy
-     */
+    /** @group legacy */
     public function testInvalidCacheConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -923,9 +919,7 @@ class DoctrineExtensionTest extends TestCase
         $this->testCacheConfiguration($expectedAliasName, $expectedAliasTarget, $cacheName, $cacheConfig);
     }
 
-    /**
-     * @return array<string, array<string, string|array{type: ?string, pool?: string}>>
-     */
+    /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
     public static function legacyCacheConfigurationProvider(): array
     {
         return [
@@ -950,9 +944,7 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    /**
-     * @return array<string, array<string, string|array{type: ?string, pool?: string}>>
-     */
+    /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
     public static function cacheConfigurationProvider(): array
     {
         return [
@@ -1033,9 +1025,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals($managerClass, $bazManagerDef->getClass());
     }
 
-    /**
-     * @param list<string> $bundles
-     */
+    /** @param list<string> $bundles */
     private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
     {
         $map = [];
@@ -1061,17 +1051,13 @@ class DoctrineExtensionTest extends TestCase
         return $container;
     }
 
-    /**
-     * @param list<mixed> $args
-     */
+    /** @param list<mixed> $args */
     private function assertDICConstructorArguments(Definition $definition, array $args): void
     {
         $this->assertEquals($args, $definition->getArguments(), "Expected and actual DIC Service constructor arguments of definition '" . $definition->getClass() . "' don't match.");
     }
 
-    /**
-     * @param list<mixed> $params
-     */
+    /** @param list<mixed> $params */
     private function assertDICDefinitionMethodCallAt(int $pos, Definition $definition, string $methodName, ?array $params = null): void
     {
         $calls = $definition->getMethodCalls();

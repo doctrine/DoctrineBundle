@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DataCollector;
 
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
@@ -29,7 +30,7 @@ use function usort;
  *    sql: string,
  *    params: ?array<array-key, mixed>,
  *    runnable: bool,
- *    types: ?array<array-key, \Doctrine\DBAL\Types\Type|int|string|null>,
+ *    types: ?array<array-key, Type|int|string|null>,
  * }
  * @psalm-type DataType = array{
  *    caches: array{
@@ -180,49 +181,37 @@ class DoctrineDataCollector extends BaseCollector
         $this->groupedQueries   = null;
     }
 
-    /**
-     * @return array<string, array<string, string>>
-     */
+    /** @return array<string, array<string, string>> */
     public function getEntities()
     {
         return $this->data['entities'];
     }
 
-    /**
-     * @return array<string, array<string, list<string>>>
-     */
+    /** @return array<string, array<string, list<string>>> */
     public function getMappingErrors()
     {
         return $this->data['errors'];
     }
 
-    /**
-     * @return int
-     */
+    /** @return int */
     public function getCacheHitsCount()
     {
         return $this->data['caches']['counts']['hits'];
     }
 
-    /**
-     * @return int
-     */
+    /** @return int */
     public function getCachePutsCount()
     {
         return $this->data['caches']['counts']['puts'];
     }
 
-    /**
-     * @return int
-     */
+    /** @return int */
     public function getCacheMissesCount()
     {
         return $this->data['caches']['counts']['misses'];
     }
 
-    /**
-     * @return bool
-     */
+    /** @return bool */
     public function getCacheEnabled()
     {
         return $this->data['caches']['enabled'];
@@ -230,7 +219,6 @@ class DoctrineDataCollector extends BaseCollector
 
     /**
      * @return array<string, array<string, int>>
-     *
      * @psalm-return array<"puts"|"hits"|"misses", array<string, int>>
      */
     public function getCacheRegions()
@@ -238,17 +226,13 @@ class DoctrineDataCollector extends BaseCollector
         return $this->data['caches']['regions'];
     }
 
-    /**
-     * @return array<string, int>
-     */
+    /** @return array<string, int> */
     public function getCacheCounts()
     {
         return $this->data['caches']['counts'];
     }
 
-    /**
-     * @return int
-     */
+    /** @return int */
     public function getInvalidEntityCount()
     {
         if ($this->invalidEntityCount === null) {
@@ -260,7 +244,6 @@ class DoctrineDataCollector extends BaseCollector
 
     /**
      * @return string[][]
-     *
      * @psalm-return array<string, list<QueryType&array{count: int, index: int, executionPercent: float}>>
      */
     public function getGroupedQueries()
@@ -316,9 +299,7 @@ class DoctrineDataCollector extends BaseCollector
         return $executionTimeMS / $totalExecutionTimeMS * 100;
     }
 
-    /**
-     * @return int
-     */
+    /** @return int */
     public function getGroupedQueryCount()
     {
         $count = 0;

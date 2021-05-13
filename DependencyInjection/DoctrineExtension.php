@@ -518,9 +518,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->registerForAutoconfiguration(AbstractIdGenerator::class)
             ->addTag(IdGeneratorPass::ID_GENERATOR_TAG);
 
-        /**
-         * @see DoctrineBundle::boot()
-         */
+        /** @see DoctrineBundle::boot() */
         $container->getDefinition($defaultEntityManagerDefinitionId)
             ->addTag('container.preload', [
                 'class' => Autoloader::class,
