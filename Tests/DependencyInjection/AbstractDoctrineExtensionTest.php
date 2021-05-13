@@ -1321,7 +1321,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @param list<mixed> $params
-     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallAt(
@@ -1350,7 +1349,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * Assertion for the DI Container, check if the given definition contains a method call with the given parameters.
      *
      * @param list<mixed> $params
-     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallOnce(
@@ -1384,7 +1382,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     /**
      * @param list<mixed> $params
-     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionMethodCallCount(
@@ -1418,7 +1415,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * Assertion for the DI Container, check if the given definition does not contain a method call with the given parameters.
      *
      * @param list<mixed> $params
-     *
      * @psalm-param Params $params
      */
     private function assertDICDefinitionNoMethodCall(
