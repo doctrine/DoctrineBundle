@@ -918,7 +918,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         // Create a wrapper as required
         if ($isPsr6 && ! $usePsr6) {
-            $wrappedServiceId = sprintf('cache.doctrine.orm.provider.%s.%s', $objectManagerName, $cacheName);
+            $wrappedServiceId = sprintf('doctrine.orm.cache.provider.%s.%s', $objectManagerName, $cacheName);
 
             $definition = $container->register($wrappedServiceId, CacheProvider::class);
             $definition->setFactory([DoctrineProvider::class, 'wrap']);
@@ -1050,17 +1050,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         $transportFactoryDefinition->addTag('messenger.transport_factory');
-    }
-
-    private function createPoolCacheDefinition(ContainerBuilder $container, string $poolName): string
-    {
-        $serviceId = sprintf('doctrine.orm.cache.provider.%s', $poolName);
-
-        $definition = $container->register($serviceId, CacheProvider::class);
-        $definition->setFactory([DoctrineProvider::class, 'wrap']);
-        $definition->addArgument(new Reference($poolName));
-
-        return $serviceId;
     }
 
     private function createArrayAdapterCachePool(ContainerBuilder $container, string $objectManagerName, string $cacheName): string

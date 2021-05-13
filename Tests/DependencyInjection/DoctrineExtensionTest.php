@@ -1001,25 +1001,25 @@ class DoctrineExtensionTest extends TestCase
         return [
             'query_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_query_cache',
-                'expectedAliasTarget' => 'cache.doctrine.orm.provider.default.query',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.query',
                 'cacheName' => 'query_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
             'result_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_result_cache',
-                'expectedAliasTarget' => 'cache.doctrine.orm.provider.default.result',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.result',
                 'cacheName' => 'result_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
             'query_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_query_cache',
-                'expectedAliasTarget' => 'cache.doctrine.orm.provider.default.query',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.query',
                 'cacheName' => 'query_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'query_cache_pool'],
             ],
             'result_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_result_cache',
-                'expectedAliasTarget' => 'cache.doctrine.orm.provider.default.result',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.result',
                 'cacheName' => 'result_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'result_cache_pool'],
             ],
