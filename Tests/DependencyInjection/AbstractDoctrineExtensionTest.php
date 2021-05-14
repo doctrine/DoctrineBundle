@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilter
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
@@ -17,7 +18,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Symfony\Component\Cache\DoctrineProvider;
+use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -429,16 +430,16 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.em2_configuration', (string) $arguments[1]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
-        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
+        $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_query_cache'));
-        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
+        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
         $this->assertEquals('cache.doctrine.orm.em1.query', (string) $arguments[0]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_result_cache'));
-        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
+        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
         $this->assertEquals('cache.doctrine.orm.em1.result', (string) $arguments[0]);
@@ -473,10 +474,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
-        $this->assertDICDefinitionClass($definition, DoctrineProvider::class);
+        $this->assertDICDefinitionClass($definition, PhpArrayAdapter::class);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em2_metadata_cache'));
-        $this->assertDICDefinitionClass($definition, DoctrineProvider::class);
+        $this->assertDICDefinitionClass($definition, PhpArrayAdapter::class);
     }
 
     public function testDependencyInjectionImportsOverrideDefaults(): void
@@ -487,11 +488,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $container = $this->loadContainer('orm_imports');
 
-        $cacheDefinition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
-        $this->assertEquals(DoctrineProvider::class, $cacheDefinition->getClass());
-
         $configDefinition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setAutoGenerateProxyClasses', ['%doctrine.orm.auto_generate_proxy_classes%']);
+
+        $cacheDefinition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
+        $this->assertEquals(PhpArrayAdapter::class, $cacheDefinition->getClass());
+        $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setMetadataCache', [new Reference('doctrine.orm.default_metadata_cache')]);
     }
 
     public function testSingleEntityManagerMultipleMappingBundleDefinitions(): void
@@ -717,7 +719,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
         $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
         $this->assertDICDefinitionClass($loggerStatisticsDef, '%doctrine.orm.second_level_cache.logger_statistics.class%');
-        $this->assertDICDefinitionClass($cacheDriverDef, DoctrineProvider::class);
+        $this->assertEquals([DoctrineProvider::class, 'wrap'], $cacheDriverDef->getFactory());
         $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
         $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', [], 3);
         $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', [], 3);
