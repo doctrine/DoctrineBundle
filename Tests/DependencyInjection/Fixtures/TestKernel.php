@@ -39,14 +39,18 @@ class TestKernel extends Kernel
             $container->loadFromExtension('framework', ['secret' => 'F00']);
 
             $container->loadFromExtension('doctrine', [
-                'dbal' => ['driver' => 'pdo_sqlite'],
+                'dbal' => ['connections' => ['default' => ['driver' => 'pdo_sqlite']]],
                 'orm' => [
                     'auto_generate_proxy_classes' => true,
-                    'mappings' => [
-                        'RepositoryServiceBundle' => [
-                            'type' => 'annotation',
-                            'dir' => __DIR__ . '/Bundles/RepositoryServiceBundle/Entity',
-                            'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
+                    'entity_managers' => [
+                        'default' => [
+                            'mappings' => [
+                                'RepositoryServiceBundle' => [
+                                    'type' => 'annotation',
+                                    'dir' => __DIR__ . '/Bundles/RepositoryServiceBundle/Entity',
+                                    'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
+                                ],
+                            ],
                         ],
                     ],
                 ],

@@ -89,6 +89,10 @@ class Configuration implements ConfigurationInterface
                             unset($v[$key]);
                         }
 
+                        if ($connection) {
+                            @trigger_error('Not defining "doctrine.dbal.connections" configuration option is deprecated since doctrine-bundle 2.4.', E_USER_DEPRECATED);
+                        }
+
                         $v['default_connection'] = isset($v['default_connection']) ? (string) $v['default_connection'] : 'default';
                         $v['connections']        = [$v['default_connection'] => $connection];
 
@@ -244,7 +248,7 @@ class Configuration implements ConfigurationInterface
 
                 if ($deprecatedValues) {
                     $message = count($deprecatedValues) > 1 ? 'options are' : 'option is';
-                    @trigger_error(sprintf('The "doctrine.dbal.%s" %s deprecated since DoctrineBundle 2.4, use the "doctrine.dbal.url" option instead.', implode('", "doctrine.dbal.', array_keys($deprecatedValues)), $message), E_USER_DEPRECATED);
+                    @trigger_error(sprintf('The "doctrine.dbal.%s" %s deprecated since doctrine-bundle 2.4, use the "doctrine.dbal.url" option instead.', implode('", "doctrine.dbal.', array_keys($deprecatedValues)), $message), E_USER_DEPRECATED);
                 }
 
                 return $values;
@@ -391,6 +395,10 @@ class Configuration implements ConfigurationInterface
 
                                 $entityManager[$key] = $v[$key];
                                 unset($v[$key]);
+                            }
+
+                            if ($entityManager) {
+                                @trigger_error('Not defining "doctrine.orm.entity_managers" configuration option is deprecated since doctrine-bundle 2.4.', E_USER_DEPRECATED);
                             }
 
                             $v['default_entity_manager'] = isset($v['default_entity_manager']) ? (string) $v['default_entity_manager'] : 'default';

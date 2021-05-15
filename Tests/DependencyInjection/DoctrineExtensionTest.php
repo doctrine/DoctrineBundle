@@ -209,7 +209,7 @@ class DoctrineExtensionTest extends TestCase
         $this->expectExceptionMessage(
             'Configuring the ORM layer requires to configure the DBAL layer as well.'
         );
-        $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
+        $extension->load([['orm' => ['entity_managers' => ['default' => ['auto_mapping' => true]]]]], $this->getContainer());
     }
 
     /** @return mixed[][][][] */
@@ -943,7 +943,7 @@ class DoctrineExtensionTest extends TestCase
 
         $config = BundleConfigurationBuilder::createBuilder()
             ->addBaseConnection()
-            ->addEntityManager([$cacheName => $cacheConfig])
+            ->addEntityManager(['entity_managers' => ['default' => [$cacheName => $cacheConfig]]])
             ->build();
 
         $extension->load([$config], $container);

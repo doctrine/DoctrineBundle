@@ -46,7 +46,7 @@ class DbalTestKernel extends Kernel
             $container->loadFromExtension('framework', ['secret' => 'F00']);
 
             $container->loadFromExtension('doctrine', [
-                'dbal' => $this->dbalConfig,
+                'dbal' => ['connections' => ['default' => $this->dbalConfig]],
             ]);
 
             // Register a NullLogger to avoid getting the stderr default logger of FrameworkBundle
