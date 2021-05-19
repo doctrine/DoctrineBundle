@@ -42,6 +42,12 @@ jobs:
             php-version: "7.3"
             stability: "dev"
 
+          # Test against latest Symfony 6.0 dev
+          - symfony-require: "6.0.*"
+            dependencies: "highest"
+            php-version: "8.0"
+            stability: "dev"
+
           - php-version: "8.0"
             dependencies: "highest"
             stability: "dev"
