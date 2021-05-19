@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
+use Doctrine\ORM\Proxy\Proxy;
 use ProxyManager\Proxy\LazyLoadingInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
@@ -25,7 +26,7 @@ class Registry extends ManagerRegistry implements ResetInterface
     {
         $this->container = $container;
 
-        parent::__construct('ORM', $connections, $entityManagers, $defaultConnection, $defaultEntityManager, 'Doctrine\ORM\Proxy\Proxy');
+        parent::__construct('ORM', $connections, $entityManagers, $defaultConnection, $defaultEntityManager, Proxy::class);
     }
 
     /**
