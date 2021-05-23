@@ -8,6 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Connection;
@@ -23,6 +24,7 @@ use ReflectionClass;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
+use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -925,6 +927,27 @@ class DoctrineExtensionTest extends TestCase
         $this->expectExceptionMessage('Unknown cache of type "redis" configured for cache "metadata_cache" in entity manager "default"');
 
         $extension->load([$config], $container);
+    }
+
+    public function testCacheConfigUsingServiceDefinedByApplication(): void
+    {
+        $this->expectNotToPerformAssertions();
+        (new class () extends TestKernel {
+            public function registerContainerConfiguration(LoaderInterface $loader): void
+            {
+                parent::registerContainerConfiguration($loader);
+                $loader->load(static function (ContainerBuilder $containerBuilder): void {
+                    $containerBuilder->loadFromExtension(
+                        'doctrine',
+                        ['orm' => ['query_cache_driver' => ['type' => 'service', 'id' => 'custom_cache_service']]]
+                    );
+                    $containerBuilder->setDefinition(
+                        'custom_cache_service',
+                        (new Definition(DoctrineProvider::class))->setArguments([new Definition(ArrayAdapter::class)])
+                    );
+                });
+            }
+        })->boot();
     }
 
     /**
