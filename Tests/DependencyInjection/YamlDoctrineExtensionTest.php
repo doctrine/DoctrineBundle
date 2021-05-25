@@ -11,6 +11,6 @@ class YamlDoctrineExtensionTest extends AbstractDoctrineExtensionTest
     protected function loadFromFile(ContainerBuilder $container, string $file): void
     {
         $loadYaml = new YamlFileLoader($container, new FileLocator(__DIR__ . '/Fixtures/config/yml'));
-        $loadYaml->load($file . '.yml');
+        $loadYaml->import($file . '.{yml}');
     }
 }

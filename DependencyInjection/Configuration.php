@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Doctrine\ORM\EntityManager;
+use InvalidArgumentException;
 use ReflectionClass;
 use Symfony\Component\Config\Definition\BaseNode;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -12,7 +13,6 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
 
 use function array_intersect_key;
-use function array_key_exists;
 use function array_keys;
 use function assert;
 use function class_exists;
@@ -73,10 +73,15 @@ class Configuration implements ConfigurationInterface
             ->children()
             ->arrayNode('dbal')
                 ->beforeNormalization()
-                    ->ifTrue(static function ($v) {
-                        return is_array($v) && ! array_key_exists('connections', $v) && ! array_key_exists('connection', $v);
-                    })
-                    ->then(static function ($v) {
+                    ->always(static function (array $v): array {
+                        static $hasExplicitlyDefinedConnectionsAtLeastOnce = false;
+
+                        if (isset($v['connections']) || isset($v['connection'])) {
+                            $hasExplicitlyDefinedConnectionsAtLeastOnce = true;
+
+                            return $v;
+                        }
+
                         // Key that should not be rewritten to the connection config
                         $excludedKeys = ['default_connection' => true, 'types' => true, 'type' => true];
                         $connection   = [];
@@ -87,6 +92,10 @@ class Configuration implements ConfigurationInterface
 
                             $connection[$key] = $v[$key];
                             unset($v[$key]);
+                        }
+
+                        if ($connection && $hasExplicitlyDefinedConnectionsAtLeastOnce) {
+                            throw new InvalidArgumentException('Either explicitly define DBAL connections in all doctrine-bundle configuration files, or in none of them');
                         }
 
                         $v['default_connection'] = isset($v['default_connection']) ? (string) $v['default_connection'] : 'default';
@@ -213,9 +222,6 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('shards')
                     ->prototype('array');
-
-        // TODO: Remove when https://github.com/psalm/psalm-plugin-symfony/pull/168 is released
-        assert($shardNode instanceof ArrayNodeDefinition);
 
         $shardNode
             ->children()
@@ -365,15 +371,19 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('orm')
                     ->beforeNormalization()
-                        ->ifTrue(static function ($v) {
-                            if (! empty($v) && ! class_exists(EntityManager::class)) {
+                        ->always(static function (array $v): array {
+                            if ($v && ! class_exists(EntityManager::class)) {
                                 throw new LogicException('The doctrine/orm package is required when the doctrine.orm config is set.');
                             }
 
-                            return $v === null || (is_array($v) && ! array_key_exists('entity_managers', $v) && ! array_key_exists('entity_manager', $v));
-                        })
-                        ->then(static function ($v) {
-                            $v = (array) $v;
+                            static $hasExplicitlyDefinedEntityManagersAtLeastOnce = false;
+
+                            if (isset($v['entity_managers']) || isset($v['entity_manager'])) {
+                                $hasExplicitlyDefinedEntityManagersAtLeastOnce = true;
+
+                                return $v;
+                            }
+
                             // Key that should not be rewritten to the connection config
                             $excludedKeys  = [
                                 'default_entity_manager' => true,
@@ -391,6 +401,10 @@ class Configuration implements ConfigurationInterface
 
                                 $entityManager[$key] = $v[$key];
                                 unset($v[$key]);
+                            }
+
+                            if ($entityManager && $hasExplicitlyDefinedEntityManagersAtLeastOnce) {
+                                throw new InvalidArgumentException('Either explicitly define entity managers in all doctrine-bundle configuration files, or in none of them');
                             }
 
                             $v['default_entity_manager'] = isset($v['default_entity_manager']) ? (string) $v['default_entity_manager'] : 'default';

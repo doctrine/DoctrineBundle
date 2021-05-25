@@ -6,7 +6,5 @@ doctrine:
 
     orm:
         default_entity_manager: default
-        entity_managers:
-            default:
-                mappings:
-                    YamlBundle: ~
+        mappings:
+            YamlBundle: ~
