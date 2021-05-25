@@ -953,6 +953,7 @@ class DoctrineExtensionTest extends TestCase
         })->boot();
     }
 
+    /** @group legacy */
     public function testCacheConfigUsingServiceDefinedByApplication(): void
     {
         $this->expectNotToPerformAssertions();
