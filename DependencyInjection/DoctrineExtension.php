@@ -56,11 +56,11 @@ use function array_intersect_key;
 use function array_keys;
 use function class_exists;
 use function interface_exists;
-use function is_a;
 use function method_exists;
 use function reset;
 use function sprintf;
 use function str_replace;
+use function trigger_deprecation;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -886,11 +886,21 @@ class DoctrineExtension extends AbstractDoctrineExtension
     protected function loadCacheDriver($cacheName, $objectManagerName, array $cacheDriver, ContainerBuilder $container, bool $usePsr6 = false): string
     {
         $aliasId = $this->getObjectManagerElementName(sprintf('%s_%s', $objectManagerName, $cacheName));
-        $isPsr6  = null;
 
         switch ($cacheDriver['type'] ?? 'pool') {
             case 'service':
                 $serviceId = $cacheDriver['id'];
+                $isPsr6    = $cacheDriver['is_psr6'];
+
+                if (! $isPsr6) {
+                    trigger_deprecation(
+                        'doctrine/doctrine-bundle',
+                        '2.4',
+                        'Configuring doctrine/cache is deprecated. Please update the cache service "%s" for entity manager "%s" to use a PSR-6 cache.',
+                        $serviceId,
+                        $objectManagerName
+                    );
+                }
 
                 break;
 
@@ -907,11 +917,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     $cacheName,
                     $objectManagerName
                 ));
-        }
-
-        if ($isPsr6 === null) {
-            $definition = $container->getDefinition($serviceId);
-            $isPsr6     = is_a($definition->getClass(), CacheItemPoolInterface::class, true);
         }
 
         $cacheName = str_replace('_cache', '', $cacheName);

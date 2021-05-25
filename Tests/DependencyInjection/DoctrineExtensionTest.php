@@ -579,6 +579,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('%doctrine.orm.second_level_cache.default_cache_factory.class%', $slcDefinition->getClass());
     }
 
+    /** @group legacy */
     public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -590,7 +591,7 @@ class DoctrineExtensionTest extends TestCase
 
         $configurationArray = BundleConfigurationBuilder::createBuilderWithBaseValues()
             ->addSecondLevelCache([
-                'region_cache_driver' => ['type' => 'service', 'id' => 'my_cache'],
+                'region_cache_driver' => ['type' => 'service', 'id' => 'my_pool'],
                 'regions' => [
                     'hour_region' => ['lifetime' => 3600],
                 ],
@@ -929,7 +930,7 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([$config], $container);
     }
 
-    public function testCacheConfigUsingServiceDefinedByApplication(): void
+    public function testLegacyCacheConfigUsingServiceDefinedByApplication(): void
     {
         $this->expectNotToPerformAssertions();
         (new class () extends TestKernel {
@@ -943,7 +944,30 @@ class DoctrineExtensionTest extends TestCase
                     );
                     $containerBuilder->setDefinition(
                         'custom_cache_service',
-                        (new Definition(DoctrineProvider::class))->setArguments([new Definition(ArrayAdapter::class)])
+                        (new Definition(DoctrineProvider::class))
+                            ->setArguments([new Definition(ArrayAdapter::class)])
+                            ->setFactory([DoctrineProvider::class, 'wrap'])
+                    );
+                });
+            }
+        })->boot();
+    }
+
+    public function testCacheConfigUsingServiceDefinedByApplication(): void
+    {
+        $this->expectNotToPerformAssertions();
+        (new class () extends TestKernel {
+            public function registerContainerConfiguration(LoaderInterface $loader): void
+            {
+                parent::registerContainerConfiguration($loader);
+                $loader->load(static function (ContainerBuilder $containerBuilder): void {
+                    $containerBuilder->loadFromExtension(
+                        'doctrine',
+                        ['orm' => ['metadata_cache_driver' => ['type' => 'service', 'id' => 'custom_cache_service', 'is_psr6' => true]]]
+                    );
+                    $containerBuilder->setDefinition(
+                        'custom_cache_service',
+                        new Definition(ArrayAdapter::class)
                     );
                 });
             }
@@ -1013,7 +1037,19 @@ class DoctrineExtensionTest extends TestCase
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
                 'expectedAliasTarget' => 'service_target_metadata_psr6.php_array',
                 'cacheName' => 'metadata_cache_driver',
-                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata_psr6'],
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata_psr6', 'is_psr6' => true],
+            ],
+            'query_cache_service' => [
+                'expectedAliasName' => 'doctrine.orm.default_query_cache',
+                'expectedAliasTarget' => 'service_target_query',
+                'cacheName' => 'query_cache_driver',
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_query'],
+            ],
+            'result_cache_service' => [
+                'expectedAliasName' => 'doctrine.orm.default_result_cache',
+                'expectedAliasTarget' => 'service_target_result',
+                'cacheName' => 'result_cache_driver',
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_result'],
             ],
         ];
     }
@@ -1048,15 +1084,15 @@ class DoctrineExtensionTest extends TestCase
             ],
             'query_cache_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_query_cache',
-                'expectedAliasTarget' => 'service_target_query',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.query',
                 'cacheName' => 'query_cache_driver',
-                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_query'],
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_query', 'is_psr6' => true],
             ],
             'result_cache_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_result_cache',
-                'expectedAliasTarget' => 'service_target_result',
+                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.result',
                 'cacheName' => 'result_cache_driver',
-                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_result'],
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_result', 'is_psr6' => true],
             ],
         ];
     }
