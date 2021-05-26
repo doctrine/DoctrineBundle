@@ -34,13 +34,14 @@
         "symfony/config": "^4.4.3|^5.0|^6.0",
         "symfony/console": "^3.4.30|^4.3.3|^5.0|^6.0",
         "symfony/dependency-injection": "^4.3.3|^5.0|^6.0",
+        "symfony/deprecation-contracts": "^2.1",
         "symfony/doctrine-bridge": "^4.4.22|^5.2.7|^6.0",
         "symfony/framework-bundle": "^3.4.30|^4.3.3|^5.0|^6.0",
         "symfony/service-contracts": "^1.1.1|^2.0"
     },
     "require-dev": {
         "doctrine/coding-standard": "^9.0",
-        "doctrine/orm": "^2.9-dev",
+        "doctrine/orm": "^2.9",
         "friendsofphp/proxy-manager-lts": "^1.0",
         "phpunit/phpunit": "^7.5 || ^8.0 || ^9.3",
         "psalm/plugin-phpunit": "^0.15.1",

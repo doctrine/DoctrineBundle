@@ -16,9 +16,8 @@ use Doctrine\DBAL\Types\Type;
 use function array_merge;
 use function class_exists;
 use function is_subclass_of;
-use function trigger_error;
+use function trigger_deprecation;
 
-use const E_USER_DEPRECATED;
 use const PHP_EOL;
 
 /** @psalm-import-type Params from DriverManager */
@@ -53,7 +52,7 @@ class ConnectionFactory
 
         $overriddenOptions = [];
         if (isset($params['connection_override_options'])) {
-            @trigger_error('The "connection_override_options" connection parameter is deprecated since DoctrineBundle 2.4.', E_USER_DEPRECATED);
+            trigger_deprecation('doctrine/doctrine-bundle', '2.4', 'The "connection_override_options" connection parameter is deprecated');
             $overriddenOptions = $params['connection_override_options'];
             unset($params['connection_override_options']);
         }

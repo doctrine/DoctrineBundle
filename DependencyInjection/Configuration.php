@@ -33,9 +33,7 @@ use function strlen;
 use function strpos;
 use function strtoupper;
 use function substr;
-use function trigger_error;
-
-use const E_USER_DEPRECATED;
+use function trigger_deprecation;
 
 /**
  * This class contains the configuration information for the bundle
@@ -255,8 +253,13 @@ class Configuration implements ConfigurationInterface
 
                 if ($urlConflictingValues) {
                     $tail = count($urlConflictingValues) > 1 ? sprintf('or "%s" options', array_pop($urlConflictingValues)) : 'option';
-
-                    @trigger_error(sprintf('Setting the "doctrine.dbal.%s" %s while the "url" one is defined is deprecated since DoctrineBundle 2.4.', implode('", "', $urlConflictingValues), $tail), E_USER_DEPRECATED);
+                    trigger_deprecation(
+                        'doctrine/doctrine-bundle',
+                        '2.4',
+                        'Setting the "doctrine.dbal.%s" %s while the "url" one is defined is deprecated',
+                        implode('", "', $urlConflictingValues),
+                        $tail
+                    );
                 }
 
                 return $values;
