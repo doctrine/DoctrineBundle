@@ -11,9 +11,6 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
-use Doctrine\Common\Cache\CacheProvider;
-use Doctrine\Common\Cache\Psr6\CacheAdapter;
-use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
@@ -26,7 +23,6 @@ use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\UnitOfWork;
 use LogicException;
-use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -60,7 +56,6 @@ use function method_exists;
 use function reset;
 use function sprintf;
 use function str_replace;
-use function trigger_deprecation;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -883,31 +878,17 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * {@inheritDoc}
      */
-    protected function loadCacheDriver($cacheName, $objectManagerName, array $cacheDriver, ContainerBuilder $container, bool $usePsr6 = false): string
+    protected function loadCacheDriver($cacheName, $objectManagerName, array $cacheDriver, ContainerBuilder $container): string
     {
         $aliasId = $this->getObjectManagerElementName(sprintf('%s_%s', $objectManagerName, $cacheName));
 
         switch ($cacheDriver['type'] ?? 'pool') {
             case 'service':
                 $serviceId = $cacheDriver['id'];
-                $isPsr6    = $cacheDriver['is_psr6'];
-
-                if (! $isPsr6) {
-                    trigger_deprecation(
-                        'doctrine/doctrine-bundle',
-                        '2.4',
-                        'Configuring doctrine/cache is deprecated. Please update the cache service "%s" for entity manager "%s" to use a PSR-6 cache.',
-                        $serviceId,
-                        $objectManagerName
-                    );
-                }
-
                 break;
 
             case 'pool':
-                $pool      = $cacheDriver['pool'] ?? $this->createArrayAdapterCachePool($container, $objectManagerName, $cacheName);
-                $serviceId = $pool;
-                $isPsr6    = true;
+                $serviceId = $cacheDriver['pool'] ?? $this->createArrayAdapterCachePool($container, $objectManagerName, $cacheName);
                 break;
 
             default:
@@ -917,27 +898,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     $cacheName,
                     $objectManagerName
                 ));
-        }
-
-        $cacheName = str_replace('_cache', '', $cacheName);
-
-        // Create a wrapper as required
-        if ($isPsr6 && ! $usePsr6) {
-            $wrappedServiceId = sprintf('doctrine.orm.cache.provider.%s.%s', $objectManagerName, $cacheName);
-
-            $definition = $container->register($wrappedServiceId, CacheProvider::class);
-            $definition->setFactory([DoctrineProvider::class, 'wrap']);
-            $definition->addArgument(new Reference($serviceId));
-
-            $serviceId = $wrappedServiceId;
-        } elseif (! $isPsr6 && $usePsr6) {
-            $wrappedServiceId = sprintf('cache.doctrine.orm.adapter.%s.%s', $objectManagerName, $cacheName);
-
-            $definition = $container->register($wrappedServiceId, CacheItemPoolInterface::class);
-            $definition->setFactory([CacheAdapter::class, 'wrap']);
-            $definition->addArgument(new Reference($serviceId));
-
-            $serviceId = $wrappedServiceId;
         }
 
         $container->setAlias($aliasId, new Alias($serviceId, false));
@@ -952,9 +912,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function loadOrmCacheDrivers(array $entityManager, ContainerBuilder $container)
     {
-        $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container, true);
-        $this->loadCacheDriver('result_cache', $entityManager['name'], $entityManager['result_cache_driver'], $container, false);
-        $this->loadCacheDriver('query_cache', $entityManager['name'], $entityManager['query_cache_driver'], $container, false);
+        $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container);
+        $this->loadCacheDriver('result_cache', $entityManager['name'], $entityManager['result_cache_driver'], $container);
+        $this->loadCacheDriver('query_cache', $entityManager['name'], $entityManager['query_cache_driver'], $container);
 
         if ($container->getParameter('kernel.debug')) {
             return;

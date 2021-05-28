@@ -3,10 +3,12 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\Dbal\BlacklistSchemaAssetFilter;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
@@ -444,17 +446,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
         $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
 
-        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_query_cache'));
+        $definition = $container->getDefinition('doctrine.orm.em1_query_cache');
+        $this->assertEquals(CacheProvider::class, $definition->getClass());
         $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        $arguments = $definition->getArguments();
-        $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.doctrine.orm.em1.query', (string) $arguments[0]);
 
-        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_result_cache'));
+        $definition = $container->getDefinition('doctrine.orm.em1_result_cache');
+        $this->assertEquals(CacheProvider::class, $definition->getClass());
         $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        $arguments = $definition->getArguments();
-        $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.doctrine.orm.em1.result', (string) $arguments[0]);
     }
 
     public function testLoadLogging(): void
@@ -731,7 +729,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
         $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
         $this->assertDICDefinitionClass($loggerStatisticsDef, '%doctrine.orm.second_level_cache.logger_statistics.class%');
-        $this->assertEquals([DoctrineProvider::class, 'wrap'], $cacheDriverDef->getFactory());
+        $this->assertDICDefinitionClass($cacheDriverDef, ArrayAdapter::class);
         $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
         $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', [], 3);
         $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', [], 3);
@@ -1450,8 +1448,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     private function compileContainer(ContainerBuilder $container): void
     {
-        $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
-        $container->getCompilerPassConfig()->setRemovingPasses([]);
+        $passConfig = $container->getCompilerPassConfig();
+        $passConfig->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
+        $passConfig->setRemovingPasses([]);
+        $passConfig->addPass(new CacheCompatibilityPass());
         $container->compile();
     }
 }
