@@ -8,7 +8,6 @@ use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
 use function array_keys;
@@ -56,9 +55,11 @@ final class CacheCompatibilityPass implements CompilerPassInterface
                     );
                 }
 
-                $container->setDefinition($aliasId, (new Definition($targetClass))
+                $compatibilityLayerId = $definitionId . '.compatibility_layer';
+                $container->setAlias($aliasId, $compatibilityLayerId);
+                $container->register($compatibilityLayerId, $targetClass)
                     ->setFactory([$targetFactory, 'wrap'])
-                    ->addArgument(new Reference($definitionId)));
+                    ->addArgument(new Reference($definitionId));
             }
         }
     }

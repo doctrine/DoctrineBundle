@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\BlacklistSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterFastestCachePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Common\Cache\CacheProvider;
@@ -446,13 +447,19 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
         $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
 
-        $definition = $container->getDefinition('doctrine.orm.em1_query_cache');
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_query_cache'));
         $this->assertEquals(CacheProvider::class, $definition->getClass());
         $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
+        $arguments = $definition->getArguments();
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
+        $this->assertEquals('cache.doctrine.orm.em1.query', (string) $arguments[0]);
 
-        $definition = $container->getDefinition('doctrine.orm.em1_result_cache');
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_result_cache'));
         $this->assertEquals(CacheProvider::class, $definition->getClass());
         $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
+        $arguments = $definition->getArguments();
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
+        $this->assertEquals('cache.doctrine.orm.em1.result', (string) $arguments[0]);
     }
 
     public function testLoadLogging(): void
@@ -1275,6 +1282,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     ): ContainerBuilder {
         $container = $this->getContainer($bundles);
         $container->registerExtension(new DoctrineExtension());
+        $container->addCompilerPass(new CacheCompatibilityPass());
+        $container->addCompilerPass(new RegisterFastestCachePass());
 
         $this->loadFromFile($container, $fixture);
 

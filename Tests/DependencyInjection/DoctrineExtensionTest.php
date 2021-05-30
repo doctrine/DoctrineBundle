@@ -5,10 +5,13 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 use Closure;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterFastestCachePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
 use Doctrine\Common\Cache\Cache;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
@@ -460,10 +463,18 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame(ArrayAdapter::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_query_cache'));
-        $this->assertEquals(ArrayAdapter::class, $definition->getClass());
+        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
+        $arguments = $definition->getArguments();
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
+        $this->assertEquals('cache.doctrine.orm.default.query', (string) $arguments[0]);
+        $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_result_cache'));
-        $this->assertSame(ArrayAdapter::class, $definition->getClass());
+        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
+        $arguments = $definition->getArguments();
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
+        $this->assertEquals('cache.doctrine.orm.default.result', (string) $arguments[0]);
+        $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
     }
 
     public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection(): void
@@ -924,7 +935,7 @@ class DoctrineExtensionTest extends TestCase
      *
      * @dataProvider cacheConfigurationProvider
      */
-    public function testCacheConfiguration(?string $expectedAliasName, string $expectedTarget, string $cacheName, $cacheConfig): void
+    public function testCacheConfiguration(string $expectedAliasName, string $expectedTarget, string $cacheName, $cacheConfig): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -940,13 +951,9 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
-        if ($expectedAliasName) {
-            $this->assertTrue($container->hasAlias($expectedAliasName));
-            $alias = $container->getAlias($expectedAliasName);
-            $this->assertEquals($expectedTarget, (string) $alias);
-        } else {
-            $this->assertTrue($container->hasDefinition($expectedTarget));
-        }
+        $this->assertTrue($container->hasAlias($expectedAliasName));
+        $alias = $container->getAlias($expectedAliasName);
+        $this->assertEquals($expectedTarget, (string) $alias);
     }
 
     /**
@@ -966,19 +973,19 @@ class DoctrineExtensionTest extends TestCase
         return [
             'metadata_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'cache.doctrine.orm.default.metadata.php_array',
+                'expectedAliasTarget' => 'cache.doctrine.orm.default.metadata',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
             'metadata_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'metadata_cache_pool.php_array',
+                'expectedAliasTarget' => 'metadata_cache_pool',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'metadata_cache_pool'],
             ],
             'metadata_cache_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'service_target_metadata.php_array',
+                'expectedAliasTarget' => 'service_target_metadata',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata'],
             ],
@@ -997,18 +1004,18 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    /** @return array<string, array<string, string|array{type: ?string, pool?: string}|null>> */
+    /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
     public static function cacheConfigurationProvider(): array
     {
         return [
             'query_cache_default' => [
-                'expectedAliasName' => null,
+                'expectedAliasName' => 'doctrine.orm.default_query_cache',
                 'expectedTarget' => 'cache.doctrine.orm.default.query',
                 'cacheName' => 'query_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
             'result_cache_default' => [
-                'expectedAliasName' => null,
+                'expectedAliasName' => 'doctrine.orm.default_result_cache',
                 'expectedTarget' => 'cache.doctrine.orm.default.result',
                 'cacheName' => 'result_cache_driver',
                 'cacheConfig' => ['type' => null],
@@ -1204,6 +1211,8 @@ class DoctrineExtensionTest extends TestCase
     {
         $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);
+        $container->addCompilerPass(new CacheCompatibilityPass());
+        $container->addCompilerPass(new RegisterFastestCachePass());
         $container->compile();
     }
 }

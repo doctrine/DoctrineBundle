@@ -42,7 +42,7 @@ class CacheCompatibilityPassTest extends TestCase
     public function testMetadataCacheConfigUsingPsr6ServiceDefinedByApplication(): void
     {
         $this->expectDeprecation('%aThe "metadata_cache_driver" configuration key is deprecated.%a');
-        (new class () extends TestKernel {
+        (new class (false) extends TestKernel {
             public function registerContainerConfiguration(LoaderInterface $loader): void
             {
                 parent::registerContainerConfiguration($loader);
@@ -64,7 +64,7 @@ class CacheCompatibilityPassTest extends TestCase
     public function testMetdataCacheConfigUsingNonPsr6ServiceDefinedByApplication(): void
     {
         $this->expectDeprecation('Since doctrine/doctrine-bundle 2.4: Configuring doctrine/cache is deprecated. Please update the cache service "custom_cache_service" to use a PSR-6 cache.');
-        (new class () extends TestKernel {
+        (new class (false) extends TestKernel {
             public function registerContainerConfiguration(LoaderInterface $loader): void
             {
                 parent::registerContainerConfiguration($loader);
