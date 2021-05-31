@@ -17,6 +17,7 @@ use function trigger_deprecation;
 /** @internal  */
 final class CacheCompatibilityPass implements CompilerPassInterface
 {
+    private const CONFIGURATION_TAG              = 'doctrine.orm.configuration';
     private const CACHE_METHODS_PSR6_SUPPORT_MAP = [
         'setMetadataCache' => true,
         'setQueryCacheImpl' => false,
@@ -25,7 +26,7 @@ final class CacheCompatibilityPass implements CompilerPassInterface
 
     public function process(ContainerBuilder $container): void
     {
-        foreach (array_keys($container->findTaggedServiceIds(IdGeneratorPass::CONFIGURATION_TAG)) as $id) {
+        foreach (array_keys($container->findTaggedServiceIds(self::CONFIGURATION_TAG)) as $id) {
             foreach ($container->getDefinition($id)->getMethodCalls() as $methodCall) {
                 if (! isset(self::CACHE_METHODS_PSR6_SUPPORT_MAP[$methodCall[0]])) {
                     continue;
