@@ -736,7 +736,6 @@ class Configuration implements ConfigurationInterface
         $node        = $treeBuilder->getRootNode();
 
         $node
-            ->addDefaultsIfNotSet()
             ->beforeNormalization()
                 ->ifString()
                 ->then(static function ($v): array {
@@ -751,9 +750,11 @@ class Configuration implements ConfigurationInterface
 
         if ($name === 'metadata_cache_driver') {
             $node->setDeprecated(...$this->getDeprecationMsg(
-                'The "metadata_cache_driver" configuration key is deprecated. PHP Array cache is now automatically registered when %kernel.debug% is false.',
+                'The "metadata_cache_driver" configuration key is deprecated. Remove the configuration to have the cache created automatically.',
                 '2.3'
             ));
+        } else {
+            $node->addDefaultsIfNotSet();
         }
 
         return $node;

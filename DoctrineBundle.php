@@ -7,7 +7,6 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubsc
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterFastestCachePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Common\Util\ClassUtils;
@@ -51,7 +50,6 @@ class DoctrineBundle extends Bundle
         }
 
         $container->addCompilerPass(new CacheCompatibilityPass());
-        $container->addCompilerPass(new RegisterFastestCachePass());
         $container->addCompilerPass(new DoctrineValidationPass('orm'));
         $container->addCompilerPass(new EntityListenerPass());
         $container->addCompilerPass(new ServiceRepositoryCompilerPass());

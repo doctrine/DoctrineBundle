@@ -6,7 +6,6 @@ use Closure;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterFastestCachePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
@@ -1212,7 +1211,6 @@ class DoctrineExtensionTest extends TestCase
         $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);
         $container->addCompilerPass(new CacheCompatibilityPass());
-        $container->addCompilerPass(new RegisterFastestCachePass());
         $container->compile();
     }
 }

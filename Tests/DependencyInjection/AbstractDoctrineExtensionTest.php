@@ -6,7 +6,6 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\BlacklistSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterFastestCachePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Common\Cache\CacheProvider;
@@ -1283,7 +1282,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->getContainer($bundles);
         $container->registerExtension(new DoctrineExtension());
         $container->addCompilerPass(new CacheCompatibilityPass());
-        $container->addCompilerPass(new RegisterFastestCachePass());
 
         $this->loadFromFile($container, $fixture);
 
