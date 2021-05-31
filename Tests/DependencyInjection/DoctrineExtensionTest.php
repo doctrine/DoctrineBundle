@@ -455,11 +455,8 @@ class DoctrineExtensionTest extends TestCase
 
         $arguments = $definition->getArguments();
         $this->assertSame('%kernel.cache_dir%/doctrine/orm/default_metadata.php', $arguments[0]);
-        $this->assertInstanceOf(Reference::class, $arguments[1]);
-        $wrappedDefinition = (string) $arguments[1];
-
-        $definition = $container->getDefinition((string) $wrappedDefinition);
-        $this->assertSame(ArrayAdapter::class, $definition->getClass());
+        $wrappedDefinition = $arguments[1];
+        $this->assertSame(ArrayAdapter::class, $wrappedDefinition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_query_cache'));
         $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
