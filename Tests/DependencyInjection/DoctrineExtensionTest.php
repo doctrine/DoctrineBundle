@@ -1076,7 +1076,9 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals($managerClass, $bazManagerDef->getClass());
     }
 
-    /** @requires PHP 8 */
+    /**
+     * @requires PHP 8
+     */
     public function testAsEntityListenerAttribute()
     {
         if (! method_exists(ContainerBuilder::class, 'getAutoconfiguredAttributes')) {
