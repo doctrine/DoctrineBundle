@@ -76,7 +76,7 @@ class ConnectionFactory
             $connection = DriverManager::getConnection($params, $config, $eventManager);
             $params     = array_merge($connection->getParams(), $overriddenOptions);
             $driver     = $connection->getDriver();
-          
+
             if (isset($params['dbname']) && isset($params['dbname_suffix'])) {
                 $params['dbname'] .= $params['dbname_suffix'];
             }
