@@ -14,6 +14,7 @@
         <orm default-entity-manager="em2">
             <entity-manager name="em1">
                 <mapping name="AnnotationsBundle" />
+                <mapping name="AttributesBundle" type="attribute" />
             </entity-manager>
             <entity-manager name="em2">
                 <mapping name="YamlBundle" dir="Resources/config/doctrine" alias="yml" />

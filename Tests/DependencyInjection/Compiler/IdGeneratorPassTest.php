@@ -1,7 +1,8 @@
 <?php
 
-namespace Doctrine\Bundle\DoctrineBundle\Tests;
+namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Compiler;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\CustomIdGenerator;
@@ -19,7 +20,7 @@ use function interface_exists;
 use function sys_get_temp_dir;
 use function uniqid;
 
-class CustomIdGeneratorTest extends TestCase
+class IdGeneratorPassTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
@@ -66,7 +67,7 @@ class CustomIdGeneratorTest extends TestCase
                     'mappings' => [
                         'AnnotationsBundle' => [
                             'type' => 'annotation',
-                            'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/AnnotationsBundle/Entity',
+                            'dir' => __DIR__ . '/../Fixtures/Bundles/AnnotationsBundle/Entity',
                             'prefix' => 'Fixtures\Bundles\AnnotationsBundle\Entity',
                         ],
                     ],
@@ -78,6 +79,7 @@ class CustomIdGeneratorTest extends TestCase
 
         $def->setAutoconfigured(true);
 
+        $container->addCompilerPass(new CacheCompatibilityPass());
         $container->addCompilerPass(new IdGeneratorPass());
         $container->compile();
 

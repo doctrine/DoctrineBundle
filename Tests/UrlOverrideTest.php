@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKe
 
 use function array_intersect_key;
 
+/** @group legacy */
 class UrlOverrideTest extends TestCase
 {
     /**

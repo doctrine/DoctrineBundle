@@ -41,6 +41,7 @@ EXCEPTION
 
     public function testFindNamespaceAndPathForMetadata(): void
     {
+        /** @psalm-suppress UndefinedClass */
         $class      = new ClassMetadataInfo('\Vendor\Package\Class');
         $collection = new ClassMetadataCollection([$class]);
 

@@ -79,6 +79,7 @@ class ConnectionFactoryTest extends TestCase
         $this->assertSame('utf8mb4', $connection->getParams()['charset']);
     }
 
+    /** @group legacy */
     public function testConnectionOverrideOptions(): void
     {
         $params = [
@@ -102,6 +103,16 @@ class ConnectionFactoryTest extends TestCase
         $connection = (new ConnectionFactory([]))->createConnection(['url' => 'mysql://root:password@database:3306/main?charset=utf8mb4_unicode_ci']);
 
         $this->assertEquals('utf8mb4_unicode_ci', $connection->getParams()['charset']);
+    }
+
+    public function testDbnameSuffix(): void
+    {
+        $connection = (new ConnectionFactory([]))->createConnection([
+            'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
+            'dbname_suffix' => '_test',
+        ]);
+
+        $this->assertSame('main_test', $connection->getParams()['dbname']);
     }
 }
 

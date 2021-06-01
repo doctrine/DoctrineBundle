@@ -7,12 +7,6 @@
                         http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
 
     <config>
-        <dbal default-connection="default">
-            <connection name="default"/>
-        </dbal>
-
-        <orm default-entity-manager="default">
-            <mapping name="YamlBundle" />
-        </orm>
+        <dbal url="mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8" dbname-suffix="_test" />
     </config>
 </srv:container>

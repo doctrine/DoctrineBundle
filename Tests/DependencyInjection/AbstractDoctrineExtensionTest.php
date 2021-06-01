@@ -3,10 +3,13 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\Dbal\BlacklistSchemaAssetFilter;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\Common\Cache\CacheProvider;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
@@ -17,7 +20,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Symfony\Component\Cache\DoctrineProvider;
+use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -126,6 +129,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('5.6.20', $config['serverVersion']);
     }
 
+    /** @group legacy */
     public function testDbalLoadUrlOverride(): void
     {
         $container = $this->loadContainer('dbal_allow_url_override');
@@ -146,6 +150,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertFalse(isset($config['override_url']));
     }
 
+    /** @group legacy */
     public function testDbalLoadPartialUrlOverrideSetsDefaults(): void
     {
         $container = $this->loadContainer('dbal_allow_partial_url_override');
@@ -163,6 +168,15 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertCount(1, $config['connection_override_options']);
         $this->assertSame('main_test', $config['connection_override_options']['dbname']);
         $this->assertFalse(isset($config['override_url']));
+    }
+
+    public function testDbalDbnameSuffix(): void
+    {
+        $container = $this->loadContainer('dbal_dbname_suffix');
+        $config    = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
+
+        $this->assertSame('mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8', $config['url']);
+        $this->assertSame('_test', $config['dbname_suffix']);
     }
 
     public function testDbalLoadSingleMasterSlaveConnection(): void
@@ -185,7 +199,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
-                'connection_override_options' => [],
             ],
             $param['primary'] ?? $param['master'] // TODO: Remove 'master' support here when we require dbal >= 2.11
         );
@@ -197,11 +210,22 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'replica_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld_replica.sock',
-                'override_url' => false,
             ],
             $param['replica']['replica1']
         );
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
+    }
+
+    public function testMixedUseOfSimplifiedAndMultipleConnectionsStyleIsInvalid(): void
+    {
+        $this->expectExceptionObject(new InvalidArgumentException('Either explicitly define DBAL connections in all doctrine-bundle configuration files, or in none of them'));
+        $this->loadContainer('dbal_service_{single,multiple}_connectio{n,ns}');
+    }
+
+    public function testMixedUseOfSimplifiedAndMultipleEntityManagersStyleIsInvalid(): void
+    {
+        $this->expectExceptionObject(new InvalidArgumentException('Either explicitly define entity managers in all doctrine-bundle configuration files, or in none of them'));
+        $this->loadContainer('orm_service_{simple_single,multiple}_entity_manage{r,rs}');
     }
 
     public function testDbalLoadPoolShardingConnection(): void
@@ -219,7 +243,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
-                'connection_override_options' => [],
             ],
             $param['global']
         );
@@ -232,7 +255,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld_shard.sock',
                 'id' => 1,
-                'override_url' => false,
             ],
             $param['shards'][0]
         );
@@ -275,7 +297,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
-                'connection_override_options' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -315,7 +336,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
-                'connection_override_options' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -356,7 +376,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'sqlite_db',
                 'memory' => true,
                 'defaultTableOptions' => [],
-                'connection_override_options' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager'),
@@ -425,16 +444,18 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.em2_configuration', (string) $arguments[1]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
-        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
+        $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_query_cache'));
-        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
+        $this->assertEquals(CacheProvider::class, $definition->getClass());
+        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
         $this->assertEquals('cache.doctrine.orm.em1.query', (string) $arguments[0]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_result_cache'));
-        $this->assertEquals(DoctrineProvider::class, $definition->getClass());
+        $this->assertEquals(CacheProvider::class, $definition->getClass());
+        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
         $arguments = $definition->getArguments();
         $this->assertInstanceOf(Reference::class, $arguments[0]);
         $this->assertEquals('cache.doctrine.orm.em1.result', (string) $arguments[0]);
@@ -469,10 +490,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_service_multiple_entity_managers');
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
-        $this->assertDICDefinitionClass($definition, DoctrineProvider::class);
+        $this->assertDICDefinitionClass($definition, PhpArrayAdapter::class);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em2_metadata_cache'));
-        $this->assertDICDefinitionClass($definition, DoctrineProvider::class);
+        $this->assertDICDefinitionClass($definition, PhpArrayAdapter::class);
     }
 
     public function testDependencyInjectionImportsOverrideDefaults(): void
@@ -483,11 +504,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $container = $this->loadContainer('orm_imports');
 
-        $cacheDefinition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
-        $this->assertEquals(DoctrineProvider::class, $cacheDefinition->getClass());
-
         $configDefinition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setAutoGenerateProxyClasses', ['%doctrine.orm.auto_generate_proxy_classes%']);
+
+        $cacheDefinition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
+        $this->assertEquals(PhpArrayAdapter::class, $cacheDefinition->getClass());
+        $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setMetadataCache', [new Reference('doctrine.orm.default_metadata_cache')]);
     }
 
     public function testSingleEntityManagerMultipleMappingBundleDefinitions(): void
@@ -496,7 +518,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
+        $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
 
@@ -506,11 +528,16 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
 
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
+            new Reference('doctrine.orm.default_attribute_metadata_driver'),
+            'Fixtures\Bundles\AttributesBundle\Entity',
+        ]);
+
+        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_yml_metadata_driver'),
             'Fixtures\Bundles\YamlBundle\Entity',
         ]);
 
-        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', [
+        $this->assertDICDefinitionMethodCallAt(3, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_xml_metadata_driver'),
             'Fixtures\Bundles\XmlBundle',
         ]);
@@ -519,6 +546,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($annDef, [
             new Reference('doctrine.orm.metadata.annotation_reader'),
             [__DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity'],
+        ]);
+
+        $attrDef = $container->getDefinition('doctrine.orm.default_attribute_metadata_driver');
+        $this->assertDICConstructorArguments($attrDef, [
+            [__DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity'],
         ]);
 
         $ymlDef = $container->getDefinition('doctrine.orm.default_yml_metadata_driver');
@@ -538,7 +570,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
+        $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
 
         $this->assertEquals(['em1' => 'doctrine.orm.em1_entity_manager', 'em2' => 'doctrine.orm.em2_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
@@ -549,6 +581,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallAt(0, $def1, 'addDriver', [
             new Reference('doctrine.orm.em1_annotation_metadata_driver'),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
+        ]);
+
+        $this->assertDICDefinitionMethodCallAt(1, $def1, 'addDriver', [
+            new Reference('doctrine.orm.em1_attribute_metadata_driver'),
+            'Fixtures\Bundles\AttributesBundle\Entity',
         ]);
 
         $this->assertDICDefinitionMethodCallAt(0, $def2, 'addDriver', [
@@ -584,7 +621,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->loadContainer('orm_single_em_default_table_options', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle']);
+        $container = $this->loadContainer('orm_single_em_default_table_options', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
 
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
@@ -698,7 +735,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
         $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
         $this->assertDICDefinitionClass($loggerStatisticsDef, '%doctrine.orm.second_level_cache.logger_statistics.class%');
-        $this->assertDICDefinitionClass($cacheDriverDef, DoctrineProvider::class);
+        $this->assertDICDefinitionClass($cacheDriverDef, ArrayAdapter::class);
         $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
         $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', [], 3);
         $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', [], 3);
@@ -1081,7 +1118,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $defaultEventManagerArguments = $defaultEventManager->getArguments();
 
         if (isset($defaultEventManagerArguments[1][1])) {
-            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em1_listeners.attach_entity_listeners'], $defaultEventManager->getArgument(1)[1]);
+            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em1_listeners.attach_entity_listeners'], $defaultEventManager->getArgument(1)[2]);
         } else {
             $this->assertDICDefinitionMethodCallOnce($defaultEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em1_listeners.attach_entity_listeners')]);
         }
@@ -1091,7 +1128,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $foobarEventManagerArguments = $foobarEventManager->getArguments();
 
         if (isset($foobarEventManagerArguments[1][1])) {
-            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em2_listeners.attach_entity_listeners'], $foobarEventManager->getArgument(1)[1]);
+            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em2_listeners.attach_entity_listeners'], $foobarEventManager->getArgument(1)[2]);
         } else {
             $this->assertDICDefinitionMethodCallOnce($foobarEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em2_listeners.attach_entity_listeners')]);
         }
@@ -1244,6 +1281,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     ): ContainerBuilder {
         $container = $this->getContainer($bundles);
         $container->registerExtension(new DoctrineExtension());
+        $container->addCompilerPass(new CacheCompatibilityPass());
 
         $this->loadFromFile($container, $fixture);
 
@@ -1417,8 +1455,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     private function compileContainer(ContainerBuilder $container): void
     {
-        $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
-        $container->getCompilerPassConfig()->setRemovingPasses([]);
+        $passConfig = $container->getCompilerPassConfig();
+        $passConfig->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
+        $passConfig->setRemovingPasses([]);
+        $passConfig->addPass(new CacheCompatibilityPass());
         $container->compile();
     }
 }

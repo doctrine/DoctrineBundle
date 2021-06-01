@@ -11,6 +11,6 @@ class XmlDoctrineExtensionTest extends AbstractDoctrineExtensionTest
     protected function loadFromFile(ContainerBuilder $container, string $file): void
     {
         $loadXml = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Fixtures/config/xml'));
-        $loadXml->load($file . '.xml');
+        $loadXml->import($file . '.{xml}');
     }
 }

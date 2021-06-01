@@ -52,6 +52,7 @@
         <xsd:attribute name="user" type="xsd:string" />
         <xsd:attribute name="password" type="xsd:string" />
         <xsd:attribute name="override-url" type="xsd:boolean" />
+        <xsd:attribute name="dbname-suffix" type="xsd:string" />
         <xsd:attribute name="application-name" type="xsd:string" />
         <xsd:attribute name="path" type="xsd:string" />
         <xsd:attribute name="unix-socket" type="xsd:string" />

@@ -35,6 +35,7 @@
         <parameter key="doctrine.orm.metadata.yml.class">Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver</parameter>
         <parameter key="doctrine.orm.metadata.php.class">Doctrine\ORM\Mapping\Driver\PHPDriver</parameter>
         <parameter key="doctrine.orm.metadata.staticphp.class">Doctrine\ORM\Mapping\Driver\StaticPHPDriver</parameter>
+        <parameter key="doctrine.orm.metadata.attribute.class">Doctrine\ORM\Mapping\Driver\AttributeDriver</parameter>
 
         <!-- cache warmer -->
         <parameter key="doctrine.orm.proxy_cache_warmer.class">Symfony\Bridge\Doctrine\CacheWarmer\ProxyCacheWarmer</parameter>
@@ -135,6 +136,10 @@
         <service id="doctrine.orm.listeners.resolve_target_entity" class="%doctrine.orm.listeners.resolve_target_entity.class%" public="false" />
         <service id="doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber">
             <argument type="collection" /> <!-- PdoAdapter instances -->
+            <tag name="doctrine.event_subscriber" />
+        </service>
+        <service id="doctrine.orm.listeners.doctrine_token_provider_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaSubscriber">
+            <argument type="tagged" tag="security.remember_me_handler" />
             <tag name="doctrine.event_subscriber" />
         </service>
 

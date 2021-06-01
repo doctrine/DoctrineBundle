@@ -23,9 +23,7 @@ use function preg_replace_callback;
 use function sprintf;
 use function strtoupper;
 use function substr;
-use function trigger_error;
-
-use const E_USER_DEPRECATED;
+use function trigger_deprecation;
 
 /**
  * This class contains the needed functions in order to do the query highlighting
@@ -147,7 +145,12 @@ class DoctrineExtension extends AbstractExtension
      */
     public function formatQuery($sql, $highlightOnly = false)
     {
-        @trigger_error(sprintf('The "%s()" method is deprecated and will be removed in DoctrineBundle 3.0.', __METHOD__), E_USER_DEPRECATED);
+        trigger_deprecation(
+            'doctrine/doctrine-bundle',
+            '2.1',
+            'The "%s()" method is deprecated and will be removed in doctrine-bundle 3.0.',
+            __METHOD__
+        );
 
         $this->setUpSqlFormatter(true, true);
 

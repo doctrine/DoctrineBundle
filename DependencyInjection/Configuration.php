@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Doctrine\ORM\EntityManager;
+use InvalidArgumentException;
 use ReflectionClass;
 use Symfony\Component\Config\Definition\BaseNode;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -11,10 +12,14 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
 
-use function array_key_exists;
+use function array_intersect_key;
+use function array_keys;
+use function array_pop;
 use function assert;
 use function class_exists;
 use function constant;
+use function count;
+use function implode;
 use function in_array;
 use function is_array;
 use function is_bool;
@@ -23,10 +28,12 @@ use function is_string;
 use function key;
 use function method_exists;
 use function reset;
+use function sprintf;
 use function strlen;
 use function strpos;
 use function strtoupper;
 use function substr;
+use function trigger_deprecation;
 
 /**
  * This class contains the configuration information for the bundle
@@ -65,10 +72,15 @@ class Configuration implements ConfigurationInterface
             ->children()
             ->arrayNode('dbal')
                 ->beforeNormalization()
-                    ->ifTrue(static function ($v) {
-                        return is_array($v) && ! array_key_exists('connections', $v) && ! array_key_exists('connection', $v);
-                    })
-                    ->then(static function ($v) {
+                    ->always(static function (array $v): array {
+                        static $hasExplicitlyDefinedConnectionsAtLeastOnce = false;
+
+                        if (isset($v['connections']) || isset($v['connection'])) {
+                            $hasExplicitlyDefinedConnectionsAtLeastOnce = true;
+
+                            return $v;
+                        }
+
                         // Key that should not be rewritten to the connection config
                         $excludedKeys = ['default_connection' => true, 'types' => true, 'type' => true];
                         $connection   = [];
@@ -79,6 +91,10 @@ class Configuration implements ConfigurationInterface
 
                             $connection[$key] = $v[$key];
                             unset($v[$key]);
+                        }
+
+                        if ($connection && $hasExplicitlyDefinedConnectionsAtLeastOnce) {
+                            throw new InvalidArgumentException('Either explicitly define DBAL connections in all doctrine-bundle configuration files, or in none of them');
                         }
 
                         $v['default_connection'] = isset($v['default_connection']) ? (string) $v['default_connection'] : 'default';
@@ -206,9 +222,6 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('shards')
                     ->prototype('array');
 
-        // TODO: Remove when https://github.com/psalm/psalm-plugin-symfony/pull/168 is released
-        assert($shardNode instanceof ArrayNodeDefinition);
-
         $shardNode
             ->children()
                 ->integerNode('id')
@@ -229,6 +242,29 @@ class Configuration implements ConfigurationInterface
     private function configureDbalDriverNode(ArrayNodeDefinition $node): void
     {
         $node
+            ->validate()
+            ->always(static function (array $values) {
+                if (! isset($values['url'])) {
+                    return $values;
+                }
+
+                $urlConflictingOptions = ['host' => true, 'port' => true, 'user' => true, 'password' => true, 'path' => true, 'dbname' => true, 'unix_socket' => true, 'memory' => true];
+                $urlConflictingValues  = array_keys(array_intersect_key($values, $urlConflictingOptions));
+
+                if ($urlConflictingValues) {
+                    $tail = count($urlConflictingValues) > 1 ? sprintf('or "%s" options', array_pop($urlConflictingValues)) : 'option';
+                    trigger_deprecation(
+                        'doctrine/doctrine-bundle',
+                        '2.4',
+                        'Setting the "doctrine.dbal.%s" %s while the "url" one is defined is deprecated',
+                        implode('", "', $urlConflictingValues),
+                        $tail
+                    );
+                }
+
+                return $values;
+            })
+            ->end()
             ->children()
                 ->scalarNode('url')->info('A URL with connection information; any parameter value parsed from this string will override explicitly set parameters')->end()
                 ->scalarNode('dbname')->end()
@@ -236,7 +272,8 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('port')->info('Defaults to null at runtime.')->end()
                 ->scalarNode('user')->info('Defaults to "root" at runtime.')->end()
                 ->scalarNode('password')->info('Defaults to null at runtime.')->end()
-                ->booleanNode('override_url')->defaultValue(false)->info('Allows overriding parts of the "url" parameter with dbname, host, port, user, and/or password parameters.')->end()
+                ->booleanNode('override_url')->setDeprecated(...$this->getDeprecationMsg('The "doctrine.dbal.override_url" configuration key is deprecated.', '2.4'))->end()
+                ->scalarNode('dbname_suffix')->end()
                 ->scalarNode('application_name')->end()
                 ->scalarNode('charset')->end()
                 ->scalarNode('path')->end()
@@ -343,15 +380,19 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('orm')
                     ->beforeNormalization()
-                        ->ifTrue(static function ($v) {
-                            if (! empty($v) && ! class_exists(EntityManager::class)) {
+                        ->always(static function (array $v): array {
+                            if ($v && ! class_exists(EntityManager::class)) {
                                 throw new LogicException('The doctrine/orm package is required when the doctrine.orm config is set.');
                             }
 
-                            return $v === null || (is_array($v) && ! array_key_exists('entity_managers', $v) && ! array_key_exists('entity_manager', $v));
-                        })
-                        ->then(static function ($v) {
-                            $v = (array) $v;
+                            static $hasExplicitlyDefinedEntityManagersAtLeastOnce = false;
+
+                            if (isset($v['entity_managers']) || isset($v['entity_manager'])) {
+                                $hasExplicitlyDefinedEntityManagersAtLeastOnce = true;
+
+                                return $v;
+                            }
+
                             // Key that should not be rewritten to the connection config
                             $excludedKeys  = [
                                 'default_entity_manager' => true,
@@ -369,6 +410,10 @@ class Configuration implements ConfigurationInterface
 
                                 $entityManager[$key] = $v[$key];
                                 unset($v[$key]);
+                            }
+
+                            if ($entityManager && $hasExplicitlyDefinedEntityManagersAtLeastOnce) {
+                                throw new InvalidArgumentException('Either explicitly define entity managers in all doctrine-bundle configuration files, or in none of them');
                             }
 
                             $v['default_entity_manager'] = isset($v['default_entity_manager']) ? (string) $v['default_entity_manager'] : 'default';
@@ -691,7 +736,6 @@ class Configuration implements ConfigurationInterface
         $node        = $treeBuilder->getRootNode();
 
         $node
-            ->addDefaultsIfNotSet()
             ->beforeNormalization()
                 ->ifString()
                 ->then(static function ($v): array {
@@ -706,9 +750,11 @@ class Configuration implements ConfigurationInterface
 
         if ($name === 'metadata_cache_driver') {
             $node->setDeprecated(...$this->getDeprecationMsg(
-                'The "metadata_cache_driver" configuration key is deprecated. PHP Array cache is now automatically registered when %kernel.debug% is false.',
+                'The "metadata_cache_driver" configuration key is deprecated. Remove the configuration to have the cache created automatically.',
                 '2.3'
             ));
+        } else {
+            $node->addDefaultsIfNotSet();
         }
 
         return $node;

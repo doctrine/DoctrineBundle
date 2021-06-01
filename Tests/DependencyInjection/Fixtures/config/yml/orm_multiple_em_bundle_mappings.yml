@@ -11,6 +11,8 @@ doctrine:
             em1:
                 mappings:
                     AnnotationsBundle: ~
+                    AttributesBundle:
+                      type: attribute
             em2:
                 mappings:
                     YamlBundle:

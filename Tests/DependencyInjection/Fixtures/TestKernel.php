@@ -19,9 +19,9 @@ class TestKernel extends Kernel
     /** @var string|null */
     private $projectDir;
 
-    public function __construct()
+    public function __construct(bool $debug = true)
     {
-        parent::__construct('test', true);
+        parent::__construct('test', $debug);
     }
 
     /** @return iterable<Bundle> */

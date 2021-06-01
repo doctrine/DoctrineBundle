@@ -16,6 +16,7 @@ use Doctrine\DBAL\Types\Type;
 use function array_merge;
 use function class_exists;
 use function is_subclass_of;
+use function trigger_deprecation;
 
 use const PHP_EOL;
 
@@ -49,10 +50,14 @@ class ConnectionFactory
             $this->initializeTypes();
         }
 
-        $overriddenOptions = $params['connection_override_options'] ?? [];
-        unset($params['connection_override_options']);
+        $overriddenOptions = [];
+        if (isset($params['connection_override_options'])) {
+            trigger_deprecation('doctrine/doctrine-bundle', '2.4', 'The "connection_override_options" connection parameter is deprecated');
+            $overriddenOptions = $params['connection_override_options'];
+            unset($params['connection_override_options']);
+        }
 
-        if (! isset($params['pdo']) && (! isset($params['charset']) || $overriddenOptions)) {
+        if (! isset($params['pdo']) && (! isset($params['charset']) || $overriddenOptions || isset($params['dbname_suffix']))) {
             $wrapperClass = null;
 
             if (isset($params['wrapperClass'])) {
@@ -71,6 +76,10 @@ class ConnectionFactory
             $connection = DriverManager::getConnection($params, $config, $eventManager);
             $params     = array_merge($connection->getParams(), $overriddenOptions);
             $driver     = $connection->getDriver();
+          
+            if (isset($params['dbname']) && isset($params['dbname_suffix'])) {
+                $params['dbname'] .= $params['dbname_suffix'];
+            }
 
             if (! isset($params['charset'])) {
                 if ($driver instanceof AbstractMySQLDriver) {

@@ -7,10 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use function sprintf;
-use function trigger_error;
-
-use const E_USER_DEPRECATED;
+use function trigger_deprecation;
 
 /**
  * Loads an SQL file and executes it.
@@ -36,7 +33,12 @@ class ImportDoctrineCommand extends ImportCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        @trigger_error(sprintf('The "%s" (doctrine:database:import) command is deprecated, use a database client instead.', self::class), E_USER_DEPRECATED);
+        trigger_deprecation(
+            'doctrine/doctrine-bundle',
+            '2.2',
+            'The "%s" (doctrine:database:import) is deprecated, use a database client instead.',
+            self::class
+        );
 
         DoctrineCommandHelper::setApplicationConnection($this->getApplication(), $input->getOption('connection'));
 
