@@ -6,6 +6,7 @@ use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\Psr6\CacheAdapter;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Psr\Cache\CacheItemPoolInterface;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
@@ -34,10 +35,14 @@ final class CacheCompatibilityPass implements CompilerPassInterface
 
                 $aliasId      = (string) $methodCall[1][0];
                 $definitionId = (string) $container->getAlias($aliasId);
-                $isPsr6       = is_a($container->getDefinition($definitionId)->getClass(), CacheItemPoolInterface::class, true);
+                $definition   = $container->getDefinition($definitionId);
                 $shouldBePsr6 = self::CACHE_METHODS_PSR6_SUPPORT_MAP[$methodCall[0]];
 
-                if ($shouldBePsr6 === $isPsr6) {
+                while (! $definition->getClass() && $definition instanceof ChildDefinition) {
+                    $definition = $container->findDefinition($definition->getParent());
+                }
+
+                if ($shouldBePsr6 === is_a($definition->getClass(), CacheItemPoolInterface::class, true)) {
                     continue;
                 }
 

@@ -15,7 +15,7 @@ class CacheCompatibilityPassTest extends TestCase
 {
     use ExpectDeprecationTrait;
 
-    public function testLegacyCacheConfigUsingServiceDefinedByApplication(): void
+    public function testCacheConfigUsingServiceDefinedByApplication(): void
     {
         $this->expectNotToPerformAssertions();
         (new class () extends TestKernel {
@@ -23,9 +23,21 @@ class CacheCompatibilityPassTest extends TestCase
             {
                 parent::registerContainerConfiguration($loader);
                 $loader->load(static function (ContainerBuilder $containerBuilder): void {
+                    $containerBuilder->loadFromExtension('framework', [
+                        'cache' => [
+                            'pools' => [
+                                'doctrine.system_cache_pool' => ['adapter' => 'cache.system'],
+                            ],
+                        ],
+                    ]);
                     $containerBuilder->loadFromExtension(
                         'doctrine',
-                        ['orm' => ['query_cache_driver' => ['type' => 'service', 'id' => 'custom_cache_service']]]
+                        [
+                            'orm' => [
+                                'query_cache_driver' => ['type' => 'service', 'id' => 'custom_cache_service'],
+                                'result_cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool'],
+                            ],
+                        ]
                     );
                     $containerBuilder->setDefinition(
                         'custom_cache_service',
@@ -61,7 +73,7 @@ class CacheCompatibilityPassTest extends TestCase
     }
 
     /** @group legacy */
-    public function testMetdataCacheConfigUsingNonPsr6ServiceDefinedByApplication(): void
+    public function testMetadataCacheConfigUsingNonPsr6ServiceDefinedByApplication(): void
     {
         $this->expectDeprecation('Since doctrine/doctrine-bundle 2.4: Configuring doctrine/cache is deprecated. Please update the cache service "custom_cache_service" to use a PSR-6 cache.');
         (new class (false) extends TestKernel {
