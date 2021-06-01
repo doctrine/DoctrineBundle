@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 use Closure;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
@@ -454,11 +455,8 @@ class DoctrineExtensionTest extends TestCase
 
         $arguments = $definition->getArguments();
         $this->assertSame('%kernel.cache_dir%/doctrine/orm/default_metadata.php', $arguments[0]);
-        $this->assertInstanceOf(Reference::class, $arguments[1]);
-        $wrappedDefinition = (string) $arguments[1];
-
-        $definition = $container->getDefinition((string) $wrappedDefinition);
-        $this->assertSame(ArrayAdapter::class, $definition->getClass());
+        $wrappedDefinition = $arguments[1];
+        $this->assertSame(ArrayAdapter::class, $wrappedDefinition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_query_cache'));
         $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
@@ -577,6 +575,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('%doctrine.orm.second_level_cache.default_cache_factory.class%', $slcDefinition->getClass());
     }
 
+    /** @group legacy */
     public function testSingleEntityManagerWithCustomSecondLevelCacheConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -932,7 +931,7 @@ class DoctrineExtensionTest extends TestCase
      *
      * @dataProvider cacheConfigurationProvider
      */
-    public function testCacheConfiguration(string $expectedAliasName, string $expectedAliasTarget, string $cacheName, $cacheConfig): void
+    public function testCacheConfiguration(string $expectedAliasName, string $expectedTarget, string $cacheName, $cacheConfig): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -950,7 +949,7 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertTrue($container->hasAlias($expectedAliasName));
         $alias = $container->getAlias($expectedAliasName);
-        $this->assertEquals($expectedAliasTarget, (string) $alias);
+        $this->assertEquals($expectedTarget, (string) $alias);
     }
 
     /**
@@ -970,58 +969,21 @@ class DoctrineExtensionTest extends TestCase
         return [
             'metadata_cache_default' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'cache.doctrine.orm.default.metadata.php_array',
+                'expectedAliasTarget' => 'cache.doctrine.orm.default.metadata',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => null],
             ],
             'metadata_cache_pool' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'metadata_cache_pool.php_array',
+                'expectedAliasTarget' => 'metadata_cache_pool',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'pool', 'pool' => 'metadata_cache_pool'],
             ],
             'metadata_cache_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'cache.doctrine.orm.adapter.default.metadata.php_array',
+                'expectedAliasTarget' => 'service_target_metadata',
                 'cacheName' => 'metadata_cache_driver',
                 'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata'],
-            ],
-            'metadata_psr6_service' => [
-                'expectedAliasName' => 'doctrine.orm.default_metadata_cache',
-                'expectedAliasTarget' => 'service_target_metadata_psr6.php_array',
-                'cacheName' => 'metadata_cache_driver',
-                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_metadata_psr6'],
-            ],
-        ];
-    }
-
-    /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
-    public static function cacheConfigurationProvider(): array
-    {
-        return [
-            'query_cache_default' => [
-                'expectedAliasName' => 'doctrine.orm.default_query_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.query',
-                'cacheName' => 'query_cache_driver',
-                'cacheConfig' => ['type' => null],
-            ],
-            'result_cache_default' => [
-                'expectedAliasName' => 'doctrine.orm.default_result_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.result',
-                'cacheName' => 'result_cache_driver',
-                'cacheConfig' => ['type' => null],
-            ],
-            'query_cache_pool' => [
-                'expectedAliasName' => 'doctrine.orm.default_query_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.query',
-                'cacheName' => 'query_cache_driver',
-                'cacheConfig' => ['type' => 'pool', 'pool' => 'query_cache_pool'],
-            ],
-            'result_cache_pool' => [
-                'expectedAliasName' => 'doctrine.orm.default_result_cache',
-                'expectedAliasTarget' => 'doctrine.orm.cache.provider.default.result',
-                'cacheName' => 'result_cache_driver',
-                'cacheConfig' => ['type' => 'pool', 'pool' => 'result_cache_pool'],
             ],
             'query_cache_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_query_cache',
@@ -1032,6 +994,49 @@ class DoctrineExtensionTest extends TestCase
             'result_cache_service' => [
                 'expectedAliasName' => 'doctrine.orm.default_result_cache',
                 'expectedAliasTarget' => 'service_target_result',
+                'cacheName' => 'result_cache_driver',
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_result'],
+            ],
+        ];
+    }
+
+    /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
+    public static function cacheConfigurationProvider(): array
+    {
+        return [
+            'query_cache_default' => [
+                'expectedAliasName' => 'doctrine.orm.default_query_cache',
+                'expectedTarget' => 'cache.doctrine.orm.default.query',
+                'cacheName' => 'query_cache_driver',
+                'cacheConfig' => ['type' => null],
+            ],
+            'result_cache_default' => [
+                'expectedAliasName' => 'doctrine.orm.default_result_cache',
+                'expectedTarget' => 'cache.doctrine.orm.default.result',
+                'cacheName' => 'result_cache_driver',
+                'cacheConfig' => ['type' => null],
+            ],
+            'query_cache_pool' => [
+                'expectedAliasName' => 'doctrine.orm.default_query_cache',
+                'expectedTarget' => 'query_cache_pool',
+                'cacheName' => 'query_cache_driver',
+                'cacheConfig' => ['type' => 'pool', 'pool' => 'query_cache_pool'],
+            ],
+            'result_cache_pool' => [
+                'expectedAliasName' => 'doctrine.orm.default_result_cache',
+                'expectedTarget' => 'result_cache_pool',
+                'cacheName' => 'result_cache_driver',
+                'cacheConfig' => ['type' => 'pool', 'pool' => 'result_cache_pool'],
+            ],
+            'query_cache_service' => [
+                'expectedAliasName' => 'doctrine.orm.default_query_cache',
+                'expectedTarget' => 'service_target_query',
+                'cacheName' => 'query_cache_driver',
+                'cacheConfig' => ['type' => 'service', 'id' => 'service_target_query'],
+            ],
+            'result_cache_service' => [
+                'expectedAliasName' => 'doctrine.orm.default_result_cache',
+                'expectedTarget' => 'service_target_result',
                 'cacheName' => 'result_cache_driver',
                 'cacheConfig' => ['type' => 'service', 'id' => 'service_target_result'],
             ],
@@ -1202,6 +1207,7 @@ class DoctrineExtensionTest extends TestCase
     {
         $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);
+        $container->addCompilerPass(new CacheCompatibilityPass());
         $container->compile();
     }
 }
