@@ -98,6 +98,13 @@ class ConnectionFactoryTest extends TestCase
         $this->assertEquals($params, array_intersect_key($connection->getParams(), $params));
     }
 
+    public function testConnectionCharsetFromUrl()
+    {
+        $connection = (new ConnectionFactory([]))->createConnection(['url' => 'mysql://root:password@database:3306/main?charset=utf8mb4_unicode_ci']);
+
+        $this->assertEquals('utf8mb4_unicode_ci', $connection->getParams()['charset']);
+    }
+
     public function testDbnameSuffix(): void
     {
         $connection = (new ConnectionFactory([]))->createConnection([

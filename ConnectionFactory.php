@@ -81,14 +81,16 @@ class ConnectionFactory
                 $params['dbname'] .= $params['dbname_suffix'];
             }
 
-            if ($driver instanceof AbstractMySQLDriver) {
-                $params['charset'] = 'utf8mb4';
+            if (! isset($params['charset'])) {
+                if ($driver instanceof AbstractMySQLDriver) {
+                    $params['charset'] = 'utf8mb4';
 
-                if (! isset($params['defaultTableOptions']['collate'])) {
-                    $params['defaultTableOptions']['collate'] = 'utf8mb4_unicode_ci';
+                    if (! isset($params['defaultTableOptions']['collate'])) {
+                        $params['defaultTableOptions']['collate'] = 'utf8mb4_unicode_ci';
+                    }
+                } else {
+                    $params['charset'] = 'utf8';
                 }
-            } else {
-                $params['charset'] = 'utf8';
             }
 
             if ($wrapperClass !== null) {
