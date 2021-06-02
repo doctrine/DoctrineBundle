@@ -94,7 +94,7 @@ class Configuration implements ConfigurationInterface
                         }
 
                         if ($connection && $hasExplicitlyDefinedConnectionsAtLeastOnce) {
-                            throw new InvalidArgumentException('Either explicitly define DBAL connections in all doctrine-bundle configuration files, or in none of them');
+                            throw new InvalidArgumentException('Seems like you have configured multiple "dbal" connections. You need to use the long configuration syntax in every doctrine configuration file, or in none of them.');
                         }
 
                         $v['default_connection'] = isset($v['default_connection']) ? (string) $v['default_connection'] : 'default';
@@ -413,7 +413,7 @@ class Configuration implements ConfigurationInterface
                             }
 
                             if ($entityManager && $hasExplicitlyDefinedEntityManagersAtLeastOnce) {
-                                throw new InvalidArgumentException('Either explicitly define entity managers in all doctrine-bundle configuration files, or in none of them');
+                                throw new InvalidArgumentException('Seems like you have configured multiple "entity_managers". You need to use the long configuration syntax in every doctrine configuration file, or in none of them.');
                             }
 
                             $v['default_entity_manager'] = isset($v['default_entity_manager']) ? (string) $v['default_entity_manager'] : 'default';
