@@ -216,18 +216,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
 
-    public function testMixedUseOfSimplifiedAndMultipleConnectionsStyleIsInvalid(): void
-    {
-        $this->expectExceptionObject(new InvalidArgumentException('Seems like you have configured multiple "dbal" connections. You need to use the long configuration syntax in every doctrine configuration file, or in none of them.'));
-        $this->loadContainer('dbal_service_{single,multiple}_connectio{n,ns}');
-    }
-
-    public function testMixedUseOfSimplifiedAndMultipleEntityManagersStyleIsInvalid(): void
-    {
-        $this->expectExceptionObject(new InvalidArgumentException('Seems like you have configured multiple "entity_managers". You need to use the long configuration syntax in every doctrine configuration file, or in none of them.'));
-        $this->loadContainer('orm_service_{simple_single,multiple}_entity_manage{r,rs}');
-    }
-
     public function testDbalLoadPoolShardingConnection(): void
     {
         $container = $this->loadContainer('dbal_service_pool_sharding_connection');
