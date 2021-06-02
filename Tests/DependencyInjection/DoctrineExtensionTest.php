@@ -1081,7 +1081,12 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals($managerClass, $bazManagerDef->getClass());
     }
 
-    /** @requires PHP 8 */
+    // Disabled to prevent changing the comment below to a single-line annotation
+    // phpcs:disable SlevomatCodingStandard.Commenting.RequireOneLineDocComment.MultiLineDocComment
+
+    /**
+     * @requires PHP 8
+     */
     public function testAsEntityListenerAttribute()
     {
         if (! method_exists(ContainerBuilder::class, 'getAutoconfiguredAttributes')) {
@@ -1115,6 +1120,8 @@ class DoctrineExtensionTest extends TestCase
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
+
+    // phpcs:enable
 
     /** @param list<string> $bundles */
     private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
