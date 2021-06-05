@@ -14,6 +14,7 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use InvalidArgumentException;
@@ -214,18 +215,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             $param['replica']['replica1']
         );
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
-    }
-
-    public function testMixedUseOfSimplifiedAndMultipleConnectionsStyleIsInvalid(): void
-    {
-        $this->expectExceptionObject(new InvalidArgumentException('Seems like you have configured multiple "dbal" connections. You need to use the long configuration syntax in every doctrine configuration file, or in none of them.'));
-        $this->loadContainer('dbal_service_{single,multiple}_connectio{n,ns}');
-    }
-
-    public function testMixedUseOfSimplifiedAndMultipleEntityManagersStyleIsInvalid(): void
-    {
-        $this->expectExceptionObject(new InvalidArgumentException('Seems like you have configured multiple "entity_managers". You need to use the long configuration syntax in every doctrine configuration file, or in none of them.'));
-        $this->loadContainer('orm_service_{simple_single,multiple}_entity_manage{r,rs}');
     }
 
     public function testDbalLoadPoolShardingConnection(): void
@@ -693,6 +682,120 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($def2, 'setQuoteStrategy', [0 => new Reference('doctrine.orm.quote_strategy.ansi')]);
     }
 
+    /**
+     * @dataProvider cacheConfigProvider
+     * @group legacy
+     */
+    public function testCacheConfig(?string $expectedClass, string $entityManagerName, ?string $cacheGetter): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_caches');
+
+        $entityManagerId = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
+
+        $em = $container->get($entityManagerId);
+        assert($em instanceof EntityManager);
+
+        $this->assertInstanceOf(EntityManagerInterface::class, $em);
+
+        if ($cacheGetter === null) {
+            return;
+        }
+
+        $configuration = $em->getConfiguration();
+        $cache         = $configuration->$cacheGetter();
+
+        if ($expectedClass === null) {
+            $this->assertNull($cache);
+        } else {
+            $this->assertInstanceOf($expectedClass, $cache);
+        }
+    }
+
+    public static function cacheConfigProvider(): Generator
+    {
+        yield 'metadata_cache_none' => [
+            'expectedClass' => PhpArrayAdapter::class,
+            'entityManagerName' => 'metadata_cache_none',
+            'cacheGetter' => 'getMetadataCache',
+        ];
+
+        yield 'metadata_cache_pool' => [
+            'expectedClass' => ArrayAdapter::class,
+            'entityManagerName' => 'metadata_cache_pool',
+            'cacheGetter' => 'getMetadataCache',
+        ];
+
+        yield 'metadata_cache_service_psr6' => [
+            'expectedClass' => ArrayAdapter::class,
+            'entityManagerName' => 'metadata_cache_service_psr6',
+            'cacheGetter' => 'getMetadataCache',
+        ];
+
+        yield 'metadata_cache_service_doctrine' => [
+            'expectedClass' => ArrayAdapter::class,
+            'entityManagerName' => 'metadata_cache_service_doctrine',
+            'cacheGetter' => 'getMetadataCache',
+        ];
+
+        yield 'query_cache_pool' => [
+            'expectedClass' => DoctrineProvider::class,
+            'entityManagerName' => 'query_cache_pool',
+            'cacheGetter' => 'getQueryCacheImpl',
+        ];
+
+        yield 'query_cache_service_psr6' => [
+            'expectedClass' => DoctrineProvider::class,
+            'entityManagerName' => 'query_cache_service_psr6',
+            'cacheGetter' => 'getQueryCacheImpl',
+        ];
+
+        yield 'query_cache_service_doctrine' => [
+            'expectedClass' => DoctrineProvider::class,
+            'entityManagerName' => 'query_cache_service_doctrine',
+            'cacheGetter' => 'getQueryCacheImpl',
+        ];
+
+        yield 'result_cache_pool' => [
+            'expectedClass' => DoctrineProvider::class,
+            'entityManagerName' => 'result_cache_pool',
+            'cacheGetter' => 'getResultCacheImpl',
+        ];
+
+        yield 'result_cache_service_psr6' => [
+            'expectedClass' => DoctrineProvider::class,
+            'entityManagerName' => 'result_cache_service_psr6',
+            'cacheGetter' => 'getResultCacheImpl',
+        ];
+
+        yield 'result_cache_service_doctrine' => [
+            'expectedClass' => DoctrineProvider::class,
+            'entityManagerName' => 'result_cache_service_doctrine',
+            'cacheGetter' => 'getResultCacheImpl',
+        ];
+
+        yield 'second_level_cache_pool' => [
+            'expectedClass' => null,
+            'entityManagerName' => 'second_level_cache_pool',
+            'cacheGetter' => null,
+        ];
+
+        yield 'second_level_cache_service_psr6' => [
+            'expectedClass' => null,
+            'entityManagerName' => 'second_level_cache_service_psr6',
+            'cacheGetter' => null,
+        ];
+
+        yield 'second_level_cache_service_doctrine' => [
+            'expectedClass' => null,
+            'entityManagerName' => 'second_level_cache_service_doctrine',
+            'cacheGetter' => null,
+        ];
+    }
+
     public function testSecondLevelCache(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -735,7 +838,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
         $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
         $this->assertDICDefinitionClass($loggerStatisticsDef, '%doctrine.orm.second_level_cache.logger_statistics.class%');
-        $this->assertDICDefinitionClass($cacheDriverDef, ArrayAdapter::class);
+        $this->assertDICDefinitionClass($cacheDriverDef, CacheProvider::class);
         $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
         $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', [], 3);
         $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', [], 3);
@@ -1281,7 +1384,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     ): ContainerBuilder {
         $container = $this->getContainer($bundles);
         $container->registerExtension(new DoctrineExtension());
-        $container->addCompilerPass(new CacheCompatibilityPass());
 
         $this->loadFromFile($container, $fixture);
 
