@@ -32,8 +32,7 @@ final class CacheCompatibilityPass implements CompilerPassInterface
         foreach (array_keys($container->findTaggedServiceIds(self::CONFIGURATION_TAG)) as $id) {
             foreach ($container->getDefinition($id)->getMethodCalls() as $methodCall) {
                 if ($methodCall[0] === 'setSecondLevelCacheConfiguration') {
-                    $slcConfigDefinition = $methodCall[1][0];
-                    $this->updateSecondLevelCache($container, $slcConfigDefinition);
+                    $this->updateSecondLevelCache($container, $methodCall[1][0]);
                     continue;
                 }
 
@@ -59,13 +58,10 @@ final class CacheCompatibilityPass implements CompilerPassInterface
 
             $factoryDefinition = $methodCall[1][0];
             assert($factoryDefinition instanceof Definition);
+            $aliasId = (string) $factoryDefinition->getArgument(1);
+            $this->wrapIfNecessary($container, $aliasId, (string) $container->getAlias($aliasId), false);
             break;
         }
-
-        $aliasId      = (string) $factoryDefinition->getArgument(1);
-        $definitionId = (string) $container->getAlias($aliasId);
-
-        $this->wrapIfNecessary($container, $aliasId, $definitionId, false);
     }
 
     private function createCompatibilityLayerDefinition(ContainerBuilder $container, string $definitionId, bool $shouldBePsr6): ?Definition
