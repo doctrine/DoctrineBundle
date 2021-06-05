@@ -1,0 +1,76 @@
+services:
+    cache.psr6:
+        class: Symfony\Component\Cache\Adapter\ArrayAdapter
+    cache.doctrine:
+        class: Doctrine\Common\Cache\Psr6\DoctrineProvider
+        factory: [Doctrine\Common\Cache\Psr6\DoctrineProvider, wrap]
+        arguments: ["@cache.psr6"]
+
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        default_entity_manager: metadata_cache_none
+        entity_managers:
+            metadata_cache_none: ~
+            metadata_cache_pool:
+                metadata_cache_driver:
+                    type: pool
+                    pool: cache.psr6
+            metadata_cache_service_psr6:
+                metadata_cache_driver:
+                    type: service
+                    id: cache.psr6
+            metadata_cache_service_doctrine:
+                metadata_cache_driver:
+                    type: service
+                    id: cache.doctrine
+
+            query_cache_pool:
+                query_cache_driver:
+                    type: pool
+                    pool: cache.psr6
+            query_cache_service_psr6:
+                query_cache_driver:
+                    type: service
+                    id: cache.psr6
+            query_cache_service_doctrine:
+                query_cache_driver:
+                    type: service
+                    id: cache.doctrine
+
+            result_cache_pool:
+                result_cache_driver:
+                    type: pool
+                    pool: cache.psr6
+            result_cache_service_psr6:
+                result_cache_driver:
+                    type: service
+                    id: cache.psr6
+            result_cache_service_doctrine:
+                result_cache_driver:
+                    type: service
+                    id: cache.doctrine
+
+            second_level_cache_pool:
+                second_level_cache:
+                    enabled: true
+                    region_cache_driver:
+                        type: pool
+                        pool: cache.psr6
+            second_level_cache_service_psr6:
+                second_level_cache:
+                    enabled: true
+                    region_cache_driver:
+                        type: service
+                        id: cache.psr6
+            second_level_cache_service_doctrine:
+                second_level_cache:
+                    enabled: true
+                    region_cache_driver:
+                        type: service
+                        id: cache.doctrine

@@ -1,0 +1,71 @@
+<?xml version="1.0" ?>
+
+<srv:container xmlns="http://symfony.com/schema/dic/doctrine"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:srv="http://symfony.com/schema/dic/services"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
+                        http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
+
+    <srv:services>
+        <srv:service id="cache.psr6" class="Symfony\Component\Cache\Adapter\ArrayAdapter"/>
+        <srv:service id="cache.doctrine" class="Doctrine\Common\Cache\Psr6\DoctrineProvider">
+            <srv:factory class="Doctrine\Common\Cache\Psr6\DoctrineProvider" method="wrap"/>
+            <srv:argument type="service" id="cache.psr6"/>
+        </srv:service>
+    </srv:services>
+
+    <config>
+        <dbal default-connection="default">
+            <connection name="default" dbname="db" />
+        </dbal>
+
+        <orm default-entity-manager="metadata_cache_none">
+            <entity-manager name="metadata_cache_none"/>
+            <entity-manager name="metadata_cache_pool">
+                <metadata-cache-driver type="pool" pool="cache.psr6"/>
+            </entity-manager>
+            <entity-manager name="metadata_cache_service_psr6">
+                <metadata-cache-driver type="service" id="cache.psr6"/>
+            </entity-manager>
+            <entity-manager name="metadata_cache_service_doctrine">
+                <metadata-cache-driver type="service" id="cache.doctrine"/>
+            </entity-manager>
+
+            <entity-manager name="query_cache_pool">
+                <query-cache-driver type="pool" pool="cache.psr6"/>
+            </entity-manager>
+            <entity-manager name="query_cache_service_psr6">
+                <query-cache-driver type="service" id="cache.psr6"/>
+            </entity-manager>
+            <entity-manager name="query_cache_service_doctrine">
+                <query-cache-driver type="service" id="cache.doctrine"/>
+            </entity-manager>
+
+            <entity-manager name="result_cache_pool">
+                <result-cache-driver type="pool" pool="cache.psr6"/>
+            </entity-manager>
+            <entity-manager name="result_cache_service_psr6">
+                <result-cache-driver type="service" id="cache.psr6"/>
+            </entity-manager>
+            <entity-manager name="result_cache_service_doctrine">
+                <result-cache-driver type="service" id="cache.doctrine"/>
+            </entity-manager>
+
+            <entity-manager name="second_level_cache_pool">
+                <second-level-cache enabled="true">
+                    <region-cache-driver type="pool" pool="cache.psr6"/>
+                </second-level-cache>
+            </entity-manager>
+            <entity-manager name="second_level_cache_service_psr6">
+                <second-level-cache enabled="true">
+                    <region-cache-driver type="service" id="cache.psr6"/>
+                </second-level-cache>
+            </entity-manager>
+            <entity-manager name="second_level_cache_service_doctrine">
+                <second-level-cache enabled="true">
+                    <region-cache-driver type="service" id="cache.doctrine"/>
+                </second-level-cache>
+            </entity-manager>
+        </orm>
+    </config>
+</srv:container>

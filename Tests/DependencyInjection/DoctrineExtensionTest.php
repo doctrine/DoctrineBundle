@@ -1081,6 +1081,9 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals($managerClass, $bazManagerDef->getClass());
     }
 
+    // Disabled to prevent changing the comment below to a single-line annotation
+    // phpcs:disable SlevomatCodingStandard.Commenting.RequireOneLineDocComment.MultiLineDocComment
+
     /**
      * @requires PHP 8
      */
@@ -1117,6 +1120,8 @@ class DoctrineExtensionTest extends TestCase
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
+
+    // phpcs:enable
 
     /** @param list<string> $bundles */
     private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
