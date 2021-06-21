@@ -1027,7 +1027,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $transportFactoryDefinition = $container->getDefinition('messenger.transport.doctrine.factory');
         if (! class_exists(DoctrineTransportFactory::class)) {
             // If symfony/messenger < 5.1
-            if (! class_exists(\Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory::class)) {
+            if (! $container->getReflectionClass(\Symfony\Component\Messenger\Transport\Doctrine\DoctrineTransportFactory::class, false)) {
                 // Dont add the tag
                 return;
             }
