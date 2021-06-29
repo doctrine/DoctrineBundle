@@ -45,8 +45,10 @@ class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
         }
 
         $metadataFactory = $this->entityManager->getMetadataFactory();
-        if ($metadataFactory instanceof AbstractClassMetadataFactory && $metadataFactory->getLoadedMetadata()) {
-            throw new LogicException('DoctrineMetadataCacheWarmer must load metadata first, check priority of your warmers.');
+        if ($metadataFactory instanceof AbstractClassMetadataFactory) {
+            foreach (array_keys($metadataFactory->getLoadedMetadata()) as $class) {
+                $metadataFactory->setMetadataFor($class, null);
+            }
         }
 
         if (method_exists($metadataFactory, 'setCache')) {
