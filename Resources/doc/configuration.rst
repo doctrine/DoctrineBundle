@@ -311,6 +311,7 @@ Configuration Reference
                         quote_strategy:               doctrine.orm.quote_strategy.default
                         entity_listener_resolver:     ~
                         repository_factory:           ~
+                        enable_metadata_cache:        false
                         second_level_cache:
                             region_cache_driver:
                                 type: ~

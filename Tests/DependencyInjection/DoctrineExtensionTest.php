@@ -351,13 +351,28 @@ class DoctrineExtensionTest extends TestCase
         $this->assertNull($container->getDefinition('doctrine.dbal.second_connection')->getClass());
     }
 
-    public function testDependencyInjectionConfigurationDefaults(): void
+    /**
+     * @return array<string, array{0: bool}>
+     */
+    public function kernelDebugProvider(): array
+    {
+        return [
+            'kernel.debug = true' => [true],
+            'kernel.debug = false' => [false],
+        ];
+    }
+
+    /**
+     * @dataProvider kernelDebugProvider
+     */
+    public function testDependencyInjectionConfigurationDefaults(bool $debug): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
         }
 
         $container = $this->getContainer();
+        $container->setParameter('kernel.debug', $debug);
         $extension = new DoctrineExtension();
         $config    = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
 
@@ -403,6 +418,7 @@ class DoctrineExtensionTest extends TestCase
             ->build();
 
         $container = $this->getContainer();
+        $container->setParameter('kernel.debug', $debug);
         $extension->load([$config], $container);
         $this->compileContainer($container);
 
@@ -440,23 +456,30 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[11][1][0]);
         $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[12][1][0]);
 
-        $definition = $container->getDefinition('doctrine.orm.default_metadata_cache_warmer');
-        $this->assertSame(DoctrineMetadataCacheWarmer::class, $definition->getClass());
-        $this->assertEquals(
-            [
-                new Reference('doctrine.orm.default_entity_manager'),
-                '%kernel.cache_dir%/doctrine/orm/default_metadata.php',
-            ],
-            $definition->getArguments()
-        );
+        if ($debug) {
+            $this->assertFalse($container->hasDefinition('doctrine.orm.default_metadata_cache_warmer'));
 
-        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
-        $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
+            $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
+            $this->assertEquals(ArrayAdapter::class, $definition->getClass());
+        } else {
+            $definition = $container->getDefinition('doctrine.orm.default_metadata_cache_warmer');
+            $this->assertSame(DoctrineMetadataCacheWarmer::class, $definition->getClass());
+            $this->assertEquals(
+                [
+                    new Reference('doctrine.orm.default_entity_manager'),
+                    '%kernel.cache_dir%/doctrine/orm/default_metadata.php',
+                ],
+                $definition->getArguments()
+            );
 
-        $arguments = $definition->getArguments();
-        $this->assertSame('%kernel.cache_dir%/doctrine/orm/default_metadata.php', $arguments[0]);
-        $wrappedDefinition = $arguments[1];
-        $this->assertSame(ArrayAdapter::class, $wrappedDefinition->getClass());
+            $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
+            $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
+
+            $arguments = $definition->getArguments();
+            $this->assertSame('%kernel.cache_dir%/doctrine/orm/default_metadata.php', $arguments[0]);
+            $wrappedDefinition = $arguments[1];
+            $this->assertSame(ArrayAdapter::class, $wrappedDefinition->getClass());
+        }
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_query_cache'));
         $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
@@ -492,6 +515,42 @@ class DoctrineExtensionTest extends TestCase
         $this->assertCount(1, $calls);
         $this->assertEquals('setNestTransactionsWithSavepoints', $calls[0][0]);
         $this->assertTrue($calls[0][1][0]);
+    }
+
+    public function testEnablingMetadataCache(): void
+    {
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager([
+                'entity_managers' => [
+                    'default' => ['enable_metadata_cache' => true],
+                ],
+            ])
+            ->build();
+
+        $container = $this->getContainer();
+        $extension->load([$config], $container);
+        $this->compileContainer($container);
+
+        $definition = $container->getDefinition('doctrine.orm.default_metadata_cache_warmer');
+        $this->assertSame(DoctrineMetadataCacheWarmer::class, $definition->getClass());
+        $this->assertEquals(
+            [
+                new Reference('doctrine.orm.default_entity_manager'),
+                '%kernel.cache_dir%/doctrine/orm/default_metadata.php',
+            ],
+            $definition->getArguments()
+        );
+
+        $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
+        $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
+
+        $arguments = $definition->getArguments();
+        $this->assertSame('%kernel.cache_dir%/doctrine/orm/default_metadata.php', $arguments[0]);
+        $wrappedDefinition = $arguments[1];
+        $this->assertSame(ArrayAdapter::class, $wrappedDefinition->getClass());
     }
 
     public function testAutoGenerateProxyClasses(): void

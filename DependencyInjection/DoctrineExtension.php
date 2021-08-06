@@ -915,21 +915,21 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (isset($entityManager['metadata_cache_driver'])) {
             $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container);
         } else {
-            $this->createMetadataCache($entityManager['name'], $container);
+            $this->createMetadataCache($entityManager['name'], $entityManager['enable_metadata_cache'], $container);
         }
 
         $this->loadCacheDriver('result_cache', $entityManager['name'], $entityManager['result_cache_driver'], $container);
         $this->loadCacheDriver('query_cache', $entityManager['name'], $entityManager['query_cache_driver'], $container);
     }
 
-    private function createMetadataCache(string $objectManagerName, ContainerBuilder $container): void
+    private function createMetadataCache(string $objectManagerName, bool $enabled, ContainerBuilder $container): void
     {
         $aliasId = $this->getObjectManagerElementName(sprintf('%s_%s', $objectManagerName, 'metadata_cache'));
         $cacheId = sprintf('cache.doctrine.orm.%s.%s', $objectManagerName, 'metadata');
 
         $cache = new Definition(ArrayAdapter::class);
 
-        if (! $container->getParameter('kernel.debug')) {
+        if ($enabled) {
             $phpArrayFile         = '%kernel.cache_dir%' . sprintf('/doctrine/orm/%s_metadata.php', $objectManagerName);
             $cacheWarmerServiceId = $this->getObjectManagerElementName(sprintf('%s_%s', $objectManagerName, 'metadata_cache_warmer'));
 
