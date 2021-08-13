@@ -11,7 +11,7 @@ Full example:
 
 .. configuration-block::
 
-    .. code-block:: php-annotations
+    .. code-block:: annotation
 
         <?php
         // User.php
@@ -28,7 +28,7 @@ Full example:
             // ....
         }
     
-    .. code-block:: php-attributes
+    .. code-block:: attribute
 
         <?php
         // User.php
