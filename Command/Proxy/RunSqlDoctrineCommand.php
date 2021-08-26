@@ -51,10 +51,7 @@ EOT
         $this->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'The connection to use for this command');
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         trigger_deprecation(
             'doctrine/doctrine-bundle',
