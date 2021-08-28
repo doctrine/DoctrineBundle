@@ -62,7 +62,10 @@ class ProfilerTest extends BaseTestCase
         $this->twig->addExtension(new CodeExtension('', '', ''));
         $this->twig->addExtension(new RoutingExtension($urlGenerator));
         $this->twig->addExtension(new HttpKernelExtension());
-        /** @psalm-suppress InternalClass */
+        /**
+         * @psalm-suppress InternalClass
+         * @psalm-suppress InternalMethod
+         */
         $this->twig->addExtension(new WebProfilerExtension());
         $this->twig->addExtension(new DoctrineExtension());
 
