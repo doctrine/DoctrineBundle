@@ -8,9 +8,11 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\Driver\API\ExceptionConverter;
+use Doctrine\DBAL\Driver\Exception as InternalDriverException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Exception;
 use Throwable;
@@ -18,6 +20,9 @@ use Throwable;
 use function array_intersect_key;
 use function class_exists;
 use function strpos;
+
+// Compatibility with DBAL < 3
+class_exists(\Doctrine\DBAL\Platforms\MySqlPlatform::class);
 
 class ConnectionFactoryTest extends TestCase
 {
@@ -29,9 +34,10 @@ class ConnectionFactoryTest extends TestCase
         $config       = null;
         $eventManager = null;
         $mappingTypes = ['' => ''];
-        $exception    = class_exists(Driver\AbstractDriverException::class) ?
+        /** @psalm-suppress InvalidArgument */
+        $exception = class_exists(Driver\AbstractDriverException::class) ?
             new DriverException('', $this->createMock(Driver\AbstractDriverException::class)) :
-            new DriverException('', $this->createMock(Driver\AbstractException::class));
+            new DriverException($this->createMock(InternalDriverException::class), null);
 
         // put the mock into the fake driver
         FakeDriver::$exception = $exception;
@@ -139,6 +145,10 @@ class FakeDriver implements Driver
      * So we have to fake the exception a driver would normally throw.
      *
      * @link https://github.com/doctrine/DoctrineBundle/issues/673
+     *
+     * @psalm-suppress InvalidReturnStatement
+     * @psalm-suppress InvalidReturnType
+     * @psalm-suppress UndefinedClass
      */
     public function getDatabasePlatform(): AbstractPlatform
     {
@@ -146,7 +156,7 @@ class FakeDriver implements Driver
             throw self::$exception;
         }
 
-        return static::$platform ?? new MySqlPlatform();
+        return static::$platform ?? new MySQLPlatform();
     }
 
     // ----- below this line follow only dummy methods to satisfy the interface requirements ----
@@ -167,6 +177,22 @@ class FakeDriver implements Driver
     public function getSchemaManager(Connection $conn, ?AbstractPlatform $platform = null): AbstractSchemaManager
     {
         throw new Exception('not implemented');
+    }
+
+    /**
+     * @psalm-suppress InvalidReturnStatement
+     * @psalm-suppress InvalidReturnType
+     * @psalm-suppress MissingDependency
+     * @psalm-suppress UndefinedClass
+     */
+    public function getExceptionConverter(): ExceptionConverter
+    {
+        return new class implements ExceptionConverter {
+            public function convert(InternalDriverException $exception, ?Query $query): DriverException
+            {
+                return new DriverException($exception, $query);
+            }
+        };
     }
 
     public function getName(): string

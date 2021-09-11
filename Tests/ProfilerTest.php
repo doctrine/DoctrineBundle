@@ -41,7 +41,9 @@ class ProfilerTest extends BaseTestCase
     {
         $this->logger = new DebugStack();
         $registry     = $this->getMockBuilder(ManagerRegistry::class)->getMock();
-        $registry->expects($this->once())->method('getManagers')->willReturn([]);
+        $registry->method('getConnectionNames')->willReturn([]);
+        $registry->method('getManagerNames')->willReturn([]);
+        $registry->method('getManagers')->willReturn([]);
         $this->collector = new DoctrineDataCollector($registry);
         $this->collector->addLogger('foo', $this->logger);
 
