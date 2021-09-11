@@ -6,18 +6,28 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibili
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use ReflectionClass;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function class_exists;
 use function sys_get_temp_dir;
 use function uniqid;
 
+// Compatibility with DBAL < 3
+class_exists(\Doctrine\DBAL\Platforms\MySqlPlatform::class);
+
 class TestCase extends BaseTestCase
 {
+    /**
+     * @psalm-suppress InvalidClass
+     * @psalm-suppress UndefinedClass
+     */
     public function createXmlBundleTestContainer(): ContainerBuilder
     {
         $container = new ContainerBuilder(new ParameterBag([
@@ -69,7 +79,9 @@ class TestCase extends BaseTestCase
             ],
         ], $container);
 
-        $container->setDefinition('my.platform', new Definition('Doctrine\DBAL\Platforms\MySqlPlatform'))->setPublic(true);
+        // Fix casing: The class is named MySqlPlatform on DBAL 2.
+        $platformClassName = (new ReflectionClass(MySQLPlatform::class))->getName();
+        $container->setDefinition('my.platform', new Definition($platformClassName))->setPublic(true);
 
         // Register dummy cache services so we don't have to load the FrameworkExtension
         $container->setDefinition('cache.system', (new Definition(ArrayAdapter::class))->setPublic(true));

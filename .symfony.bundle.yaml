@@ -1,0 +1,9 @@
+branches:
+    - "1.12.x"
+    - "2.4.x"
+    - "2.5.x"
+maintained_branches:
+    - "2.4.x"
+    - "2.5.x"
+doc_dir: "Resources/doc/"
+dev_branch: "2.5.x"

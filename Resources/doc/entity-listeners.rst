@@ -9,22 +9,39 @@ which entity manager it should be registered with.
 
 Full example:
 
-.. code-block:: php
+.. configuration-block::
 
-    <?php
-    // User.php
+    .. code-block:: annotation
 
-    use Doctrine\ORM\Mapping as ORM;
+        <?php
+        // User.php
 
-    /**
-     * @ORM\Entity
-     * @ORM\EntityListeners({"App\UserListener"})
-     */
-    class User
-    {
-        // ....
-    }
+        use Doctrine\ORM\Mapping as ORM;
+        use App\UserListener;
 
+        /**
+         * @ORM\Entity
+         * @ORM\EntityListeners({UserListener::class})
+         */
+        class User
+        {
+            // ....
+        }
+    
+    .. code-block:: attribute
+
+        <?php
+        // User.php
+
+        use Doctrine\ORM\Mapping as ORM;
+        use App\UserListener;
+
+        #[ORM\Entity]
+        #[ORM\EntityListeners([UserListener::class])]
+        class User
+        {
+            // ....
+        }
 
 .. configuration-block::
 

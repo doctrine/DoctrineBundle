@@ -17,7 +17,6 @@ class CacheCompatibilityPassTest extends TestCase
 
     public function testCacheConfigUsingServiceDefinedByApplication(): void
     {
-        $this->expectNotToPerformAssertions();
         (new class () extends TestKernel {
             public function registerContainerConfiguration(LoaderInterface $loader): void
             {
@@ -36,6 +35,12 @@ class CacheCompatibilityPassTest extends TestCase
                             'orm' => [
                                 'query_cache_driver' => ['type' => 'service', 'id' => 'custom_cache_service'],
                                 'result_cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool'],
+                                'second_level_cache' => [
+                                    'enabled' => true,
+                                    'regions' => [
+                                        'lifelong' => ['lifetime' => 0, 'cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool']],
+                                    ],
+                                ],
                             ],
                         ]
                     );
@@ -48,6 +53,8 @@ class CacheCompatibilityPassTest extends TestCase
                 });
             }
         })->boot();
+
+        $this->addToAssertionCount(1);
     }
 
     /** @group legacy */

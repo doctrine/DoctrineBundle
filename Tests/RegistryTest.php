@@ -155,8 +155,8 @@ class RegistryTest extends TestCase
 
         $container->expects($this->any())
             ->method('get')
-            ->withConsecutive(['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
-            ->willReturnOnConsecutiveCalls($noProxyManager, $proxyManager, $proxyManager);
+            ->withConsecutive(['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
+            ->willReturnOnConsecutiveCalls($noProxyManager, $proxyManager, $proxyManager, $proxyManager);
 
         $entityManagers = [
             'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
