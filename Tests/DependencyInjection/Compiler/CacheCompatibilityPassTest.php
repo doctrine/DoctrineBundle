@@ -17,7 +17,6 @@ class CacheCompatibilityPassTest extends TestCase
 
     public function testCacheConfigUsingServiceDefinedByApplication(): void
     {
-        $this->expectNotToPerformAssertions();
         (new class () extends TestKernel {
             public function registerContainerConfiguration(LoaderInterface $loader): void
             {
@@ -54,6 +53,8 @@ class CacheCompatibilityPassTest extends TestCase
                 });
             }
         })->boot();
+
+        $this->addToAssertionCount(1);
     }
 
     /** @group legacy */
