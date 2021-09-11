@@ -11,7 +11,6 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\Connections\MasterSlaveConnection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
@@ -35,7 +34,6 @@ use function array_intersect_key;
 use function array_keys;
 use function array_values;
 use function assert;
-use function class_exists;
 use function interface_exists;
 use function method_exists;
 use function sprintf;
@@ -185,12 +183,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('dbal_service_single_master_slave_connection');
         $param     = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
-        $this->assertEquals(
-            class_exists(PrimaryReadReplicaConnection::class) ?
-            PrimaryReadReplicaConnection::class : // dbal >= 2.11
-            MasterSlaveConnection::class, // dbal < 2.11,x
-            $param['wrapperClass']
-        );
+        $this->assertEquals(PrimaryReadReplicaConnection::class, $param['wrapperClass']);
         $this->assertTrue($param['keepReplica']);
         $this->assertEquals(
             [

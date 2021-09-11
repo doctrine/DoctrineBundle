@@ -6,10 +6,10 @@ use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\API\ExceptionConverter;
 use Doctrine\DBAL\Driver\Exception as InternalDriverException;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
@@ -42,11 +42,7 @@ class ConnectionFactoryTest extends TestCase
         // put the mock into the fake driver
         FakeDriver::$exception = $exception;
 
-        if (class_exists(DBALException::class)) {
-            $this->expectException(DBALException::class);
-        } else {
-            $this->expectException(\Doctrine\DBAL\Exception::class);
-        }
+        $this->expectException(DBALException::class);
 
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);

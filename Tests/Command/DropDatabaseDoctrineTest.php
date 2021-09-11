@@ -4,9 +4,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\Persistence\ManagerRegistry;
 use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,7 +15,6 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
 
 use function array_merge;
-use function class_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 
@@ -67,11 +65,7 @@ class DropDatabaseDoctrineTest extends TestCase
      */
     public function testItThrowsWhenUsingIfExistsWithAnIncompatibleDriver(array $options): void
     {
-        if (class_exists(DBALException::class)) {
-            $this->expectException(DBALException::class);
-        } else {
-            $this->expectException(Exception::class);
-        }
+        $this->expectException(DBALException::class);
 
         $this->testExecute($options);
     }
