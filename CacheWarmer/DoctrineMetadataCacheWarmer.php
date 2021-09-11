@@ -7,10 +7,8 @@ use Doctrine\Persistence\Mapping\AbstractClassMetadataFactory;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\CacheWarmer\AbstractPhpFileCacheWarmer;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Symfony\Component\Cache\DoctrineProvider;
 
 use function is_file;
-use function method_exists;
 
 class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
 {
@@ -49,13 +47,7 @@ class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
             throw new LogicException('DoctrineMetadataCacheWarmer must load metadata first, check priority of your warmers.');
         }
 
-        if (method_exists($metadataFactory, 'setCache')) {
-            $metadataFactory->setCache($arrayAdapter);
-        } elseif ($metadataFactory instanceof AbstractClassMetadataFactory) {
-            // BC with doctrine/persistence < 2.2
-            $metadataFactory->setCacheDriver(new DoctrineProvider($arrayAdapter));
-        }
-
+        $metadataFactory->setCache($arrayAdapter);
         $metadataFactory->getAllMetadata();
 
         return true;

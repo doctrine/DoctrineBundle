@@ -5,16 +5,14 @@ namespace Doctrine\Bundle\DoctrineBundle;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver\AbstractMySQLDriver;
 use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 
 use function array_merge;
-use function class_exists;
 use function is_subclass_of;
 use function trigger_deprecation;
 
@@ -62,11 +60,7 @@ class ConnectionFactory
 
             if (isset($params['wrapperClass'])) {
                 if (! is_subclass_of($params['wrapperClass'], Connection::class)) {
-                    if (class_exists(DBALException::class)) {
-                        throw DBALException::invalidWrapperClass($params['wrapperClass']);
-                    }
-
-                    throw Exception::invalidWrapperClass($params['wrapperClass']);
+                    throw DBALException::invalidWrapperClass($params['wrapperClass']);
                 }
 
                 $wrapperClass           = $params['wrapperClass'];
@@ -122,16 +116,13 @@ class ConnectionFactory
      * For details have a look at DoctrineBundle issue #673.
      *
      * @throws DBALException
-     * @throws Exception
      */
     private function getDatabasePlatform(Connection $connection): AbstractPlatform
     {
         try {
             return $connection->getDatabasePlatform();
         } catch (DriverException $driverException) {
-            $exceptionClass = class_exists(DBALException::class) ? DBALException::class : Exception::class;
-
-            throw new $exceptionClass(
+            throw new DBALException(
                 'An exception occurred while establishing a connection to figure out your platform version.' . PHP_EOL .
                 "You can circumvent this by setting a 'server_version' configuration value" . PHP_EOL . PHP_EOL .
                 'For further information have a look at:' . PHP_EOL .
