@@ -57,10 +57,8 @@ class CacheCompatibilityPassTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
-    /** @group legacy */
     public function testMetadataCacheConfigUsingPsr6ServiceDefinedByApplication(): void
     {
-        $this->expectDeprecation('%aThe "metadata_cache_driver" configuration key is deprecated.%a');
         (new class (false) extends TestKernel {
             public function registerContainerConfiguration(LoaderInterface $loader): void
             {
