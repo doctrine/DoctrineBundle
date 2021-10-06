@@ -731,12 +731,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('pool')->end()
             ->end();
 
-        if ($name === 'metadata_cache_driver') {
-            $node->setDeprecated(...$this->getDeprecationMsg(
-                'The "metadata_cache_driver" configuration key is deprecated. Remove the configuration to have the cache created automatically.',
-                '2.3'
-            ));
-        } else {
+        if ($name !== 'metadata_cache_driver') {
             $node->addDefaultsIfNotSet();
         }
 
