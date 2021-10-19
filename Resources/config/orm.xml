@@ -223,8 +223,11 @@
             <tag name="console.command" command="doctrine:schema:validate" />
         </service>
 
+        <service id="doctrine.database_driver.factory" class="Doctrine\Bundle\DoctrineBundle\ORM\Mapping\Driver\DatabaseDriverFactory"/>
+
         <service id="doctrine.mapping_import_command" class="Doctrine\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand">
             <argument type="service" id="doctrine" />
+            <argument type="service" id="doctrine.database_driver.factory"/>
             <argument>%kernel.bundles%</argument>
 
             <tag name="console.command" command="doctrine:mapping:import" />

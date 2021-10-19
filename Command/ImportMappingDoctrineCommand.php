@@ -2,7 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
-use Doctrine\ORM\Mapping\Driver\DatabaseDriver;
+use Doctrine\Bundle\DoctrineBundle\ORM\Mapping\Driver\DatabaseDriverFactoryInterface;
 use Doctrine\ORM\Tools\Console\MetadataFilter;
 use Doctrine\ORM\Tools\DisconnectedClassMetadataFactory;
 use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
@@ -33,12 +33,16 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
     /** @var string[] */
     private $bundles;
 
+    /** @var DatabaseDriverFactoryInterface */
+    private $databaseDriverFactory;
+
     /** @param string[] $bundles */
-    public function __construct(ManagerRegistry $doctrine, array $bundles)
+    public function __construct(ManagerRegistry $doctrine, DatabaseDriverFactoryInterface $databaseDriverFactory, array $bundles)
     {
         parent::__construct($doctrine);
 
         $this->bundles = $bundles;
+        $this->databaseDriverFactory = $databaseDriverFactory;
     }
 
     /**
@@ -125,7 +129,7 @@ EOT
 
         $em = $this->getEntityManager($input->getOption('em'), $input->getOption('shard'));
 
-        $databaseDriver = new DatabaseDriver($em->getConnection()->getSchemaManager());
+        $databaseDriver = $this->databaseDriverFactory->create($em->getConnection()->getSchemaManager());
         $em->getConfiguration()->setMetadataDriverImpl($databaseDriver);
 
         $emName = $input->getOption('em');
