@@ -34,6 +34,7 @@ use function array_intersect_key;
 use function array_keys;
 use function array_values;
 use function assert;
+use function end;
 use function interface_exists;
 use function method_exists;
 use function sprintf;
@@ -1214,7 +1215,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $defaultEventManagerArguments = $defaultEventManager->getArguments();
 
         if (isset($defaultEventManagerArguments[1][1])) {
-            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em1_listeners.attach_entity_listeners'], $defaultEventManager->getArgument(1)[2]);
+            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em1_listeners.attach_entity_listeners'], end($defaultEventManagerArguments[1]));
         } else {
             $this->assertDICDefinitionMethodCallOnce($defaultEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em1_listeners.attach_entity_listeners')]);
         }
@@ -1224,7 +1225,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $foobarEventManagerArguments = $foobarEventManager->getArguments();
 
         if (isset($foobarEventManagerArguments[1][1])) {
-            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em2_listeners.attach_entity_listeners'], $foobarEventManager->getArgument(1)[2]);
+            $this->assertSame([['loadClassMetadata'], 'doctrine.orm.em2_listeners.attach_entity_listeners'], end($foobarEventManagerArguments[1]));
         } else {
             $this->assertDICDefinitionMethodCallOnce($foobarEventManager, 'addEventListener', [['loadClassMetadata'], new Reference('doctrine.orm.em2_listeners.attach_entity_listeners')]);
         }
