@@ -1376,6 +1376,31 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertFalse($collectorDefinition->getArguments()[1]);
     }
 
+    public function testArgumentResolverEnabled(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_argument_resolver_enabled');
+
+        $this->assertTrue($container->has('doctrine.entity_value_resolver'));
+        $options = $container->getDefinition('doctrine.entity_value_resolver')->getArgument(2);
+        $this->assertArrayHasKey('auto_mapping', $options);
+        $this->assertFalse($options['auto_mapping']);
+    }
+
+    public function testArgumentResolverDisabled(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_argument_resolver_disabled');
+
+        $this->assertFalse($container->has('doctrine.entity_value_resolver'));
+    }
+
     /** @param list<string> $bundles */
     private function loadContainer(
         string $fixture,

@@ -544,6 +544,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ->addTag('container.preload', [
                 'class' => Autoloader::class,
             ]);
+
+        if (! $config['argument_resolver']['enabled']) {
+            $container->removeDefinition('doctrine.entity_value_resolver');
+        } else {
+            $options = [
+                'auto_mapping' => $config['argument_resolver']['auto_mapping'],
+            ];
+            $container->getDefinition('doctrine.entity_value_resolver')
+                ->replaceArgument(2, $options);
+        }
     }
 
     /**

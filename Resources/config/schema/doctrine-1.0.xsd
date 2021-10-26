@@ -138,6 +138,7 @@
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="entity-manager" type="entity_manager" />
             <xsd:element name="resolve-target-entity" type="resolve_target_entity" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="argument-resolver" type="argument_resolver" minOccurs="0" maxOccurs="1" />
             <xsd:group ref="entity-manager-child-config" />
         </xsd:choice>
 
@@ -272,5 +273,10 @@
             <xsd:element name="numeric-function" type="named_scalar" />
             <xsd:element name="datetime-function" type="named_scalar" />
         </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="argument_resolver">
+        <xsd:attribute name="enabled" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="auto_mapping" type="xsd:boolean" default="true"/>
     </xsd:complexType>
 </xsd:schema>

@@ -1,0 +1,11 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        argument_resolver:
+            enabled: true
+            auto_mapping: false

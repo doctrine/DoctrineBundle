@@ -383,6 +383,7 @@ class Configuration implements ConfigurationInterface
                             // Key that should not be rewritten to the connection config
                             $excludedKeys  = [
                                 'default_entity_manager' => true,
+                                'argument_resolver' => true,
                                 'auto_generate_proxy_classes' => true,
                                 'proxy_dir' => true,
                                 'proxy_namespace' => true,
@@ -440,6 +441,19 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('proxy_dir')->defaultValue('%kernel.cache_dir%/doctrine/orm/Proxies')->end()
                         ->scalarNode('proxy_namespace')->defaultValue('Proxies')->end()
+                        ->arrayNode('argument_resolver')
+                            ->info('Find entities that match request\'t attributes and inject them in controller\'s request parameters.')
+                            ->canBeEnabled()
+                            ->children()
+                                ->booleanNode('auto_mapping')
+                                    ->info(
+                                        'Use all attributes in the request to build the findOneBy query.' .
+                                        ' When set to false, you have to provide a "mapping" or an "expr" to the annotation.'
+                                    )
+                                    ->defaultTrue()
+                                ->end()
+                            ->end()
+                        ->end()
                     ->end()
                     ->fixXmlConfig('entity_manager')
                     ->append($this->getOrmEntityManagersNode())
