@@ -29,6 +29,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
+use Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaSubscriber;
 use Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaSubscriber;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
 use Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaSubscriber;
@@ -449,8 +450,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
         }
 
-        // available in Symfony 5.1 and higher
-        if (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
+        // available in Symfony 5.4 and higher
+        if (! class_exists(DoctrineDbalCacheAdapterSchemaSubscriber::class)) {
+            $container->removeDefinition('doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber');
+        // available in Symfony 5.1 and up to Symfony 5.4
+        } elseif (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
             $container->removeDefinition('doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber');
         }
 
