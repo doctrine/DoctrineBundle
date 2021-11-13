@@ -37,6 +37,7 @@ use function array_values;
 use function assert;
 use function end;
 use function interface_exists;
+use function is_dir;
 use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
@@ -1403,11 +1404,24 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     /** @param list<string> $bundles */
     private function getContainer(array $bundles): ContainerBuilder
     {
-        $map = [];
+        $map         = [];
+        $metadataMap = [];
         foreach ($bundles as $bundle) {
-            require_once __DIR__ . '/Fixtures/Bundles/' . $bundle . '/' . $bundle . '.php';
+            $bundleDir       = __DIR__ . '/Fixtures/Bundles/' . $bundle;
+            $bundleNamespace = 'Fixtures\\Bundles\\' . $bundle;
 
-            $map[$bundle] = 'Fixtures\\Bundles\\' . $bundle . '\\' . $bundle;
+            if (is_dir($bundleDir . '/src')) {
+                require_once $bundleDir . '/src/' . $bundle . '.php';
+            } else {
+                require_once $bundleDir . '/' . $bundle . '.php';
+            }
+
+            $map[$bundle] = $bundleNamespace . '\\' . $bundle;
+
+            $metadataMap[$bundle] = [
+                'path' => $bundleDir,
+                'namespace' => $bundleNamespace,
+            ];
         }
 
         $container = new ContainerBuilder(new ParameterBag([
@@ -1417,7 +1431,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__ . '/../../', // src dir
             'kernel.project_dir' => __DIR__ . '/../../', // src dir
-            'kernel.bundles_metadata' => [],
+            'kernel.bundles_metadata' => $metadataMap,
             'container.build_id' => uniqid(),
         ]));
 

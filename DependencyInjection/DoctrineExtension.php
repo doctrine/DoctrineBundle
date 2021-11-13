@@ -51,6 +51,7 @@ use function array_intersect_key;
 use function array_keys;
 use function class_exists;
 use function interface_exists;
+use function is_dir;
 use function method_exists;
 use function reset;
 use function sprintf;
@@ -856,8 +857,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return 'Entity';
     }
 
-    protected function getMappingResourceConfigDirectory(): string
+    protected function getMappingResourceConfigDirectory(?string $bundleDir = null): string
     {
+        if ($bundleDir !== null && is_dir($bundleDir . '/config/doctrine')) {
+            return 'config/doctrine';
+        }
+
         return 'Resources/config/doctrine';
     }
 
