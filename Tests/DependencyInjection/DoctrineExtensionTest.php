@@ -36,6 +36,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use function array_values;
 use function class_exists;
 use function interface_exists;
+use function is_dir;
 use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
@@ -226,6 +227,9 @@ class DoctrineExtensionTest extends TestCase
                     'em2' => [
                         'mappings' => ['XmlBundle' => null],
                     ],
+                    'em3' => [
+                        'mappings' => ['NewXmlBundle' => null],
+                    ],
                 ],
             ],
             [
@@ -233,6 +237,9 @@ class DoctrineExtensionTest extends TestCase
                     'em1' => ['auto_mapping' => true],
                     'em2' => [
                         'mappings' => ['XmlBundle' => null],
+                    ],
+                    'em3' => [
+                        'mappings' => ['NewXmlBundle' => null],
                     ],
                 ],
             ],
@@ -244,6 +251,9 @@ class DoctrineExtensionTest extends TestCase
                     ],
                     'em2' => [
                         'mappings' => ['XmlBundle' => null],
+                    ],
+                    'em3' => [
+                        'mappings' => ['NewXmlBundle' => null],
                     ],
                 ],
             ],
@@ -266,6 +276,7 @@ class DoctrineExtensionTest extends TestCase
         $container = $this->getContainer([
             'YamlBundle',
             'XmlBundle',
+            'NewXmlBundle',
         ]);
 
         $extension->load(
@@ -286,6 +297,7 @@ class DoctrineExtensionTest extends TestCase
 
         $configEm1 = $container->getDefinition('doctrine.orm.em1_configuration');
         $configEm2 = $container->getDefinition('doctrine.orm.em2_configuration');
+        $configEm3 = $container->getDefinition('doctrine.orm.em3_configuration');
 
         $this->assertContains(
             [
@@ -305,6 +317,16 @@ class DoctrineExtensionTest extends TestCase
                 ],
             ],
             $configEm2->getMethodCalls()
+        );
+
+        $this->assertContains(
+            [
+                'setEntityNamespaces',
+                [
+                    ['NewXmlBundle' => 'Fixtures\Bundles\NewXmlBundle\Entity'],
+                ],
+            ],
+            $configEm3->getMethodCalls()
         );
     }
 
@@ -1126,16 +1148,30 @@ class DoctrineExtensionTest extends TestCase
     /** @param list<string> $bundles */
     private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
     {
-        $map = [];
+        $map         = [];
+        $metadataMap = [];
         foreach ($bundles as $bundle) {
-            require_once __DIR__ . '/Fixtures/Bundles/' . ($vendor ? $vendor . '/' : '') . $bundle . '/' . $bundle . '.php';
+            $bundleDir       = __DIR__ . '/Fixtures/Bundles/' . ($vendor ? $vendor . '/' : '') . $bundle;
+            $bundleNamespace = 'Fixtures\\Bundles\\' . ($vendor ? $vendor . '\\' : '') . $bundle;
 
-            $map[$bundle] = 'Fixtures\\Bundles\\' . ($vendor ? $vendor . '\\' : '') . $bundle . '\\' . $bundle;
+            if (is_dir($bundleDir . '/src')) {
+                require_once $bundleDir . '/src/' . $bundle . '.php';
+            } else {
+                require_once $bundleDir . '/' . $bundle . '.php';
+            }
+
+            $map[$bundle] = $bundleNamespace . '\\' . $bundle;
+
+            $metadataMap[$bundle] = [
+                'path' => $bundleDir,
+                'namespace' => $bundleNamespace,
+            ];
         }
 
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.debug' => false,
             'kernel.bundles' => $map,
+            'kernel.bundles_metadata' => $metadataMap,
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__ . '/../../', // src dir
