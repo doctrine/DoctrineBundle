@@ -23,6 +23,7 @@ class InfoDoctrineCommandTest extends TestCase
     {
         $kernel = $this->setupKernelMocks();
 
+        /** @psalm-suppress InvalidArgument */
         $application = new Application($kernel);
         $application->add(new InfoDoctrineCommand());
 
