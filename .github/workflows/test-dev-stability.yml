@@ -17,40 +17,18 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.1"
-          - "7.2"
-          - "7.3"
-          - "7.4"
+          - "8.0"
+          - "8.1"
         dependencies:
           - "highest"
         stability:
-          - "stable"
+          - "dev"
         symfony-require:
           - ""
+          - "5.*"
+          - "6.*"
         symfony-deprecations-helper:
           - ""
-        include:
-          # Test against latest Symfony 4.4 dev
-          - symfony-require: "4.4.*"
-            dependencies: "highest"
-            php-version: "7.3"
-            stability: "dev"
-
-          # Test against latest Symfony 5.2 dev
-          - symfony-require: "5.2.*"
-            dependencies: "highest"
-            php-version: "7.3"
-            stability: "dev"
-
-          # Test against latest Symfony 6.0 dev
-          - symfony-require: "6.0.*"
-            dependencies: "highest"
-            php-version: "8.0"
-            stability: "dev"
-
-          - php-version: "8.0"
-            dependencies: "highest"
-            stability: "dev"
 
     steps:
       - name: "Checkout"
