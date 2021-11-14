@@ -5,11 +5,14 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Compiler;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
+use Doctrine\ORM\Cache\Region;
 use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+
+use function get_class;
 
 class CacheCompatibilityPassTest extends TestCase
 {
@@ -17,11 +20,22 @@ class CacheCompatibilityPassTest extends TestCase
 
     public function testCacheConfigUsingServiceDefinedByApplication(): void
     {
-        (new class () extends TestKernel {
+        $customRegionClass = get_class($this->createMock(Region::class));
+
+        (new class ($customRegionClass) extends TestKernel {
+            /** @var string */
+            private $regionClass;
+
+            public function __construct(string $regionClass)
+            {
+                parent::__construct(false);
+                $this->regionClass = $regionClass;
+            }
+
             public function registerContainerConfiguration(LoaderInterface $loader): void
             {
                 parent::registerContainerConfiguration($loader);
-                $loader->load(static function (ContainerBuilder $containerBuilder): void {
+                $loader->load(function (ContainerBuilder $containerBuilder): void {
                     $containerBuilder->loadFromExtension('framework', [
                         'cache' => [
                             'pools' => [
@@ -39,11 +53,13 @@ class CacheCompatibilityPassTest extends TestCase
                                     'enabled' => true,
                                     'regions' => [
                                         'lifelong' => ['lifetime' => 0, 'cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool']],
+                                        'entity_cache_region' => ['type' => 'service', 'service' => $this->regionClass],
                                     ],
                                 ],
                             ],
                         ]
                     );
+                    $containerBuilder->register($this->regionClass, $this->regionClass);
                     $containerBuilder->setDefinition(
                         'custom_cache_service',
                         (new Definition(DoctrineProvider::class))
