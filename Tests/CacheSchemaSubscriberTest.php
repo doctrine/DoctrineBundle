@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubscriberPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\EntityManagerInterface;
+use Generator;
 use Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaSubscriber;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
@@ -85,12 +86,20 @@ class CacheSchemaSubscriberTest extends TestCase
         $this->assertEquals([new Reference('my_cache_adapter')], $definition->getArgument(0));
     }
 
-    public function getSchemaSubscribers(): iterable
+    public function getSchemaSubscribers(): Generator
     {
-        // available in Symfony 5.4 and higher
+        /**
+         * available in Symfony 5.4 and higher
+         *
+         * @psalm-suppress UndefinedClass
+         */
         yield ['cache.adapter.doctrine_dbal', 'doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_subscriber', DoctrineDbalCacheAdapterSchemaSubscriber::class];
 
-        // available in Symfony 5.1 and up to Symfony 5.4 (deprecated)
+        /**
+         * available in Symfony 5.1 and up to Symfony 5.4 (deprecated)
+         *
+         * @psalm-suppress UndefinedClass
+         */
         yield ['cache.adapter.pdo', 'doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber', PdoCacheAdapterDoctrineSchemaSubscriber::class];
     }
 }
