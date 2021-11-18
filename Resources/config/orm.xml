@@ -134,6 +134,10 @@
 
         <!-- listeners -->
         <service id="doctrine.orm.listeners.resolve_target_entity" class="%doctrine.orm.listeners.resolve_target_entity.class%" public="false" />
+        <service id="doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaSubscriber">
+            <argument type="collection" /> <!-- DoctrineDbalAdapter instances -->
+            <tag name="doctrine.event_subscriber" />
+        </service>
         <service id="doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber">
             <argument type="collection" /> <!-- PdoAdapter instances -->
             <tag name="doctrine.event_subscriber" />

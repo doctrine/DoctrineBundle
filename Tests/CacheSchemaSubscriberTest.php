@@ -5,6 +5,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubscriberPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\EntityManagerInterface;
+use Generator;
+use Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaSubscriber;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\Alias;
@@ -19,10 +21,11 @@ use function sys_get_temp_dir;
 
 class CacheSchemaSubscriberTest extends TestCase
 {
-    public function testSchemaSubscriberWiring(): void
+    /** @dataProvider getSchemaSubscribers */
+    public function testSchemaSubscriberWiring(string $adapterId, string $subscriberId, string $class): void
     {
-        if (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
-            $this->markTestSkipped('This test requires Symfony 5.1 or higher');
+        if (! class_exists($class)) {
+            self::markTestSkipped('symfony/doctrine-bridge version not supported');
         }
 
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -51,11 +54,15 @@ class CacheSchemaSubscriberTest extends TestCase
             'framework' => [
                 'cache' => [
                     'pools' => [
-                        'my_cache_adapter' => ['adapter' => 'cache.adapter.pdo'],
+                        'my_cache_adapter' => ['adapter' => $adapterId],
                     ],
                 ],
             ],
         ], $container);
+
+        if (! $container->has($adapterId)) {
+            self::markTestSkipped('symfony/framework-bundle version not supported');
+        }
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
@@ -66,7 +73,7 @@ class CacheSchemaSubscriberTest extends TestCase
             ],
         ], $container);
 
-        $container->setAlias('test_subscriber_alias', new Alias('doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber', true));
+        $container->setAlias('test_subscriber_alias', new Alias($subscriberId, true));
         // prevent my_cache_apapter from inlining
         $container->register('uses_my_cache_adapter', 'stdClass')
             ->addArgument(new Reference('my_cache_adapter'))
@@ -77,5 +84,22 @@ class CacheSchemaSubscriberTest extends TestCase
         // check that PdoAdapter service is injected as an argument
         $definition = $container->findDefinition('test_subscriber_alias');
         $this->assertEquals([new Reference('my_cache_adapter')], $definition->getArgument(0));
+    }
+
+    public function getSchemaSubscribers(): Generator
+    {
+        /**
+         * available in Symfony 5.4 and higher
+         *
+         * @psalm-suppress UndefinedClass
+         */
+        yield ['cache.adapter.doctrine_dbal', 'doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_subscriber', DoctrineDbalCacheAdapterSchemaSubscriber::class];
+
+        /**
+         * available in Symfony 5.1 and up to Symfony 5.4 (deprecated)
+         *
+         * @psalm-suppress UndefinedClass
+         */
+        yield ['cache.adapter.pdo', 'doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber', PdoCacheAdapterDoctrineSchemaSubscriber::class];
     }
 }
