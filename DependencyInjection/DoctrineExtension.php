@@ -870,7 +870,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return 'Entity';
     }
 
-    protected function getMappingResourceConfigDirectory(string $bundleDir = null): string
+    protected function getMappingResourceConfigDirectory(?string $bundleDir = null): string
     {
         return 'Resources/config/doctrine';
     }
