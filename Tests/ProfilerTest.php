@@ -87,9 +87,10 @@ class ProfilerTest extends BaseTestCase
             ],
         ];
 
-        $this->collector->collect($request = new Request(['group' => '0']), $response = new Response());
+        $this->collector->collect($request = new Request(['group' => '0']), new Response());
 
         $profile = new Profile('foo');
+        $profile->setMethod('GET');
 
         $output = $this->twig->render('db.html.twig', [
             'request' => $request,
