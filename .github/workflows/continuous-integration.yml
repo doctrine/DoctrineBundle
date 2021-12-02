@@ -40,19 +40,25 @@ jobs:
             php-version: "7.1"
             symfony-deprecations-helper: "weak"
 
-          # Test LTS
+          # Test legacy LTS
           - symfony-require: "4.4.*"
             dependencies: "stable"
             php-version: "7.4"
             symfony-deprecations-helper: "weak"
 
-          # Test against latest Symfony 5.x dev
-          - symfony-require: "5.*"
+          # Test latest LTS
+          - symfony-require: "5.4.*"
             dependencies: "highest"
             php-version: "8.0"
             symfony-deprecations-helper: "weak"
 
-          # Test against latest Symfony dev
+          # Test last supported minor version
+          - symfony-require: "6.*"
+            dependencies: "highest"
+            php-version: "8.0"
+            symfony-deprecations-helper: "weak"
+
+          # Bleeding edge
           - php-version: "8.1"
             dependencies: "highest"
             stability: "dev"
