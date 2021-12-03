@@ -3,7 +3,7 @@
     "type": "symfony-bundle",
     "description": "Symfony DoctrineBundle",
     "keywords": ["DBAL", "ORM", "Database", "Persistence"],
-    "homepage": "http://www.doctrine-project.org",
+    "homepage": "https://www.doctrine-project.org",
     "license": "MIT",
     "minimum-stability": "dev",
     "authors": [
@@ -17,11 +17,11 @@
         },
         {
             "name": "Symfony Community",
-            "homepage": "http://symfony.com/contributors"
+            "homepage": "https://symfony.com/contributors"
         },
         {
             "name": "Doctrine Project",
-            "homepage": "http://www.doctrine-project.org/"
+            "homepage": "https://www.doctrine-project.org/"
         }
     ],
     "require": {
