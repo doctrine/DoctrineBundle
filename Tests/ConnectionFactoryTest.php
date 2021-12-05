@@ -145,6 +145,7 @@ class FakeDriver implements Driver
      * @psalm-suppress InvalidReturnStatement
      * @psalm-suppress InvalidReturnType
      * @psalm-suppress UndefinedClass
+     * @psalm-suppress InvalidClass
      */
     public function getDatabasePlatform(): AbstractPlatform
     {
