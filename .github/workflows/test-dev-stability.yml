@@ -17,7 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.0"
           - "8.1"
         dependencies:
           - "highest"
@@ -25,7 +24,6 @@ jobs:
           - "dev"
         symfony-require:
           - ""
-          - "5.*"
           - "6.*"
         symfony-deprecations-helper:
           - ""
@@ -57,4 +55,4 @@ jobs:
           composer-options: "--prefer-dist"
 
       - name: "Run PHPUnit"
-        run: "vendor/bin/phpunit --coverage-clover=coverage.xml"
+        run: "vendor/bin/phpunit"
