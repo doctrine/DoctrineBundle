@@ -1139,6 +1139,7 @@ class DoctrineExtensionTest extends TestCase
             'method'         => null,
             'lazy'           => null,
             'entity_manager' => null,
+            'entity'         => null,
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
