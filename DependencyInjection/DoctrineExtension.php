@@ -544,6 +544,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     'method'         => $attribute->method,
                     'lazy'           => $attribute->lazy,
                     'entity_manager' => $attribute->entityManager,
+                    'entity'         => $attribute->entity,
                 ]);
             });
         }
