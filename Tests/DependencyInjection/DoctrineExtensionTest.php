@@ -1130,16 +1130,22 @@ class DoctrineExtensionTest extends TestCase
     /** @param list<string> $bundles */
     private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
     {
-        $map = [];
+        $map = $bundlesMetadata = [];
         foreach ($bundles as $bundle) {
             require_once __DIR__ . '/Fixtures/Bundles/' . ($vendor ? $vendor . '/' : '') . $bundle . '/' . $bundle . '.php';
 
             $map[$bundle] = 'Fixtures\\Bundles\\' . ($vendor ? $vendor . '\\' : '') . $bundle . '\\' . $bundle;
+
+            $bundlesMetadata[$bundle] = [
+                'path' => __DIR__ . '/Fixtures/Bundles/' . ($vendor ? $vendor . '/' : '') . $bundle,
+                'namespace' => $map[$bundle],
+            ];
         }
 
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.debug' => false,
             'kernel.bundles' => $map,
+            'kernel.bundles_metadata' => $bundlesMetadata,
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__ . '/../../', // src dir

@@ -1410,11 +1410,15 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     /** @param list<string> $bundles */
     private function getContainer(array $bundles): ContainerBuilder
     {
-        $map = [];
+        $map = $bundlesMetadata = [];
         foreach ($bundles as $bundle) {
             require_once __DIR__ . '/Fixtures/Bundles/' . $bundle . '/' . $bundle . '.php';
 
-            $map[$bundle] = 'Fixtures\\Bundles\\' . $bundle . '\\' . $bundle;
+            $map[$bundle]             = 'Fixtures\\Bundles\\' . $bundle . '\\' . $bundle;
+            $bundlesMetadata[$bundle] = [
+                'path' => __DIR__ . '/Fixtures/Bundles/' . $bundle,
+                'namespace' => $map[$bundle],
+            ];
         }
 
         $container = new ContainerBuilder(new ParameterBag([
@@ -1424,7 +1428,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             'kernel.environment' => 'test',
             'kernel.root_dir' => __DIR__ . '/../../', // src dir
             'kernel.project_dir' => __DIR__ . '/../../', // src dir
-            'kernel.bundles_metadata' => [],
+            'kernel.bundles_metadata' => $bundlesMetadata,
             'container.build_id' => uniqid(),
         ]));
 
