@@ -46,6 +46,7 @@ class CacheSchemaSubscriberTest extends TestCase
             'kernel.container_class' => ContainerBuilder::class,
             'kernel.secret' => 'test',
             'env(base64:default::SYMFONY_DECRYPTION_SECRET)' => 'foo',
+            'debug.file_link_format' => null,
         ]));
 
         $extension = new FrameworkExtension();
