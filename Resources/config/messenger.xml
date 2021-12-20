@@ -29,6 +29,16 @@
         </service>
 
         <!--
+        The following service isn't prefixed by the "doctrine.orm" namespace in order for end-users to just use
+        the "doctrine_open_transaction_logger" shortcut in message buses middleware config
+        -->
+        <service id="messenger.middleware.doctrine_open_transaction_logger" class="Symfony\Bridge\Doctrine\Messenger\DoctrineOpenTransactionLoggerMiddleware" abstract="true" public="false">
+            <argument type="service" id="doctrine" />
+            <argument>null</argument>
+            <argument type="service" id="logger" />
+        </service>
+
+        <!--
         The following service isn't tagged as transport factory because the class may not exist.
         The tag is added conditionally in DoctrineExtension.
         -->
