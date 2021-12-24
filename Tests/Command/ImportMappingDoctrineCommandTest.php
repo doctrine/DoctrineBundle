@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -11,6 +12,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
+use function class_exists;
 use function file_get_contents;
 use function interface_exists;
 use function sys_get_temp_dir;
@@ -26,11 +28,11 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        if (interface_exists(EntityManagerInterface::class)) {
+        if (interface_exists(EntityManagerInterface::class) && class_exists(ClassMetadataExporter::class)) {
             return;
         }
 
-        self::markTestSkipped('This test requires ORM');
+        self::markTestSkipped('This test requires ORM version 2');
     }
 
     protected function setup(): void
