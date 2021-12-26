@@ -19,6 +19,9 @@ use Doctrine\DBAL\Tools\Console\ConnectionProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Proxy\Autoloader;
+use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
+use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand;
+use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
 use Doctrine\ORM\UnitOfWork;
 use LogicException;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
@@ -458,6 +461,19 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (! class_exists(UuidGenerator::class)) {
             $container->removeDefinition('doctrine.uuid_generator');
+        }
+
+        // not available in Doctrine ORM 3.0 and higher
+        if (! class_exists(ConvertMappingCommand::class)) {
+            $container->removeDefinition('doctrine.mapping_convert_command');
+        }
+
+        if (! class_exists(EnsureProductionSettingsCommand::class)) {
+            $container->removeDefinition('doctrine.ensure_production_settings_command');
+        }
+
+        if (! class_exists(ClassMetadataExporter::class)) {
+            $container->removeDefinition('doctrine.mapping_import_command');
         }
 
         $entityManagers = [];

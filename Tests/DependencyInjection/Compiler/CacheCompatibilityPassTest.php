@@ -52,6 +52,7 @@ class CacheCompatibilityPassTest extends TestCase
                                 'second_level_cache' => [
                                     'enabled' => true,
                                     'regions' => [
+                                        'filelock' => ['type' => 'filelock', 'lifetime' => 0, 'cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool']],
                                         'lifelong' => ['lifetime' => 0, 'cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool']],
                                         'entity_cache_region' => ['type' => 'service', 'service' => $this->regionClass],
                                     ],
