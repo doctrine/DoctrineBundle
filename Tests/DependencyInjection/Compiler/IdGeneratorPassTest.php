@@ -48,6 +48,7 @@ class IdGeneratorPassTest extends TestCase
             'kernel.secret' => 'test',
             'container.build_id' => uniqid(),
             'env(base64:default::SYMFONY_DECRYPTION_SECRET)' => 'foo',
+            'debug.file_link_format' => null,
         ]));
         $container->set('annotation_reader', new AnnotationReader());
 

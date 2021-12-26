@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Controller;
 
+use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ForwardCompatibility\Result;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -11,27 +12,30 @@ use LogicException;
 use PDO;
 use PDOStatement;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\VarDumper\Cloner\Data;
 use Throwable;
+use Twig\Environment;
 
 use function assert;
 use function stripos;
 
-class ProfilerController implements ContainerAwareInterface
+/** @internal */
+class ProfilerController
 {
-    /** @var ContainerInterface */
-    private $container;
+    /** @var Environment */
+    private $twig;
+    /** @var Registry */
+    private $registry;
+    /** @var Profiler */
+    private $profiler;
 
-    /**
-     * {@inheritDoc}
-     */
-    public function setContainer(?ContainerInterface $container = null)
+    public function __construct(Environment $twig, Registry $registry, Profiler $profiler)
     {
-        $this->container = $container;
+        $this->twig     = $twig;
+        $this->registry = $registry;
+        $this->profiler = $profiler;
     }
 
     /**
@@ -45,11 +49,9 @@ class ProfilerController implements ContainerAwareInterface
      */
     public function explainAction($token, $connectionName, $query)
     {
-        $profiler = $this->container->get('profiler');
-        assert($profiler instanceof Profiler);
-        $profiler->disable();
+        $this->profiler->disable();
 
-        $profile   = $profiler->loadProfile($token);
+        $profile   = $this->profiler->loadProfile($token);
         $collector = $profile->getCollector('db');
 
         assert($collector instanceof DoctrineDataCollector);
@@ -65,7 +67,7 @@ class ProfilerController implements ContainerAwareInterface
             return new Response('This query cannot be explained.');
         }
 
-        $connection = $this->container->get('doctrine')->getConnection($connectionName);
+        $connection = $this->registry->getConnection($connectionName);
         assert($connection instanceof Connection);
         try {
             $platform = $connection->getDatabasePlatform();
@@ -82,7 +84,7 @@ class ProfilerController implements ContainerAwareInterface
             return new Response('This query cannot be explained.');
         }
 
-        return new Response($this->container->get('twig')->render('@Doctrine/Collector/explain.html.twig', [
+        return new Response($this->twig->render('@Doctrine/Collector/explain.html.twig', [
             'data' => $results,
             'query' => $query,
         ]));
