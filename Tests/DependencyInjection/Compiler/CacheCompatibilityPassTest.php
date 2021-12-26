@@ -63,9 +63,7 @@ class CacheCompatibilityPassTest extends TestCase
                     $containerBuilder->register($this->regionClass, $this->regionClass);
                     $containerBuilder->setDefinition(
                         'custom_cache_service',
-                        (new Definition(DoctrineProvider::class))
-                            ->setArguments([new Definition(ArrayAdapter::class)])
-                            ->setFactory([DoctrineProvider::class, 'wrap'])
+                        new Definition(ArrayAdapter::class)
                     );
                 });
             }
