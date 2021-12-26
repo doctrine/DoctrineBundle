@@ -10,7 +10,6 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
 use Doctrine\Common\Cache\Cache;
-use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
@@ -482,18 +481,10 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame(ArrayAdapter::class, $wrappedDefinition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_query_cache'));
-        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        $arguments = $definition->getArguments();
-        $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.doctrine.orm.default.query', (string) $arguments[0]);
-        $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
+        $this->assertSame(ArrayAdapter::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_result_cache'));
-        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        $arguments = $definition->getArguments();
-        $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.doctrine.orm.default.result', (string) $arguments[0]);
-        $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
+        $this->assertSame(ArrayAdapter::class, $definition->getClass());
     }
 
     public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection(): void
