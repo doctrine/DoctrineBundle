@@ -28,10 +28,10 @@ class ProfilerController
     private $twig;
     /** @var Registry */
     private $registry;
-    /** @var Profiler */
+    /** @var Profiler|null */
     private $profiler;
 
-    public function __construct(Environment $twig, Registry $registry, Profiler $profiler)
+    public function __construct(Environment $twig, Registry $registry, ?Profiler $profiler)
     {
         $this->twig     = $twig;
         $this->registry = $registry;
@@ -49,6 +49,7 @@ class ProfilerController
      */
     public function explainAction($token, $connectionName, $query)
     {
+        assert($this->profiler instanceof Profiler);
         $this->profiler->disable();
 
         $profile   = $this->profiler->loadProfile($token);
