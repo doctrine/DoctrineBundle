@@ -13,6 +13,7 @@ use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
+use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\Logging\LoggerChain;
 use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Tools\Console\ConnectionProvider;
@@ -41,6 +42,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -156,6 +158,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new ChildDefinition('doctrine.dbal.connection.configuration'));
         $logger        = null;
         if ($connection['logging']) {
+            $this->useMiddlewaresIfAvailable($connection, $container, $name, $configuration);
             $logger = new Reference('doctrine.dbal.logger');
         }
 
@@ -1066,5 +1069,27 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setDefinition($id, $poolDefinition);
 
         return $id;
+    }
+
+    /** @param array<string, mixed> $connection */
+    protected function useMiddlewaresIfAvailable(array $connection, ContainerBuilder $container, string $name, Definition $configuration): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(Middleware::class)) {
+            return;
+        }
+
+        $container
+            ->getDefinition('doctrine.dbal.logger')
+            ->replaceArgument(0, null);
+
+        $loggingMiddlewareDef = $container->setDefinition(
+            sprintf('doctrine.dbal.%s_connection.logging_middleware', $name),
+            new ChildDefinition('doctrine.dbal.logging_middleware')
+        );
+        $loggingMiddlewareDef->addArgument(new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE));
+        $loggingMiddlewareDef->addTag('monolog.logger', ['channel' => 'doctrine']);
+
+        $configuration->addMethodCall('setMiddlewares', [[$loggingMiddlewareDef]]);
     }
 }
