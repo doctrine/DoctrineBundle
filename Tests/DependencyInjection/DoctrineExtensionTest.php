@@ -13,6 +13,7 @@ use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
+use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +34,7 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+use function array_filter;
 use function array_values;
 use function class_exists;
 use function interface_exists;
@@ -1141,6 +1143,90 @@ class DoctrineExtensionTest extends TestCase
             'entity_manager' => null,
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
+    }
+
+    public function testMiddlewaresAreNotAvailable(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (interface_exists(Middleware::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, Middleware::class));
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'default' => [
+                        'password' => 'foo',
+                        'logging' => true,
+                    ],
+                ],
+            ])
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $loggerDef          = $container->getDefinition('doctrine.dbal.logger');
+        $tags               = $loggerDef->getTag('monolog.logger');
+        $doctrineLoggerTags = array_filter($tags, static function (array $tag): bool {
+            return ($tag['channel'] ?? null) === 'doctrine';
+        });
+        $this->assertCount(1, $doctrineLoggerTags);
+
+        $this->assertInstanceOf(Reference::class, $loggerDef->getArgument(0));
+        $this->assertSame('logger', (string) $loggerDef->getArgument(0));
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.default_connection.logging_middleware'));
+    }
+
+    public function testMiddlewaresAreAvailable(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(Middleware::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, Middleware::class));
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'default' => [
+                        'password' => 'foo',
+                        'logging' => true,
+                    ],
+                ],
+            ])
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $loggerDef = $container->getDefinition('doctrine.dbal.logger');
+        $this->assertNull($loggerDef->getArgument(0));
+
+        $loggingMiddlewareDef = $container->getDefinition('doctrine.dbal.default_connection.logging_middleware');
+        $this->assertInstanceOf(Reference::class, $loggingMiddlewareDef->getArgument(0));
+        $this->assertSame('logger', (string) $loggingMiddlewareDef->getArgument(0));
+        $tags               = $loggingMiddlewareDef->getTag('monolog.logger');
+        $doctrineLoggerTags = array_filter($tags, static function (array $tag): bool {
+            return ($tag['channel'] ?? null) === 'doctrine';
+        });
+        $this->assertCount(1, $doctrineLoggerTags);
+
+        $connectionConfiguration = $container->getDefinition('doctrine.dbal.default_connection.configuration');
+        $setMiddlewareCalls      = array_filter($connectionConfiguration->getMethodCalls(), static function (array $call) {
+            return $call[0] === 'setMiddlewares';
+        });
+        $this->assertCount(1, $setMiddlewareCalls);
+        $callArgs = $setMiddlewareCalls[0][1];
+        $this->assertCount(1, $callArgs);
+        $this->assertCount(1, $callArgs[0]);
+        $this->assertInstanceOf(Definition::class, $callArgs[0][0]);
     }
 
     // phpcs:enable
