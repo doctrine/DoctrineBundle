@@ -12,8 +12,8 @@ doctrine:
                     YamlBundle: ~
                 dql:
                     string_functions:
-                        test_string: Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction
+                        test_string: Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction
                     numeric_functions:
-                        test_numeric: Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestNumericFunction
+                        test_numeric: Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestNumericFunction
                     datetime_functions:
-                        test_datetime: Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestDatetimeFunction
+                        test_datetime: Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestDatetimeFunction

@@ -14,6 +14,7 @@ use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 use function class_exists;
 use function sys_get_temp_dir;
@@ -74,7 +75,7 @@ class TestCase extends BaseTestCase
                             ],
                         ],
                     ],
-                    'resolve_target_entities' => ['Symfony\Component\Security\Core\User\UserInterface' => 'stdClass'],
+                    'resolve_target_entities' => [UserInterface::class => 'stdClass'],
                 ],
             ],
         ], $container);

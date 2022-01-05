@@ -15,6 +15,8 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\Logging\LoggerChain;
+use Doctrine\DBAL\Sharding\PoolingShardConnection;
+use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Tools\Console\ConnectionProvider;
 use Doctrine\ORM\EntityManagerInterface;
@@ -406,12 +408,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
             if (empty($options['wrapperClass'])) {
                 // Change the wrapper class only if the user does not already forced using a custom one.
-                $options['wrapperClass'] = 'Doctrine\\DBAL\\Sharding\\PoolingShardConnection';
+                $options['wrapperClass'] = PoolingShardConnection::class;
             }
 
             if (empty($options['shardManagerClass'])) {
                 // Change the shard manager class only if the user does not already forced using a custom one.
-                $options['shardManagerClass'] = 'Doctrine\\DBAL\\Sharding\\PoolingShardManager';
+                $options['shardManagerClass'] = PoolingShardManager::class;
             }
         } else {
             unset($options['shards']);
