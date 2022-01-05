@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
@@ -27,8 +28,7 @@ class DoctrineDataCollectorTest extends TestCase
 
         $manager   = $this->getMockBuilder('Doctrine\ORM\EntityManager')->disableOriginalConstructor()->getMock();
         $config    = $this->getMockBuilder('Doctrine\ORM\Configuration')->getMock();
-        $factory   = $this->getMockBuilder('Doctrine\Persistence\Mapping\AbstractClassMetadataFactory')
-            ->setMethods(['getLoadedMetadata'])->getMockForAbstractClass();
+        $factory   = $this->getMockBuilder(ClassMetadataFactory::class)->setMethods(['getLoadedMetadata'])->getMock();
         $collector = $this->createCollector(['default' => $manager]);
 
         $manager->expects($this->any())
