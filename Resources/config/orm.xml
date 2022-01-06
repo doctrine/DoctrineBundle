@@ -235,9 +235,9 @@
         </service>
 
         <service id="Doctrine\Bundle\DoctrineBundle\Controller\ProfilerController">
-            <argument type="service" id="twig" on-invalid="ignore_uninitialized"/>
+            <argument type="service" id="twig" />
             <argument type="service" id="doctrine" />
-            <argument type="service" id="profiler" on-invalid="ignore_uninitialized" />
+            <argument type="service" id="profiler" />
 
             <tag name="controller.service_arguments" />
         </service>
