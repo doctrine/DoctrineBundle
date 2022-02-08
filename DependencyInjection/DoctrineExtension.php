@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsMiddleware;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider;
@@ -13,8 +14,9 @@ use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
-use Doctrine\DBAL\Driver\Middleware;
+use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
 use Doctrine\DBAL\Logging\LoggerChain;
+use Doctrine\DBAL\Logging\Middleware;
 use Doctrine\DBAL\Sharding\PoolingShardConnection;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
@@ -44,7 +46,6 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -64,6 +65,8 @@ use function method_exists;
 use function reset;
 use function sprintf;
 use function str_replace;
+
+use const PHP_VERSION_ID;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -143,9 +146,33 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setParameter('doctrine.connections', $connections);
         $container->setParameter('doctrine.default_connection', $this->defaultConnection);
 
+        $connWithLogging = [];
         foreach ($config['connections'] as $name => $connection) {
+            if ($connection['logging']) {
+                $connWithLogging[] = $name;
+            }
+
             $this->loadDbalConnection($name, $connection, $container);
         }
+
+        /** @psalm-suppress UndefinedClass */
+        $container->registerForAutoconfiguration(MiddlewareInterface::class)->addTag('doctrine.middleware');
+
+        if (PHP_VERSION_ID >= 80000 && method_exists(ContainerBuilder::class, 'registerAttributeForAutoconfiguration')) {
+            $container->registerAttributeForAutoconfiguration(AsMiddleware::class, static function (ChildDefinition $definition, AsMiddleware $attribute) {
+                if ($attribute->connections === []) {
+                    $definition->addTag('doctrine.middleware');
+
+                    return;
+                }
+
+                foreach ($attribute->connections as $connName) {
+                    $definition->addTag('doctrine.middleware', ['connection' => $connName]);
+                }
+            });
+        }
+
+        $this->useMiddlewaresIfAvailable($container, $connWithLogging);
     }
 
     /**
@@ -160,7 +187,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new ChildDefinition('doctrine.dbal.connection.configuration'));
         $logger        = null;
         if ($connection['logging']) {
-            $this->useMiddlewaresIfAvailable($connection, $container, $name, $configuration);
             $logger = new Reference('doctrine.dbal.logger');
         }
 
@@ -1073,11 +1099,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return $id;
     }
 
-    /** @param array<string, mixed> $connection */
-    protected function useMiddlewaresIfAvailable(array $connection, ContainerBuilder $container, string $name, Definition $configuration): void
+    /** @param string[] $connWithLogging */
+    private function useMiddlewaresIfAvailable(ContainerBuilder $container, array $connWithLogging): void
     {
         /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(Middleware::class)) {
+        if (! class_exists(Middleware::class)) {
             return;
         }
 
@@ -1085,13 +1111,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ->getDefinition('doctrine.dbal.logger')
             ->replaceArgument(0, null);
 
-        $loggingMiddlewareDef = $container->setDefinition(
-            sprintf('doctrine.dbal.%s_connection.logging_middleware', $name),
-            new ChildDefinition('doctrine.dbal.logging_middleware')
-        );
-        $loggingMiddlewareDef->addArgument(new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE));
-        $loggingMiddlewareDef->addTag('monolog.logger', ['channel' => 'doctrine']);
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('middlewares.xml');
 
-        $configuration->addMethodCall('setMiddlewares', [[$loggingMiddlewareDef]]);
+        $loggingMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.logging_middleware');
+        foreach ($connWithLogging as $connName) {
+            $loggingMiddlewareAbstractDef->addTag('doctrine.middleware', ['connection' => $connName]);
+        }
     }
 }

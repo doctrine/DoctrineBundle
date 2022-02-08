@@ -16,7 +16,7 @@ use Doctrine\Common\Cache\MemcacheCache;
 use Doctrine\Common\Cache\XcacheCache;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
-use Doctrine\DBAL\Driver\Middleware;
+use Doctrine\DBAL\Logging\Middleware;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
 use Doctrine\ORM\Cache\CacheConfiguration;
@@ -50,9 +50,9 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-use function array_filter;
 use function array_values;
 use function class_exists;
+use function in_array;
 use function interface_exists;
 use function is_dir;
 use function method_exists;
@@ -1158,10 +1158,24 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
 
-    public function testMiddlewaresAreNotAvailable(): void
+    /**
+     * @return array<string, bool[]>
+     */
+    public function provideDefinitionsToLogQueries(): array
+    {
+        return [
+            'with middlewares' => [true, false, true],
+            'without middlewares' => [false, true, false],
+        ];
+    }
+
+    /**
+     * @dataProvider provideDefinitionsToLogQueries
+     */
+    public function testDefinitionsToLogQueries(bool $withMiddleware, bool $loggerInjected, bool $middlewareRegistered): void
     {
         /** @psalm-suppress UndefinedClass */
-        if (interface_exists(Middleware::class)) {
+        if ($withMiddleware !== class_exists(Middleware::class)) {
             $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, Middleware::class));
         }
 
@@ -1171,46 +1185,13 @@ class DoctrineExtensionTest extends TestCase
         $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
             ->addConnection([
                 'connections' => [
-                    'default' => [
+                    'conn1' => [
                         'password' => 'foo',
                         'logging' => true,
                     ],
-                ],
-            ])
-            ->addBaseEntityManager()
-            ->build();
-
-        $extension->load([$config], $container);
-
-        $loggerDef          = $container->getDefinition('doctrine.dbal.logger');
-        $tags               = $loggerDef->getTag('monolog.logger');
-        $doctrineLoggerTags = array_filter($tags, static function (array $tag): bool {
-            return ($tag['channel'] ?? null) === 'doctrine';
-        });
-        $this->assertCount(1, $doctrineLoggerTags);
-
-        $this->assertInstanceOf(Reference::class, $loggerDef->getArgument(0));
-        $this->assertSame('logger', (string) $loggerDef->getArgument(0));
-
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.default_connection.logging_middleware'));
-    }
-
-    public function testMiddlewaresAreAvailable(): void
-    {
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(Middleware::class)) {
-            $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, Middleware::class));
-        }
-
-        $container = $this->getContainer();
-        $extension = new DoctrineExtension();
-
-        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
-            ->addConnection([
-                'connections' => [
-                    'default' => [
-                        'password' => 'foo',
-                        'logging' => true,
+                    'conn2' => [
+                        'password' => 'bar',
+                        'logging' => false,
                     ],
                 ],
             ])
@@ -1220,26 +1201,26 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([$config], $container);
 
         $loggerDef = $container->getDefinition('doctrine.dbal.logger');
-        $this->assertNull($loggerDef->getArgument(0));
+        $this->assertSame($loggerInjected, $loggerDef->getArgument(0) !== null);
 
-        $loggingMiddlewareDef = $container->getDefinition('doctrine.dbal.default_connection.logging_middleware');
-        $this->assertInstanceOf(Reference::class, $loggingMiddlewareDef->getArgument(0));
-        $this->assertSame('logger', (string) $loggingMiddlewareDef->getArgument(0));
-        $tags               = $loggingMiddlewareDef->getTag('monolog.logger');
-        $doctrineLoggerTags = array_filter($tags, static function (array $tag): bool {
-            return ($tag['channel'] ?? null) === 'doctrine';
-        });
-        $this->assertCount(1, $doctrineLoggerTags);
+        $this->assertSame($middlewareRegistered, $container->hasDefinition('doctrine.dbal.logging_middleware'));
 
-        $connectionConfiguration = $container->getDefinition('doctrine.dbal.default_connection.configuration');
-        $setMiddlewareCalls      = array_filter($connectionConfiguration->getMethodCalls(), static function (array $call) {
-            return $call[0] === 'setMiddlewares';
-        });
-        $this->assertCount(1, $setMiddlewareCalls);
-        $callArgs = $setMiddlewareCalls[0][1];
-        $this->assertCount(1, $callArgs);
-        $this->assertCount(1, $callArgs[0]);
-        $this->assertInstanceOf(Definition::class, $callArgs[0][0]);
+        if (! $withMiddleware) {
+            return;
+        }
+
+        $abstractMiddlewareDefTags = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
+        $middleWareTagAttributes   = [];
+        foreach ($abstractMiddlewareDefTags as $tag => $attributes) {
+            if ($tag !== 'doctrine.middleware') {
+                continue;
+            }
+
+            $middleWareTagAttributes = $attributes;
+        }
+
+        $this->assertTrue(in_array(['connection' => 'conn1'], $middleWareTagAttributes, true), 'Tag with connection conn1 not found');
+        $this->assertFalse(in_array(['connection' => 'conn2'], $middleWareTagAttributes, true), 'Tag with connection conn2 found');
     }
 
     // phpcs:enable
