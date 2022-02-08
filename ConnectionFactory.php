@@ -75,6 +75,14 @@ class ConnectionFactory
                 $params['dbname'] .= $params['dbname_suffix'];
             }
 
+            if (isset($params['replica']) && isset($params['replica']['dbname']) && isset($params['replica']['dbname_suffix'])) {
+                $params['replica']['dbname'] .= $params['replica']['dbname_suffix'];
+            }
+
+            if (isset($params['primary']) && isset($params['primary']['dbname']) && isset($params['primary']['dbname_suffix'])) {
+                $params['primary']['dbname'] .= $params['primary']['dbname_suffix'];
+            }
+
             if (! isset($params['charset'])) {
                 if ($driver instanceof AbstractMySQLDriver) {
                     $params['charset'] = 'utf8mb4';
