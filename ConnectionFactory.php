@@ -13,6 +13,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 
 use function array_merge;
+use function defined;
 use function is_subclass_of;
 use function trigger_deprecation;
 
@@ -79,8 +80,19 @@ class ConnectionFactory
                 if ($driver instanceof AbstractMySQLDriver) {
                     $params['charset'] = 'utf8mb4';
 
-                    if (! isset($params['defaultTableOptions']['collate'])) {
-                        $params['defaultTableOptions']['collate'] = 'utf8mb4_unicode_ci';
+                    /* PARAM_ASCII_STR_ARRAY is defined since doctrine/dbal 3.3
+                       doctrine/dbal 3.3.2 adds support for the option "collation"
+                       Checking for that constant will no longer be necessary
+                       after dropping support for doctrine/dbal 2, since this
+                       package requires doctrine/dbal 3.3.2 or higher. */
+                    if (isset($params['defaultTableOptions']['collate']) && defined('Doctrine\DBAL\Connection::PARAM_ASCII_STR_ARRAY')) {
+                        $params['defaultTableOptions']['collation'] = $params['defaultTableOptions']['collate'];
+                        unset($params['defaultTableOptions']['collate']);
+                    }
+
+                    $collationOption = defined('Doctrine\DBAL\Connection::PARAM_ASCII_STR_ARRAY') ? 'collation' : 'collate';
+                    if (! isset($params['defaultTableOptions'][$collationOption])) {
+                        $params['defaultTableOptions'][$collationOption] = 'utf8mb4_unicode_ci';
                     }
                 } else {
                     $params['charset'] = 'utf8';
