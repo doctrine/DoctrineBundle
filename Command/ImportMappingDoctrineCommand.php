@@ -41,10 +41,7 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
         $this->bundles = $bundles;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('doctrine:mapping:import')

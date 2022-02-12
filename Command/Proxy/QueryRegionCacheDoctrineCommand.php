@@ -12,10 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class QueryRegionCacheDoctrineCommand extends QueryRegionCommand
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
@@ -29,8 +26,7 @@ class QueryRegionCacheDoctrineCommand extends QueryRegionCommand
         $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
-    /** @return int */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
 
