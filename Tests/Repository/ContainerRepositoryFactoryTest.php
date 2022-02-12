@@ -210,7 +210,7 @@ class NonDeprecatedRepository implements ObjectRepository
 
     public function getClassName(): string
     {
-        return '';
+        return stdClass::class;
     }
 }
 
