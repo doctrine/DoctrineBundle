@@ -5,7 +5,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Mapping;
 use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory as BaseClassMetadataFactory;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
 
 use function assert;
 
@@ -17,10 +16,6 @@ class ClassMetadataFactory extends BaseClassMetadataFactory
     protected function doLoadMetadata($class, $parent, $rootEntityFound, array $nonSuperclassParents): void
     {
         parent::doLoadMetadata($class, $parent, $rootEntityFound, $nonSuperclassParents);
-
-        if (! $class instanceof ClassMetadataInfo) {
-            return;
-        }
 
         $customGeneratorDefinition = $class->customGeneratorDefinition;
 

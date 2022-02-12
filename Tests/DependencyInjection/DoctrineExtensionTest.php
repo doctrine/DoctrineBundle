@@ -764,12 +764,11 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
+    /**
+     * @requires PHP 8
+     */
     public function testAttributesBundleMappingDetection(): void
     {
-        if (PHP_VERSION_ID < 70400) {
-            self::markTestSkipped('This test requires PHP 7.4.');
-        }
-
         $container = $this->getContainer(['AttributesBundle']);
         $extension = new DoctrineExtension();
 

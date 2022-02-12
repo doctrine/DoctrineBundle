@@ -13,3 +13,5 @@ jobs:
   coding-standards:
     name: "Coding Standards"
     uses: "doctrine/.github/.github/workflows/coding-standards.yml@1.4.1"
+    with:
+      composer-options: "--prefer-dist --prefer-stable"
