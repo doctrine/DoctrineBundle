@@ -618,11 +618,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $defaults = $param['defaultTableOptions'];
 
         $this->assertArrayHasKey('charset', $defaults);
-        $this->assertArrayHasKey('collate', $defaults);
+        $this->assertArrayHasKey('collation', $defaults);
         $this->assertArrayHasKey('engine', $defaults);
 
         $this->assertEquals('utf8mb4', $defaults['charset']);
-        $this->assertEquals('utf8mb4_unicode_ci', $defaults['collate']);
+        $this->assertEquals('utf8mb4_unicode_ci', $defaults['collation']);
         $this->assertEquals('InnoDB', $defaults['engine']);
     }
 

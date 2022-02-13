@@ -14,6 +14,7 @@ use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
 use Exception;
 use Throwable;
 
@@ -27,6 +28,8 @@ class_exists(\Doctrine\DBAL\Platforms\MySqlPlatform::class);
 
 class ConnectionFactoryTest extends TestCase
 {
+    use VerifyDeprecations;
+
     public function testContainer(): void
     {
         $typesConfig  = [];
@@ -118,7 +121,10 @@ class ConnectionFactoryTest extends TestCase
             self::markTestSkipped('This test is only relevant for DBAL >= 3.3');
         }
 
-        $factory    = new ConnectionFactory([]);
+        $factory = new ConnectionFactory([]);
+        $this->expectDeprecationWithIdentifier(
+            'https://github.com/doctrine/dbal/issues/5214'
+        );
         $connection = $factory->createConnection([
             'driver' => 'pdo_mysql',
             'defaultTableOptions' => ['collate' => 'my_collation'],
