@@ -19,6 +19,7 @@ use Throwable;
 
 use function array_intersect_key;
 use function class_exists;
+use function defined;
 use function strpos;
 
 // Compatibility with DBAL < 3
@@ -79,6 +80,56 @@ class ConnectionFactoryTest extends TestCase
         $connection = $factory->createConnection($params);
 
         $this->assertSame('utf8mb4', $connection->getParams()['charset']);
+    }
+
+    public function testDefaultCollateMySql(): void
+    {
+        if (defined('Doctrine\DBAL\Connection::PARAM_ASCII_STR_ARRAY')) {
+            self::markTestSkipped('This test is only relevant for DBAL < 3.3');
+        }
+
+        $factory    = new ConnectionFactory([]);
+        $connection = $factory->createConnection(['driver' => 'pdo_mysql']);
+
+        $this->assertSame(
+            'utf8mb4_unicode_ci',
+            $connection->getParams()['defaultTableOptions']['collate']
+        );
+    }
+
+    public function testDefaultCollationMySql(): void
+    {
+        if (! defined('Doctrine\DBAL\Connection::PARAM_ASCII_STR_ARRAY')) {
+            self::markTestSkipped('This test is only relevant for DBAL >= 3.3');
+        }
+
+        $factory    = new ConnectionFactory([]);
+        $connection = $factory->createConnection(['driver' => 'pdo_mysql']);
+
+        $this->assertSame(
+            'utf8mb4_unicode_ci',
+            $connection->getParams()['defaultTableOptions']['collation']
+        );
+    }
+
+    public function testCollateMapsToCollationForMySql(): void
+    {
+        if (! defined('Doctrine\DBAL\Connection::PARAM_ASCII_STR_ARRAY')) {
+            self::markTestSkipped('This test is only relevant for DBAL >= 3.3');
+        }
+
+        $factory    = new ConnectionFactory([]);
+        $connection = $factory->createConnection([
+            'driver' => 'pdo_mysql',
+            'defaultTableOptions' => ['collate' => 'my_collation'],
+        ]);
+
+        $tableOptions = $connection->getParams()['defaultTableOptions'];
+        $this->assertArrayNotHasKey('collate', $tableOptions);
+        $this->assertSame(
+            'my_collation',
+            $tableOptions['collation']
+        );
     }
 
     /** @group legacy */

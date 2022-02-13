@@ -39,5 +39,11 @@
                 <file name="Repository/ServiceEntityRepository.php"/>
             </errorLevel>
         </TooManyTemplateParams>
+        <InvalidArrayOffset>
+            <errorLevel type="suppress">
+                <!-- requires a release of https://github.com/doctrine/dbal/pull/5261 -->
+                <file name="Tests/ConnectionFactoryTest.php"/>
+            </errorLevel>
+        </InvalidArrayOffset>
     </issueHandlers>
 </psalm>
