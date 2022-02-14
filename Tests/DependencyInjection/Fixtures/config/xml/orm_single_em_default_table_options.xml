@@ -10,7 +10,7 @@
         <dbal default-connection="default">
             <connection name="default" dbname="db">
                 <default-table-option name="charset">utf8mb4</default-table-option>
-                <default-table-option name="collate">utf8mb4_unicode_ci</default-table-option>
+                <default-table-option name="collation">utf8mb4_unicode_ci</default-table-option>
                 <default-table-option name="engine">InnoDB</default-table-option>
             </connection>
         </dbal>
