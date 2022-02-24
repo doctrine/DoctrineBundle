@@ -75,8 +75,12 @@ class ConnectionFactory
                 $params['dbname'] .= $params['dbname_suffix'];
             }
 
-            if (isset($params['replica']['dbname'], $params['replica']['dbname_suffix'])) {
-                $params['replica']['dbname'] .= $params['replica']['dbname_suffix'];
+            if (isset($params['replica'])) {
+                foreach ($params['replica'] as $key => $replicaParams) {
+                    if (isset($replicaParams['dbname'], $replicaParams['dbname_suffix'])) {
+                        $params['replica'][$key]['dbname'] .= $replicaParams['dbname_suffix'];
+                    }
+                }
             }
 
             if (isset($params['primary']['dbname'], $params['primary']['dbname_suffix'])) {
