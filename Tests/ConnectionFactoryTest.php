@@ -116,6 +116,31 @@ class ConnectionFactoryTest extends TestCase
 
         $this->assertSame('main_test', $connection->getParams()['dbname']);
     }
+
+    public function testDbnameSuffixForReplicas(): void
+    {
+        $connection = (new ConnectionFactory([]))->createConnection([
+            'driver' => 'pdo_mysql',
+            'primary' => [
+                'url' => 'mysql://root:password@database:3306/primary?serverVersion=mariadb-10.5.8',
+                'dbname_suffix' => '_test',
+            ],
+            'replica' => [
+                'replica1' => [
+                    'url' => 'mysql://root:password@database:3306/replica?serverVersion=mariadb-10.5.8',
+                    'dbname_suffix' => '_test',
+                ],
+            ],
+        ]);
+
+        $parsedParams = $connection->getParams();
+        $this->assertArrayHasKey('primary', $parsedParams);
+        $this->assertArrayHasKey('replica', $parsedParams);
+        $this->assertArrayHasKey('replica1', $parsedParams['replica']);
+
+        $this->assertSame('primary_test', $parsedParams['primary']['dbname']);
+        $this->assertSame('replica_test', $parsedParams['replica']['replica1']['dbname']);
+    }
 }
 
 /**

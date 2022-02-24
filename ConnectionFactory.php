@@ -77,9 +77,11 @@ class ConnectionFactory
 
             if (isset($params['replica'])) {
                 foreach ($params['replica'] as $key => $replicaParams) {
-                    if (isset($replicaParams['dbname'], $replicaParams['dbname_suffix'])) {
-                        $params['replica'][$key]['dbname'] .= $replicaParams['dbname_suffix'];
+                    if (! isset($replicaParams['dbname'], $replicaParams['dbname_suffix'])) {
+                        continue;
                     }
+
+                    $params['replica'][$key]['dbname'] .= $replicaParams['dbname_suffix'];
                 }
             }
 
