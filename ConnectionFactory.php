@@ -69,12 +69,8 @@ class ConnectionFactory
             }
 
             $connection = DriverManager::getConnection($params, $config, $eventManager);
-            $params     = array_merge($connection->getParams(), $overriddenOptions);
+            $params     = $this->addDatabaseSuffix(array_merge($connection->getParams(), $overriddenOptions));
             $driver     = $connection->getDriver();
-
-            if (isset($params['dbname']) && isset($params['dbname_suffix'])) {
-                $params['dbname'] .= $params['dbname_suffix'];
-            }
 
             if (! isset($params['charset'])) {
                 if ($driver instanceof AbstractMySQLDriver) {
@@ -159,5 +155,31 @@ class ConnectionFactory
         }
 
         $this->initialized = true;
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
+    private function addDatabaseSuffix(array $params): array
+    {
+        if (isset($params['dbname']) && isset($params['dbname_suffix'])) {
+            $params['dbname'] .= $params['dbname_suffix'];
+        }
+
+        foreach ($params['replica'] ?? [] as $key => $replicaParams) {
+            if (! isset($replicaParams['dbname'], $replicaParams['dbname_suffix'])) {
+                continue;
+            }
+
+            $params['replica'][$key]['dbname'] .= $replicaParams['dbname_suffix'];
+        }
+
+        if (isset($params['primary']['dbname'], $params['primary']['dbname_suffix'])) {
+            $params['primary']['dbname'] .= $params['primary']['dbname_suffix'];
+        }
+
+        return $params;
     }
 }

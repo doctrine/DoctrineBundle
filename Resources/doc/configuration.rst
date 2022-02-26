@@ -148,6 +148,7 @@ Configuration Reference
                                 user:                 root
                                 password:             ~
                                 charset:              ~
+                                dbname_suffix:        ~
                                 path:                 ~
                                 memory:               ~
 
@@ -516,6 +517,7 @@ Configuration Reference
                             user="root"
                             password="null"
                             charset=""
+                            dbname_suffix=""
                             path=""
                             memory=""
                             unix-socket=""
