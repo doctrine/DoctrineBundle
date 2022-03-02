@@ -41,6 +41,7 @@ class ConnectionFactory
      * @param mixed[]               $params
      * @param array<string, string> $mappingTypes
      * @psalm-param Params $params
+     * @psalm-suppress UndefinedClass
      *
      * @return Connection
      */
