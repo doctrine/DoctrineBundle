@@ -15,7 +15,7 @@
             <!-- Deprecated classes, not worth fixing -->
             <file name="Command/ImportMappingDoctrineCommand.php"/>
             <file name="DependencyInjection/Compiler/WellKnownSchemaFilterPass.php"/>
-            <file name="Tests/ConnectionFactoryTest.php"/>
+            <file name="ConnectionFactory.php"/>
         </ignoreFiles>
         <directory name="CacheWarmer"/>
         <directory name="Command"/>
