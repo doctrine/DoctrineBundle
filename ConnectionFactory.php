@@ -8,6 +8,8 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 
@@ -72,7 +74,9 @@ class ConnectionFactory
             $driver     = $connection->getDriver();
 
             if (! isset($params['charset'])) {
-                if ($driver->getDatabasePlatform()->getName() === 'mysql') {
+                if ($driver->getDatabasePlatform() instanceof AbstractMySQLPlatform
+                    || $driver->getDatabasePlatform() instanceof MySqlPlatform
+                ) {
                     $params['charset'] = 'utf8mb4';
 
                     /* PARAM_ASCII_STR_ARRAY is defined since doctrine/dbal 3.3
