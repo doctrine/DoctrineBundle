@@ -68,7 +68,7 @@ class ConnectionFactoryTest extends TestCase
         $connection    = $factory->createConnection($params);
 
         $this->assertInstanceof(FakeConnection::class, $connection);
-        $this->assertSame('utf8', $connection->getParams()['charset']);
+        $this->assertSame('utf8mb4', $connection->getParams()['charset']);
         $this->assertSame(1 + $creationCount, FakeConnection::$creationCount);
     }
 
