@@ -74,7 +74,7 @@ class ConnectionFactory
             $driver     = $connection->getDriver();
 
             if (! isset($params['charset'])) {
-                if ($driver->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
+                if ($driver->getDatabasePlatform()->getName() === 'mysql') {
                     $params['charset'] = 'utf8mb4';
 
                     /* PARAM_ASCII_STR_ARRAY is defined since doctrine/dbal 3.3
