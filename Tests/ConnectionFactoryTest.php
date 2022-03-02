@@ -13,6 +13,7 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Exception;
 use Throwable;
@@ -31,7 +32,9 @@ class ConnectionFactoryTest extends TestCase
     {
         $typesConfig  = [];
         $factory      = new ConnectionFactory($typesConfig);
-        $params       = ['driverClass' => FakeDriver::class];
+        $params       = [
+            'driverClass' => FakeDriver::class,
+        ];
         $config       = null;
         $eventManager = null;
         $mappingTypes = ['' => ''];
@@ -48,7 +51,7 @@ class ConnectionFactoryTest extends TestCase
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);
         } catch (Throwable $e) {
-            $this->assertTrue(strpos($e->getMessage(), 'can circumvent this by setting') > 0);
+            $this->assertStringContainsString($e->getMessage(), 'can circumvent this by setting');
 
             throw $e;
         } finally {
