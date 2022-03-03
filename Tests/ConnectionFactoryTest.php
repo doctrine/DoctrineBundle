@@ -51,7 +51,7 @@ class ConnectionFactoryTest extends TestCase
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);
         } catch (Throwable $e) {
-            $this->assertStringContainsString($e->getMessage(), 'can circumvent this by setting');
+            $this->assertStringContainsString('can circumvent this by setting', $e->getMessage());
 
             throw $e;
         } finally {
