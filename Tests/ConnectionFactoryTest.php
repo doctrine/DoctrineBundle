@@ -13,14 +13,13 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Exception;
-use Throwable;
 
 use function array_intersect_key;
 use function class_exists;
 use function defined;
-use function strpos;
 
 // Compatibility with DBAL < 3
 class_exists(\Doctrine\DBAL\Platforms\MySqlPlatform::class);
@@ -47,19 +46,16 @@ class ConnectionFactoryTest extends TestCase
 
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);
-        } catch (Throwable $e) {
-            $this->assertTrue(strpos($e->getMessage(), 'can circumvent this by setting') > 0);
-
-            throw $e;
         } finally {
             FakeDriver::$exception = null;
         }
     }
 
-    public function testDefaultCharset(): void
+    public function testDefaultCharsetNonMySql(): void
     {
-        $factory = new ConnectionFactory([]);
-        $params  = [
+        FakeDriver::$platform = new SqlitePlatform();
+        $factory              = new ConnectionFactory([]);
+        $params               = [
             'driverClass' => FakeDriver::class,
             'wrapperClass' => FakeConnection::class,
         ];
