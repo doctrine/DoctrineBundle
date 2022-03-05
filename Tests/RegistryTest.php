@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Closure;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
@@ -36,7 +37,7 @@ class RegistryTest extends TestCase
 
     public function testGetDefaultConnection(): void
     {
-        $conn      = $this->getMockBuilder('Doctrine\DBAL\Connection')->disableOriginalConstructor()->getMock();
+        $conn      = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->expects($this->once())
                   ->method('get')
@@ -50,7 +51,7 @@ class RegistryTest extends TestCase
 
     public function testGetConnection(): void
     {
-        $conn      = $this->getMockBuilder('Doctrine\DBAL\Connection')->disableOriginalConstructor()->getMock();
+        $conn      = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->expects($this->once())
                   ->method('get')

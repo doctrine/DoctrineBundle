@@ -12,10 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class InfoDoctrineCommand extends InfoCommand
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('doctrine:mapping:info');
@@ -27,10 +24,7 @@ class InfoDoctrineCommand extends InfoCommand
         $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
 

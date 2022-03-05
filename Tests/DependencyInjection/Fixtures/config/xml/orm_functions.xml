@@ -15,9 +15,9 @@
             <entity-manager name="default">
                 <mapping name="YamlBundle" />
                 <dql>
-                    <string-function name="test_string">Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction</string-function>
-                    <numeric-function name="test_numeric">Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestNumericFunction</numeric-function>
-                    <datetime-function name="test_datetime">Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestDatetimeFunction</datetime-function>
+                    <string-function name="test_string">Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction</string-function>
+                    <numeric-function name="test_numeric">Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestNumericFunction</numeric-function>
+                    <datetime-function name="test_datetime">Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestDatetimeFunction</datetime-function>
                 </dql>
             </entity-manager>
         </orm>

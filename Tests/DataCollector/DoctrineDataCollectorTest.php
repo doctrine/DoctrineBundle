@@ -4,6 +4,8 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\DBAL\Logging\DebugStack;
+use Doctrine\ORM\Configuration;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
@@ -26,8 +28,8 @@ class DoctrineDataCollectorTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $manager   = $this->getMockBuilder('Doctrine\ORM\EntityManager')->disableOriginalConstructor()->getMock();
-        $config    = $this->getMockBuilder('Doctrine\ORM\Configuration')->getMock();
+        $manager   = $this->getMockBuilder(EntityManager::class)->disableOriginalConstructor()->getMock();
+        $config    = $this->getMockBuilder(Configuration::class)->getMock();
         $factory   = $this->getMockBuilder(ClassMetadataFactory::class)->setMethods(['getLoadedMetadata'])->getMock();
         $collector = $this->createCollector(['default' => $manager]);
 
@@ -64,8 +66,8 @@ class DoctrineDataCollectorTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $manager   = $this->createMock('Doctrine\ORM\EntityManager');
-        $config    = $this->createMock('Doctrine\ORM\Configuration');
+        $manager   = $this->createMock(EntityManager::class);
+        $config    = $this->createMock(Configuration::class);
         $collector = $this->createCollector(['default' => $manager], false);
 
         $manager->expects($this->never())

@@ -9,14 +9,31 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibili
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
+use Doctrine\Common\Cache\ApcCache;
+use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\Cache;
-use Doctrine\Common\Cache\Psr6\DoctrineProvider;
+use Doctrine\Common\Cache\MemcacheCache;
+use Doctrine\Common\Cache\XcacheCache;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
+use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
+use Doctrine\ORM\Cache\CacheConfiguration;
+use Doctrine\ORM\Cache\DefaultCacheFactory;
+use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
+use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
+use Doctrine\ORM\Cache\Region\DefaultRegion;
+use Doctrine\ORM\Cache\Region\FileLockRegion;
+use Doctrine\ORM\Cache\RegionsConfiguration;
+use Doctrine\ORM\Configuration;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
+use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
+use Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver;
+use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -33,6 +50,7 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+use function array_filter;
 use function array_values;
 use function class_exists;
 use function interface_exists;
@@ -387,29 +405,34 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([$config], $container);
 
         $this->assertFalse($container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
-        $this->assertEquals('Doctrine\ORM\Configuration', $container->getParameter('doctrine.orm.configuration.class'));
-        $this->assertEquals('Doctrine\ORM\EntityManager', $container->getParameter('doctrine.orm.entity_manager.class'));
+        $this->assertEquals(Configuration::class, $container->getParameter('doctrine.orm.configuration.class'));
+        $this->assertEquals(EntityManager::class, $container->getParameter('doctrine.orm.entity_manager.class'));
         $this->assertEquals('Proxies', $container->getParameter('doctrine.orm.proxy_namespace'));
-        $this->assertEquals('Doctrine\Common\Cache\ArrayCache', $container->getParameter('doctrine.orm.cache.array.class'));
-        $this->assertEquals('Doctrine\Common\Cache\ApcCache', $container->getParameter('doctrine.orm.cache.apc.class'));
-        $this->assertEquals('Doctrine\Common\Cache\MemcacheCache', $container->getParameter('doctrine.orm.cache.memcache.class'));
+        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
+        $this->assertEquals(ArrayCache::class, $container->getParameter('doctrine.orm.cache.array.class'));
+        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
+        $this->assertEquals(ApcCache::class, $container->getParameter('doctrine.orm.cache.apc.class'));
+        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
+        $this->assertEquals(MemcacheCache::class, $container->getParameter('doctrine.orm.cache.memcache.class'));
         $this->assertEquals('localhost', $container->getParameter('doctrine.orm.cache.memcache_host'));
         $this->assertEquals('11211', $container->getParameter('doctrine.orm.cache.memcache_port'));
         $this->assertEquals('Memcache', $container->getParameter('doctrine.orm.cache.memcache_instance.class'));
-        $this->assertEquals('Doctrine\Common\Cache\XcacheCache', $container->getParameter('doctrine.orm.cache.xcache.class'));
-        $this->assertEquals('Doctrine\Persistence\Mapping\Driver\MappingDriverChain', $container->getParameter('doctrine.orm.metadata.driver_chain.class'));
-        $this->assertEquals('Doctrine\ORM\Mapping\Driver\AnnotationDriver', $container->getParameter('doctrine.orm.metadata.annotation.class'));
-        $this->assertEquals('Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver', $container->getParameter('doctrine.orm.metadata.xml.class'));
-        $this->assertEquals('Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver', $container->getParameter('doctrine.orm.metadata.yml.class'));
+        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
+        $this->assertEquals(XcacheCache::class, $container->getParameter('doctrine.orm.cache.xcache.class'));
+        $this->assertEquals(MappingDriverChain::class, $container->getParameter('doctrine.orm.metadata.driver_chain.class'));
+        $this->assertEquals(AnnotationDriver::class, $container->getParameter('doctrine.orm.metadata.annotation.class'));
+        $this->assertEquals(SimplifiedXmlDriver::class, $container->getParameter('doctrine.orm.metadata.xml.class'));
+        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
+        $this->assertEquals(SimplifiedYamlDriver::class, $container->getParameter('doctrine.orm.metadata.yml.class'));
 
         // second-level cache
-        $this->assertEquals('Doctrine\ORM\Cache\DefaultCacheFactory', $container->getParameter('doctrine.orm.second_level_cache.default_cache_factory.class'));
-        $this->assertEquals('Doctrine\ORM\Cache\Region\DefaultRegion', $container->getParameter('doctrine.orm.second_level_cache.default_region.class'));
-        $this->assertEquals('Doctrine\ORM\Cache\Region\FileLockRegion', $container->getParameter('doctrine.orm.second_level_cache.filelock_region.class'));
-        $this->assertEquals('Doctrine\ORM\Cache\Logging\CacheLoggerChain', $container->getParameter('doctrine.orm.second_level_cache.logger_chain.class'));
-        $this->assertEquals('Doctrine\ORM\Cache\Logging\StatisticsCacheLogger', $container->getParameter('doctrine.orm.second_level_cache.logger_statistics.class'));
-        $this->assertEquals('Doctrine\ORM\Cache\CacheConfiguration', $container->getParameter('doctrine.orm.second_level_cache.cache_configuration.class'));
-        $this->assertEquals('Doctrine\ORM\Cache\RegionsConfiguration', $container->getParameter('doctrine.orm.second_level_cache.regions_configuration.class'));
+        $this->assertEquals(DefaultCacheFactory::class, $container->getParameter('doctrine.orm.second_level_cache.default_cache_factory.class'));
+        $this->assertEquals(DefaultRegion::class, $container->getParameter('doctrine.orm.second_level_cache.default_region.class'));
+        $this->assertEquals(FileLockRegion::class, $container->getParameter('doctrine.orm.second_level_cache.filelock_region.class'));
+        $this->assertEquals(CacheLoggerChain::class, $container->getParameter('doctrine.orm.second_level_cache.logger_chain.class'));
+        $this->assertEquals(StatisticsCacheLogger::class, $container->getParameter('doctrine.orm.second_level_cache.logger_statistics.class'));
+        $this->assertEquals(CacheConfiguration::class, $container->getParameter('doctrine.orm.second_level_cache.cache_configuration.class'));
+        $this->assertEquals(RegionsConfiguration::class, $container->getParameter('doctrine.orm.second_level_cache.regions_configuration.class'));
 
         $config = BundleConfigurationBuilder::createBuilder()
             ->addBaseConnection()
@@ -447,9 +470,9 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
 
         $arguments = $definition->getArguments();
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
         $this->assertEquals('doctrine.dbal.default_connection', (string) $arguments[0]);
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[1]);
+        $this->assertInstanceOf(Reference::class, $arguments[1]);
         $this->assertEquals('doctrine.orm.default_configuration', (string) $arguments[1]);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
@@ -482,18 +505,10 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame(ArrayAdapter::class, $wrappedDefinition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_query_cache'));
-        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        $arguments = $definition->getArguments();
-        $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.doctrine.orm.default.query', (string) $arguments[0]);
-        $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
+        $this->assertSame(ArrayAdapter::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_result_cache'));
-        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        $arguments = $definition->getArguments();
-        $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.doctrine.orm.default.result', (string) $arguments[0]);
-        $this->assertSame(ArrayAdapter::class, $container->getDefinition((string) $arguments[0])->getClass());
+        $this->assertSame(ArrayAdapter::class, $definition->getClass());
     }
 
     public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection(): void
@@ -1138,8 +1153,93 @@ class DoctrineExtensionTest extends TestCase
             'method'         => null,
             'lazy'           => null,
             'entity_manager' => null,
+            'entity'         => null,
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
+    }
+
+    public function testMiddlewaresAreNotAvailable(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (interface_exists(Middleware::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, Middleware::class));
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'default' => [
+                        'password' => 'foo',
+                        'logging' => true,
+                    ],
+                ],
+            ])
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $loggerDef          = $container->getDefinition('doctrine.dbal.logger');
+        $tags               = $loggerDef->getTag('monolog.logger');
+        $doctrineLoggerTags = array_filter($tags, static function (array $tag): bool {
+            return ($tag['channel'] ?? null) === 'doctrine';
+        });
+        $this->assertCount(1, $doctrineLoggerTags);
+
+        $this->assertInstanceOf(Reference::class, $loggerDef->getArgument(0));
+        $this->assertSame('logger', (string) $loggerDef->getArgument(0));
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.default_connection.logging_middleware'));
+    }
+
+    public function testMiddlewaresAreAvailable(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(Middleware::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, Middleware::class));
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'default' => [
+                        'password' => 'foo',
+                        'logging' => true,
+                    ],
+                ],
+            ])
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $loggerDef = $container->getDefinition('doctrine.dbal.logger');
+        $this->assertNull($loggerDef->getArgument(0));
+
+        $loggingMiddlewareDef = $container->getDefinition('doctrine.dbal.default_connection.logging_middleware');
+        $this->assertInstanceOf(Reference::class, $loggingMiddlewareDef->getArgument(0));
+        $this->assertSame('logger', (string) $loggingMiddlewareDef->getArgument(0));
+        $tags               = $loggingMiddlewareDef->getTag('monolog.logger');
+        $doctrineLoggerTags = array_filter($tags, static function (array $tag): bool {
+            return ($tag['channel'] ?? null) === 'doctrine';
+        });
+        $this->assertCount(1, $doctrineLoggerTags);
+
+        $connectionConfiguration = $container->getDefinition('doctrine.dbal.default_connection.configuration');
+        $setMiddlewareCalls      = array_filter($connectionConfiguration->getMethodCalls(), static function (array $call) {
+            return $call[0] === 'setMiddlewares';
+        });
+        $this->assertCount(1, $setMiddlewareCalls);
+        $callArgs = $setMiddlewareCalls[0][1];
+        $this->assertCount(1, $callArgs);
+        $this->assertCount(1, $callArgs[0]);
+        $this->assertInstanceOf(Definition::class, $callArgs[0][0]);
     }
 
     // phpcs:enable

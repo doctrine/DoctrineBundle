@@ -21,10 +21,7 @@ use function sprintf;
  */
 class CreateDatabaseDoctrineCommand extends DoctrineCommand
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('doctrine:database:create')

@@ -8,4 +8,4 @@ doctrine:
     orm:
         dql:
             string_functions:
-                test_string: Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction
+                test_string: Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction

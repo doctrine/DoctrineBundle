@@ -19,6 +19,7 @@ use Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
+use Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -29,6 +30,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 use function array_filter;
 use function array_intersect_key;
@@ -405,9 +407,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $arguments = $definition->getArguments();
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
         $this->assertEquals('doctrine.dbal.conn1_connection', (string) $arguments[0]);
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[1]);
+        $this->assertInstanceOf(Reference::class, $arguments[1]);
         $this->assertEquals('doctrine.orm.em1_configuration', (string) $arguments[1]);
 
         $definition = $container->getDefinition('doctrine.dbal.conn2_connection');
@@ -424,27 +426,19 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
 
         $arguments = $definition->getArguments();
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
+        $this->assertInstanceOf(Reference::class, $arguments[0]);
         $this->assertEquals('doctrine.dbal.conn2_connection', (string) $arguments[0]);
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[1]);
+        $this->assertInstanceOf(Reference::class, $arguments[1]);
         $this->assertEquals('doctrine.orm.em2_configuration', (string) $arguments[1]);
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_metadata_cache'));
         $this->assertEquals(PhpArrayAdapter::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_query_cache'));
-        $this->assertEquals(CacheProvider::class, $definition->getClass());
-        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        $arguments = $definition->getArguments();
-        $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.doctrine.orm.em1.query', (string) $arguments[0]);
+        $this->assertSame(ArrayAdapter::class, $definition->getClass());
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_result_cache'));
-        $this->assertEquals(CacheProvider::class, $definition->getClass());
-        $this->assertEquals([DoctrineProvider::class, 'wrap'], $definition->getFactory());
-        $arguments = $definition->getArguments();
-        $this->assertInstanceOf(Reference::class, $arguments[0]);
-        $this->assertEquals('cache.doctrine.orm.em1.result', (string) $arguments[0]);
+        $this->assertSame(ArrayAdapter::class, $definition->getClass());
     }
 
     public function testLoadLogging(): void
@@ -652,9 +646,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_functions');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomStringFunction', ['test_string', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction']);
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomNumericFunction', ['test_numeric', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestNumericFunction']);
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomDatetimeFunction', ['test_datetime', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestDatetimeFunction']);
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomStringFunction', ['test_string', TestStringFunction::class]);
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomNumericFunction', ['test_numeric', TestNumericFunction::class]);
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomDatetimeFunction', ['test_datetime', TestDatetimeFunction::class]);
     }
 
     public function testSetNamingStrategy(): void
@@ -850,11 +844,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $this->assertEquals([3600, 60], $slcRegionsConfArgs);
 
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $slcFactoryArgs[0]);
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $slcFactoryArgs[1]);
+        $this->assertInstanceOf(Reference::class, $slcFactoryArgs[0]);
+        $this->assertInstanceOf(Reference::class, $slcFactoryArgs[1]);
 
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $myEntityRegionArgs[1]);
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $myQueryRegionArgs[0]);
+        $this->assertInstanceOf(Reference::class, $myEntityRegionArgs[1]);
+        $this->assertInstanceOf(Reference::class, $myQueryRegionArgs[0]);
 
         $this->assertEquals('my_entity_region', $myEntityRegionArgs[0]);
         $this->assertEquals('doctrine.orm.default_second_level_cache.region.my_entity_region_driver', $myEntityRegionArgs[1]);
@@ -880,7 +874,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_single_em_dql_functions');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomStringFunction', ['test_string', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestStringFunction']);
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomStringFunction', ['test_string', TestStringFunction::class]);
     }
 
     public function testAddCustomHydrationMode(): void
@@ -892,7 +886,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_hydration_mode');
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomHydrationMode', ['test_hydrator', 'Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator']);
+        /** @psalm-suppress UndefinedClass */
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomHydrationMode', ['test_hydrator', TestHydrator::class]);
     }
 
     public function testAddFilter(): void
@@ -927,7 +922,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container = $this->loadContainer('orm_resolve_target_entity');
 
         $definition = $container->getDefinition('doctrine.orm.listeners.resolve_target_entity');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addResolveTargetEntity', ['Symfony\Component\Security\Core\User\UserInterface', 'MyUserClass', []]);
+        $this->assertDICDefinitionMethodCallOnce($definition, 'addResolveTargetEntity', [UserInterface::class, 'MyUserClass', []]);
 
         $tags = $definition->getTags();
         unset($tags['container.no_preload']);
