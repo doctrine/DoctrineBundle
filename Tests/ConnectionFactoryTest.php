@@ -13,15 +13,13 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Exception;
-use Throwable;
 
 use function array_intersect_key;
 use function class_exists;
 use function defined;
-use function strpos;
 
 // Compatibility with DBAL < 3
 class_exists(\Doctrine\DBAL\Platforms\MySqlPlatform::class);
@@ -32,9 +30,7 @@ class ConnectionFactoryTest extends TestCase
     {
         $typesConfig  = [];
         $factory      = new ConnectionFactory($typesConfig);
-        $params       = [
-            'driverClass' => FakeDriver::class,
-        ];
+        $params       = ['driverClass' => FakeDriver::class];
         $config       = null;
         $eventManager = null;
         $mappingTypes = ['' => ''];
@@ -50,19 +46,16 @@ class ConnectionFactoryTest extends TestCase
 
         try {
             $factory->createConnection($params, $config, $eventManager, $mappingTypes);
-        } catch (Throwable $e) {
-            $this->assertStringContainsString('can circumvent this by setting', $e->getMessage());
-
-            throw $e;
         } finally {
             FakeDriver::$exception = null;
         }
     }
 
-    public function testDefaultCharset(): void
+    public function testDefaultCharsetNonMySql(): void
     {
-        $factory = new ConnectionFactory([]);
-        $params  = [
+        FakeDriver::$platform = new SqlitePlatform();
+        $factory              = new ConnectionFactory([]);
+        $params               = [
             'driverClass' => FakeDriver::class,
             'wrapperClass' => FakeConnection::class,
         ];
@@ -71,7 +64,7 @@ class ConnectionFactoryTest extends TestCase
         $connection    = $factory->createConnection($params);
 
         $this->assertInstanceof(FakeConnection::class, $connection);
-        $this->assertSame('utf8mb4', $connection->getParams()['charset']);
+        $this->assertSame('utf8', $connection->getParams()['charset']);
         $this->assertSame(1 + $creationCount, FakeConnection::$creationCount);
     }
 

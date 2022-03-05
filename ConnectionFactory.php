@@ -9,8 +9,8 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Types\Type;
 
 use function array_merge;
@@ -41,7 +41,6 @@ class ConnectionFactory
      * @param mixed[]               $params
      * @param array<string, string> $mappingTypes
      * @psalm-param Params $params
-     * @psalm-suppress UndefinedClass
      *
      * @return Connection
      */
@@ -73,11 +72,11 @@ class ConnectionFactory
             $connection = DriverManager::getConnection($params, $config, $eventManager);
             $params     = $this->addDatabaseSuffix(array_merge($connection->getParams(), $overriddenOptions));
             $driver     = $connection->getDriver();
+            $platform   = $driver->getDatabasePlatform();
 
             if (! isset($params['charset'])) {
-                if ($driver->getDatabasePlatform() instanceof AbstractMySQLPlatform
-                    || $driver->getDatabasePlatform() instanceof MySqlPlatform
-                ) {
+                /** @psalm-suppress UndefinedClass AbstractMySQLPlatform exists since DBAL 3.x only */
+                if ($platform instanceof AbstractMySQLPlatform || $platform instanceof MySqlPlatform) {
                     $params['charset'] = 'utf8mb4';
 
                     /* PARAM_ASCII_STR_ARRAY is defined since doctrine/dbal 3.3
