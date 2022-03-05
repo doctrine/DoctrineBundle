@@ -27,7 +27,10 @@ Configuration Reference
                         port:                 ~
                         user:                 root
                         password:             ~
-                        charset:              "UTF8"
+
+                        # RDBMS specific; Refer to the manual of your RDBMS for more information
+                        charset:              ~
+
                         dbname_suffix:        ~
 
                         # SQLite specific
@@ -132,9 +135,9 @@ Configuration Reference
                         default_table_options:
                             # Affects schema-tool. If absent, DBAL chooses defaults
                             # based on the platform. Examples here are for MySQL.
-                            # charset:      utf8
-                            # collate:      utf8_unicode_ci # When using doctrine/dbal 2.x
-                            # collation:    utf8_unicode_ci # When using doctrine/dbal 3.x
+                            # charset:      utf8mb4
+                            # collate:      utf8mb4_unicode_ci # When using doctrine/dbal 2.x
+                            # collation:    utf8mb4_unicode_ci # When using doctrine/dbal 3.x
                             # engine:       InnoDB
 
                         replicas:
@@ -146,6 +149,7 @@ Configuration Reference
                                 user:                 root
                                 password:             ~
                                 charset:              ~
+                                dbname_suffix:        ~
                                 path:                 ~
                                 memory:               ~
 
@@ -444,7 +448,7 @@ Configuration Reference
                         port="null"
                         user="root"
                         password="null"
-                        charset="UTF8"
+                        charset="null"
                         path=""
                         memory=""
                         unix-socket=""
@@ -486,9 +490,9 @@ Configuration Reference
                         <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
 
                         <!-- example -->
-                        <doctrine:default-table-option name="charset">utf8</doctrine:default-table-option>
+                        <doctrine:default-table-option name="charset">utf8mb4</doctrine:default-table-option>
                         <!-- when using doctrine/dbal 2.x -->
-                        <doctrine:default-table-option name="collate">utf8_unicode_ci</doctrine:default-table-option>
+                        <doctrine:default-table-option name="collate">utf8mb4_unicode_ci</doctrine:default-table-option>
                         <!-- when using doctrine/dbal 3.x -->
                         <doctrine:default-table-option name="collation">utf8_unicode_ci</doctrine:default-table-option>
                         <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
@@ -517,6 +521,7 @@ Configuration Reference
                             user="root"
                             password="null"
                             charset=""
+                            dbname_suffix=""
                             path=""
                             memory=""
                             unix-socket=""
@@ -963,7 +968,7 @@ can configure. The following block shows all possible configuration keys:
                 sslkey:                   postgresql-key.pem  # PostgreSQL specific (LIBPQ-CONNECT-SSLKEY)
                 sslcrl:                   postgresql.crl      # PostgreSQL specific (LIBPQ-CONNECT-SSLCRL)
                 wrapper_class:            MyDoctrineDbalConnectionWrapper
-                charset:                  UTF8
+                charset:                  ~                   # RDBMS-specific. Refer to the manual of your RDBMS for more information.
                 logging:                  "%kernel.debug%"
                 platform_service:         MyOwnDatabasePlatformService
                 auto_commit:              false
@@ -974,10 +979,11 @@ can configure. The following block shows all possible configuration keys:
                     custom: Acme\HelloBundle\MyCustomType
                 default_table_options:
                     # Affects schema-tool. If absent, DBAL chooses defaults
-                    # based on the platform.
-                    charset:              utf8
-                    collate:              utf8_unicode_ci # when using doctrine/dbal 2.x
-                    collation:            utf8_unicode_ci # when using doctrine/dbal 3.x
+                    # based on the platform. These defaults might be
+                    # sub-optimal for backward compatibility reasons.
+                    charset:              utf8mb4
+                    collate:              utf8mb4_unicode_ci # when using doctrine/dbal 2.x
+                    collation:            utf8mb4_unicode_ci # when using doctrine/dbal 3.x
                     engine:               InnoDB
 
     .. code-block:: xml
@@ -1053,7 +1059,7 @@ can configure. The following block shows all possible configuration keys:
                     sslkey="postgresql-key.pem"
                     sslcrl="postgresql.crl"
                     wrapper-class="MyDoctrineDbalConnectionWrapper"
-                    charset="UTF8"
+                    charset=""
                     logging="%kernel.debug%"
                     platform-service="MyOwnDatabasePlatformService"
                     auto-commit="false"
@@ -1061,9 +1067,9 @@ can configure. The following block shows all possible configuration keys:
                 >
                     <doctrine:option key="foo">bar</doctrine:option>
                     <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
-                    <doctrine:default-table-option name="charset">utf8</doctrine:default-table-option>
+                    <doctrine:default-table-option name="charset">utf8mb4</doctrine:default-table-option>
                     <!-- when using doctrine/dbal 2.x -->
-                    <doctrine:default-table-option name="collate">utf8_unicode_ci</doctrine:default-table-option>
+                    <doctrine:default-table-option name="collate">utf8mb4_unicode_ci</doctrine:default-table-option>
                     <!-- when using doctrine/dbal 3.x -->
                     <doctrine:default-table-option name="collation">utf8_unicode_ci</doctrine:default-table-option>
                     <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
