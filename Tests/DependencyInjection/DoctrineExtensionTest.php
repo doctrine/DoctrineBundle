@@ -16,7 +16,7 @@ use Doctrine\Common\Cache\MemcacheCache;
 use Doctrine\Common\Cache\XcacheCache;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
-use Doctrine\DBAL\Logging\Middleware;
+use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
 use Doctrine\ORM\Cache\CacheConfiguration;
@@ -39,6 +39,8 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
+use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
+use Symfony\Bridge\Doctrine\Middleware\Debug\Middleware as SfDebugMiddleware;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -50,6 +52,7 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+use function array_merge;
 use function array_values;
 use function class_exists;
 use function in_array;
@@ -1158,25 +1161,29 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
 
-    /**
-     * @return array<string, bool[]>
-     */
-    public function provideDefinitionsToLogQueries(): array
+    /** @return bool[][] */
+    public function provideRegistrationsWithoutMiddlewares(): array
     {
         return [
-            'with middlewares' => [true, false, true],
-            'without middlewares' => [false, true, false],
+            'SfDebugMiddleware not exists' => [false],
+            'SfDebugMiddleware exists' => [true],
         ];
     }
 
     /**
-     * @dataProvider provideDefinitionsToLogQueries
+     * @dataProvider provideRegistrationsWithoutMiddlewares
      */
-    public function testDefinitionsToLogQueries(bool $withMiddleware, bool $loggerInjected, bool $middlewareRegistered): void
+    public function testRegistrationsWithoutMiddlewares(bool $sfDebugMiddlewareExists): void
     {
         /** @psalm-suppress UndefinedClass */
-        if ($withMiddleware !== class_exists(Middleware::class)) {
-            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, Middleware::class));
+        if (interface_exists(MiddlewareInterface::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, MiddlewareInterface::class));
+        }
+
+        /** @psalm-suppress UndefinedClass */
+        if ($sfDebugMiddlewareExists === ! class_exists(DebugDataHolder::class)) {    // Can't verify SfDebugMiddleware existence directly since it implements MiddlewareInterface that is not available
+            $format = $sfDebugMiddlewareExists ? '%s needs %s to exist' : '%s needs %s to not exist';
+            $this->markTestSkipped(sprintf($format, __METHOD__, SfDebugMiddleware::class));
         }
 
         $container = $this->getContainer();
@@ -1188,10 +1195,19 @@ class DoctrineExtensionTest extends TestCase
                     'conn1' => [
                         'password' => 'foo',
                         'logging' => true,
+                        'profiling' => false,
                     ],
                     'conn2' => [
                         'password' => 'bar',
                         'logging' => false,
+                        'profiling' => true,
+                        'profiling_collect_backtrace' => false,
+                    ],
+                    'conn3' => [
+                        'password' => 'bar',
+                        'logging' => false,
+                        'profiling' => true,
+                        'profiling_collect_backtrace' => true,
                     ],
                 ],
             ])
@@ -1200,27 +1216,319 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger'));
         $loggerDef = $container->getDefinition('doctrine.dbal.logger');
-        $this->assertSame($loggerInjected, $loggerDef->getArgument(0) !== null);
+        $this->assertNotNull($loggerDef->getArgument(0));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logging_middleware'));
 
-        $this->assertSame($middlewareRegistered, $container->hasDefinition('doctrine.dbal.logging_middleware'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.debug_middleware'));
+        $this->assertFalse($container->hasDefinition('doctrine.debug_data_holder'));
 
-        if (! $withMiddleware) {
-            return;
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn1'));
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn2'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn3'));
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.backtrace.conn3'));
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.debug_middleware'));
+    }
+
+    public function testRegistrationsWithMiddlewaresButWithoutSfDebugMiddleware(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(MiddlewareInterface::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, MiddlewareInterface::class));
         }
 
-        $abstractMiddlewareDefTags = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
-        $middleWareTagAttributes   = [];
+        /** @psalm-suppress UndefinedClass */
+        if (class_exists(SfDebugMiddleware::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, SfDebugMiddleware::class));
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => [
+                        'password' => 'foo',
+                        'logging' => true,
+                        'profiling' => false,
+                    ],
+                    'conn2' => [
+                        'password' => 'bar',
+                        'logging' => false,
+                        'profiling' => true,
+                        'profiling_collect_backtrace' => false,
+                    ],
+                    'conn3' => [
+                        'password' => 'bar',
+                        'logging' => false,
+                        'profiling' => true,
+                        'profiling_collect_backtrace' => true,
+                    ],
+                ],
+            ])
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger'));
+        $loggerDef = $container->getDefinition('doctrine.dbal.logger');
+        $this->assertNull($loggerDef->getArgument(0));
+
+        $methodCalls = array_merge(
+            $container->getDefinition('doctrine.dbal.conn1_connection.configuration')->getMethodCalls(),
+            $container->getDefinition('doctrine.dbal.conn2_connection.configuration')->getMethodCalls(),
+            $container->getDefinition('doctrine.dbal.conn3_connection.configuration')->getMethodCalls()
+        );
+
+        foreach ($methodCalls as $methodCall) {
+            if ($methodCall[0] !== 'setSQLLogger' || ! (($methodCall[1][0] ?? null) instanceof Reference) || (string) $methodCall[1][0] !== 'doctrine.dbal.logger') {
+                continue;
+            }
+
+            $this->fail('doctrine.dbal.logger should not be referenced on configurations');
+        }
+
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
+
+        $abstractMiddlewareDefTags      = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
+        $loggingMiddlewareTagAttributes = [];
         foreach ($abstractMiddlewareDefTags as $tag => $attributes) {
             if ($tag !== 'doctrine.middleware') {
                 continue;
             }
 
-            $middleWareTagAttributes = $attributes;
+            $loggingMiddlewareTagAttributes = $attributes;
         }
 
-        $this->assertTrue(in_array(['connection' => 'conn1'], $middleWareTagAttributes, true), 'Tag with connection conn1 not found');
-        $this->assertFalse(in_array(['connection' => 'conn2'], $middleWareTagAttributes, true), 'Tag with connection conn2 found');
+        $this->assertTrue(in_array(['connection' => 'conn1'], $loggingMiddlewareTagAttributes, true));
+        $this->assertFalse(in_array(['connection' => 'conn2'], $loggingMiddlewareTagAttributes, true));
+        $this->assertFalse(in_array(['connection' => 'conn3'], $loggingMiddlewareTagAttributes, true));
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.debug_middleware'));
+        $this->assertFalse($container->hasDefinition('doctrine.debug_data_holder'));
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn1'));
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn2'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn3'));
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.backtrace.conn3'));
+    }
+
+    public function testRegistrationsWithMiddlewaresAndSfDebugMiddleware(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(MiddlewareInterface::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, MiddlewareInterface::class));
+        }
+
+        /** @psalm-suppress UndefinedClass */
+        if (! class_exists(SfDebugMiddleware::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, SfDebugMiddleware::class));
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => [
+                        'password' => 'foo',
+                        'logging' => true,
+                        'profiling' => false,
+                    ],
+                    'conn2' => [
+                        'password' => 'bar',
+                        'logging' => false,
+                        'profiling' => true,
+                        'profiling_collect_backtrace' => false,
+                    ],
+                    'conn3' => [
+                        'password' => 'bar',
+                        'logging' => false,
+                        'profiling' => true,
+                        'profiling_collect_backtrace' => true,
+                    ],
+                ],
+            ])
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger'));
+        $loggerDef = $container->getDefinition('doctrine.dbal.logger');
+        $this->assertNull($loggerDef->getArgument(0));
+
+        $methodCalls = array_merge(
+            $container->getDefinition('doctrine.dbal.conn1_connection.configuration')->getMethodCalls(),
+            $container->getDefinition('doctrine.dbal.conn2_connection.configuration')->getMethodCalls(),
+            $container->getDefinition('doctrine.dbal.conn3_connection.configuration')->getMethodCalls()
+        );
+
+        foreach ($methodCalls as $methodCall) {
+            if ($methodCall[0] !== 'setSQLLogger' || ! (($methodCall[1][0] ?? null) instanceof Reference) || (string) $methodCall[1][0] !== 'doctrine.dbal.logger') {
+                continue;
+            }
+
+            $this->fail('doctrine.dbal.logger should not be referenced on configurations');
+        }
+
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
+
+        $abstractMiddlewareDefTags      = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
+        $loggingMiddlewareTagAttributes = [];
+        foreach ($abstractMiddlewareDefTags as $tag => $attributes) {
+            if ($tag !== 'doctrine.middleware') {
+                continue;
+            }
+
+            $loggingMiddlewareTagAttributes = $attributes;
+        }
+
+        $this->assertTrue(in_array(['connection' => 'conn1'], $loggingMiddlewareTagAttributes, true));
+        $this->assertFalse(in_array(['connection' => 'conn2'], $loggingMiddlewareTagAttributes, true));
+        $this->assertFalse(in_array(['connection' => 'conn3'], $loggingMiddlewareTagAttributes, true));
+
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.debug_middleware'));
+        $this->assertTrue($container->hasDefinition('doctrine.debug_data_holder'));
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn1'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn2'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn3'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn3'));
+
+        $abstractMiddlewareDefTags    = $container->getDefinition('doctrine.dbal.debug_middleware')->getTags();
+        $debugMiddlewareTagAttributes = [];
+        foreach ($abstractMiddlewareDefTags as $tag => $attributes) {
+            if ($tag !== 'doctrine.middleware') {
+                continue;
+            }
+
+            $debugMiddlewareTagAttributes = $attributes;
+        }
+
+        $this->assertFalse(in_array(['connection' => 'conn1'], $debugMiddlewareTagAttributes, true));
+        $this->assertTrue(in_array(['connection' => 'conn2'], $debugMiddlewareTagAttributes, true));
+        $this->assertTrue(in_array(['connection' => 'conn3'], $debugMiddlewareTagAttributes, true));
+
+        $arguments = $container->getDefinition('doctrine.debug_data_holder')->getArguments();
+        $this->assertCount(1, $arguments);
+        $this->assertSame(['conn3'], $arguments[0]);
+    }
+
+    /**
+     * @return array<string, mixed[]>
+     */
+    public function provideDefinitionsToLogAndProfile(): array
+    {
+        return [
+            'with middlewares, with debug middleware' => [true, true, null, true],
+            'with middlewares, without debug middleware' => [true, false, false, true],
+            'without middlewares, with debug middleware' => [false, true, true, false],
+            'without middlewares, without debug middleware' => [false, false, true, false],
+        ];
+    }
+
+    /**
+     * @dataProvider provideDefinitionsToLogAndProfile
+     */
+    public function testDefinitionsToLogAndProfile(
+        bool $withMiddleware,
+        bool $withDebugMiddleware,
+        ?bool $loggerInjected,
+        bool $loggingMiddlewareRegistered
+    ): void {
+        /** @psalm-suppress UndefinedClass */
+        if ($withMiddleware !== interface_exists(MiddlewareInterface::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, MiddlewareInterface::class));
+        }
+
+        /** @psalm-suppress UndefinedClass */
+        if ($withDebugMiddleware !== class_exists(SfDebugMiddleware::class, false)) {
+            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, SfDebugMiddleware::class));
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => [
+                        'password' => 'foo',
+                        'logging' => true,
+                        'profiling' => false,
+                    ],
+                    'conn2' => [
+                        'password' => 'bar',
+                        'logging' => false,
+                        'profiling' => true,
+                    ],
+                ],
+            ])
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        if ($loggerInjected !== null) {
+            $loggerDef = $container->getDefinition('doctrine.dbal.logger');
+            $this->assertSame($loggerInjected, $loggerDef->getArgument(0) !== null);
+        }
+
+        $this->assertSame($loggingMiddlewareRegistered, $container->hasDefinition('doctrine.dbal.logging_middleware'));
+
+        if (! $withMiddleware) {
+            return;
+        }
+
+        $abstractMiddlewareDefTags      = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
+        $loggingMiddlewareTagAttributes = [];
+        foreach ($abstractMiddlewareDefTags as $tag => $attributes) {
+            if ($tag !== 'doctrine.middleware') {
+                continue;
+            }
+
+            $loggingMiddlewareTagAttributes = $attributes;
+        }
+
+        $this->assertTrue(in_array(['connection' => 'conn1'], $loggingMiddlewareTagAttributes, true), 'Tag with connection conn1 not found for doctrine.dbal.logging_middleware');
+        $this->assertFalse(in_array(['connection' => 'conn2'], $loggingMiddlewareTagAttributes, true), 'Tag with connection conn2 found for doctrine.dbal.logging_middleware');
+
+        if (! $withDebugMiddleware) {
+            $this->assertFalse($container->hasDefinition('doctrine.dbal.debug_middleware'), 'doctrine.dbal.debug_middleware not removed');
+            $this->assertFalse($container->hasDefinition('doctrine.debug_data_holder'), 'doctrine.debug_data_holder not removed');
+            $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
+            $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
+
+            return;
+        }
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
+
+        $abstractMiddlewareDefTags    = $container->getDefinition('doctrine.dbal.debug_middleware')->getTags();
+        $debugMiddlewareTagAttributes = [];
+        foreach ($abstractMiddlewareDefTags as $tag => $attributes) {
+            if ($tag !== 'doctrine.middleware') {
+                continue;
+            }
+
+            $debugMiddlewareTagAttributes = $attributes;
+        }
+
+        $this->assertFalse(in_array(['connection' => 'conn1'], $debugMiddlewareTagAttributes, true), 'Tag with connection conn1 found for doctrine.dbal.debug_middleware');
+        $this->assertTrue(in_array(['connection' => 'conn2'], $debugMiddlewareTagAttributes, true), 'Tag with connection conn2 not found for doctrine.dbal.debug_middleware');
     }
 
     public function testDefinitionsToLogQueriesLoggingFalse(): void

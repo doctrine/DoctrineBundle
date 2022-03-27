@@ -9,5 +9,12 @@
             <argument type="service" id="logger" />
             <tag name="monolog.logger" channel="doctrine" />
         </service>
+        <service id="doctrine.debug_data_holder" class="Doctrine\Bundle\DoctrineBundle\Middleware\BacktraceDebugDataHolder">
+            <argument type="collection" />
+        </service>
+        <service id="doctrine.dbal.debug_middleware" class="Doctrine\Bundle\DoctrineBundle\Middleware\DebugMiddleware" abstract="true">
+            <argument type="service" id="doctrine.debug_data_holder" />
+            <argument type="service" id="debug.stopwatch" on-invalid="null" />
+        </service>
     </services>
 </container>

@@ -9,6 +9,7 @@ use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
 use Doctrine\DBAL\Logging\LoggerChain;
 use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Types\Type;
@@ -20,6 +21,7 @@ use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Symfony\Bridge\Doctrine\CacheWarmer\ProxyCacheWarmer;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Doctrine\Logger\DbalLogger;
+use Symfony\Bridge\Doctrine\Middleware\Debug\Middleware as SfDebugMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
@@ -31,16 +33,22 @@ use function interface_exists;
 
 class ContainerTest extends TestCase
 {
+    /** @group legacy */
     public function testContainerWithDbalOnly(): void
     {
         $kernel = new DbalTestKernel();
         $kernel->boot();
 
         $container = $kernel->getContainer();
-        $this->assertInstanceOf(
-            LoggerChain::class,
-            $container->get('doctrine.dbal.logger.chain.default')
-        );
+
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(MiddlewareInterface::class)) {
+            $this->assertInstanceOf(
+                LoggerChain::class,
+                $container->get('doctrine.dbal.logger.chain.default')
+            );
+        }
+
         if (class_exists(ImportCommand::class)) {
             self::assertTrue($container->has('doctrine.database_import_command'));
         } else {
@@ -56,7 +64,11 @@ class ContainerTest extends TestCase
 
         $container = $this->createXmlBundleTestContainer();
 
-        $this->assertInstanceOf(DbalLogger::class, $container->get('doctrine.dbal.logger'));
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(MiddlewareInterface::class) || ! class_exists(SfDebugMiddleware::class)) {
+            $this->assertInstanceOf(DbalLogger::class, $container->get('doctrine.dbal.logger'));
+        }
+
         $this->assertInstanceOf(DoctrineDataCollector::class, $container->get('data_collector.doctrine'));
         $this->assertInstanceOf(DBALConfiguration::class, $container->get('doctrine.dbal.default_connection.configuration'));
         $this->assertInstanceOf(EventManager::class, $container->get('doctrine.dbal.default_connection.event_manager'));
