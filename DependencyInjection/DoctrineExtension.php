@@ -16,7 +16,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
 use Doctrine\DBAL\Logging\LoggerChain;
-use Doctrine\DBAL\Logging\Middleware;
 use Doctrine\DBAL\Sharding\PoolingShardConnection;
 use Doctrine\DBAL\Sharding\PoolingShardManager;
 use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
@@ -34,6 +33,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
+use Symfony\Bridge\Doctrine\Middleware\Debug\Middleware as SfDebugMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaSubscriber;
 use Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaSubscriber;
@@ -116,9 +116,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('dbal.xml');
-        $chainLogger = $container->getDefinition('doctrine.dbal.logger.chain');
-        $logger      = new Reference('doctrine.dbal.logger');
-        $chainLogger->addArgument([$logger]);
 
         if (class_exists(ImportCommand::class)) {
             $container->register('doctrine.database_import_command', ImportDoctrineCommand::class)
@@ -147,10 +144,20 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setParameter('doctrine.connections', $connections);
         $container->setParameter('doctrine.default_connection', $this->defaultConnection);
 
-        $connWithLogging = [];
+        $connWithLogging   = [];
+        $connWithProfiling = [];
+        $connWithBacktrace = [];
         foreach ($config['connections'] as $name => $connection) {
             if ($connection['logging']) {
                 $connWithLogging[] = $name;
+            }
+
+            if ($connection['profiling']) {
+                $connWithProfiling[] = $name;
+
+                if ($connection['profiling_collect_backtrace']) {
+                    $connWithBacktrace[] = $name;
+                }
             }
 
             $this->loadDbalConnection($name, $connection, $container);
@@ -173,7 +180,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             });
         }
 
-        $this->useMiddlewaresIfAvailable($container, $connWithLogging);
+        $this->useMiddlewaresIfAvailable($container, $connWithLogging, $connWithProfiling, $connWithBacktrace);
     }
 
     /**
@@ -187,7 +194,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new ChildDefinition('doctrine.dbal.connection.configuration'));
         $logger        = null;
-        if ($connection['logging']) {
+
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(MiddlewareInterface::class) && $connection['logging']) {
             $logger = new Reference('doctrine.dbal.logger');
         }
 
@@ -196,7 +205,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $dataCollectorDefinition = $container->getDefinition('data_collector.doctrine');
         $dataCollectorDefinition->replaceArgument(1, $connection['profiling_collect_schema_errors']);
 
-        if ($connection['profiling']) {
+        if (! $this->isSfDebugMiddlewareAvailable() && $connection['profiling']) {
             $profilingAbstractId = $connection['profiling_collect_backtrace'] ?
                 'doctrine.dbal.logger.backtrace' :
                 'doctrine.dbal.logger.profiling';
@@ -1116,24 +1125,50 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return $id;
     }
 
-    /** @param string[] $connWithLogging */
-    private function useMiddlewaresIfAvailable(ContainerBuilder $container, array $connWithLogging): void
-    {
+    /**
+     * @param string[] $connWithLogging
+     * @param string[] $connWithProfiling
+     * @param string[] $connWithBacktrace
+     */
+    private function useMiddlewaresIfAvailable(
+        ContainerBuilder $container,
+        array $connWithLogging,
+        array $connWithProfiling,
+        array $connWithBacktrace
+    ): void {
         /** @psalm-suppress UndefinedClass */
-        if (! class_exists(Middleware::class)) {
+        if (! interface_exists(MiddlewareInterface::class)) {
             return;
         }
+
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('middlewares.xml');
 
         $container
             ->getDefinition('doctrine.dbal.logger')
             ->replaceArgument(0, null);
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load('middlewares.xml');
-
         $loggingMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.logging_middleware');
         foreach ($connWithLogging as $connName) {
             $loggingMiddlewareAbstractDef->addTag('doctrine.middleware', ['connection' => $connName]);
         }
+
+        if ($this->isSfDebugMiddlewareAvailable()) {
+            $container->getDefinition('doctrine.debug_data_holder')->replaceArgument(0, $connWithBacktrace);
+            $debugMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.debug_middleware');
+            foreach ($connWithProfiling as $connName) {
+                $debugMiddlewareAbstractDef
+                    ->addTag('doctrine.middleware', ['connection' => $connName]);
+            }
+        } else {
+            $container->removeDefinition('doctrine.dbal.debug_middleware');
+            $container->removeDefinition('doctrine.debug_data_holder');
+        }
+    }
+
+    private function isSfDebugMiddlewareAvailable(): bool
+    {
+        /** @psalm-suppress UndefinedClass */
+        return interface_exists(MiddlewareInterface::class) && class_exists(SfDebugMiddleware::class);
     }
 }

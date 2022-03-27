@@ -12,6 +12,7 @@ use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
+use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -447,6 +448,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testLoadLogging(): void
     {
+        /** @psalm-suppress UndefinedClass */
+        if (interface_exists(Middleware::class)) {
+            $this->markTestSkipped('This test requires Debug middleware to not be activated');
+        }
+
         $container = $this->loadContainer('dbal_logging');
 
         $definition = $container->getDefinition('doctrine.dbal.log_connection.configuration');
