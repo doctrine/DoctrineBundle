@@ -9,6 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\Middleware\ConnectionNameAwareInterface;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Middleware;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -190,6 +191,10 @@ class MiddlewarePassTest extends TestCase
     private function createContainer(callable $func, bool $addConnections = true): ContainerBuilder
     {
         $container = new ContainerBuilder(new ParameterBag(['kernel.debug' => false]));
+
+        $loggerDef = new Definition();
+        $loggerDef->setClass(NullLogger::class);
+        $container->setDefinition('logger', $loggerDef);
 
         $container->registerExtension(new DoctrineExtension());
 
