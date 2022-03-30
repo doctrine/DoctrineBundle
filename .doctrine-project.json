@@ -4,21 +4,27 @@
   "slug": "doctrine-bundle",
   "versions": [
     {
-      "name": "2.6",
-      "branchName": "2.6.x",
+      "name": "2.7",
+      "branchName": "2.7.x",
       "slug": "latest",
       "upcoming": true
     },
     {
-      "name": "2.5",
-      "branchName": "2.5.x",
-      "slug": "2.4",
+      "name": "2.6",
+      "branchName": "2.6.x",
+      "slug": "2.6",
       "aliases": [
         "current",
         "stable"
       ],
       "current": true,
       "maintained": true
+    },
+    {
+      "name": "2.5",
+      "branchName": "2.5.x",
+      "slug": "2.5",
+      "maintained": false
     },
     {
       "name": "2.4",
