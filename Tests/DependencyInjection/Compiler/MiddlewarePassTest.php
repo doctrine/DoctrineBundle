@@ -111,6 +111,35 @@ class MiddlewarePassTest extends TestCase
         $this->assertMiddlewareInjected($container, 'conn2', AutoconfiguredPHP7Middleware::class);
     }
 
+    public function testConfigDoesntBrokenForDbalV2(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (interface_exists(Middleware::class)) {
+            $this->markTestSkipped('doctrine/dbal < 3.0.0 needed to run this test');
+        }
+
+        $container = $this->createContainer(static function (ContainerBuilder $container) {
+            /** @psalm-suppress UndefinedClass */
+            $container
+                ->register('middleware', PHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware');
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        /** @psalm-suppress UndefinedClass */
+        $configuredMiddlewares = $this->getMiddlewaresForConn($container, 'conn1', PHP7Middleware::class);
+
+        $this->assertSame(
+            [],
+            $configuredMiddlewares,
+            'Middlewares should not be added to configuration in case of doctrine/dbal < 3.0.0'
+        );
+    }
+
     /** @return array<string, array{0: class-string, 1: bool}> */
     public function provideAddMiddlewareWithAttributeForAutoconfiguration(): array
     {

@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
 use Doctrine\Bundle\DoctrineBundle\Middleware\ConnectionNameAwareInterface;
+use Doctrine\DBAL\Driver\Middleware;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -16,6 +17,11 @@ final class MiddlewaresPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
+        // Middlewares introduced in `doctrine/dbal:3.0.0`
+        if (! interface_exists(Middleware::class)) {
+            return;
+        }
+
         $middlewareAbstractDefs = [];
         $middlewareConnections  = [];
         foreach ($container->findTaggedServiceIds('doctrine.middleware') as $id => $tags) {
