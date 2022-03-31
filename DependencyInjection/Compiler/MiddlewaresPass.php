@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use function array_keys;
 use function in_array;
 use function is_subclass_of;
+use function method_exists;
 use function sprintf;
 
 final class MiddlewaresPass implements CompilerPassInterface
@@ -50,8 +51,14 @@ final class MiddlewaresPass implements CompilerPassInterface
                 $childDef->addMethodCall('setConnectionName', [$name]);
             }
 
-            $container
-                ->getDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name))
+            $configurationDefinition = $container
+                ->getDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name));
+            $configuration           = $configurationDefinition->getClass();
+            if ($configuration === null || ! method_exists($configuration, 'setMiddleWares')) {
+                continue;
+            }
+
+            $configurationDefinition
                 ->addMethodCall('setMiddlewares', [$middlewareDefs]);
         }
     }
