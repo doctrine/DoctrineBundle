@@ -16,6 +16,10 @@ final class MiddlewaresPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
+        if (! $container->hasParameter('doctrine.connections')) {
+            return;
+        }
+
         $middlewareAbstractDefs = [];
         $middlewareConnections  = [];
         foreach ($container->findTaggedServiceIds('doctrine.middleware') as $id => $tags) {
