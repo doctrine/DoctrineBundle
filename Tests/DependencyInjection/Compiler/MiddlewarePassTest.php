@@ -166,19 +166,43 @@ class MiddlewarePassTest extends TestCase
         $this->assertMiddlewareInjected($container, 'conn2', $className);
     }
 
-    private function createContainer(callable $func): ContainerBuilder
+    /** @dataProvider provideAddMiddleware */
+    public function testDontAddMiddlewareWhenDbalIsNotUsed(string $middlewareClass, bool $connectionNameAware): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(Middleware::class)) {
+            $this->markTestSkipped(sprintf('%s needed to run this test', Middleware::class));
+        }
+
+        $container = $this->createContainer(static function (ContainerBuilder $container) use ($middlewareClass) {
+            $container
+                ->register('middleware', $middlewareClass)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware');
+        }, false);
+
+        $middlewareDefinitions = $container->findTaggedServiceIds('doctrine.middleware');
+
+        // no middleware was created as child definition
+        self::assertCount(0, $middlewareDefinitions);
+    }
+
+    private function createContainer(callable $func, bool $addConnections = true): ContainerBuilder
     {
         $container = new ContainerBuilder(new ParameterBag(['kernel.debug' => false]));
 
         $container->registerExtension(new DoctrineExtension());
-        $container->loadFromExtension('doctrine', [
-            'dbal' => [
-                'connections' => [
-                    'conn1' => ['url' => 'mysql://user:pass@server1.tld:3306/db1'],
-                    'conn2' => ['url' => 'mysql://user:pass@server2.tld:3306/db2'],
+
+        if ($addConnections) {
+            $container->loadFromExtension('doctrine', [
+                'dbal' => [
+                    'connections' => [
+                        'conn1' => ['url' => 'mysql://user:pass@server1.tld:3306/db1'],
+                        'conn2' => ['url' => 'mysql://user:pass@server2.tld:3306/db2'],
+                    ],
                 ],
-            ],
-        ]);
+            ]);
+        }
 
         $container->addCompilerPass(new MiddlewaresPass());
 
