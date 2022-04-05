@@ -8,7 +8,6 @@
         <service id="doctrine.dbal.logging_middleware" class="Doctrine\DBAL\Logging\Middleware" abstract="true">
             <argument type="service" id="logger" />
             <tag name="monolog.logger" channel="doctrine" />
-            <tag name="doctrine.middleware" />
         </service>
     </services>
 </container>
