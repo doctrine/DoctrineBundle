@@ -1223,6 +1223,35 @@ class DoctrineExtensionTest extends TestCase
         $this->assertFalse(in_array(['connection' => 'conn2'], $middleWareTagAttributes, true), 'Tag with connection conn2 found');
     }
 
+    public function testDefinitionsToLogQueriesLoggingFalse(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (! class_exists(Middleware::class)) {
+            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, Middleware::class));
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'conn' => [
+                        'password' => 'foo',
+                        'logging' => false,
+                    ],
+                ],
+            ])
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
+        $abstractMiddlewareDefTags = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
+        $this->assertArrayNotHasKey('doctrine.middleware', $abstractMiddlewareDefTags);
+    }
+
     // phpcs:enable
 
     /** @param list<string> $bundles */
