@@ -20,5 +20,5 @@ schema management and PDO abstraction.
 
 ## Documentation
 
-The documentation is rendered on [the symfony.com website](http://symfony.com/doc/master/bundles/DoctrineBundle/index.html).
+The documentation is rendered on [the symfony.com website](https://symfony.com/doc/current/reference/configuration/doctrine.html).
 The source of the documentation is available in the Resources/docs folder.
