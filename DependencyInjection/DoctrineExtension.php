@@ -361,8 +361,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         foreach (['shards', 'replica', 'slaves'] as $connectionKey) {
-            foreach (array_keys($options[$connectionKey]) as $name) {
-                $driverOptions       = $options[$connectionKey][$name]['driverOptions'] ?? [];
+            foreach ($options[$connectionKey] as $name => $value) {
+                $driverOptions       = $value['driverOptions'] ?? [];
                 $parentDriverOptions = $options['driverOptions'] ?? [];
                 if ($driverOptions === [] && $parentDriverOptions === []) {
                     continue;
