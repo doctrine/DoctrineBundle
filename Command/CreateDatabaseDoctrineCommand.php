@@ -52,22 +52,15 @@ EOT
 
         $ifNotExists = $input->getOption('if-not-exists');
 
-        $driverOptions = [];
-        $params        = $connection->getParams();
-
-        if (isset($params['driverOptions'])) {
-            $driverOptions = $params['driverOptions'];
-        }
+        $params = $connection->getParams();
 
         // Since doctrine/dbal 2.11 master has been replaced by primary
         if (isset($params['primary'])) {
-            $params                  = $params['primary'];
-            $params['driverOptions'] = $driverOptions;
+            $params = $params['primary'];
         }
 
         if (isset($params['master'])) {
-            $params                  = $params['master'];
-            $params['driverOptions'] = $driverOptions;
+            $params = $params['master'];
         }
 
         // Cannot inject `shard` option in parent::getDoctrineConnection
