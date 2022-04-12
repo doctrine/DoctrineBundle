@@ -360,10 +360,21 @@ class DoctrineExtension extends AbstractDoctrineExtension
             throw new InvalidArgumentException('Sharding and master-slave connection cannot be used together');
         }
 
+        foreach (['shards', 'replica', 'slaves'] as $connectionKey) {
+            foreach ($options[$connectionKey] as $name => $value) {
+                $driverOptions       = $value['driverOptions'] ?? [];
+                $parentDriverOptions = $options['driverOptions'] ?? [];
+                if ($driverOptions === [] && $parentDriverOptions === []) {
+                    continue;
+                }
+
+                $options[$connectionKey][$name]['driverOptions'] = $driverOptions + $parentDriverOptions;
+            }
+        }
+
         if (! empty($options['slaves']) || ! empty($options['replica'])) {
             $nonRewrittenKeys = [
                 'driver' => true,
-                'driverOptions' => true,
                 'driverClass' => true,
                 'wrapperClass' => true,
                 'keepSlave' => true,
