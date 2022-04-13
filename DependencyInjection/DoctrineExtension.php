@@ -357,7 +357,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         if (! empty($options['slaves']) && ! empty($options['replica']) && ! empty($options['shards'])) {
-            throw new InvalidArgumentException('Sharding and master-slave connection cannot be used together');
+            throw new InvalidArgumentException('Sharding and primary-replica connection cannot be used together');
         }
 
         foreach (['shards', 'replica', 'slaves'] as $connectionKey) {
@@ -382,7 +382,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'shardChoser' => true,
                 'platform' => true,
                 'slaves' => true,
-                'master' => true,
                 'primary' => true,
                 'replica' => true,
                 'shards' => true,
