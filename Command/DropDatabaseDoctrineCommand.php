@@ -65,13 +65,8 @@ EOT
 
         $params = $connection->getParams();
 
-        // Since doctrine/dbal 2.11 master has been replaced by primary
         if (isset($params['primary'])) {
             $params = $params['primary'];
-        }
-
-        if (isset($params['master'])) {
-            $params = $params['master'];
         }
 
         if (isset($params['shards'])) {

@@ -185,9 +185,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('_test', $config['dbname_suffix']);
     }
 
-    public function testDbalLoadSingleMasterSlaveConnection(): void
+    public function testDbalLoadSinglePrimaryReplicaConnection(): void
     {
-        $container = $this->loadContainer('dbal_service_single_master_slave_connection');
+        $container = $this->loadContainer('dbal_service_single_primary_replica_connection');
         $param     = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
         $this->assertEquals(PrimaryReadReplicaConnection::class, $param['wrapperClass']);
@@ -202,7 +202,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'unix_socket' => '/path/to/mysqld.sock',
                 'driverOptions' => [PDO::ATTR_STRINGIFY_FETCHES => 1],
             ],
-            $param['primary'] ?? $param['master'] // TODO: Remove 'master' support here when we require dbal >= 2.11
+            $param['primary']
         );
         $this->assertEquals(
             [
