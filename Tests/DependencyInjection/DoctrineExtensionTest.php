@@ -1079,6 +1079,7 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
+    /** @group legacy */
     public function testShardManager(): void
     {
         $container    = $this->getContainer();

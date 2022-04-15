@@ -65,6 +65,7 @@ use function method_exists;
 use function reset;
 use function sprintf;
 use function str_replace;
+use function trigger_deprecation;
 
 use const PHP_VERSION_ID;
 
@@ -277,6 +278,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         // Create a shard_manager for this connection
         if (isset($options['shards'])) {
+            trigger_deprecation(
+                'doctrine/doctrine-bundle',
+                '2.7',
+                'Using shards for connection "%s" is deprecated. DBAL 3 does not support shards anymore.',
+                $name
+            );
             $shardManagerDefinition = new Definition($options['shardManagerClass'], [new Reference($connectionId)]);
             $container->setDefinition(sprintf('doctrine.dbal.%s_shard_manager', $name), $shardManagerDefinition);
         }

@@ -12,6 +12,7 @@ use Throwable;
 use function array_merge;
 use function in_array;
 use function sprintf;
+use function trigger_deprecation;
 
 /**
  * Database tool allows you to easily drop your configured databases.
@@ -86,6 +87,13 @@ EOT
             // Default select global
             $params = array_merge($params, $params['global'] ?? []);
             if ($input->getOption('shard')) {
+                trigger_deprecation(
+                    'doctrine/doctrine-bundle',
+                    '2.7',
+                    'Passing a "shard" option for "%s" is deprecated. DBAL 3 does not support shards anymore.',
+                    self::class
+                );
+
                 foreach ($shards as $shard) {
                     if ($shard['id'] === (int) $input->getOption('shard')) {
                         // Select sharded database
