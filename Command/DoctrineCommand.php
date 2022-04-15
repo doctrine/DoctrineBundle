@@ -12,6 +12,7 @@ use LogicException;
 use Symfony\Component\Console\Command\Command;
 
 use function sprintf;
+use function trigger_deprecation;
 
 /**
  * Base class for Doctrine console commands to extend from.
@@ -61,6 +62,13 @@ abstract class DoctrineCommand extends Command
         $manager = $this->getDoctrine()->getManager($name);
 
         if ($shardId) {
+            trigger_deprecation(
+                'doctrine/doctrine-bundle',
+                '2.7',
+                'Passing a "shardId" argument to "%s" is deprecated. DBAL 3 does not support shards anymore.',
+                __METHOD__
+            );
+
             if (! $manager instanceof EntityManagerInterface) {
                 throw new LogicException(sprintf('Sharding is supported only in EntityManager of instance "%s".', EntityManagerInterface::class));
             }

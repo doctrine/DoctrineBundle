@@ -20,6 +20,7 @@ use function is_dir;
 use function mkdir;
 use function sprintf;
 use function str_replace;
+use function trigger_deprecation;
 
 /**
  * Import Doctrine ORM metadata mapping information from an existing database.
@@ -118,6 +119,15 @@ EOT
         if ($type === 'annotation') {
             $entityGenerator = $this->getEntityGenerator();
             $exporter->setEntityGenerator($entityGenerator);
+        }
+
+        if ($input->getOption('shard')) {
+            trigger_deprecation(
+                'doctrine/doctrine-bundle',
+                '2.7',
+                'Passing a "shard" option for "%s" is deprecated. DBAL 3 does not support shards anymore.',
+                self::class
+            );
         }
 
         $em = $this->getEntityManager($input->getOption('em'), $input->getOption('shard'));

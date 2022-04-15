@@ -54,7 +54,10 @@ class CreateDatabaseDoctrineTest extends TestCase
         );
     }
 
-    /** @dataProvider provideShardOption */
+    /**
+     * @group legacy
+     * @dataProvider provideShardOption
+     */
     public function testExecuteWithShardAlias(string $shardOption): void
     {
         $connectionName = 'default';

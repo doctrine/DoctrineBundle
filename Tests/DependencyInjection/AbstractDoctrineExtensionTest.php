@@ -216,6 +216,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
 
+    /** @group legacy */
     public function testDbalLoadPoolShardingConnection(): void
     {
         $container = $this->loadContainer('dbal_service_pool_sharding_connection');
