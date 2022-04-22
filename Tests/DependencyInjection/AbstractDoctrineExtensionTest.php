@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use InvalidArgumentException;
+use PDO;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator;
@@ -184,9 +185,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('_test', $config['dbname_suffix']);
     }
 
-    public function testDbalLoadSingleMasterSlaveConnection(): void
+    public function testDbalLoadSinglePrimaryReplicaConnection(): void
     {
-        $container = $this->loadContainer('dbal_service_single_master_slave_connection');
+        $container = $this->loadContainer('dbal_service_single_primary_replica_connection');
         $param     = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 
         $this->assertEquals(PrimaryReadReplicaConnection::class, $param['wrapperClass']);
@@ -199,8 +200,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'mysql_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
+                'driverOptions' => [PDO::ATTR_STRINGIFY_FETCHES => 1],
             ],
-            $param['primary'] ?? $param['master'] // TODO: Remove 'master' support here when we require dbal >= 2.11
+            $param['primary']
         );
         $this->assertEquals(
             [
@@ -210,6 +212,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'replica_db',
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld_replica.sock',
+                'driverOptions' => [PDO::ATTR_STRINGIFY_FETCHES => 1],
             ],
             $param['replica']['replica1']
         );

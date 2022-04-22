@@ -10,6 +10,7 @@
         <dbal dbname="mysql_db" user="mysql_user" password="mysql_s3cr3t" unix-socket="/path/to/mysqld.sock" keep-replica="true">
             <replica name="replica1" dbname="replica_db" user="replica_user" password="replica_s3cr3t" unix-socket="/path/to/mysqld_replica.sock" />
             <default-table-option name="engine">InnoDB</default-table-option>
+            <option key="17" value="1" />
         </dbal>
     </config>
 </srv:container>
