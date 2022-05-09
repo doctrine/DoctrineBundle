@@ -758,6 +758,7 @@ the ORM resolves to:
             metadata_cache_driver: ~
             query_cache_driver: ~
             result_cache_driver: ~
+            naming_strategy: doctrine.orm.naming_strategy.default
 
 There are lots of other configuration options that you can use to overwrite
 certain classes, but those are for very advanced use-cases only.
