@@ -4,6 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\InfoDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand;
+use Doctrine\Bundle\DoctrineBundle\Orm\ManagerRegistryAwareEntityManagerProvider;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKernel;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
@@ -87,5 +88,6 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(DoctrineExtractor::class, $container->get('doctrine.orm.default_entity_manager.property_info_extractor'));
 
         $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
+        $this->assertInstanceOf(ManagerRegistryAwareEntityManagerProvider::class, $container->get('doctrine.orm.command.entity_manager_provider'));
     }
 }
