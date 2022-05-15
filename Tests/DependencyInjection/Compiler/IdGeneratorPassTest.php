@@ -54,7 +54,7 @@ class IdGeneratorPassTest extends TestCase
 
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
-        $extension->load(['framework' => []], $container);
+        $extension->load(['framework' => ['http_method_override' => false]], $container);
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
