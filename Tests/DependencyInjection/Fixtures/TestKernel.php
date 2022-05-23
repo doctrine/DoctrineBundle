@@ -36,7 +36,7 @@ class TestKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $loader->load(static function (ContainerBuilder $container): void {
-            $container->loadFromExtension('framework', ['secret' => 'F00']);
+            $container->loadFromExtension('framework', ['secret' => 'F00', 'http_method_override' => false]);
 
             $container->loadFromExtension('doctrine', [
                 'dbal' => ['driver' => 'pdo_sqlite'],

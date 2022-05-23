@@ -43,7 +43,7 @@ class DbalTestKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $loader->load(function (ContainerBuilder $container): void {
-            $container->loadFromExtension('framework', ['secret' => 'F00']);
+            $container->loadFromExtension('framework', ['secret' => 'F00', 'http_method_override' => false]);
 
             $container->loadFromExtension('doctrine', [
                 'dbal' => $this->dbalConfig,

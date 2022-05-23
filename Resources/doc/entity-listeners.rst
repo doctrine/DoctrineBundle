@@ -11,7 +11,7 @@ Full example:
 
 .. configuration-block::
 
-    .. code-block:: annotation
+    .. code-block:: php-annotations
 
         <?php
         // User.php
@@ -28,7 +28,7 @@ Full example:
             // ....
         }
     
-    .. code-block:: attribute
+    .. code-block:: php-attributes
 
         <?php
         // User.php
@@ -54,6 +54,7 @@ Full example:
                     - { name: doctrine.orm.entity_listener }
                     # Or, optionally, you can give the entity manager name as below
                     #- { name: doctrine.orm.entity_listener, entity_manager: custom }
+
     .. code-block:: xml
 
         <?xml version="1.0" ?>
@@ -88,6 +89,7 @@ definition:
                         entity_manager: custom
                         # method attribute is optional
                         method: validateEmail
+
     .. code-block:: xml
 
         <?xml version="1.0" ?>
@@ -118,7 +120,6 @@ back on the ``__invoke()`` method.
 See also
 https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#entity-listeners
 for more info on entity listeners and the resolver required by Symfony.
-
 
 Lazy Entity Listeners
 ---------------------

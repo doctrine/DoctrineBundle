@@ -53,6 +53,7 @@ class CacheSchemaSubscriberTest extends TestCase
         $container->registerExtension($extension);
         $extension->load([
             'framework' => [
+                'http_method_override' => false,
                 'cache' => [
                     'pools' => [
                         'my_cache_adapter' => ['adapter' => $adapterId],
