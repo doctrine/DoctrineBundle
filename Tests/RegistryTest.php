@@ -143,6 +143,10 @@ class RegistryTest extends TestCase
         $noProxyManager->expects($this->once())
             ->method('clear');
 
+        $ghostProxyManager = $this->getMockBuilder(GhostObjectEntityManagerInterface::class)->getMock();
+        $ghostProxyManager->expects($this->once())
+            ->method('clear');
+
         $proxyManager = $this->createMock(LazyLoadingEntityManagerInterface::class);
         $proxyManager->expects($this->once())
             ->method('setProxyInitializer')
@@ -151,17 +155,18 @@ class RegistryTest extends TestCase
         $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
         $container->expects($this->any())
             ->method('initialized')
-            ->withConsecutive(['doctrine.orm.uninitialized_entity_manager'], ['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
-            ->willReturnOnConsecutiveCalls(false, true, true, true);
+            ->withConsecutive(['doctrine.orm.uninitialized_entity_manager'], ['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.ghost_proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
+            ->willReturnOnConsecutiveCalls(false, true, true, true, true);
 
         $container->expects($this->any())
             ->method('get')
-            ->withConsecutive(['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
-            ->willReturnOnConsecutiveCalls($noProxyManager, $proxyManager, $proxyManager, $proxyManager);
+            ->withConsecutive(['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.ghost_proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
+            ->willReturnOnConsecutiveCalls($noProxyManager, $ghostProxyManager, $proxyManager, $proxyManager, $proxyManager);
 
         $entityManagers = [
             'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
             'noproxy' => 'doctrine.orm.noproxy_entity_manager',
+            'ghost_proxy' => 'doctrine.orm.ghost_proxy_entity_manager',
             'proxy' => 'doctrine.orm.proxy_entity_manager',
         ];
 
