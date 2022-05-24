@@ -509,6 +509,9 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_result_cache'));
         $this->assertSame(ArrayAdapter::class, $definition->getClass());
+
+        $definition = $container->getDefinition('doctrine.orm.entity_manager.abstract');
+        $this->assertSame([['interface' => '%doctrine.orm.entity_manager.class%']], $definition->getTag('proxy'));
     }
 
     public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection(): void

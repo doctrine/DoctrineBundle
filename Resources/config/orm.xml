@@ -100,6 +100,7 @@
 
         <service id="doctrine.orm.entity_manager.abstract" class="%doctrine.orm.entity_manager.class%" abstract="true" lazy="true">
             <factory class="%doctrine.orm.entity_manager.class%" method="create" />
+            <tag name="proxy" interface="%doctrine.orm.entity_manager.class%" />
         </service>
 
         <service id="doctrine.orm.container_repository_factory" class="Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory" public="false">
