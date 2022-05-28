@@ -9,8 +9,13 @@ on:
     branches:
       - "*.x"
 
+permissions:
+  contents: read
+
 jobs:
   coding-standards:
+    permissions:
+      contents: none
     name: "Coding Standards"
     uses: "doctrine/.github/.github/workflows/coding-standards.yml@1.4.1"
     with:

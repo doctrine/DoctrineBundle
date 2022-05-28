@@ -5,8 +5,13 @@ on:
     types:
       - "closed"
 
+permissions:
+  contents: read
+
 jobs:
   release:
+    permissions:
+      contents: none
     name: "Git tag, release & create merge-up PR"
     uses: "doctrine/.github/.github/workflows/release-on-milestone-closed.yml@1.4.1"
     secrets:

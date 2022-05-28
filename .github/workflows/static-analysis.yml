@@ -9,6 +9,9 @@ on:
     branches:
       - "*.x"
 
+permissions:
+  contents: read
+
 jobs:
   static-analysis-psalm:
     name: "Static Analysis with Psalm"

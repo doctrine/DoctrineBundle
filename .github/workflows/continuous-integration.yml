@@ -9,6 +9,9 @@ on:
     branches:
       - "*.x"
 
+permissions:
+  contents: read
+
 jobs:
   phpunit:
     name: "PHPUnit"
