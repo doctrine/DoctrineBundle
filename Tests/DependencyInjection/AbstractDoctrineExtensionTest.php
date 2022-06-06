@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\Controller\ProfilerController;
 use Doctrine\Bundle\DoctrineBundle\Dbal\BlacklistSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
@@ -454,6 +455,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         }
 
         $container = $this->loadContainer('dbal_logging');
+
+        $this->assertTrue($container->hasDefinition(ProfilerController::class), 'ProfilerController should be available even when not using the ORM.');
 
         $definition = $container->getDefinition('doctrine.dbal.log_connection.configuration');
         $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger')]);
