@@ -233,13 +233,5 @@
 
             <tag name="console.command" command="doctrine:mapping:import" />
         </service>
-
-        <service id="Doctrine\Bundle\DoctrineBundle\Controller\ProfilerController">
-            <argument type="service" id="twig" />
-            <argument type="service" id="doctrine" />
-            <argument type="service" id="profiler" />
-
-            <tag name="controller.service_arguments" />
-        </service>
     </services>
 </container>
