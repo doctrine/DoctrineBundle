@@ -42,7 +42,7 @@
     },
     "require-dev": {
         "doctrine/coding-standard": "^9.0",
-        "doctrine/orm": "^2.10 || ^3.0",
+        "doctrine/orm": "^2.11 || ^3.0",
         "friendsofphp/proxy-manager-lts": "^1.0",
         "phpunit/phpunit": "^7.5 || ^8.0 || ^9.3 || ^10.0",
         "psalm/plugin-phpunit": "^0.16.1",

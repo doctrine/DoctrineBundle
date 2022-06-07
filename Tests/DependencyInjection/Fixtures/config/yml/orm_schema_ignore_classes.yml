@@ -1,0 +1,10 @@
+doctrine:
+    dbal:
+        default_connection: default
+
+    orm:
+        entity_managers:
+            em1:
+                schema_ignore_classes:
+                    - Class\A
+                    - Class\B
