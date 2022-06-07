@@ -396,6 +396,10 @@ Configuration Reference
                                     # example
                                     foo_param:              bar_value
 
+                        schema_ignore_classes:
+                            - Acme\AppBundle\Entity\Order
+                            - Acme\AppBundle\Entity\PhoneNumber
+
                 # Search for the "ResolveTargetEntityListener" class for a cookbook about this
                 resolve_target_entities:
 
@@ -729,6 +733,8 @@ Configuration Reference
 
                         </doctrine:filter>
 
+                        <doctrine:schema-ignore-class>Acme\AppBundle\Entity\Order</doctrine:resolve-target-entity>
+                        <doctrine:schema-ignore-class>Acme\AppBundle\Entity\PhoneNumber</doctrine:resolve-target-entity>
                     </doctrine:entity-manager>
 
                     <!-- example -->

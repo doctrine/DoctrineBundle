@@ -212,6 +212,7 @@
             <xsd:element name="filter" type="filter" minOccurs="0" maxOccurs="unbounded" />
             <xsd:element name="entity-listeners" type="entity_listeners" minOccurs="0" maxOccurs="1" />
             <xsd:element name="second-level-cache" type="second-level-cache" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="schema-ignore-class" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
         </xsd:choice>
     </xsd:group>
 

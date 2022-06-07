@@ -643,6 +643,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setProxyDir' => '%doctrine.orm.proxy_dir%',
             'setProxyNamespace' => '%doctrine.orm.proxy_namespace%',
             'setAutoGenerateProxyClasses' => '%doctrine.orm.auto_generate_proxy_classes%',
+            'setSchemaIgnoreClasses' => $entityManager['schema_ignore_classes'],
             'setClassMetadataFactoryName' => $entityManager['class_metadata_factory_name'],
             'setDefaultRepositoryClassName' => $entityManager['default_repository_class'],
             'setNamingStrategy' => new Reference($entityManager['naming_strategy']),
