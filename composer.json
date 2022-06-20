@@ -67,7 +67,7 @@
         }
     },
     "conflict": {
-        "doctrine/orm": "<2.10|>=3.0",
+        "doctrine/orm": "<2.11|>=3.0",
         "twig/twig": "<1.34|>=2.0,<2.4"
     },
     "suggest": {
