@@ -1,11 +1,14 @@
 {
     "name": "doctrine/doctrine-bundle",
-    "type": "symfony-bundle",
     "description": "Symfony DoctrineBundle",
-    "keywords": ["DBAL", "ORM", "Database", "Persistence"],
-    "homepage": "https://www.doctrine-project.org",
     "license": "MIT",
-    "minimum-stability": "dev",
+    "type": "symfony-bundle",
+    "keywords": [
+        "DBAL",
+        "ORM",
+        "Database",
+        "Persistence"
+    ],
     "authors": [
         {
             "name": "Fabien Potencier",
@@ -24,21 +27,22 @@
             "homepage": "https://www.doctrine-project.org/"
         }
     ],
+    "homepage": "https://www.doctrine-project.org",
     "require": {
         "php": "^7.1 || ^8.0",
         "doctrine/annotations": "^1",
         "doctrine/cache": "^1.11 || ^2.0",
-        "doctrine/dbal": "^2.13.1|^3.3.2",
-        "doctrine/persistence": "^2.2|^3",
+        "doctrine/dbal": "^2.13.1 || ^3.3.2",
+        "doctrine/persistence": "^2.2 || ^3",
         "doctrine/sql-formatter": "^1.0.1",
-        "symfony/cache": "^4.3.3|^5.0|^6.0",
-        "symfony/config": "^4.4.3|^5.0|^6.0",
-        "symfony/console": "^3.4.30|^4.3.3|^5.0|^6.0",
-        "symfony/dependency-injection": "^4.4.18|^5.0|^6.0",
-        "symfony/deprecation-contracts": "^2.1|^3",
-        "symfony/doctrine-bridge": "^4.4.22|^5.2.7|^6.0",
-        "symfony/framework-bundle": "^3.4.30|^4.3.3|^5.0|^6.0",
-        "symfony/service-contracts": "^1.1.1|^2.0|^3"
+        "symfony/cache": "^4.3.3 || ^5.0 || ^6.0",
+        "symfony/config": "^4.4.3 || ^5.0 || ^6.0",
+        "symfony/console": "^3.4.30 || ^4.3.3 || ^5.0 || ^6.0",
+        "symfony/dependency-injection": "^4.4.18 || ^5.0 || ^6.0",
+        "symfony/deprecation-contracts": "^2.1 || ^3",
+        "symfony/doctrine-bridge": "^4.4.22 || ^5.2.7 || ^6.0",
+        "symfony/framework-bundle": "^3.4.30 || ^4.3.3 || ^5.0 || ^6.0",
+        "symfony/service-contracts": "^1.1.1 || ^2.0 || ^3"
     },
     "require-dev": {
         "doctrine/coding-standard": "^9.0",
@@ -47,38 +51,43 @@
         "phpunit/phpunit": "^7.5 || ^8.0 || ^9.3 || ^10.0",
         "psalm/plugin-phpunit": "^0.16.1",
         "psalm/plugin-symfony": "^3",
-        "psr/log": "^1.1.4|^2.0|^3.0",
-        "symfony/phpunit-bridge": "^5.2|^6.0",
-        "symfony/property-info": "^4.3.3|^5.0|^6.0",
-        "symfony/proxy-manager-bridge": "^3.4|^4.3.3|^5.0|^6.0",
-        "symfony/security-bundle": "^4.4|^5.0|^6.0",
-        "symfony/twig-bridge": "^3.4.30|^4.3.3|^5.0|^6.0",
-        "symfony/validator": "^3.4.30|^4.3.3|^5.0|^6.0",
-        "symfony/web-profiler-bundle": "^3.4.30|^4.3.3|^5.0|^6.0",
-        "symfony/yaml": "^3.4.30|^4.3.3|^5.0|^6.0",
-        "twig/twig": "^1.34|^2.12|^3.0",
+        "psr/log": "^1.1.4 || ^2.0 || ^3.0",
+        "symfony/phpunit-bridge": "^5.2 || ^6.0",
+        "symfony/property-info": "^4.3.3 || ^5.0 || ^6.0",
+        "symfony/proxy-manager-bridge": "^3.4 || ^4.3.3 || ^5.0 || ^6.0",
+        "symfony/security-bundle": "^4.4 || ^5.0 || ^6.0",
+        "symfony/twig-bridge": "^3.4.30 || ^4.3.3 || ^5.0 || ^6.0",
+        "symfony/validator": "^3.4.30 || ^4.3.3 || ^5.0 || ^6.0",
+        "symfony/web-profiler-bundle": "^3.4.30 || ^4.3.3 || ^5.0 || ^6.0",
+        "symfony/yaml": "^3.4.30 || ^4.3.3 || ^5.0 || ^6.0",
+        "twig/twig": "^1.34 || ^2.12 || ^3.0",
         "vimeo/psalm": "^4.7"
     },
+    "conflict": {
+        "doctrine/orm": "<2.11 || >=3.0",
+        "twig/twig": "<1.34 || >=2.0,<2.4"
+    },
+    "suggest": {
+        "ext-pdo": "*",
+        "doctrine/orm": "The Doctrine ORM integration is optional in the bundle.",
+        "symfony/web-profiler-bundle": "To use the data collector."
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Doctrine\\Bundle\\DoctrineBundle\\": ""
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "": "Tests/DependencyInjection"
+        }
+    },
     "config": {
-        "sort-packages": true,
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
             "dealerdirect/phpcodesniffer-composer-installer": true
-        }
-    },
-    "conflict": {
-        "doctrine/orm": "<2.11|>=3.0",
-        "twig/twig": "<1.34|>=2.0,<2.4"
-    },
-    "suggest": {
-        "doctrine/orm": "The Doctrine ORM integration is optional in the bundle.",
-        "ext-pdo": "*",
-        "symfony/web-profiler-bundle": "To use the data collector."
-    },
-    "autoload": {
-        "psr-4": { "Doctrine\\Bundle\\DoctrineBundle\\": "" }
-    },
-    "autoload-dev": {
-        "psr-4": { "": "Tests/DependencyInjection" }
+        },
+        "sort-packages": true
     }
 }
