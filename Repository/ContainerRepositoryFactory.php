@@ -34,6 +34,8 @@ final class ContainerRepositoryFactory implements RepositoryFactory
 
     /**
      * {@inheritdoc}
+     *
+     * @template T of object
      */
     public function getRepository(EntityManagerInterface $entityManager, $entityName): ObjectRepository
     {
@@ -50,6 +52,7 @@ final class ContainerRepositoryFactory implements RepositoryFactory
                     throw new RuntimeException(sprintf('The service "%s" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).', $repositoryServiceId));
                 }
 
+                /** @psalm-var ObjectRepository<T> */
                 return $repository;
             }
 
@@ -81,6 +84,7 @@ final class ContainerRepositoryFactory implements RepositoryFactory
     ): ObjectRepository {
         $repositoryHash = $metadata->getName() . spl_object_hash($entityManager);
         if (isset($this->managedRepositories[$repositoryHash])) {
+            /** @psalm-var ObjectRepository<TEntity> */
             return $this->managedRepositories[$repositoryHash];
         }
 
