@@ -8,7 +8,7 @@ doctrine:
         default_table_options:
             engine: InnoDB
         options:
-            !php/const:PDO::ATTR_STRINGIFY_FETCHES: 1
+            !php/const PDO::ATTR_STRINGIFY_FETCHES: 1
         replicas:
             replica1:
                 user: replica_user
