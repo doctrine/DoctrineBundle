@@ -55,7 +55,7 @@ jobs:
           # Test last supported minor version
           - symfony-require: "6.*"
             dependencies: "highest"
-            php-version: "8.0"
+            php-version: "8.1"
             symfony-deprecations-helper: "weak"
 
           # Bleeding edge
