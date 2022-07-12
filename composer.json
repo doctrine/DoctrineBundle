@@ -86,7 +86,8 @@
     "config": {
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "symfony/flex": true
         },
         "sort-packages": true
     }
