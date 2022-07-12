@@ -13,6 +13,7 @@ use InvalidArgumentException;
 use ProxyManager\Proxy\ProxyInterface;
 use stdClass;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\VarExporter\LazyGhostObjectInterface;
 
 use function assert;
 use function interface_exists;
@@ -169,6 +170,37 @@ class RegistryTest extends TestCase
         $registry->reset();
     }
 
+    public function testResetGhostObject(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class) || ! interface_exists(LazyGhostObjectInterface::class)) {
+            self::markTestSkipped('This test requires ORM and VarExporter 6.2+');
+        }
+
+        $ghostManager = $this->createMock(LazyGhostObjectEntityManagerInterface::class);
+        $ghostManager->expects($this->once())
+             ->method('resetLazyGhostObject')
+             ->willReturn(true);
+
+        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
+        $container->expects($this->any())
+            ->method('initialized')
+            ->withConsecutive(['doctrine.orm.uninitialized_entity_manager'], ['doctrine.orm.ghost_entity_manager'])
+            ->willReturnOnConsecutiveCalls(false, true, true);
+
+        $container->expects($this->any())
+            ->method('get')
+            ->withConsecutive(['doctrine.orm.ghost_entity_manager'], ['doctrine.orm.ghost_entity_manager'], ['doctrine.orm.ghost_entity_manager'])
+            ->willReturnOnConsecutiveCalls($ghostManager, $ghostManager, $ghostManager);
+
+        $entityManagers = [
+            'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
+            'ghost' => 'doctrine.orm.ghost_entity_manager',
+        ];
+
+        $registry = new Registry($container, [], $entityManagers, 'default', 'default');
+        $registry->reset();
+    }
+
     public function testIdentityMapsStayConsistentAfterReset(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -183,7 +215,7 @@ class RegistryTest extends TestCase
         $entityManager = $container->get('doctrine.orm.default_entity_manager');
         $repository    = $entityManager->getRepository(TestCustomClassRepoEntity::class);
 
-        $this->assertInstanceOf(ProxyInterface::class, $entityManager);
+        $this->assertInstanceOf(interface_exists(LazyGhostObjectInterface::class) ? LazyGhostObjectInterface::class : ProxyInterface::class, $entityManager);
         assert($entityManager instanceof EntityManagerInterface);
         assert($registry instanceof Registry);
         assert($repository instanceof TestCustomClassRepoRepository);
