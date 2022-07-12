@@ -1095,8 +1095,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             $connConfig = $getConfiguration($connectionName);
             $this->assertSame($expectedTables, array_values(array_filter($assetNames, $connConfig->getSchemaAssetsFilter())), sprintf('Filtering for connection "%s"', $connectionName));
         }
-
-        $this->assertNull($connConfig = $getConfiguration('connection3')->getSchemaAssetsFilter());
     }
 
     public static function dataWellKnownSchemaFilterServices(): Generator
