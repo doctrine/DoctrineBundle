@@ -176,19 +176,16 @@ class RegistryTest extends TestCase
             self::markTestSkipped('This test requires ORM and VarExporter 6.2+');
         }
 
+        /** @psalm-suppress MissingDependency https://github.com/vimeo/psalm/issues/8258 */
         $ghostManager = $this->createMock(LazyGhostObjectEntityManagerInterface::class);
-        $ghostManager->expects($this->once())
-             ->method('resetLazyGhostObject')
-             ->willReturn(true);
+        /** @psalm-suppress MissingDependency https://github.com/vimeo/psalm/issues/8258 */
+        $ghostManager->expects($this->once())->method('resetLazyGhostObject')->willReturn(true);
 
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $container->expects($this->any())
-            ->method('initialized')
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('initialized')
             ->withConsecutive(['doctrine.orm.uninitialized_entity_manager'], ['doctrine.orm.ghost_entity_manager'])
             ->willReturnOnConsecutiveCalls(false, true, true);
-
-        $container->expects($this->any())
-            ->method('get')
+        $container->method('get')
             ->withConsecutive(['doctrine.orm.ghost_entity_manager'], ['doctrine.orm.ghost_entity_manager'], ['doctrine.orm.ghost_entity_manager'])
             ->willReturnOnConsecutiveCalls($ghostManager, $ghostManager, $ghostManager);
 
@@ -197,8 +194,7 @@ class RegistryTest extends TestCase
             'ghost' => 'doctrine.orm.ghost_entity_manager',
         ];
 
-        $registry = new Registry($container, [], $entityManagers, 'default', 'default');
-        $registry->reset();
+        (new Registry($container, [], $entityManagers, 'default', 'default'))->reset();
     }
 
     public function testIdentityMapsStayConsistentAfterReset(): void
