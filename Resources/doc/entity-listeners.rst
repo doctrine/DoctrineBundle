@@ -112,7 +112,9 @@ definition:
             </services>
         </container>
 
-If you don't specify the ``method`` attribute, it falls back on the subscribed event name.
+The ``event`` attribute is required if the entity listener is not registered on
+the entity. If you don't specify the ``method`` attribute, it falls back on the
+subscribed event name.
 
 Starting with Doctrine bundle 1.12, if this method does not exist but if your entity listener is invokable, it falls
 back on the ``__invoke()`` method.
