@@ -34,7 +34,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: "Install PHP with PCOV"
+      - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
           php-version: "${{ matrix.php-version }}"
@@ -42,7 +42,7 @@ jobs:
           extensions: "pdo_sqlite"
 
       - name: "Globally install symfony/flex"
-        run: "composer global require --no-progress --no-scripts --no-plugins symfony/flex"
+        run: "composer require --no-progress --no-scripts --no-plugins symfony/flex"
 
       - name: "Require symfony/messenger"
         run: "composer require --dev symfony/messenger --no-update"
