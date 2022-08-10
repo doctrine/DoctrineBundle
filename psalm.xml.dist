@@ -43,7 +43,7 @@
             <errorLevel type="suppress">
                 <!-- We use the "Foo" namespace in unit tests. We are aware that those classes don't exist. -->
                 <referencedClass name="Foo\*"/>
-                <referencedClass name="Symfony\Component\VarExporter\LazyGhostObjectInterface"/>
+                <referencedClass name="Symfony\Component\VarExporter\LazyObjectInterface"/>
             </errorLevel>
         </UndefinedClass>
         <UndefinedDocblockClass>

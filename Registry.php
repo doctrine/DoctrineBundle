@@ -8,7 +8,7 @@ use Doctrine\ORM\Proxy\Proxy;
 use ProxyManager\Proxy\LazyLoadingInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
-use Symfony\Component\VarExporter\LazyGhostObjectInterface;
+use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
 use function array_keys;
@@ -76,7 +76,7 @@ class Registry extends ManagerRegistry implements ResetInterface
 
         assert($manager instanceof EntityManagerInterface);
 
-        if ((! $manager instanceof LazyLoadingInterface && ! $manager instanceof LazyGhostObjectInterface) || $manager->isOpen()) {
+        if ((! $manager instanceof LazyLoadingInterface && ! $manager instanceof LazyObjectInterface) || $manager->isOpen()) {
             $manager->clear();
 
             return;

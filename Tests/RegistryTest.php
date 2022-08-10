@@ -13,7 +13,7 @@ use InvalidArgumentException;
 use ProxyManager\Proxy\ProxyInterface;
 use stdClass;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\VarExporter\LazyGhostObjectInterface;
+use Symfony\Component\VarExporter\LazyObjectInterface;
 
 use function assert;
 use function interface_exists;
@@ -170,16 +170,16 @@ class RegistryTest extends TestCase
         $registry->reset();
     }
 
-    public function testResetGhostObject(): void
+    public function testResetLazyObject(): void
     {
-        if (! interface_exists(EntityManagerInterface::class) || ! interface_exists(LazyGhostObjectInterface::class)) {
+        if (! interface_exists(EntityManagerInterface::class) || ! interface_exists(LazyObjectInterface::class)) {
             self::markTestSkipped('This test requires ORM and VarExporter 6.2+');
         }
 
         /** @psalm-suppress MissingDependency https://github.com/vimeo/psalm/issues/8258 */
-        $ghostManager = $this->createMock(LazyGhostObjectEntityManagerInterface::class);
+        $ghostManager = $this->createMock(LazyObjectEntityManagerInterface::class);
         /** @psalm-suppress MissingDependency https://github.com/vimeo/psalm/issues/8258 */
-        $ghostManager->expects($this->once())->method('resetLazyGhostObject')->willReturn(true);
+        $ghostManager->expects($this->once())->method('resetLazyObject')->willReturn(true);
 
         $container = $this->createMock(ContainerInterface::class);
         $container->method('initialized')
@@ -211,7 +211,7 @@ class RegistryTest extends TestCase
         $entityManager = $container->get('doctrine.orm.default_entity_manager');
         $repository    = $entityManager->getRepository(TestCustomClassRepoEntity::class);
 
-        $this->assertInstanceOf(interface_exists(LazyGhostObjectInterface::class) ? LazyGhostObjectInterface::class : ProxyInterface::class, $entityManager);
+        $this->assertInstanceOf(interface_exists(LazyObjectInterface::class) ? LazyObjectInterface::class : ProxyInterface::class, $entityManager);
         assert($entityManager instanceof EntityManagerInterface);
         assert($registry instanceof Registry);
         assert($repository instanceof TestCustomClassRepoRepository);
