@@ -39,6 +39,7 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Middleware as SfDebugMiddleware;
@@ -1562,6 +1563,34 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
         $abstractMiddlewareDefTags = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
         $this->assertArrayNotHasKey('doctrine.middleware', $abstractMiddlewareDefTags);
+    }
+
+    /**
+     * @requires function \Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver::__construct
+     */
+    public function testControllerResolver(): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+        $config    = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+        $extension->load([$config], $container);
+
+        $controllerResolver = $container->getDefinition('doctrine.orm.entity_value_resolver');
+
+        $this->assertEquals([new Reference('doctrine'), new Reference('doctrine.orm.entity_value_resolver.expression_language', $container::IGNORE_ON_INVALID_REFERENCE)], $controllerResolver->getArguments());
+
+        $container = $this->getContainer();
+
+        $config['orm']['controller_resolver'] = [
+            'enabled' => false,
+            'auto_mapping' => false,
+            'evict_cache' => true,
+        ];
+        $extension->load([$config], $container);
+
+        $container->setDefinition('controller_resolver_defaults', $container->getDefinition('doctrine.orm.entity_value_resolver')->getArgument(2))->setPublic(true);
+        $container->compile();
+        $this->assertEquals(new MapEntity(null, null, null, [], null, null, null, true, true), $container->get('controller_resolver_defaults'));
     }
 
     // phpcs:enable
