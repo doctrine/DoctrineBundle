@@ -532,7 +532,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         // available in Symfony 6.2 and higher
         if (! class_exists(EntityValueResolver::class)) {
-            $container->removeDefinition('doctrine.orm.entity_value_resolvers');
+            $container->removeDefinition('doctrine.orm.entity_value_resolver');
             $container->removeDefinition('doctrine.orm.entity_value_resolver.expression_language');
         } else {
             if (! class_exists(ExpressionLanguage::class)) {
