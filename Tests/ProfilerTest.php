@@ -13,7 +13,9 @@ use Symfony\Bridge\Twig\Extension\HttpKernelRuntime;
 use Symfony\Bridge\Twig\Extension\RoutingExtension;
 use Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\DataCollector\RequestDataCollector;
 use Symfony\Component\HttpKernel\Fragment\FragmentHandler;
 use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -91,6 +93,15 @@ class ProfilerTest extends BaseTestCase
 
         $profile = new Profile('foo');
         $profile->setMethod('GET');
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
+
+        /** @psalm-suppress TooManyArguments Since Symfony 5.2 */
+        $requestDataCollector = new RequestDataCollector($requestStack);
+        $requestDataCollector->collect($request, new Response());
+        $requestDataCollector->lateCollect();
+
+        $profile->addCollector($requestDataCollector);
 
         $output = $this->twig->render('db.html.twig', [
             'request' => $request,
