@@ -11,7 +11,6 @@ jobs:
     runs-on: "ubuntu-20.04"
     env:
       SYMFONY_REQUIRE: ${{matrix.symfony-require}}
-      SYMFONY_DEPRECATIONS_HELPER: ${{matrix.symfony-deprecations-helper}}
 
     strategy:
       fail-fast: false
@@ -25,8 +24,6 @@ jobs:
         symfony-require:
           - ""
           - "6.*"
-        symfony-deprecations-helper:
-          - ""
 
     steps:
       - name: "Checkout"

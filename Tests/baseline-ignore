@@ -1,0 +1,2 @@
+%Method "ArrayAccess::(offsetExists|offsetGet|offsetSet|offsetUnset)+\(\)" might add "\w+" as a native return type declaration in the future. Do the same in implementation "Doctrine\\\Common\\Collections\\ArrayCollection" now to avoid errors or add an explicit @return annotation to suppress this message\.%
+%Method "Countable::count\(\)" might add "int" as a native return type declaration in the future. Do the same in implementation "Doctrine\\Common\\Collections\\ArrayCollection" now to avoid errors or add an explicit @return annotation to suppress this message\.%
