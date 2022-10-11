@@ -53,7 +53,7 @@ class EntityListenerPass implements CompilerPassInterface
                 $resolver = $container->findDefinition($resolverId);
                 $resolver->setPublic(true);
 
-                if (isset($attributes['entity']) && isset($attributes['event'])) {
+                if (isset($attributes['entity'])) {
                     $this->attachToListener($container, $name, $this->getConcreteDefinitionClass($container->findDefinition($id), $container, $id), $attributes);
                 }
 
@@ -94,7 +94,7 @@ class EntityListenerPass implements CompilerPassInterface
         }
     }
 
-    /** @param array{entity: class-string, event: string} $attributes */
+    /** @param array{entity: class-string, event?: ?string} $attributes */
     private function attachToListener(ContainerBuilder $container, string $name, string $class, array $attributes): void
     {
         $listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $name);
@@ -106,12 +106,12 @@ class EntityListenerPass implements CompilerPassInterface
         $args = [
             $attributes['entity'],
             $class,
-            $attributes['event'],
+            $attributes['event'] ?? null,
         ];
 
         if (isset($attributes['method'])) {
             $args[] = $attributes['method'];
-        } elseif (! method_exists($class, $attributes['event']) && method_exists($class, '__invoke')) {
+        } elseif (isset($attributes['event']) && ! method_exists($class, $attributes['event']) && method_exists($class, '__invoke')) {
             $args[] = '__invoke';
         }
 
