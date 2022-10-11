@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsEventListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsMiddleware;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand;
@@ -650,6 +651,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     'lazy'           => $attribute->lazy,
                     'entity_manager' => $attribute->entityManager,
                     'entity'         => $attribute->entity,
+                ]);
+            });
+            $container->registerAttributeForAutoconfiguration(AsEventListener::class, static function (ChildDefinition $definition, AsEventListener $attribute) {
+                $definition->addTag('doctrine.event_listener', [
+                    'event'      => $attribute->event,
+                    'priority'   => $attribute->priority,
+                    'connection' => $attribute->connection,
                 ]);
             });
         }

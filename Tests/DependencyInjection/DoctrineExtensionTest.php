@@ -4,11 +4,13 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Closure;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsEventListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EventListener;
 use Doctrine\Common\Cache\ApcCache;
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\Cache;
@@ -29,6 +31,7 @@ use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
@@ -1164,6 +1167,42 @@ class DoctrineExtensionTest extends TestCase
             'entity'         => null,
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
+    }
+
+    /**
+     * @requires PHP 8
+     */
+    public function testAsEventListenerAttribute()
+    {
+        if (! method_exists(ContainerBuilder::class, 'getAutoconfiguredAttributes')) {
+            $this->markTestSkipped('symfony/dependency-injection 5.3.0 needed');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $attributes = $container->getAutoconfiguredAttributes();
+        $this->assertInstanceOf(Closure::class, $attributes[AsEventListener::class]);
+
+        $reflector  = new ReflectionClass(Php8EventListener::class);
+        $definition = new ChildDefinition('');
+        $attribute  = $reflector->getAttributes(AsEventListener::class)[0]->newInstance();
+
+        $attributes[AsEventListener::class]($definition, $attribute);
+
+        $expected = [
+            'event'      => Events::postFlush,
+            'priority'   => null,
+            'connection' => null,
+        ];
+        $this->assertSame([$expected], $definition->getTag('doctrine.event_listener'));
     }
 
     /** @return bool[][] */
