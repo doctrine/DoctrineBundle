@@ -106,7 +106,10 @@ EOT
             );
         }
 
-        $shouldNotCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
+        $schemaManager           = method_exists($tmpConnection, 'createSchemaManager')
+            ? $tmpConnection->createSchemaManager()
+            : $tmpConnection->getSchemaManager();
+        $shouldNotCreateDatabase = $ifNotExists && in_array($name, $schemaManager->listDatabases());
 
         // Only quote if we don't have a path
         if (! $hasPath) {
@@ -118,9 +121,6 @@ EOT
             if ($shouldNotCreateDatabase) {
                 $output->writeln(sprintf('<info>Database <comment>%s</comment> for connection named <comment>%s</comment> already exists. Skipped.</info>', $name, $connectionName));
             } else {
-                $schemaManager = method_exists($tmpConnection, 'createSchemaManager')
-                    ? $tmpConnection->createSchemaManager()
-                    : $tmpConnection->getSchemaManager();
                 $schemaManager->createDatabase($name);
                 $output->writeln(sprintf('<info>Created database <comment>%s</comment> for connection named <comment>%s</comment></info>', $name, $connectionName));
             }
