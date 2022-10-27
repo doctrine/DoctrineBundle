@@ -12,6 +12,7 @@ use Throwable;
 
 use function array_merge;
 use function in_array;
+use function method_exists;
 use function sprintf;
 use function trigger_deprecation;
 
@@ -103,8 +104,6 @@ EOT
                 'Using a DBAL connection of type "%s" is deprecated. DBAL 3 does not support shards anymore.',
                 PoolingShardConnection::class
             );
-        } else {
-            $tmpConnection->connect();
         }
 
         $shouldNotCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
@@ -119,7 +118,10 @@ EOT
             if ($shouldNotCreateDatabase) {
                 $output->writeln(sprintf('<info>Database <comment>%s</comment> for connection named <comment>%s</comment> already exists. Skipped.</info>', $name, $connectionName));
             } else {
-                $tmpConnection->getSchemaManager()->createDatabase($name);
+                $schemaManager = method_exists($tmpConnection, 'createSchemaManager')
+                    ? $tmpConnection->createSchemaManager()
+                    : $tmpConnection->getSchemaManager();
+                $schemaManager->createDatabase($name);
                 $output->writeln(sprintf('<info>Created database <comment>%s</comment> for connection named <comment>%s</comment></info>', $name, $connectionName));
             }
         } catch (Throwable $e) {

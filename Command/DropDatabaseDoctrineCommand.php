@@ -11,6 +11,7 @@ use Throwable;
 
 use function array_merge;
 use function in_array;
+use function method_exists;
 use function sprintf;
 use function trigger_deprecation;
 
@@ -114,7 +115,10 @@ EOT
         // as some vendors do not allow dropping the database connected to.
         $connection->close();
         $connection         = DriverManager::getConnection($params);
-        $shouldDropDatabase = ! $ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
+        $schemaManager      = method_exists($connection, 'createSchemaManager')
+            ? $connection->createSchemaManager()
+            : $connection->getSchemaManager();
+        $shouldDropDatabase = ! $ifExists || in_array($name, $schemaManager->listDatabases());
 
         // Only quote if we don't have a path
         if (! isset($params['path'])) {
@@ -123,7 +127,7 @@ EOT
 
         try {
             if ($shouldDropDatabase) {
-                $connection->getSchemaManager()->dropDatabase($name);
+                $schemaManager->dropDatabase($name);
                 $output->writeln(sprintf('<info>Dropped database <comment>%s</comment> for connection named <comment>%s</comment></info>', $name, $connectionName));
             } else {
                 $output->writeln(sprintf('<info>Database <comment>%s</comment> for connection named <comment>%s</comment> doesn\'t exist. Skipped.</info>', $name, $connectionName));
