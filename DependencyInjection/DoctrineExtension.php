@@ -15,6 +15,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
+use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Id\AbstractIdGenerator;
@@ -23,6 +24,7 @@ use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
 use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand;
 use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
 use Doctrine\ORM\UnitOfWork;
+use Doctrine\Persistence\Reflection\RuntimeReflectionProperty;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionMethod;
@@ -48,15 +50,18 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
+use Symfony\Component\VarExporter\LazyGhostTrait;
 
 use function array_intersect_key;
 use function array_keys;
 use function class_exists;
 use function interface_exists;
 use function is_dir;
+use function method_exists;
 use function reset;
 use function sprintf;
 use function str_replace;
+use function trait_exists;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -449,7 +454,32 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->setParameter('doctrine.default_entity_manager', $config['default_entity_manager']);
 
-        $options = ['auto_generate_proxy_classes', 'proxy_dir', 'proxy_namespace'];
+        if ($config['enable_lazy_ghost_objects'] ?? false) {
+            if (! method_exists(OrmConfiguration::class, 'setLazyGhostObjectEnabled')) {
+                throw new LogicException(
+                    'Lazy ghost objects cannot be enabled because the "doctrine/orm" library'
+                    . ' version 2.14 or higher is not installed. Please run "composer update doctrine/orm".'
+                );
+            }
+
+            // available in Symfony 6.2 and higher
+            /** @psalm-suppress UndefinedClass */
+            if (! trait_exists(LazyGhostTrait::class)) {
+                throw new LogicException(
+                    'Lazy ghost objects cannot be enabled because the "symfony/var-exporter" library'
+                    . ' version 6.2 or higher is not installed. Please run "composer require symfony/var-exporter:^6.2".'
+                );
+            }
+
+            if (! class_exists(RuntimeReflectionProperty::class)) {
+                throw new LogicException(
+                    'Lazy ghost objects cannot be enabled because the "doctrine/persistence" library'
+                    . ' version 3.1 or higher is not installed. Please run "composer update doctrine/persistence".'
+                );
+            }
+        }
+
+        $options = ['auto_generate_proxy_classes', 'enable_lazy_ghost_objects', 'proxy_dir', 'proxy_namespace'];
         foreach ($options as $key) {
             $container->setParameter('doctrine.orm.' . $key, $config[$key]);
         }
@@ -556,7 +586,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setNamingStrategy' => new Reference($entityManager['naming_strategy']),
             'setQuoteStrategy' => new Reference($entityManager['quote_strategy']),
             'setEntityListenerResolver' => new Reference(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name'])),
+            'setLazyGhostObjectEnabled' => '%doctrine.orm.enable_lazy_ghost_objects%',
         ];
+
+        if (! method_exists(OrmConfiguration::class, 'setLazyGhostObjectEnabled')) {
+            unset($methods['setLazyGhostObjectEnabled']);
+        }
 
         $listenerId        = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
         $listenerDef       = $container->setDefinition($listenerId, new Definition('%doctrine.orm.listeners.attach_entity_listeners.class%'));

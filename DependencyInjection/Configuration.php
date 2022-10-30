@@ -384,6 +384,7 @@ class Configuration implements ConfigurationInterface
                             $excludedKeys  = [
                                 'default_entity_manager' => true,
                                 'auto_generate_proxy_classes' => true,
+                                'enable_lazy_ghost_objects' => true,
                                 'proxy_dir' => true,
                                 'proxy_namespace' => true,
                                 'resolve_target_entities' => true,
@@ -438,6 +439,8 @@ class Configuration implements ConfigurationInterface
                                     return constant('Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_' . strtoupper($v));
                                 })
                             ->end()
+                        ->end()
+                        ->booleanNode('enable_lazy_ghost_objects')->defaultFalse()
                         ->end()
                         ->scalarNode('proxy_dir')->defaultValue('%kernel.cache_dir%/doctrine/orm/Proxies')->end()
                         ->scalarNode('proxy_namespace')->defaultValue('Proxies')->end()
