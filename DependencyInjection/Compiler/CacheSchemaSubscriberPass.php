@@ -7,6 +7,7 @@ use Symfony\Component\Cache\Adapter\PdoAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
 
 /**
  * Injects Doctrine DBAL and legacy PDO adapters into their schema subscribers.
@@ -24,6 +25,10 @@ class CacheSchemaSubscriberPass implements CompilerPassInterface
 
         // available in Symfony 5.1 and up to Symfony 5.4 (deprecated)
         $this->injectAdapters($container, 'doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber', PdoAdapter::class);
+
+        // available in Symfony 6.3 and higher
+        /** @psalm-suppress UndefinedClass */
+        $this->injectAdapters($container, 'doctrine.orm.listeners.pdo_session_handler_schema_subscriber', PdoSessionHandler::class);
     }
 
     private function injectAdapters(ContainerBuilder $container, string $subscriberId, string $class)

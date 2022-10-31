@@ -13,6 +13,7 @@ use Symfony\Component\Messenger\Bridge\Doctrine\Transport\Connection;
 use Symfony\Component\Messenger\Transport\Doctrine\Connection as LegacyConnection;
 
 use function array_keys;
+use function method_exists;
 
 /**
  * Blacklist tables used by well-known Symfony classes.
@@ -33,25 +34,31 @@ class WellKnownSchemaFilterPass implements CompilerPassInterface
                 continue;
             }
 
+            $table = null;
+
             switch ($definition->getClass()) {
                 case DoctrineDbalAdapter::class:
                 case PdoAdapter::class:
-                    $blacklist[] = $definition->getArguments()[3]['db_table'] ?? 'cache_items';
+                    $table = $definition->getArguments()[3]['db_table'] ?? 'cache_items';
                     break;
 
                 case PdoSessionHandler::class:
-                    $blacklist[] = $definition->getArguments()[1]['db_table'] ?? 'sessions';
+                    $table = $definition->getArguments()[1]['db_table'] ?? 'sessions';
                     break;
 
                 case DoctrineDbalStore::class:
                 case PdoStore::class:
-                    $blacklist[] = $definition->getArguments()[1]['db_table'] ?? 'lock_keys';
+                    $table = $definition->getArguments()[1]['db_table'] ?? 'lock_keys';
                     break;
 
                 case LegacyConnection::class:
                 case Connection::class:
-                    $blacklist[] = $definition->getArguments()[0]['table_name'] ?? 'messenger_messages';
+                    $table = $definition->getArguments()[0]['table_name'] ?? 'messenger_messages';
                     break;
+            }
+
+            if ($table && ! method_exists($definition->getClass(), 'configureSchema')) {
+                $blacklist[] = $table;
             }
         }
 
