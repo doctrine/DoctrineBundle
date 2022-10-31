@@ -33,6 +33,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
+use Symfony\Bridge\Doctrine\SchemaListener\PdoSessionHandlerSchemaSubscriber;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
@@ -374,6 +375,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         // available in Symfony 5.1 and up to Symfony 5.4 (deprecated)
         if (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
             $container->removeDefinition('doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber');
+        }
+
+        if (! class_exists(PdoSessionHandlerSchemaSubscriber::class)) {
+            $container->removeDefinition('doctrine.orm.listeners.pdo_session_handler_schema_subscriber');
         }
 
         if (! class_exists(UlidGenerator::class)) {
