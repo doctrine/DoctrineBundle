@@ -7,7 +7,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use PDO;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
@@ -101,7 +100,7 @@ class ProfilerController
         }
 
         return $connection->executeQuery('EXPLAIN QUERY PLAN ' . $query['sql'], $params, $query['types'])
-            ->fetchAll(PDO::FETCH_ASSOC);
+            ->fetchAllAssociative();
     }
 
     /**
@@ -125,7 +124,7 @@ class ProfilerController
 
         $stmt = $connection->executeQuery($sql, $params, $query['types']);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAllAssociative();
     }
 
     /**
@@ -142,7 +141,7 @@ class ProfilerController
         }
 
         return $connection->executeQuery('EXPLAIN ' . $query['sql'], $params, $query['types'])
-            ->fetchAll(PDO::FETCH_ASSOC);
+            ->fetchAllAssociative();
     }
 
     /**
@@ -155,6 +154,6 @@ class ProfilerController
         $connection->executeQuery('EXPLAIN PLAN FOR ' . $query['sql']);
 
         return $connection->executeQuery('SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY())')
-            ->fetchAll(PDO::FETCH_ASSOC);
+            ->fetchAllAssociative();
     }
 }
