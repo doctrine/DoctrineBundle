@@ -5,14 +5,10 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\InfoDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Orm\ManagerRegistryAwareEntityManagerProvider;
-use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKernel;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
-use Doctrine\DBAL\Logging\LoggerChain;
-use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
@@ -34,29 +30,6 @@ use function interface_exists;
 
 class ContainerTest extends TestCase
 {
-    /** @group legacy */
-    public function testContainerWithDbalOnly(): void
-    {
-        $kernel = new DbalTestKernel();
-        $kernel->boot();
-
-        $container = $kernel->getContainer();
-
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(MiddlewareInterface::class)) {
-            $this->assertInstanceOf(
-                LoggerChain::class,
-                $container->get('doctrine.dbal.logger.chain.default')
-            );
-        }
-
-        if (class_exists(ImportCommand::class)) {
-            self::assertTrue($container->has('doctrine.database_import_command'));
-        } else {
-            self::assertFalse($container->has('doctrine.database_import_command'));
-        }
-    }
-
     public function testContainer(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -66,7 +39,7 @@ class ContainerTest extends TestCase
         $container = $this->createXmlBundleTestContainer();
 
         /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(MiddlewareInterface::class) || ! class_exists(SfDebugMiddleware::class)) {
+        if (! class_exists(SfDebugMiddleware::class)) {
             $this->assertInstanceOf(DbalLogger::class, $container->get('doctrine.dbal.logger'));
         }
 

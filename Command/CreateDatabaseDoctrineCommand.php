@@ -3,18 +3,15 @@
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Sharding\PoolingShardConnection;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
-use function array_merge;
 use function in_array;
 use function method_exists;
 use function sprintf;
-use function trigger_deprecation;
 
 /**
  * Database tool allows you to easily create your configured databases.
@@ -28,7 +25,6 @@ class CreateDatabaseDoctrineCommand extends DoctrineCommand
         $this
             ->setName('doctrine:database:create')
             ->setDescription('Creates the configured database')
-            ->addOption('shard', 's', InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('connection', 'c', InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
             ->addOption('if-not-exists', null, InputOption::VALUE_NONE, 'Don\'t trigger an error, when the database already exists')
             ->setHelp(<<<EOT
@@ -60,32 +56,6 @@ EOT
             $params = $params['primary'];
         }
 
-        // Cannot inject `shard` option in parent::getDoctrineConnection
-        // cause it will try to connect to a non-existing database
-        if (isset($params['shards'])) {
-            $shards = $params['shards'];
-            // Default select global
-            $params = array_merge($params, $params['global'] ?? []);
-            unset($params['global']['dbname'], $params['global']['path'], $params['global']['url']);
-            if ($input->getOption('shard')) {
-                trigger_deprecation(
-                    'doctrine/doctrine-bundle',
-                    '2.7',
-                    'Passing a "shard" option for "%s" is deprecated. DBAL 3 does not support shards anymore.',
-                    self::class
-                );
-
-                foreach ($shards as $i => $shard) {
-                    if ($shard['id'] === (int) $input->getOption('shard')) {
-                        // Select sharded database
-                        $params = array_merge($params, $shard);
-                        unset($params['shards'][$i]['dbname'], $params['shards'][$i]['path'], $params['shards'][$i]['url'], $params['id']);
-                        break;
-                    }
-                }
-            }
-        }
-
         $hasPath = isset($params['path']);
         $name    = $hasPath ? $params['path'] : ($params['dbname'] ?? false);
         if (! $name) {
@@ -93,18 +63,10 @@ EOT
         }
 
         // Need to get rid of _every_ occurrence of dbname from connection configuration and we have already extracted all relevant info from url
+        /** @psalm-suppress InvalidArrayOffset */
         unset($params['dbname'], $params['path'], $params['url']);
 
         $tmpConnection = DriverManager::getConnection($params);
-        if ($tmpConnection instanceof PoolingShardConnection) {
-            $tmpConnection->connect($input->getOption('shard'));
-            trigger_deprecation(
-                'doctrine/doctrine-bundle',
-                '2.7',
-                'Using a DBAL connection of type "%s" is deprecated. DBAL 3 does not support shards anymore.',
-                PoolingShardConnection::class
-            );
-        }
 
         $schemaManager           = method_exists($tmpConnection, 'createSchemaManager')
             ? $tmpConnection->createSchemaManager()

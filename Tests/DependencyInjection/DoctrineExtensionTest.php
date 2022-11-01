@@ -18,9 +18,6 @@ use Doctrine\Common\Cache\MemcacheCache;
 use Doctrine\Common\Cache\XcacheCache;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
-use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
-use Doctrine\DBAL\Sharding\PoolingShardManager;
-use Doctrine\DBAL\Sharding\SQLAzure\SQLAzureShardManager;
 use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
@@ -44,7 +41,6 @@ use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
-use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Middleware as SfDebugMiddleware;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
@@ -789,6 +785,9 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
+    // Disabled to prevent changing the comment below to a single-line annotation
+    // phpcs:disable SlevomatCodingStandard.Commenting.RequireOneLineDocComment.MultiLineDocComment
+
     /**
      * @requires PHP 8
      */
@@ -1089,45 +1088,6 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    /** @group legacy */
-    public function testShardManager(): void
-    {
-        $container    = $this->getContainer();
-        $extension    = new DoctrineExtension();
-        $managerClass = SQLAzureShardManager::class;
-
-        $config = BundleConfigurationBuilder::createBuilder()
-             ->addConnection([
-                 'connections' => [
-                     'foo' => [
-                         'shards' => [
-                             'test' => ['id' => 1],
-                         ],
-                     ],
-                     'bar' => [],
-                     'baz' => [
-                         'shards' => [
-                             'test' => ['id' => 1],
-                         ],
-                         'shard_manager_class' => $managerClass,
-                     ],
-                 ],
-             ])
-            ->build();
-
-        $extension->load([$config], $container);
-
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.foo_shard_manager'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.bar_shard_manager'));
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.baz_shard_manager'));
-
-        $fooManagerDef = $container->getDefinition('doctrine.dbal.foo_shard_manager');
-        $bazManagerDef = $container->getDefinition('doctrine.dbal.baz_shard_manager');
-
-        $this->assertEquals(PoolingShardManager::class, $fooManagerDef->getClass());
-        $this->assertEquals($managerClass, $bazManagerDef->getClass());
-    }
-
     // Disabled to prevent changing the comment below to a single-line annotation
     // phpcs:disable SlevomatCodingStandard.Commenting.RequireOneLineDocComment.MultiLineDocComment
 
@@ -1205,86 +1165,8 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame([$expected], $definition->getTag('doctrine.event_listener'));
     }
 
-    /** @return bool[][] */
-    public function provideRegistrationsWithoutMiddlewares(): array
-    {
-        return [
-            'SfDebugMiddleware not exists' => [false],
-            'SfDebugMiddleware exists' => [true],
-        ];
-    }
-
-    /**
-     * @dataProvider provideRegistrationsWithoutMiddlewares
-     */
-    public function testRegistrationsWithoutMiddlewares(bool $sfDebugMiddlewareExists): void
-    {
-        /** @psalm-suppress UndefinedClass */
-        if (interface_exists(MiddlewareInterface::class)) {
-            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, MiddlewareInterface::class));
-        }
-
-        /** @psalm-suppress UndefinedClass */
-        if ($sfDebugMiddlewareExists === ! class_exists(DebugDataHolder::class)) {    // Can't verify SfDebugMiddleware existence directly since it implements MiddlewareInterface that is not available
-            $format = $sfDebugMiddlewareExists ? '%s needs %s to exist' : '%s needs %s to not exist';
-            $this->markTestSkipped(sprintf($format, __METHOD__, SfDebugMiddleware::class));
-        }
-
-        $container = $this->getContainer();
-        $extension = new DoctrineExtension();
-
-        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
-            ->addConnection([
-                'connections' => [
-                    'conn1' => [
-                        'password' => 'foo',
-                        'logging' => true,
-                        'profiling' => false,
-                    ],
-                    'conn2' => [
-                        'password' => 'bar',
-                        'logging' => false,
-                        'profiling' => true,
-                        'profiling_collect_backtrace' => false,
-                    ],
-                    'conn3' => [
-                        'password' => 'bar',
-                        'logging' => false,
-                        'profiling' => true,
-                        'profiling_collect_backtrace' => true,
-                    ],
-                ],
-            ])
-            ->addBaseEntityManager()
-            ->build();
-
-        $extension->load([$config], $container);
-
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger'));
-        $loggerDef = $container->getDefinition('doctrine.dbal.logger');
-        $this->assertNotNull($loggerDef->getArgument(0));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logging_middleware'));
-
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.debug_middleware'));
-        $this->assertFalse($container->hasDefinition('doctrine.debug_data_holder'));
-
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn1'));
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn2'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn3'));
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.backtrace.conn3'));
-
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.debug_middleware'));
-    }
-
     public function testRegistrationsWithMiddlewaresButWithoutSfDebugMiddleware(): void
     {
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(MiddlewareInterface::class)) {
-            $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, MiddlewareInterface::class));
-        }
-
         /** @psalm-suppress UndefinedClass */
         if (class_exists(SfDebugMiddleware::class)) {
             $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, SfDebugMiddleware::class));
@@ -1367,11 +1249,6 @@ class DoctrineExtensionTest extends TestCase
 
     public function testRegistrationsWithMiddlewaresAndSfDebugMiddleware(): void
     {
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(MiddlewareInterface::class)) {
-            $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, MiddlewareInterface::class));
-        }
-
         /** @psalm-suppress UndefinedClass */
         if (! class_exists(SfDebugMiddleware::class)) {
             $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, SfDebugMiddleware::class));
@@ -1476,10 +1353,8 @@ class DoctrineExtensionTest extends TestCase
     public function provideDefinitionsToLogAndProfile(): array
     {
         return [
-            'with middlewares, with debug middleware' => [true, true, null, true],
-            'with middlewares, without debug middleware' => [true, false, false, true],
-            'without middlewares, with debug middleware' => [false, true, true, false],
-            'without middlewares, without debug middleware' => [false, false, true, false],
+            'with debug middleware' => [true, null, true],
+            'without debug middleware' => [false, false, true],
         ];
     }
 
@@ -1487,16 +1362,10 @@ class DoctrineExtensionTest extends TestCase
      * @dataProvider provideDefinitionsToLogAndProfile
      */
     public function testDefinitionsToLogAndProfile(
-        bool $withMiddleware,
         bool $withDebugMiddleware,
         ?bool $loggerInjected,
         bool $loggingMiddlewareRegistered
     ): void {
-        /** @psalm-suppress UndefinedClass */
-        if ($withMiddleware !== interface_exists(MiddlewareInterface::class)) {
-            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, MiddlewareInterface::class));
-        }
-
         /** @psalm-suppress UndefinedClass */
         if ($withDebugMiddleware !== class_exists(SfDebugMiddleware::class, false)) {
             $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, SfDebugMiddleware::class));
@@ -1531,10 +1400,6 @@ class DoctrineExtensionTest extends TestCase
         }
 
         $this->assertSame($loggingMiddlewareRegistered, $container->hasDefinition('doctrine.dbal.logging_middleware'));
-
-        if (! $withMiddleware) {
-            return;
-        }
 
         $abstractMiddlewareDefTags      = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
         $loggingMiddlewareTagAttributes = [];
@@ -1577,11 +1442,6 @@ class DoctrineExtensionTest extends TestCase
 
     public function testDefinitionsToLogQueriesLoggingFalse(): void
     {
-        /** @psalm-suppress UndefinedClass */
-        if (! class_exists(Middleware::class)) {
-            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, Middleware::class));
-        }
-
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 

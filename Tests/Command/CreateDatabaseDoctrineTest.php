@@ -6,7 +6,6 @@ use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\Persistence\ManagerRegistry;
-use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
@@ -23,8 +22,6 @@ class CreateDatabaseDoctrineTest extends TestCase
     public function tearDown(): void
     {
         @unlink(sys_get_temp_dir() . '/test');
-        @unlink(sys_get_temp_dir() . '/shard_1');
-        @unlink(sys_get_temp_dir() . '/shard_2');
     }
 
     public function testExecute(): void
@@ -52,66 +49,6 @@ class CreateDatabaseDoctrineTest extends TestCase
             'Created database ' . sys_get_temp_dir() . '/' . $dbName . ' for connection named ' . $connectionName,
             $commandTester->getDisplay()
         );
-    }
-
-    /**
-     * @group legacy
-     * @dataProvider provideShardOption
-     */
-    public function testExecuteWithShardAlias(string $shardOption): void
-    {
-        $connectionName = 'default';
-        $params         = [
-            'dbname' => 'test',
-            'memory' => true,
-            'driver' => 'pdo_sqlite',
-            'global' => [
-                'driver' => 'pdo_sqlite',
-                'dbname' => 'test',
-                'path' => sys_get_temp_dir() . '/global',
-            ],
-            'shards' => [
-                'foo' => [
-                    'id' => 1,
-                    'path' => sys_get_temp_dir() . '/shard_1',
-                    'driver' => 'pdo_sqlite',
-                ],
-                'bar' => [
-                    'id' => 2,
-                    'path' => sys_get_temp_dir() . '/shard_2',
-                    'driver' => 'pdo_sqlite',
-                ],
-            ],
-        ];
-
-        $container = $this->getMockContainer($connectionName, $params);
-
-        $application = new Application();
-        $application->add(new CreateDatabaseDoctrineCommand($container->get('doctrine')));
-
-        $command = $application->find('doctrine:database:create');
-
-        $commandTester = new CommandTester($command);
-        $commandTester->execute(['command' => $command->getName(), $shardOption => 1]);
-
-        $this->assertStringContainsString(
-            'Created database ' . sys_get_temp_dir() . '/shard_1 for connection named ' . $connectionName,
-            $commandTester->getDisplay()
-        );
-
-        $commandTester = new CommandTester($command);
-        $commandTester->execute(['command' => $command->getName(), $shardOption => 2]);
-
-        $this->assertStringContainsString(
-            'Created database ' . sys_get_temp_dir() . '/shard_2 for connection named ' . $connectionName,
-            $commandTester->getDisplay()
-        );
-    }
-
-    public function provideShardOption(): Generator
-    {
-        yield 'full name' => ['--shard'];
-        yield 'short name' => ['-s'];
     }
 
     /**
