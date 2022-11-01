@@ -536,7 +536,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->registerForAutoconfiguration(AbstractIdGenerator::class)
             ->addTag(IdGeneratorPass::ID_GENERATOR_TAG);
 
-        if (PHP_VERSION_ID >= 80000 && method_exists(ContainerBuilder::class, 'registerAttributeForAutoconfiguration')) {
+        /** @psalm-suppress RedundantCondition */
+        if (method_exists($container, 'registerAttributeForAutoconfiguration')) {
             $container->registerAttributeForAutoconfiguration(AsEntityListener::class, static function (ChildDefinition $definition, AsEntityListener $attribute) {
                 $definition->addTag('doctrine.orm.entity_listener', [
                     'event'          => $attribute->event,
