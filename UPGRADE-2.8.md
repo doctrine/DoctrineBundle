@@ -3,7 +3,7 @@ UPGRADE FROM 2.7 to 2.8
 
 Dependencies
 -------
- * support for PHP 7.1 and 7.2 has been dropped. 
+ * support for PHP 7.1, 7.2 and 7.3 has been dropped. 
  * support for `doctrine/dbal` 2 has been dropped. 
 
 Commands
