@@ -22,6 +22,8 @@ jobs:
       matrix:
         php-version:
           - "7.4"
+          - "8.0"
+          - "8.1"
         dependencies:
           - "highest"
         stability:
@@ -78,7 +80,6 @@ jobs:
 
       - name: "Install PHP with PCOV"
         uses: "shivammathur/setup-php@v2"
-        if: "${{ matrix.php-version != '7.4' }}"
         with:
           php-version: "${{ matrix.php-version }}"
           coverage: "pcov"

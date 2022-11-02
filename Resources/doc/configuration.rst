@@ -477,24 +477,6 @@ Configuration Reference
                             MultipleActiveResultSets=""
                         />
 
-                        <!-- example -->
-                        <!-- id: Required -->
-                        <!-- unix-socket: The unix socket to use for MySQL -->
-                        <!-- persistent: True to use as persistent connection for the ibm_db2 driver -->
-                        <!-- protocol: The protocol to use for the ibm_db2 driver (default to TCPIP if omitted) -->
-                        <!-- service: True to use SERVICE_NAME as connection parameter instead of SID for Oracle -->
-                        <!-- servicename: Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter for Oracle depending on the service parameter. -->
-                        <!-- sessionMode: The session mode to use for the oci8 driver -->
-                        <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
-                        <!-- default_dbname: Override the default database (postgres) to connect to for PostgreSQL. -->
-                        <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
-                        <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
-                        <!-- sslcert: The name of a file containing a client SSL certificate -->
-                        <!-- sslkey: The name of a file containing the private key used for the client SSL certificate -->
-                        <!-- sslcrl: The name of a file containing the SSL certificate revocation list (CRL) -->
-                        <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
-                        <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
-
                     </doctrine:connection>
 
                 </doctrine:dbal>
