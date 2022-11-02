@@ -69,15 +69,6 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: "Install PHP with XDebug"
-        uses: "shivammathur/setup-php@v2"
-        if: "${{ matrix.php-version == '7.4' }}"
-        with:
-          php-version: "${{ matrix.php-version }}"
-          coverage: "xdebug"
-          ini-values: "zend.assertions=1"
-          extensions: "pdo_sqlite"
-
       - name: "Install PHP with PCOV"
         uses: "shivammathur/setup-php@v2"
         with:
