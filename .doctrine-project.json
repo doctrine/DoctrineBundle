@@ -12,7 +12,7 @@
     {
       "name": "2.7",
       "branchName": "2.7.x",
-      "slug": "latest",
+      "slug": "2.7",
       "aliases": ["current", "stable"]
     },
     {
