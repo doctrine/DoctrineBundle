@@ -7,6 +7,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Exception;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
@@ -15,7 +16,6 @@ use Throwable;
 use Twig\Environment;
 
 use function assert;
-use function stripos;
 
 /** @internal */
 class ProfilerController
@@ -70,7 +70,7 @@ class ProfilerController
             if ($platform instanceof SqlitePlatform) {
                 $results = $this->explainSQLitePlatform($connection, $query);
             } elseif ($platform instanceof SQLServerPlatform) {
-                $results = $this->explainSQLServerPlatform($connection, $query);
+                throw new Exception('Explain for SQLServerPlatform is currently not supported. Contributions are welcome.');
             } elseif ($platform instanceof OraclePlatform) {
                 $results = $this->explainOraclePlatform($connection, $query);
             } else {
@@ -101,30 +101,6 @@ class ProfilerController
 
         return $connection->executeQuery('EXPLAIN QUERY PLAN ' . $query['sql'], $params, $query['types'])
             ->fetchAllAssociative();
-    }
-
-    /**
-     * @param mixed[] $query
-     *
-     * @return mixed[]
-     */
-    private function explainSQLServerPlatform(Connection $connection, array $query): array
-    {
-        if (stripos($query['sql'], 'SELECT') === 0) {
-            $sql = 'SET STATISTICS PROFILE ON; ' . $query['sql'] . '; SET STATISTICS PROFILE OFF;';
-        } else {
-            $sql = 'SET SHOWPLAN_TEXT ON; GO; SET NOEXEC ON; ' . $query['sql'] . '; SET NOEXEC OFF; GO; SET SHOWPLAN_TEXT OFF;';
-        }
-
-        $params = $query['params'];
-
-        if ($params instanceof Data) {
-            $params = $params->getValue(true);
-        }
-
-        $stmt = $connection->executeQuery($sql, $params, $query['types']);
-
-        return $stmt->fetchAllAssociative();
     }
 
     /**
