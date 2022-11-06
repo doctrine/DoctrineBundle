@@ -785,12 +785,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    // Disabled to prevent changing the comment below to a single-line annotation
-    // phpcs:disable SlevomatCodingStandard.Commenting.RequireOneLineDocComment.MultiLineDocComment
-
-    /**
-     * @requires PHP 8
-     */
+    /** @requires PHP 8 */
     public function testAttributesBundleMappingDetection(): void
     {
         $container = $this->getContainer(['AttributesBundle']);
@@ -1088,12 +1083,7 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    // Disabled to prevent changing the comment below to a single-line annotation
-    // phpcs:disable SlevomatCodingStandard.Commenting.RequireOneLineDocComment.MultiLineDocComment
-
-    /**
-     * @requires PHP 8
-     */
+    /** @requires PHP 8 */
     public function testAsEntityListenerAttribute()
     {
         if (! method_exists(ContainerBuilder::class, 'getAutoconfiguredAttributes')) {
@@ -1129,9 +1119,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
 
-    /**
-     * @requires PHP 8
-     */
+    /** @requires PHP 8 */
     public function testAsEventListenerAttribute()
     {
         if (! method_exists(ContainerBuilder::class, 'getAutoconfiguredAttributes')) {
@@ -1347,9 +1335,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame(['conn3'], $arguments[0]);
     }
 
-    /**
-     * @return array<string, mixed[]>
-     */
+    /** @return array<string, mixed[]> */
     public function provideDefinitionsToLogAndProfile(): array
     {
         return [
@@ -1358,9 +1344,7 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideDefinitionsToLogAndProfile
-     */
+    /** @dataProvider provideDefinitionsToLogAndProfile */
     public function testDefinitionsToLogAndProfile(
         bool $withDebugMiddleware,
         ?bool $loggerInjected,
@@ -1464,9 +1448,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertArrayNotHasKey('doctrine.middleware', $abstractMiddlewareDefTags);
     }
 
-    /**
-     * @requires function \Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver::__construct
-     */
+    /** @requires function \Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver::__construct */
     public function testControllerResolver(): void
     {
         $container = $this->getContainer();
