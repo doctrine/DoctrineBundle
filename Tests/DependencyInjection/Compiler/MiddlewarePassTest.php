@@ -14,7 +14,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
-use function interface_exists;
 use function method_exists;
 use function sprintf;
 
@@ -34,11 +33,6 @@ class MiddlewarePassTest extends TestCase
     /** @dataProvider provideAddMiddleware */
     public function testAddMiddlewareWithExplicitTag(string $middlewareClass, bool $connectionNameAware): void
     {
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(Middleware::class)) {
-            $this->markTestSkipped(sprintf('%s needed to run this test', Middleware::class));
-        }
-
         $container = $this->createContainer(static function (ContainerBuilder $container) use ($middlewareClass) {
             $container
                 ->register('middleware', $middlewareClass)
@@ -60,11 +54,6 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareWithExplicitTagsOnSpecificConnections(): void
     {
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(Middleware::class)) {
-            $this->markTestSkipped(sprintf('%s needed to run this test', Middleware::class));
-        }
-
         $container = $this->createContainer(static function (ContainerBuilder $container) {
             $container
                 ->register('middleware', PHP7Middleware::class)
@@ -86,13 +75,7 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareWithAutoconfigure(): void
     {
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(Middleware::class)) {
-            $this->markTestSkipped(sprintf('%s needed to run this test', Middleware::class));
-        }
-
         $container = $this->createContainer(static function (ContainerBuilder $container) {
-            /** @psalm-suppress UndefinedClass */
             $container
                 ->register('middleware', AutoconfiguredPHP7Middleware::class)
                 ->setAutoconfigured(true);
@@ -106,16 +89,13 @@ class MiddlewarePassTest extends TestCase
                 ->setPublic(true); // Avoid removal and inlining
         });
 
-        /** @psalm-suppress UndefinedClass */
         $this->assertMiddlewareInjected($container, 'conn1', AutoconfiguredPHP7Middleware::class);
-        /** @psalm-suppress UndefinedClass */
         $this->assertMiddlewareInjected($container, 'conn2', AutoconfiguredPHP7Middleware::class);
     }
 
     /** @return array<string, array{0: class-string, 1: bool}> */
     public function provideAddMiddlewareWithAttributeForAutoconfiguration(): array
     {
-        /** @psalm-suppress UndefinedClass */
         return [
             'without specifying connection' => [AutoconfiguredMiddleware::class, true],
             'specifying connection' => [AutoconfiguredMiddlewareWithConnection::class, false],
@@ -129,11 +109,6 @@ class MiddlewarePassTest extends TestCase
      */
     public function testAddMiddlewareWithAttributeForAutoconfiguration(string $className, bool $registeredOnConn1): void
     {
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(Middleware::class)) {
-            $this->markTestSkipped(sprintf('%s needed to run this test', Middleware::class));
-        }
-
         if (PHP_VERSION_ID < 80000 || ! method_exists(ContainerBuilder::class, 'registerAttributeForAutoconfiguration')) {
             $this->markTestSkipped(sprintf(
                 'Testing attribute for autoconfiguration requires PHP 8 and %s::registerAttributeForAutoconfiguration',
@@ -142,7 +117,6 @@ class MiddlewarePassTest extends TestCase
         }
 
         $container = $this->createContainer(static function (ContainerBuilder $container) use ($className) {
-            /** @psalm-suppress UndefinedClass */
             $container
                 ->register('middleware', $className)
                 ->setAutoconfigured(true);
@@ -157,24 +131,17 @@ class MiddlewarePassTest extends TestCase
         });
 
         if ($registeredOnConn1) {
-            /** @psalm-suppress UndefinedClass */
             $this->assertMiddlewareInjected($container, 'conn1', $className);
         } else {
             $this->assertMiddlewareNotInjected($container, 'conn1', $className);
         }
 
-        /** @psalm-suppress UndefinedClass */
         $this->assertMiddlewareInjected($container, 'conn2', $className);
     }
 
     /** @dataProvider provideAddMiddleware */
     public function testDontAddMiddlewareWhenDbalIsNotUsed(string $middlewareClass, bool $connectionNameAware): void
     {
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(Middleware::class)) {
-            $this->markTestSkipped(sprintf('%s needed to run this test', Middleware::class));
-        }
-
         $container = $this->createContainer(static function (ContainerBuilder $container) use ($middlewareClass) {
             $container
                 ->register('middleware', $middlewareClass)
@@ -297,25 +264,22 @@ class ConnectionAwarePHP7Middleware implements ConnectionNameAwareInterface
     }
 }
 
-/** @psalm-suppress UndefinedClass */
-if (interface_exists(Middleware::class)) {
-    class AutoconfiguredPHP7Middleware implements Middleware
+class AutoconfiguredPHP7Middleware implements Middleware
+{
+    public function wrap(Driver $driver): Driver
     {
-        public function wrap(Driver $driver): Driver
-        {
-            return $driver;
-        }
+        return $driver;
+    }
+}
+
+if (PHP_VERSION_ID >= 80000) {
+    #[AsMiddleware]
+    class AutoconfiguredMiddleware
+    {
     }
 
-    if (PHP_VERSION_ID >= 80000) {
-        #[AsMiddleware]
-        class AutoconfiguredMiddleware
-        {
-        }
-
-        #[AsMiddleware(connections: ['conn2'])]
-        class AutoconfiguredMiddlewareWithConnection
-        {
-        }
+    #[AsMiddleware(connections: ['conn2'])]
+    class AutoconfiguredMiddlewareWithConnection
+    {
     }
 }

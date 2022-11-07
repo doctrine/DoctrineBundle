@@ -153,7 +153,6 @@ class Configuration implements ConfigurationInterface
             ->fixXmlConfig('mapping_type')
             ->fixXmlConfig('slave')
             ->fixXmlConfig('replica')
-            ->fixXmlConfig('shard')
             ->fixXmlConfig('default_table_option')
             ->children()
                 ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
@@ -173,21 +172,6 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('server_version')->end()
                 ->scalarNode('driver_class')->end()
                 ->scalarNode('wrapper_class')->end()
-                ->scalarNode('shard_manager_class')
-                    ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "shard_manager_class" configuration is deprecated and not supported anymore using DBAL 3.', '2.7')
-                    )
-                ->end()
-                ->scalarNode('shard_choser')
-                    ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "shard_choser" configuration is deprecated and not supported anymore using DBAL 3.', '2.7')
-                    )
-                ->end()
-                ->scalarNode('shard_choser_service')
-                    ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "shard_choser_service" configuration is deprecated and not supported anymore using DBAL 3.', '2.7')
-                    )
-                ->end()
                 ->booleanNode('keep_slave')
                     ->setDeprecated(
                         ...$this->getDeprecationMsg('The "keep_slave" configuration key is deprecated since doctrine-bundle 2.2. Use the "keep_replica" configuration key instead.', '2.2')
@@ -230,23 +214,6 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey('name')
                     ->prototype('array');
         $this->configureDbalDriverNode($replicaNode);
-
-        $shardNode = $connectionNode
-            ->children()
-                ->arrayNode('shards')
-                    ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "shards" configuration is deprecated and not supported anymore using DBAL 3.', '2.7')
-                    )
-                    ->prototype('array');
-
-        $shardNode
-            ->children()
-                ->integerNode('id')
-                    ->min(1)
-                    ->isRequired()
-                ->end()
-            ->end();
-        $this->configureDbalDriverNode($shardNode);
 
         return $node;
     }

@@ -2,7 +2,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
-use Doctrine\Bundle\DoctrineBundle\Controller\ProfilerController;
 use Doctrine\Bundle\DoctrineBundle\Dbal\BlacklistSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
@@ -13,7 +12,6 @@ use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
-use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -222,40 +220,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
 
-    /** @group legacy */
-    public function testDbalLoadPoolShardingConnection(): void
-    {
-        $container = $this->loadContainer('dbal_service_pool_sharding_connection');
-        $param     = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
-
-        $this->assertEquals('Doctrine\\DBAL\\Sharding\\PoolingShardConnection', $param['wrapperClass']);
-        $this->assertEquals(new Reference('foo.shard_choser'), $param['shardChoser']);
-        $this->assertEquals(
-            [
-                'user' => 'mysql_user',
-                'password' => 'mysql_s3cr3t',
-                'port' => null,
-                'dbname' => 'mysql_db',
-                'host' => 'localhost',
-                'unix_socket' => '/path/to/mysqld.sock',
-            ],
-            $param['global']
-        );
-        $this->assertEquals(
-            [
-                'user' => 'shard_user',
-                'password' => 'shard_s3cr3t',
-                'port' => null,
-                'dbname' => 'shard_db',
-                'host' => 'localhost',
-                'unix_socket' => '/path/to/mysqld_shard.sock',
-                'id' => 1,
-            ],
-            $param['shards'][0]
-        );
-        $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
-    }
-
     public function testDbalLoadSavepointsForNestedTransactions(): void
     {
         $container = $this->loadContainer('dbal_savepoints');
@@ -444,33 +408,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.em1_result_cache'));
         $this->assertSame(ArrayAdapter::class, $definition->getClass());
-    }
-
-    public function testLoadLogging(): void
-    {
-        /** @psalm-suppress UndefinedClass */
-        if (interface_exists(Middleware::class)) {
-            $this->markTestSkipped('This test requires Debug middleware to not be activated');
-        }
-
-        $container = $this->loadContainer('dbal_logging');
-
-        $this->assertTrue($container->hasDefinition(ProfilerController::class), 'ProfilerController should be available even when not using the ORM.');
-
-        $definition = $container->getDefinition('doctrine.dbal.log_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger')]);
-
-        $definition = $container->getDefinition('doctrine.dbal.profile_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.profiling.profile')]);
-
-        $definition = $container->getDefinition('doctrine.dbal.profile_with_backtrace_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.backtrace.profile_with_backtrace')]);
-
-        $definition = $container->getDefinition('doctrine.dbal.backtrace_without_profile_connection.configuration');
-        $this->assertDICDefinitionNoMethodCall($definition, 'setSQLLogger');
-
-        $definition = $container->getDefinition('doctrine.dbal.both_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.chain.both')]);
     }
 
     public function testEntityManagerMetadataCacheDriverConfiguration(): void

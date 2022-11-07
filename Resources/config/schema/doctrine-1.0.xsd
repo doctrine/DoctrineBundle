@@ -31,8 +31,6 @@
         <xsd:attribute name="keep-slave" type="xsd:string" />
         <xsd:attribute name="keep-replica" type="xsd:string" />
         <xsd:attribute name="platform-service" type="xsd:string" />
-        <xsd:attribute name="shard-choser" type="xsd:string" />
-        <xsd:attribute name="shard-choser-service" type="xsd:string" />
         <xsd:attribute name="auto-commit" type="xsd:string" />
         <xsd:attribute name="schema-filter" type="xsd:string" />
         <xsd:attribute name="logging" type="xsd:string" default="false" />
@@ -82,7 +80,6 @@
             <xsd:element name="mapping-type" type="named_scalar" />
             <xsd:element name="slave" type="replica" />
             <xsd:element name="replica" type="replica" />
-            <xsd:element name="shard" type="shard" />
             <xsd:element name="default-table-option" type="named_scalar" />
         </xsd:choice>
     </xsd:group>
@@ -115,11 +112,6 @@
 
     <xsd:complexType name="replica">
         <xsd:attribute name="name" type="xsd:string" use="required" />
-        <xsd:attributeGroup ref="driver-config" />
-    </xsd:complexType>
-
-    <xsd:complexType name="shard">
-        <xsd:attribute name="id" type="xsd:integer" use="required" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:complexType>
 
