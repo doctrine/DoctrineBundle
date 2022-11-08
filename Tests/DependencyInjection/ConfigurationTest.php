@@ -20,6 +20,7 @@ class ConfigurationTest extends TestCase
      * testGetConfigTreeBuilderDoNotUseDoctrineCommon that is run in separate process.
      *
      * @var bool
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $preserveGlobalState = false;
 
