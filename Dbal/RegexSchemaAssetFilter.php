@@ -8,8 +8,7 @@ use function preg_match;
 
 class RegexSchemaAssetFilter
 {
-    /** @var string */
-    private $filterExpression;
+    private string $filterExpression;
 
     public function __construct(string $filterExpression)
     {

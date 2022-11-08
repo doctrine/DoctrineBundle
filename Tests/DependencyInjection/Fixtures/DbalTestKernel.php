@@ -18,10 +18,9 @@ use function sys_get_temp_dir;
 class DbalTestKernel extends Kernel
 {
     /** @var array<string, mixed> */
-    private $dbalConfig;
+    private array $dbalConfig;
 
-    /** @var string|null */
-    private $projectDir;
+    private ?string $projectDir = null;
 
     /** @param array<string, mixed> $dbalConfig */
     public function __construct(array $dbalConfig = ['driver' => 'pdo_sqlite'])
@@ -59,11 +58,7 @@ class DbalTestKernel extends Kernel
 
     public function getProjectDir(): string
     {
-        if ($this->projectDir === null) {
-            $this->projectDir = sys_get_temp_dir() . '/sf_kernel_' . md5((string) mt_rand());
-        }
-
-        return $this->projectDir;
+        return $this->projectDir ??= sys_get_temp_dir() . '/sf_kernel_' . md5((string) mt_rand());
     }
 
     public function getRootDir(): string

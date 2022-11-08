@@ -31,7 +31,7 @@ use function str_replace;
 class ImportMappingDoctrineCommand extends DoctrineCommand
 {
     /** @var string[] */
-    private $bundles;
+    private array $bundles;
 
     /** @param string[] $bundles */
     public function __construct(ManagerRegistry $doctrine, array $bundles)

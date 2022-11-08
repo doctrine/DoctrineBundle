@@ -5,7 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Builder;
 class BundleConfigurationBuilder
 {
     /** @var array<string, mixed> */
-    private $configuration;
+    private array $configuration = [];
 
     public static function createBuilder(): self
     {

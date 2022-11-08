@@ -10,7 +10,7 @@ use function in_array;
 class BlacklistSchemaAssetFilter
 {
     /** @var string[] */
-    private $blacklist;
+    private array $blacklist;
 
     /** @param string[] $blacklist */
     public function __construct(array $blacklist)

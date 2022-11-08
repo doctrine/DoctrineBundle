@@ -12,11 +12,8 @@ use function is_file;
 
 class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
 {
-    /** @var EntityManagerInterface */
-    private $entityManager;
-
-    /** @var string */
-    private $phpArrayFile;
+    private EntityManagerInterface $entityManager;
+    private string $phpArrayFile;
 
     public function __construct(EntityManagerInterface $entityManager, string $phpArrayFile)
     {

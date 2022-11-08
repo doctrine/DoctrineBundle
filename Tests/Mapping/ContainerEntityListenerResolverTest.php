@@ -14,11 +14,10 @@ use function interface_exists;
 
 class ContainerEntityListenerResolverTest extends TestCase
 {
-    /** @var ContainerEntityListenerResolver */
-    private $resolver;
+    private ContainerEntityListenerResolver $resolver;
 
     /** @var ContainerInterface&MockObject */
-    private $container;
+    private ContainerInterface $container;
 
     public static function setUpBeforeClass(): void
     {

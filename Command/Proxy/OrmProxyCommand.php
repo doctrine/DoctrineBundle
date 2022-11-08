@@ -9,8 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** @internal */
 trait OrmProxyCommand
 {
-    /** @var EntityManagerProvider|null */
-    private $entityManagerProvider;
+    private ?EntityManagerProvider $entityManagerProvider;
 
     public function __construct(?EntityManagerProvider $entityManagerProvider = null)
     {

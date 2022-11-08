@@ -10,14 +10,9 @@ use Symfony\Component\Stopwatch\Stopwatch;
 
 class DebugMiddleware implements Middleware, ConnectionNameAwareInterface
 {
-    /** @var DebugDataHolder */
-    private $debugDataHolder;
-
-    /** @var Stopwatch|null */
-    private $stopwatch;
-
-    /** @var string */
-    private $connectionName = 'default';
+    private DebugDataHolder $debugDataHolder;
+    private ?Stopwatch $stopwatch;
+    private string $connectionName = 'default';
 
     public function __construct(DebugDataHolder $debugDataHolder, ?Stopwatch $stopwatch)
     {

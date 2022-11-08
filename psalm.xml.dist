@@ -39,6 +39,12 @@
                 <file name="Tests/ConnectionFactoryTest.php"/>
             </errorLevel>
         </InvalidArrayOffset>
+        <RedundantPropertyInitializationCheck>
+            <errorLevel type="suppress">
+                <!-- Properties can be uninitialized in tests if setUp() fails. -->
+                <directory name="Tests"/>
+            </errorLevel>
+        </RedundantPropertyInitializationCheck>
         <UndefinedClass>
             <errorLevel type="suppress">
                 <!-- We use the "Foo" namespace in unit tests. We are aware that those classes don't exist. -->

@@ -73,8 +73,7 @@ use const PHP_VERSION_ID;
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {
-    /** @var string */
-    private $defaultConnection;
+    private string $defaultConnection;
 
     /**
      * {@inheritDoc}

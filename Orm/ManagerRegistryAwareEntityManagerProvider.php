@@ -12,8 +12,7 @@ use function sprintf;
 
 final class ManagerRegistryAwareEntityManagerProvider implements EntityManagerProvider
 {
-    /** @var ManagerRegistry */
-    private $managerRegistry;
+    private ManagerRegistry $managerRegistry;
 
     public function __construct(ManagerRegistry $managerRegistry)
     {

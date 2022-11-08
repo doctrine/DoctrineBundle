@@ -20,12 +20,9 @@ use function assert;
 /** @internal */
 class ProfilerController
 {
-    /** @var Environment */
-    private $twig;
-    /** @var Registry */
-    private $registry;
-    /** @var Profiler */
-    private $profiler;
+    private Environment $twig;
+    private Registry $registry;
+    private Profiler $profiler;
 
     public function __construct(Environment $twig, Registry $registry, Profiler $profiler)
     {

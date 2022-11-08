@@ -23,10 +23,9 @@ use const PHP_EOL;
 class ConnectionFactory
 {
     /** @var mixed[][] */
-    private $typesConfig = [];
+    private array $typesConfig = [];
 
-    /** @var bool */
-    private $initialized = false;
+    private bool $initialized = false;
 
     /** @param mixed[][] $typesConfig */
     public function __construct(array $typesConfig)
