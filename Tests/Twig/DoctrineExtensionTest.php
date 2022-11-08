@@ -157,8 +157,7 @@ class DoctrineExtensionTest extends TestCase
 
 class DummyClass
 {
-    /** @var string */
-    protected $str;
+    protected string $str;
 
     public function __construct(string $str)
     {

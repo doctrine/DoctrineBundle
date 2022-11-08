@@ -12,8 +12,6 @@ class TestCustomIdGeneratorEntity
      * @ORM\GeneratedValue(strategy="CUSTOM")
      * @ORM\CustomIdGenerator("my_id_generator")
      * @ORM\Column(type="integer")
-     *
-     * @var int
      */
-    public $id;
+    public ?int $id = null;
 }

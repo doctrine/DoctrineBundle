@@ -135,8 +135,7 @@ class ConnectionFactoryTest extends TestCase
 
 class FakeConnection extends Connection
 {
-    /** @var int */
-    public static $creationCount = 0;
+    public static int $creationCount = 0;
 
     /**
      * {@inheritdoc}
