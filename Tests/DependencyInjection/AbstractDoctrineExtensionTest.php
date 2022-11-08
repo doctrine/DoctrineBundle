@@ -1540,8 +1540,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
 class DummySchemaAssetsFilter
 {
-    /** @var string */
-    private $tableToIgnore;
+    private string $tableToIgnore;
 
     public function __construct(string $tableToIgnore)
     {

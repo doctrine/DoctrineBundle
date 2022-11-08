@@ -30,14 +30,9 @@ use function str_replace;
 
 class ProfilerTest extends BaseTestCase
 {
-    /** @var DebugStack */
-    private $logger;
-
-    /** @var Environment */
-    private $twig;
-
-    /** @var DoctrineDataCollector */
-    private $collector;
+    private DebugStack $logger;
+    private Environment $twig;
+    private DoctrineDataCollector $collector;
 
     public function setUp(): void
     {

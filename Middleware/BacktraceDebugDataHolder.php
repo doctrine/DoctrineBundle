@@ -15,10 +15,10 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
 class BacktraceDebugDataHolder extends DebugDataHolder
 {
     /** @var string[] */
-    private $connWithBacktraces;
+    private array $connWithBacktraces;
 
     /** @var array<string, array<string, mixed>[]> */
-    private $backtraces = [];
+    private array $backtraces = [];
 
     /** @param string[] $connWithBacktraces */
     public function __construct(array $connWithBacktraces)

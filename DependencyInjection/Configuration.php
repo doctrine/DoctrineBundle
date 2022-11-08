@@ -47,8 +47,7 @@ use function trigger_deprecation;
  */
 class Configuration implements ConfigurationInterface
 {
-    /** @var bool */
-    private $debug;
+    private bool $debug;
 
     /** @param bool $debug Whether to use the debug mode */
     public function __construct(bool $debug)

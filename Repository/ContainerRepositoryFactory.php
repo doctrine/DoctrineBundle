@@ -21,10 +21,9 @@ use function sprintf;
 final class ContainerRepositoryFactory implements RepositoryFactory
 {
     /** @var array<string, ObjectRepository> */
-    private $managedRepositories = [];
+    private array $managedRepositories = [];
 
-    /** @var ContainerInterface */
-    private $container;
+    private ContainerInterface $container;
 
     /** @param ContainerInterface $container A service locator containing the repositories */
     public function __construct(ContainerInterface $container)

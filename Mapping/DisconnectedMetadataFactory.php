@@ -25,10 +25,8 @@ use function strpos;
  */
 class DisconnectedMetadataFactory
 {
-    /** @var ManagerRegistry */
-    private $registry;
+    private ManagerRegistry $registry;
 
-    /** @param ManagerRegistry $registry A ManagerRegistry instance */
     public function __construct(ManagerRegistry $registry)
     {
         $this->registry = $registry;

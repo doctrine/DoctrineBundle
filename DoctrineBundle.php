@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
+use Closure;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubscriberPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
@@ -32,8 +33,7 @@ use function spl_autoload_unregister;
 
 class DoctrineBundle extends Bundle
 {
-    /** @var callable|null */
-    private $autoloader;
+    private ?Closure $autoloader = null;
 
     /**
      * {@inheritDoc}

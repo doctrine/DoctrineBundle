@@ -23,8 +23,7 @@ class CacheCompatibilityPassTest extends TestCase
         $customRegionClass = get_class($this->createMock(Region::class));
 
         (new class ($customRegionClass) extends TestKernel {
-            /** @var string */
-            private $regionClass;
+            private string $regionClass;
 
             public function __construct(string $regionClass)
             {

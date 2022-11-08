@@ -11,10 +11,10 @@ use Doctrine\ORM\Query\Filter\SQLFilter;
 class ManagerConfigurator
 {
     /** @var string[] */
-    private $enabledFilters = [];
+    private array $enabledFilters = [];
 
     /** @var array<string,array<string,string>> */
-    private $filtersParameters = [];
+    private array $filtersParameters = [];
 
     /**
      * @param string[]                           $enabledFilters
