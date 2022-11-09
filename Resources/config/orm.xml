@@ -175,7 +175,7 @@
         <service id="doctrine.orm.entity_value_resolver" class="Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver">
             <argument type="service" id="doctrine" />
             <argument type="service" id="doctrine.orm.entity_value_resolver.expression_language" on-invalid="ignore" />
-            <tag name="controller.argument_value_resolver" priority="30" />
+            <tag name="controller.argument_value_resolver" priority="110" />
         </service>
 
         <service id="doctrine.orm.entity_value_resolver.expression_language" class="Symfony\Component\ExpressionLanguage\ExpressionLanguage" />
