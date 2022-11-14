@@ -2,8 +2,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
-use Doctrine\Bundle\DoctrineBundle\Command\Proxy\InfoDoctrineCommand;
-use Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Orm\ManagerRegistryAwareEntityManagerProvider;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
@@ -13,6 +11,8 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Console\Command\InfoCommand;
+use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Symfony\Bridge\Doctrine\CacheWarmer\ProxyCacheWarmer;
@@ -61,8 +61,8 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(ProxyCacheWarmer::class, $container->get('doctrine.orm.proxy_cache_warmer'));
         $this->assertInstanceOf(ManagerRegistry::class, $container->get('doctrine'));
         $this->assertInstanceOf(UniqueEntityValidator::class, $container->get('doctrine.orm.validator.unique'));
-        $this->assertInstanceOf(InfoDoctrineCommand::class, $container->get('doctrine.mapping_info_command'));
-        $this->assertInstanceOf(UpdateSchemaDoctrineCommand::class, $container->get('doctrine.schema_update_command'));
+        $this->assertInstanceOf(InfoCommand::class, $container->get('doctrine.mapping_info_command'));
+        $this->assertInstanceOf(UpdateCommand::class, $container->get('doctrine.schema_update_command'));
 
         $this->assertSame($container->get('my.platform'), $container->get('doctrine.dbal.default_connection')->getDatabasePlatform());
 

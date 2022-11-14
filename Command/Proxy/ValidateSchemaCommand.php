@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Command to run Doctrine ValidateSchema() on the current mappings.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\ValidateSchemaCommand instead
  */
 class ValidateSchemaCommand extends DoctrineValidateSchemaCommand
 {

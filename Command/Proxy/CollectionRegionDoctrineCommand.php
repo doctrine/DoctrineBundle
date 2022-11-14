@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Command to clear a collection cache region.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\ClearCache\CollectionRegionCommand instead
  */
 class CollectionRegionDoctrineCommand extends CollectionRegionCommand
 {

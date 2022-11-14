@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Show information about mapped entities
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\InfoCommand instead
  */
 class InfoDoctrineCommand extends InfoCommand
 {

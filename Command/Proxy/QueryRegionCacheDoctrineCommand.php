@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Command to clear a query cache region.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryRegionCommand instead
  */
 class QueryRegionCacheDoctrineCommand extends QueryRegionCommand
 {
