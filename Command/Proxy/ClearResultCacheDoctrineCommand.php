@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Command to clear the result cache of the various cache drivers.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\ClearCache\ResultCommand instead
  */
 class ClearResultCacheDoctrineCommand extends ResultCommand
 {

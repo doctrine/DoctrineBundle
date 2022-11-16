@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Command to drop the database schema for a set of classes based on their mappings.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\SchemaTool\DropCommand instead
  */
 class DropSchemaDoctrineCommand extends DropCommand
 {

@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Execute a Doctrine DQL query and output the results.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\RunDqlCommand instead
  */
 class RunDqlDoctrineCommand extends RunDqlCommand
 {

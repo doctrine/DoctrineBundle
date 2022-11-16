@@ -181,72 +181,72 @@
         <service id="doctrine.orm.entity_value_resolver.expression_language" class="Symfony\Component\ExpressionLanguage\ExpressionLanguage" />
 
         <!-- commands -->
-        <service id="doctrine.cache_clear_metadata_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ClearMetadataCacheDoctrineCommand">
+        <service id="doctrine.cache_clear_metadata_command" class="Doctrine\ORM\Tools\Console\Command\ClearCache\MetadataCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:cache:clear-metadata" />
         </service>
 
-        <service id="doctrine.cache_clear_query_cache_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ClearQueryCacheDoctrineCommand">
+        <service id="doctrine.cache_clear_query_cache_command" class="Doctrine\ORM\Tools\Console\Command\ClearCache\QueryCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:cache:clear-query" />
         </service>
 
-        <service id="doctrine.cache_clear_result_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ClearResultCacheDoctrineCommand">
+        <service id="doctrine.cache_clear_result_command" class="Doctrine\ORM\Tools\Console\Command\ClearCache\ResultCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:cache:clear-result" />
         </service>
 
-        <service id="doctrine.cache_collection_region_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\CollectionRegionDoctrineCommand">
+        <service id="doctrine.cache_collection_region_command" class="Doctrine\ORM\Tools\Console\Command\ClearCache\CollectionRegionCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:cache:clear-collection-region" />
         </service>
 
-        <service id="doctrine.mapping_convert_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ConvertMappingDoctrineCommand">
+        <service id="doctrine.mapping_convert_command" class="Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:mapping:convert" />
         </service>
 
-        <service id="doctrine.schema_create_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\CreateSchemaDoctrineCommand">
+        <service id="doctrine.schema_create_command" class="Doctrine\ORM\Tools\Console\Command\SchemaTool\CreateCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:schema:create" />
         </service>
 
-        <service id="doctrine.schema_drop_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\DropSchemaDoctrineCommand">
+        <service id="doctrine.schema_drop_command" class="Doctrine\ORM\Tools\Console\Command\SchemaTool\DropCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:schema:drop" />
         </service>
 
-        <service id="doctrine.ensure_production_settings_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\EnsureProductionSettingsDoctrineCommand">
+        <service id="doctrine.ensure_production_settings_command" class="Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:ensure-production-settings" />
         </service>
 
-        <service id="doctrine.clear_entity_region_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\EntityRegionCacheDoctrineCommand">
+        <service id="doctrine.clear_entity_region_command" class="Doctrine\ORM\Tools\Console\Command\ClearCache\EntityRegionCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:cache:clear-entity-region" />
         </service>
 
-        <service id="doctrine.mapping_info_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\InfoDoctrineCommand">
+        <service id="doctrine.mapping_info_command" class="Doctrine\ORM\Tools\Console\Command\InfoCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:mapping:info" />
         </service>
 
-        <service id="doctrine.clear_query_region_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\QueryRegionCacheDoctrineCommand">
+        <service id="doctrine.clear_query_region_command" class="Doctrine\ORM\Tools\Console\Command\ClearCache\QueryRegionCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:cache:clear-query-region" />
         </service>
 
-        <service id="doctrine.query_dql_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\RunDqlDoctrineCommand">
+        <service id="doctrine.query_dql_command" class="Doctrine\ORM\Tools\Console\Command\RunDqlCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:query:dql" />
         </service>
 
-        <service id="doctrine.schema_update_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand">
+        <service id="doctrine.schema_update_command" class="Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:schema:update" />
         </service>
 
-        <service id="doctrine.schema_validate_command" class="Doctrine\Bundle\DoctrineBundle\Command\Proxy\ValidateSchemaCommand">
+        <service id="doctrine.schema_validate_command" class="Doctrine\ORM\Tools\Console\Command\ValidateSchemaCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:schema:validate" />
         </service>

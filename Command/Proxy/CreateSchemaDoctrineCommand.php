@@ -8,6 +8,8 @@ use Symfony\Component\Console\Input\InputOption;
 /**
  * Command to execute the SQL needed to generate the database schema for
  * a given entity manager.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\SchemaTool\CreateCommand instead
  */
 class CreateSchemaDoctrineCommand extends CreateCommand
 {

@@ -8,10 +8,11 @@ Dependencies
 
 Commands
 --------
- * Support for using Shards has been removed from `\Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand` as it's not supported using DBAL 3.
- * Support for using Shards has been removed from `\Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand` as it's not supported using DBAL 3.
- * Support for using Shards has been removed from `\Doctrine\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand` as it's not supported using DBAL 3.
- * The `\Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand` command has been removed as it's not supported using DBAL 3.
+ * Support for using Shards has been removed from `Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand` as it's not supported using DBAL 3.
+ * Support for using Shards has been removed from `Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand` as it's not supported using DBAL 3.
+ * Support for using Shards has been removed from `Doctrine\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand` as it's not supported using DBAL 3.
+ * The `Doctrine\Bundle\DoctrineBundle\Command\Proxy\ImportDoctrineCommand` command has been removed as it's not supported using DBAL 3.
+ * All ORM proxy commands in the namespace `Doctrine\Bundle\DoctrineBundle\Command\Proxy\` have been deprecated. Use their corresponding ORM command class directly instead.
 
 Configuration
 --------
