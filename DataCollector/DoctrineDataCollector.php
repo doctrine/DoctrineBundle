@@ -180,6 +180,8 @@ class DoctrineDataCollector extends BaseCollector
 
                 $caches['regions']['misses'][$key] += $value;
             }
+
+            $cacheLoggerStats->clearStats();
         }
 
         $this->data['entities'] = $entities;
