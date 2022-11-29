@@ -39,13 +39,7 @@ jobs:
             php-version: "7.4"
             symfony-deprecations-helper: "weak"
 
-          # Test legacy LTS
-          - symfony-require: "4.4.*"
-            dependencies: "stable"
-            php-version: "7.4"
-            symfony-deprecations-helper: "weak"
-
-          # Test latest LTS
+          # Test LTS
           - symfony-require: "5.4.*"
             dependencies: "highest"
             php-version: "8.0"
@@ -82,7 +76,7 @@ jobs:
 
       - name: "Require symfony/messenger"
         run: "composer require --dev symfony/messenger --no-update"
-        if: "${{ startsWith(matrix.symfony-require, '4.') }}"
+        if: "${{ startsWith(matrix.symfony-require, '5.') }}"
 
       - name: "Enforce using stable dependencies"
         run: "composer config minimum-stability stable"

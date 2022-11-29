@@ -20,8 +20,6 @@ class CacheSchemaSubscriberPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        // available in Symfony 5.4 and higher
-        /** @psalm-suppress UndefinedClass */
         $this->injectAdapters($container, 'doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_subscriber', DoctrineDbalAdapter::class);
 
         // available in Symfony 5.1 and up to Symfony 5.4 (deprecated)

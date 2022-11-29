@@ -44,6 +44,7 @@
         -->
         <service id="messenger.transport.doctrine.factory" class="Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory" public="false">
             <argument type="service" id="doctrine" />
+            <tag name="messenger.transport_factory" />
         </service>
 
         <service id="doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager" class="Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber" public="false">

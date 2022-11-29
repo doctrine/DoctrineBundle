@@ -41,7 +41,6 @@ use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
-use Symfony\Bridge\Doctrine\Middleware\Debug\Middleware as SfDebugMiddleware;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -50,7 +49,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 use function array_merge;
@@ -59,7 +57,6 @@ use function class_exists;
 use function in_array;
 use function interface_exists;
 use function is_dir;
-use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 
@@ -780,7 +777,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', [
-            new Reference(sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 && Kernel::VERSION_ID >= 50400 ? 'attribute' : 'annotation')),
+            new Reference(sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation')),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
     }
@@ -858,7 +855,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', [
-            new Reference(sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 && Kernel::VERSION_ID >= 50400 ? 'attribute' : 'annotation')),
+            new Reference(sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation')),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
@@ -909,7 +906,7 @@ class DoctrineExtensionTest extends TestCase
 
         $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
         $this->assertEquals(
-            sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 && Kernel::VERSION_ID >= 50400 ? 'attribute' : 'annotation'),
+            sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation'),
             (string) $calls[0][1][0]
         );
         $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
@@ -1086,10 +1083,6 @@ class DoctrineExtensionTest extends TestCase
     /** @requires PHP 8 */
     public function testAsEntityListenerAttribute()
     {
-        if (! method_exists(ContainerBuilder::class, 'getAutoconfiguredAttributes')) {
-            $this->markTestSkipped('symfony/dependency-injection 5.3.0 needed');
-        }
-
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -1105,7 +1098,8 @@ class DoctrineExtensionTest extends TestCase
 
         $reflector  = new ReflectionClass(Php8EntityListener::class);
         $definition = new ChildDefinition('');
-        $attribute  = $reflector->getAttributes(AsEntityListener::class)[0]->newInstance();
+        /** @psalm-suppress UndefinedMethod */
+        $attribute = $reflector->getAttributes(AsEntityListener::class)[0]->newInstance();
 
         $attributes[AsEntityListener::class]($definition, $attribute);
 
@@ -1122,10 +1116,6 @@ class DoctrineExtensionTest extends TestCase
     /** @requires PHP 8 */
     public function testAsEventListenerAttribute()
     {
-        if (! method_exists(ContainerBuilder::class, 'getAutoconfiguredAttributes')) {
-            $this->markTestSkipped('symfony/dependency-injection 5.3.0 needed');
-        }
-
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -1141,7 +1131,8 @@ class DoctrineExtensionTest extends TestCase
 
         $reflector  = new ReflectionClass(Php8EventListener::class);
         $definition = new ChildDefinition('');
-        $attribute  = $reflector->getAttributes(AsEventListener::class)[0]->newInstance();
+        /** @psalm-suppress UndefinedMethod */
+        $attribute = $reflector->getAttributes(AsEventListener::class)[0]->newInstance();
 
         $attributes[AsEventListener::class]($definition, $attribute);
 
@@ -1153,95 +1144,8 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame([$expected], $definition->getTag('doctrine.event_listener'));
     }
 
-    public function testRegistrationsWithMiddlewaresButWithoutSfDebugMiddleware(): void
-    {
-        /** @psalm-suppress UndefinedClass */
-        if (class_exists(SfDebugMiddleware::class)) {
-            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, SfDebugMiddleware::class));
-        }
-
-        $container = $this->getContainer();
-        $extension = new DoctrineExtension();
-
-        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
-            ->addConnection([
-                'connections' => [
-                    'conn1' => [
-                        'password' => 'foo',
-                        'logging' => true,
-                        'profiling' => false,
-                    ],
-                    'conn2' => [
-                        'password' => 'bar',
-                        'logging' => false,
-                        'profiling' => true,
-                        'profiling_collect_backtrace' => false,
-                    ],
-                    'conn3' => [
-                        'password' => 'bar',
-                        'logging' => false,
-                        'profiling' => true,
-                        'profiling_collect_backtrace' => true,
-                    ],
-                ],
-            ])
-            ->addBaseEntityManager()
-            ->build();
-
-        $extension->load([$config], $container);
-
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger'));
-        $loggerDef = $container->getDefinition('doctrine.dbal.logger');
-        $this->assertNull($loggerDef->getArgument(0));
-
-        $methodCalls = array_merge(
-            $container->getDefinition('doctrine.dbal.conn1_connection.configuration')->getMethodCalls(),
-            $container->getDefinition('doctrine.dbal.conn2_connection.configuration')->getMethodCalls(),
-            $container->getDefinition('doctrine.dbal.conn3_connection.configuration')->getMethodCalls()
-        );
-
-        foreach ($methodCalls as $methodCall) {
-            if ($methodCall[0] !== 'setSQLLogger' || ! (($methodCall[1][0] ?? null) instanceof Reference) || (string) $methodCall[1][0] !== 'doctrine.dbal.logger') {
-                continue;
-            }
-
-            $this->fail('doctrine.dbal.logger should not be referenced on configurations');
-        }
-
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
-
-        $abstractMiddlewareDefTags      = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
-        $loggingMiddlewareTagAttributes = [];
-        foreach ($abstractMiddlewareDefTags as $tag => $attributes) {
-            if ($tag !== 'doctrine.middleware') {
-                continue;
-            }
-
-            $loggingMiddlewareTagAttributes = $attributes;
-        }
-
-        $this->assertTrue(in_array(['connection' => 'conn1'], $loggingMiddlewareTagAttributes, true));
-        $this->assertFalse(in_array(['connection' => 'conn2'], $loggingMiddlewareTagAttributes, true));
-        $this->assertFalse(in_array(['connection' => 'conn3'], $loggingMiddlewareTagAttributes, true));
-
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.debug_middleware'));
-        $this->assertFalse($container->hasDefinition('doctrine.debug_data_holder'));
-
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn1'));
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn2'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn3'));
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.backtrace.conn3'));
-    }
-
     public function testRegistrationsWithMiddlewaresAndSfDebugMiddleware(): void
     {
-        /** @psalm-suppress UndefinedClass */
-        if (! class_exists(SfDebugMiddleware::class)) {
-            $this->markTestSkipped(sprintf('%s needs %s to exist', __METHOD__, SfDebugMiddleware::class));
-        }
-
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -1335,26 +1239,8 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame(['conn3'], $arguments[0]);
     }
 
-    /** @return array<string, mixed[]> */
-    public function provideDefinitionsToLogAndProfile(): array
+    public function testDefinitionsToLogAndProfile(): void
     {
-        return [
-            'with debug middleware' => [true, null, true],
-            'without debug middleware' => [false, false, true],
-        ];
-    }
-
-    /** @dataProvider provideDefinitionsToLogAndProfile */
-    public function testDefinitionsToLogAndProfile(
-        bool $withDebugMiddleware,
-        ?bool $loggerInjected,
-        bool $loggingMiddlewareRegistered
-    ): void {
-        /** @psalm-suppress UndefinedClass */
-        if ($withDebugMiddleware !== class_exists(SfDebugMiddleware::class, false)) {
-            $this->markTestSkipped(sprintf('%s needs %s to not exist', __METHOD__, SfDebugMiddleware::class));
-        }
-
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -1378,12 +1264,7 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
-        if ($loggerInjected !== null) {
-            $loggerDef = $container->getDefinition('doctrine.dbal.logger');
-            $this->assertSame($loggerInjected, $loggerDef->getArgument(0) !== null);
-        }
-
-        $this->assertSame($loggingMiddlewareRegistered, $container->hasDefinition('doctrine.dbal.logging_middleware'));
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
 
         $abstractMiddlewareDefTags      = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
         $loggingMiddlewareTagAttributes = [];
@@ -1397,15 +1278,6 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertTrue(in_array(['connection' => 'conn1'], $loggingMiddlewareTagAttributes, true), 'Tag with connection conn1 not found for doctrine.dbal.logging_middleware');
         $this->assertFalse(in_array(['connection' => 'conn2'], $loggingMiddlewareTagAttributes, true), 'Tag with connection conn2 found for doctrine.dbal.logging_middleware');
-
-        if (! $withDebugMiddleware) {
-            $this->assertFalse($container->hasDefinition('doctrine.dbal.debug_middleware'), 'doctrine.dbal.debug_middleware not removed');
-            $this->assertFalse($container->hasDefinition('doctrine.debug_data_holder'), 'doctrine.debug_data_holder not removed');
-            $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
-            $this->assertTrue($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
-
-            return;
-        }
 
         $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
         $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
