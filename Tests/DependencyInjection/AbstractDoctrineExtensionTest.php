@@ -31,7 +31,6 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 use function array_filter;
@@ -42,13 +41,11 @@ use function assert;
 use function end;
 use function interface_exists;
 use function is_dir;
-use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 use function uniqid;
 
 use const DIRECTORY_SEPARATOR;
-use const PHP_VERSION_ID;
 
 /** @psalm-import-type Params from DriverManager */
 abstract class AbstractDoctrineExtensionTest extends TestCase
@@ -441,14 +438,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setMetadataCache', [new Reference('doctrine.orm.default_metadata_cache')]);
     }
 
+    /** @requires PHP 8 */
     public function testSingleEntityManagerMultipleMappingBundleDefinitions(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
-        }
-
-        if (PHP_VERSION_ID < 80000 || Kernel::VERSION_ID < 50400) {
-            self::markTestSkipped('This test requires PHP 8 and Symfony 5.4+');
         }
 
         $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
@@ -494,14 +488,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
     }
 
+    /** @requires PHP 8 */
     public function testMultipleEntityManagersMappingBundleDefinitions(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
-        }
-
-        if (PHP_VERSION_ID < 80000 || Kernel::VERSION_ID < 50400) {
-            self::markTestSkipped('This test requires PHP 8 and Symfony 5.4+');
         }
 
         $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
@@ -511,7 +502,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $def1   = $container->getDefinition('doctrine.orm.em1_metadata_driver');
         $def2   = $container->getDefinition('doctrine.orm.em2_metadata_driver');
-        $def1Id = sprintf('doctrine.orm.em1_%s_metadata_driver', PHP_VERSION_ID >= 80000 && Kernel::VERSION_ID >= 50400 ? 'attribute' : 'annotation');
+        $def1Id = sprintf('doctrine.orm.em1_%s_metadata_driver', 'attribute');
 
         $this->assertDICDefinitionMethodCallAt(0, $def1, 'addDriver', [
             new Reference($def1Id),
@@ -1300,11 +1291,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->loadFromFile($container, 'orm_entity_listener_abstract');
 
         $this->expectException(InvalidArgumentException::class);
-        if (method_exists($this, 'expectExceptionMessageMatches')) {
-            $this->expectExceptionMessageMatches('/The service ".*" must not be abstract\./');
-        } elseif (method_exists($this, 'expectExceptionMessageRegExp')) {
-            $this->expectExceptionMessageRegExp('/The service ".*" must not be abstract\./');
-        }
+        $this->expectExceptionMessageMatches('/The service ".*" must not be abstract\./');
 
         $this->compileContainer($container);
     }

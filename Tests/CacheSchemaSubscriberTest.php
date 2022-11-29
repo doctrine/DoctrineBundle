@@ -90,11 +90,6 @@ class CacheSchemaSubscriberTest extends TestCase
 
     public function getSchemaSubscribers(): Generator
     {
-        /**
-         * available in Symfony 5.4 and higher
-         *
-         * @psalm-suppress UndefinedClass
-         */
         yield ['cache.adapter.doctrine_dbal', 'doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_subscriber', DoctrineDbalCacheAdapterSchemaSubscriber::class];
 
         /**

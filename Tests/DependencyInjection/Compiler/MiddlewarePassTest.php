@@ -14,7 +14,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
-use function method_exists;
 use function sprintf;
 
 use const PHP_VERSION_ID;
@@ -106,16 +105,10 @@ class MiddlewarePassTest extends TestCase
      * @param class-string $className
      *
      * @dataProvider provideAddMiddlewareWithAttributeForAutoconfiguration
+     * @requires PHP 8
      */
     public function testAddMiddlewareWithAttributeForAutoconfiguration(string $className, bool $registeredOnConn1): void
     {
-        if (PHP_VERSION_ID < 80000 || ! method_exists(ContainerBuilder::class, 'registerAttributeForAutoconfiguration')) {
-            $this->markTestSkipped(sprintf(
-                'Testing attribute for autoconfiguration requires PHP 8 and %s::registerAttributeForAutoconfiguration',
-                ContainerBuilder::class
-            ));
-        }
-
         $container = $this->createContainer(static function (ContainerBuilder $container) use ($className) {
             $container
                 ->register('middleware', $className)
