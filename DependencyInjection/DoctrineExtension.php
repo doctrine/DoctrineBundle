@@ -1025,10 +1025,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('middlewares.xml');
 
-        $container
-            ->getDefinition('doctrine.dbal.logger')
-            ->replaceArgument(0, null);
-
         $loggingMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.logging_middleware');
         foreach ($connWithLogging as $connName) {
             $loggingMiddlewareAbstractDef->addTag('doctrine.middleware', ['connection' => $connName]);
