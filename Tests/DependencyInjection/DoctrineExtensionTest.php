@@ -51,7 +51,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-use function array_merge;
 use function array_values;
 use function class_exists;
 use function in_array;
@@ -1176,24 +1175,6 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
-        $this->assertTrue($container->hasDefinition('doctrine.dbal.logger'));
-        $loggerDef = $container->getDefinition('doctrine.dbal.logger');
-        $this->assertNull($loggerDef->getArgument(0));
-
-        $methodCalls = array_merge(
-            $container->getDefinition('doctrine.dbal.conn1_connection.configuration')->getMethodCalls(),
-            $container->getDefinition('doctrine.dbal.conn2_connection.configuration')->getMethodCalls(),
-            $container->getDefinition('doctrine.dbal.conn3_connection.configuration')->getMethodCalls()
-        );
-
-        foreach ($methodCalls as $methodCall) {
-            if ($methodCall[0] !== 'setSQLLogger' || ! (($methodCall[1][0] ?? null) instanceof Reference) || (string) $methodCall[1][0] !== 'doctrine.dbal.logger') {
-                continue;
-            }
-
-            $this->fail('doctrine.dbal.logger should not be referenced on configurations');
-        }
-
         $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
 
         $abstractMiddlewareDefTags      = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
@@ -1212,13 +1193,6 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertTrue($container->hasDefinition('doctrine.dbal.debug_middleware'));
         $this->assertTrue($container->hasDefinition('doctrine.debug_data_holder'));
-
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn1'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn2'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn3'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.backtrace.conn3'));
 
         $abstractMiddlewareDefTags    = $container->getDefinition('doctrine.dbal.debug_middleware')->getTags();
         $debugMiddlewareTagAttributes = [];
@@ -1278,9 +1252,6 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertTrue(in_array(['connection' => 'conn1'], $loggingMiddlewareTagAttributes, true), 'Tag with connection conn1 not found for doctrine.dbal.logging_middleware');
         $this->assertFalse(in_array(['connection' => 'conn2'], $loggingMiddlewareTagAttributes, true), 'Tag with connection conn2 found for doctrine.dbal.logging_middleware');
-
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn1'));
-        $this->assertFalse($container->hasDefinition('doctrine.dbal.logger.profiling.conn2'));
 
         $abstractMiddlewareDefTags    = $container->getDefinition('doctrine.dbal.debug_middleware')->getTags();
         $debugMiddlewareTagAttributes = [];

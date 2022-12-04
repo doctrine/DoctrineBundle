@@ -17,3 +17,8 @@ Commands
 Configuration
 --------
  * The `shard_manager_class`, `shard_choser`, `shard_choser_service` and `shards` configuration keys have been removed as they are not supported using DBAL 3
+
+Dependency-Injection
+--------
+* The `doctrine.dbal.logging`, `doctrine.dbal.logger.chain`, `doctrine.dbal.logger.profiling` and `doctrine.dbal.logger.backtrace` services have been removed
+* The `doctrine.dbal.logger.chain.class`, `doctrine.dbal.logger.profiling.class` and `doctrine.dbal.logger.class` parameters have been removed
