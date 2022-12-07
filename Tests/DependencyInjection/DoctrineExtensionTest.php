@@ -1567,12 +1567,19 @@ class DoctrineExtensionTest extends TestCase
 
     /**
      * @requires function \Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver::__construct
+     * @testWith [true]
+     *           [false]
      */
-    public function testControllerResolver(): void
+    public function testControllerResolver(bool $simpleEntityManagerConfig): void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
         $config    = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+
+        if ($simpleEntityManagerConfig) {
+            $config['orm'] = [];
+        }
+
         $extension->load([$config], $container);
 
         $controllerResolver = $container->getDefinition('doctrine.orm.entity_value_resolver');

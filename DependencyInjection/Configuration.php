@@ -406,7 +406,7 @@ class Configuration implements ConfigurationInterface
                         })
                         ->then(static function ($v) {
                             $v = (array) $v;
-                            // Key that should not be rewritten to the connection config
+                            // Key that should not be rewritten to the entity-manager config
                             $excludedKeys  = [
                                 'default_entity_manager' => true,
                                 'auto_generate_proxy_classes' => true,
@@ -414,6 +414,7 @@ class Configuration implements ConfigurationInterface
                                 'proxy_namespace' => true,
                                 'resolve_target_entities' => true,
                                 'resolve_target_entity' => true,
+                                'controller_resolver' => true,
                             ];
                             $entityManager = [];
                             foreach ($v as $key => $value) {
