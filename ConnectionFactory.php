@@ -10,12 +10,10 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\Deprecations\Deprecation;
 
 use function array_merge;
-use function defined;
 use function is_subclass_of;
 use function trigger_deprecation;
 
@@ -25,10 +23,9 @@ use const PHP_EOL;
 class ConnectionFactory
 {
     /** @var mixed[][] */
-    private $typesConfig = [];
+    private array $typesConfig = [];
 
-    /** @var bool */
-    private $initialized = false;
+    private bool $initialized = false;
 
     /** @param mixed[][] $typesConfig */
     public function __construct(array $typesConfig)
@@ -76,16 +73,10 @@ class ConnectionFactory
             $platform   = $driver->getDatabasePlatform();
 
             if (! isset($params['charset'])) {
-                /** @psalm-suppress UndefinedClass AbstractMySQLPlatform exists since DBAL 3.x only */
-                if ($platform instanceof AbstractMySQLPlatform || $platform instanceof MySqlPlatform) {
+                if ($platform instanceof AbstractMySQLPlatform) {
                     $params['charset'] = 'utf8mb4';
 
-                    /* PARAM_ASCII_STR_ARRAY is defined since doctrine/dbal 3.3
-                       doctrine/dbal 3.3.2 adds support for the option "collation"
-                       Checking for that constant will no longer be necessary
-                       after dropping support for doctrine/dbal 2, since this
-                       package requires doctrine/dbal 3.3.2 or higher. */
-                    if (isset($params['defaultTableOptions']['collate']) && defined('Doctrine\DBAL\Connection::PARAM_ASCII_STR_ARRAY')) {
+                    if (isset($params['defaultTableOptions']['collate'])) {
                         Deprecation::trigger(
                             'doctrine/doctrine-bundle',
                             'https://github.com/doctrine/dbal/issues/5214',
@@ -95,9 +86,8 @@ class ConnectionFactory
                         unset($params['defaultTableOptions']['collate']);
                     }
 
-                    $collationOption = defined('Doctrine\DBAL\Connection::PARAM_ASCII_STR_ARRAY') ? 'collation' : 'collate';
-                    if (! isset($params['defaultTableOptions'][$collationOption])) {
-                        $params['defaultTableOptions'][$collationOption] = 'utf8mb4_unicode_ci';
+                    if (! isset($params['defaultTableOptions']['collation'])) {
+                        $params['defaultTableOptions']['collation'] = 'utf8mb4_unicode_ci';
                     }
                 } else {
                     $params['charset'] = 'utf8';

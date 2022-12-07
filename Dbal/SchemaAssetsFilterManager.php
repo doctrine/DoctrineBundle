@@ -10,7 +10,7 @@ use Doctrine\DBAL\Schema\AbstractAsset;
 class SchemaAssetsFilterManager
 {
     /** @var callable[] */
-    private $schemaAssetFilters;
+    private array $schemaAssetFilters;
 
     /** @param callable[] $schemaAssetFilters */
     public function __construct(array $schemaAssetFilters)

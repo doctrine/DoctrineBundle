@@ -7,7 +7,6 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use ReflectionClass;
-use Symfony\Component\Config\Definition\BaseNode;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -30,7 +29,6 @@ use function is_bool;
 use function is_int;
 use function is_string;
 use function key;
-use function method_exists;
 use function reset;
 use function sprintf;
 use function strlen;
@@ -47,8 +45,7 @@ use function trigger_deprecation;
  */
 class Configuration implements ConfigurationInterface
 {
-    /** @var bool */
-    private $debug;
+    private bool $debug;
 
     /** @param bool $debug Whether to use the debug mode */
     public function __construct(bool $debug)
@@ -116,7 +113,9 @@ class Configuration implements ConfigurationInterface
                                 ->scalarNode('class')->isRequired()->end()
                                 ->booleanNode('commented')
                                     ->setDeprecated(
-                                        ...$this->getDeprecationMsg('The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.', '2.0')
+                                        'doctrine/doctrine-bundle',
+                                        '2.0',
+                                        'The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.',
                                     )
                                 ->end()
                             ->end()
@@ -153,7 +152,6 @@ class Configuration implements ConfigurationInterface
             ->fixXmlConfig('mapping_type')
             ->fixXmlConfig('slave')
             ->fixXmlConfig('replica')
-            ->fixXmlConfig('shard')
             ->fixXmlConfig('default_table_option')
             ->children()
                 ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
@@ -173,24 +171,11 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('server_version')->end()
                 ->scalarNode('driver_class')->end()
                 ->scalarNode('wrapper_class')->end()
-                ->scalarNode('shard_manager_class')
-                    ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "shard_manager_class" configuration is deprecated and not supported anymore using DBAL 3.', '2.7')
-                    )
-                ->end()
-                ->scalarNode('shard_choser')
-                    ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "shard_choser" configuration is deprecated and not supported anymore using DBAL 3.', '2.7')
-                    )
-                ->end()
-                ->scalarNode('shard_choser_service')
-                    ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "shard_choser_service" configuration is deprecated and not supported anymore using DBAL 3.', '2.7')
-                    )
-                ->end()
                 ->booleanNode('keep_slave')
                     ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "keep_slave" configuration key is deprecated since doctrine-bundle 2.2. Use the "keep_replica" configuration key instead.', '2.2')
+                        'doctrine/doctrine-bundle',
+                        '2.2',
+                        'The "keep_slave" configuration key is deprecated since doctrine-bundle 2.2. Use the "keep_replica" configuration key instead.',
                     )
                 ->end()
                 ->booleanNode('keep_replica')->end()
@@ -217,7 +202,9 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('slaves')
                     ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "slaves" configuration key will be renamed to "replicas" in doctrine-bundle 3.0. "slaves" is deprecated since doctrine-bundle 2.2.', '2.2')
+                        'doctrine/doctrine-bundle',
+                        '2.2',
+                        'The "slaves" configuration key will be renamed to "replicas" in doctrine-bundle 3.0. "slaves" is deprecated since doctrine-bundle 2.2.',
                     )
                     ->useAttributeAsKey('name')
                     ->prototype('array');
@@ -230,23 +217,6 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey('name')
                     ->prototype('array');
         $this->configureDbalDriverNode($replicaNode);
-
-        $shardNode = $connectionNode
-            ->children()
-                ->arrayNode('shards')
-                    ->setDeprecated(
-                        ...$this->getDeprecationMsg('The "shards" configuration is deprecated and not supported anymore using DBAL 3.', '2.7')
-                    )
-                    ->prototype('array');
-
-        $shardNode
-            ->children()
-                ->integerNode('id')
-                    ->min(1)
-                    ->isRequired()
-                ->end()
-            ->end();
-        $this->configureDbalDriverNode($shardNode);
 
         return $node;
     }
@@ -289,7 +259,11 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('port')->info('Defaults to null at runtime.')->end()
                 ->scalarNode('user')->info('Defaults to "root" at runtime.')->end()
                 ->scalarNode('password')->info('Defaults to null at runtime.')->end()
-                ->booleanNode('override_url')->setDeprecated(...$this->getDeprecationMsg('The "doctrine.dbal.override_url" configuration key is deprecated.', '2.4'))->end()
+                ->booleanNode('override_url')->setDeprecated(
+                    'doctrine/doctrine-bundle',
+                    '2.4',
+                    'The "doctrine.dbal.override_url" configuration key is deprecated.',
+                )->end()
                 ->scalarNode('dbname_suffix')->end()
                 ->scalarNode('application_name')->end()
                 ->scalarNode('charset')->end()
@@ -809,28 +783,5 @@ class Configuration implements ConfigurationInterface
             'names' => $namesArray,
             'values' => $valuesArray,
         ];
-    }
-
-    /**
-     * Returns the correct deprecation param's as an array for setDeprecated.
-     *
-     * Symfony/Config v5.1 introduces a deprecation notice when calling
-     * setDeprecation() with less than 3 args and the getDeprecation method was
-     * introduced at the same time. By checking if getDeprecation() exists,
-     * we can determine the correct param count to use when calling setDeprecated.
-     *
-     * @return list<string>|array{0:string, 1: numeric-string, string}
-     */
-    private function getDeprecationMsg(string $message, string $version): array
-    {
-        if (method_exists(BaseNode::class, 'getDeprecation')) {
-            return [
-                'doctrine/doctrine-bundle',
-                $version,
-                $message,
-            ];
-        }
-
-        return [$message];
     }
 }

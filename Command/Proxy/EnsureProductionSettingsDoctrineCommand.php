@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Ensure the Doctrine ORM is configured properly for a production environment.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand instead
  */
 class EnsureProductionSettingsDoctrineCommand extends EnsureProductionSettingsCommand
 {

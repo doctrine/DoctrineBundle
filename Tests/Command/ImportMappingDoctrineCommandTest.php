@@ -20,11 +20,8 @@ use function sys_get_temp_dir;
 /** @group legacy */
 class ImportMappingDoctrineCommandTest extends TestCase
 {
-    /** @var TestKernel|null */
-    private $kernel;
-
-    /** @var CommandTester|null */
-    private $commandTester;
+    private TestKernel $kernel;
+    private CommandTester $commandTester;
 
     public static function setUpBeforeClass(): void
     {
@@ -61,13 +58,12 @@ class ImportMappingDoctrineCommandTest extends TestCase
     protected function tearDown(): void
     {
         $fs = new Filesystem();
-        if ($this->kernel !== null) {
+        if (isset($this->kernel)) {
             $fs->remove($this->kernel->getCacheDir());
         }
 
         $fs->remove(sys_get_temp_dir() . '/import_mapping_bundle');
-        $this->kernel        = null;
-        $this->commandTester = null;
+        unset($this->kernel, $this->commandTester);
     }
 
     public function testExecuteXmlWithBundle(): void

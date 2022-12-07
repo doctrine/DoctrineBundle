@@ -30,8 +30,7 @@ use function trigger_deprecation;
  */
 class DoctrineExtension extends AbstractExtension
 {
-    /** @var SqlFormatter */
-    private $sqlFormatter;
+    private SqlFormatter $sqlFormatter;
 
     /**
      * Define our functions

@@ -6,14 +6,11 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 
 class ClassMetadataCollection
 {
-    /** @var string */
-    private $path;
-
-    /** @var string */
-    private $namespace;
+    private ?string $path      = null;
+    private ?string $namespace = null;
 
     /** @var ClassMetadata[] */
-    private $metadata;
+    private array $metadata;
 
     /** @param ClassMetadata[] $metadata */
     public function __construct(array $metadata)
@@ -33,7 +30,7 @@ class ClassMetadataCollection
         $this->path = $path;
     }
 
-    /** @return string */
+    /** @return string|null */
     public function getPath()
     {
         return $this->path;
@@ -45,7 +42,7 @@ class ClassMetadataCollection
         $this->namespace = $namespace;
     }
 
-    /** @return string */
+    /** @return string|null */
     public function getNamespace()
     {
         return $this->namespace;

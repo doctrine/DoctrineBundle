@@ -16,12 +16,8 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-use function class_exists;
 use function sys_get_temp_dir;
 use function uniqid;
-
-// Compatibility with DBAL < 3
-class_exists(\Doctrine\DBAL\Platforms\MySqlPlatform::class);
 
 class TestCase extends BaseTestCase
 {
@@ -80,7 +76,6 @@ class TestCase extends BaseTestCase
             ],
         ], $container);
 
-        // Fix casing: The class is named MySqlPlatform on DBAL 2.
         $platformClassName = (new ReflectionClass(MySQLPlatform::class))->getName();
         $container->setDefinition('my.platform', new Definition($platformClassName))->setPublic(true);
 

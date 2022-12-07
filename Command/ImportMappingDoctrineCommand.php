@@ -20,7 +20,6 @@ use function is_dir;
 use function mkdir;
 use function sprintf;
 use function str_replace;
-use function trigger_deprecation;
 
 /**
  * Import Doctrine ORM metadata mapping information from an existing database.
@@ -32,7 +31,7 @@ use function trigger_deprecation;
 class ImportMappingDoctrineCommand extends DoctrineCommand
 {
     /** @var string[] */
-    private $bundles;
+    private array $bundles;
 
     /** @param string[] $bundles */
     public function __construct(ManagerRegistry $doctrine, array $bundles)
@@ -49,7 +48,6 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
             ->addArgument('name', InputArgument::REQUIRED, 'The bundle or namespace to import the mapping information to')
             ->addArgument('mapping-type', InputArgument::OPTIONAL, 'The mapping type to export the imported mapping information to')
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command')
-            ->addOption('shard', null, InputOption::VALUE_REQUIRED, 'The shard connection to use for this command')
             ->addOption('filter', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'A string pattern used to match entities that should be mapped.')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force to overwrite existing mapping files.')
             ->addOption('path', null, InputOption::VALUE_REQUIRED, 'The path where the files would be generated (not used when a bundle is passed).')
@@ -121,16 +119,7 @@ EOT
             $exporter->setEntityGenerator($entityGenerator);
         }
 
-        if ($input->getOption('shard')) {
-            trigger_deprecation(
-                'doctrine/doctrine-bundle',
-                '2.7',
-                'Passing a "shard" option for "%s" is deprecated. DBAL 3 does not support shards anymore.',
-                self::class
-            );
-        }
-
-        $em = $this->getEntityManager($input->getOption('em'), $input->getOption('shard'));
+        $em = $this->getEntityManager($input->getOption('em'));
 
         $databaseDriver = new DatabaseDriver($em->getConnection()->getSchemaManager());
         $em->getConfiguration()->setMetadataDriverImpl($databaseDriver);

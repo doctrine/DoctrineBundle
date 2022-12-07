@@ -6,27 +6,20 @@ use Doctrine\Bundle\DoctrineBundle\Middleware\BacktraceDebugDataHolder;
 use Doctrine\Bundle\DoctrineBundle\Middleware\DebugMiddleware;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 
 use function class_exists;
-use function interface_exists;
 use function sprintf;
 use function strpos;
 
 /** @psalm-suppress MissingDependency */
 class DebugMiddlewareTest extends TestCase
 {
-    /** @psalm-suppress UndefinedClass */
     protected function setUp(): void
     {
         parent::setUp();
-
-        if (! interface_exists(Middleware::class)) {
-            $this->markTestSkipped(sprintf('This test needs %s to exist', Middleware::class));
-        }
 
         if (class_exists(DebugDataHolder::class)) {
             return;

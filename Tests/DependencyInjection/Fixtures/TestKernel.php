@@ -16,8 +16,7 @@ use function sys_get_temp_dir;
 
 class TestKernel extends Kernel
 {
-    /** @var string|null */
-    private $projectDir;
+    private ?string $projectDir = null;
 
     public function __construct(bool $debug = true)
     {
@@ -59,11 +58,7 @@ class TestKernel extends Kernel
 
     public function getProjectDir(): string
     {
-        if ($this->projectDir === null) {
-            $this->projectDir = sys_get_temp_dir() . '/sf_kernel_' . md5((string) mt_rand());
-        }
-
-        return $this->projectDir;
+        return $this->projectDir ??= sys_get_temp_dir() . '/sf_kernel_' . md5((string) mt_rand());
     }
 
     public function getRootDir(): string

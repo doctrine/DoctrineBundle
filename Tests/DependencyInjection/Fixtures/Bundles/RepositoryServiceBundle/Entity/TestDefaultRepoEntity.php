@@ -11,8 +11,6 @@ class TestDefaultRepoEntity
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
-     *
-     * @var int
      */
-    private $id;
+    private ?int $id = null;
 }

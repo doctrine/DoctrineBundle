@@ -2,61 +2,31 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
-use Doctrine\Bundle\DoctrineBundle\Command\Proxy\InfoDoctrineCommand;
-use Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Orm\ManagerRegistryAwareEntityManagerProvider;
-use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTestKernel;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
-use Doctrine\DBAL\Logging\LoggerChain;
-use Doctrine\DBAL\Tools\Console\Command\ImportCommand;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Console\Command\InfoCommand;
+use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Symfony\Bridge\Doctrine\CacheWarmer\ProxyCacheWarmer;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
-use Symfony\Bridge\Doctrine\Logger\DbalLogger;
-use Symfony\Bridge\Doctrine\Middleware\Debug\Middleware as SfDebugMiddleware;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 
-use function class_exists;
 use function interface_exists;
 
 class ContainerTest extends TestCase
 {
-    /** @group legacy */
-    public function testContainerWithDbalOnly(): void
-    {
-        $kernel = new DbalTestKernel();
-        $kernel->boot();
-
-        $container = $kernel->getContainer();
-
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(MiddlewareInterface::class)) {
-            $this->assertInstanceOf(
-                LoggerChain::class,
-                $container->get('doctrine.dbal.logger.chain.default')
-            );
-        }
-
-        if (class_exists(ImportCommand::class)) {
-            self::assertTrue($container->has('doctrine.database_import_command'));
-        } else {
-            self::assertFalse($container->has('doctrine.database_import_command'));
-        }
-    }
-
     public function testContainer(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -64,11 +34,6 @@ class ContainerTest extends TestCase
         }
 
         $container = $this->createXmlBundleTestContainer();
-
-        /** @psalm-suppress UndefinedClass */
-        if (! interface_exists(MiddlewareInterface::class) || ! class_exists(SfDebugMiddleware::class)) {
-            $this->assertInstanceOf(DbalLogger::class, $container->get('doctrine.dbal.logger'));
-        }
 
         $this->assertInstanceOf(DoctrineDataCollector::class, $container->get('data_collector.doctrine'));
         $this->assertInstanceOf(DBALConfiguration::class, $container->get('doctrine.dbal.default_connection.configuration'));
@@ -88,8 +53,8 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(ProxyCacheWarmer::class, $container->get('doctrine.orm.proxy_cache_warmer'));
         $this->assertInstanceOf(ManagerRegistry::class, $container->get('doctrine'));
         $this->assertInstanceOf(UniqueEntityValidator::class, $container->get('doctrine.orm.validator.unique'));
-        $this->assertInstanceOf(InfoDoctrineCommand::class, $container->get('doctrine.mapping_info_command'));
-        $this->assertInstanceOf(UpdateSchemaDoctrineCommand::class, $container->get('doctrine.schema_update_command'));
+        $this->assertInstanceOf(InfoCommand::class, $container->get('doctrine.mapping_info_command'));
+        $this->assertInstanceOf(UpdateCommand::class, $container->get('doctrine.schema_update_command'));
 
         $this->assertSame($container->get('my.platform'), $container->get('doctrine.dbal.default_connection')->getDatabasePlatform());
 

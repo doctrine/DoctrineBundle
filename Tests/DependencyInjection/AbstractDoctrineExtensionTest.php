@@ -2,7 +2,6 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
-use Doctrine\Bundle\DoctrineBundle\Controller\ProfilerController;
 use Doctrine\Bundle\DoctrineBundle\Dbal\BlacklistSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
@@ -13,7 +12,6 @@ use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
-use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,7 +31,6 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 use function array_filter;
@@ -44,13 +41,11 @@ use function assert;
 use function end;
 use function interface_exists;
 use function is_dir;
-use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 use function uniqid;
 
 use const DIRECTORY_SEPARATOR;
-use const PHP_VERSION_ID;
 
 /** @psalm-import-type Params from DriverManager */
 abstract class AbstractDoctrineExtensionTest extends TestCase
@@ -218,40 +213,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driverOptions' => [PDO::ATTR_STRINGIFY_FETCHES => 1],
             ],
             $param['replica']['replica1']
-        );
-        $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
-    }
-
-    /** @group legacy */
-    public function testDbalLoadPoolShardingConnection(): void
-    {
-        $container = $this->loadContainer('dbal_service_pool_sharding_connection');
-        $param     = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
-
-        $this->assertEquals('Doctrine\\DBAL\\Sharding\\PoolingShardConnection', $param['wrapperClass']);
-        $this->assertEquals(new Reference('foo.shard_choser'), $param['shardChoser']);
-        $this->assertEquals(
-            [
-                'user' => 'mysql_user',
-                'password' => 'mysql_s3cr3t',
-                'port' => null,
-                'dbname' => 'mysql_db',
-                'host' => 'localhost',
-                'unix_socket' => '/path/to/mysqld.sock',
-            ],
-            $param['global']
-        );
-        $this->assertEquals(
-            [
-                'user' => 'shard_user',
-                'password' => 'shard_s3cr3t',
-                'port' => null,
-                'dbname' => 'shard_db',
-                'host' => 'localhost',
-                'unix_socket' => '/path/to/mysqld_shard.sock',
-                'id' => 1,
-            ],
-            $param['shards'][0]
         );
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
@@ -446,33 +407,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame(ArrayAdapter::class, $definition->getClass());
     }
 
-    public function testLoadLogging(): void
-    {
-        /** @psalm-suppress UndefinedClass */
-        if (interface_exists(Middleware::class)) {
-            $this->markTestSkipped('This test requires Debug middleware to not be activated');
-        }
-
-        $container = $this->loadContainer('dbal_logging');
-
-        $this->assertTrue($container->hasDefinition(ProfilerController::class), 'ProfilerController should be available even when not using the ORM.');
-
-        $definition = $container->getDefinition('doctrine.dbal.log_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger')]);
-
-        $definition = $container->getDefinition('doctrine.dbal.profile_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.profiling.profile')]);
-
-        $definition = $container->getDefinition('doctrine.dbal.profile_with_backtrace_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.backtrace.profile_with_backtrace')]);
-
-        $definition = $container->getDefinition('doctrine.dbal.backtrace_without_profile_connection.configuration');
-        $this->assertDICDefinitionNoMethodCall($definition, 'setSQLLogger');
-
-        $definition = $container->getDefinition('doctrine.dbal.both_connection.configuration');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'setSQLLogger', [new Reference('doctrine.dbal.logger.chain.both')]);
-    }
-
     public function testEntityManagerMetadataCacheDriverConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -504,14 +438,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setMetadataCache', [new Reference('doctrine.orm.default_metadata_cache')]);
     }
 
+    /** @requires PHP 8 */
     public function testSingleEntityManagerMultipleMappingBundleDefinitions(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
-        }
-
-        if (PHP_VERSION_ID < 80000 || Kernel::VERSION_ID < 50400) {
-            self::markTestSkipped('This test requires PHP 8 and Symfony 5.4+');
         }
 
         $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
@@ -557,14 +488,11 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
     }
 
+    /** @requires PHP 8 */
     public function testMultipleEntityManagersMappingBundleDefinitions(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
-        }
-
-        if (PHP_VERSION_ID < 80000 || Kernel::VERSION_ID < 50400) {
-            self::markTestSkipped('This test requires PHP 8 and Symfony 5.4+');
         }
 
         $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
@@ -574,7 +502,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $def1   = $container->getDefinition('doctrine.orm.em1_metadata_driver');
         $def2   = $container->getDefinition('doctrine.orm.em2_metadata_driver');
-        $def1Id = sprintf('doctrine.orm.em1_%s_metadata_driver', PHP_VERSION_ID >= 80000 && Kernel::VERSION_ID >= 50400 ? 'attribute' : 'annotation');
+        $def1Id = sprintf('doctrine.orm.em1_%s_metadata_driver', 'attribute');
 
         $this->assertDICDefinitionMethodCallAt(0, $def1, 'addDriver', [
             new Reference($def1Id),
@@ -1363,11 +1291,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->loadFromFile($container, 'orm_entity_listener_abstract');
 
         $this->expectException(InvalidArgumentException::class);
-        if (method_exists($this, 'expectExceptionMessageMatches')) {
-            $this->expectExceptionMessageMatches('/The service ".*" must not be abstract\./');
-        } elseif (method_exists($this, 'expectExceptionMessageRegExp')) {
-            $this->expectExceptionMessageRegExp('/The service ".*" must not be abstract\./');
-        }
+        $this->expectExceptionMessageMatches('/The service ".*" must not be abstract\./');
 
         $this->compileContainer($container);
     }
@@ -1603,8 +1527,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
 class DummySchemaAssetsFilter
 {
-    /** @var string */
-    private $tableToIgnore;
+    private string $tableToIgnore;
 
     public function __construct(string $tableToIgnore)
     {

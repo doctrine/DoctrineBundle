@@ -8,6 +8,8 @@ use Symfony\Component\Console\Input\InputOption;
 /**
  * Command to generate the SQL needed to update the database schema to match
  * the current mapping information.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand instead
  */
 class UpdateSchemaDoctrineCommand extends UpdateCommand
 {

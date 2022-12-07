@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Command to clear the query cache of the various cache drivers.
+ *
+ * @deprecated use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryCommand instead
  */
 class ClearQueryCacheDoctrineCommand extends QueryCommand
 {

@@ -9,11 +9,8 @@ use Psr\Container\ContainerInterface;
 
 class MappingDriver implements MappingDriverInterface
 {
-    /** @var MappingDriverInterface */
-    private $driver;
-
-    /** @var ContainerInterface */
-    private $idGeneratorLocator;
+    private MappingDriverInterface $driver;
+    private ContainerInterface $idGeneratorLocator;
 
     public function __construct(MappingDriverInterface $driver, ContainerInterface $idGeneratorLocator)
     {

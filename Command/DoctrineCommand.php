@@ -3,16 +3,11 @@
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Sharding\PoolingShardConnection;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\EntityGenerator;
 use Doctrine\Persistence\ManagerRegistry;
-use LogicException;
+use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
-
-use function sprintf;
-use function trigger_deprecation;
 
 /**
  * Base class for Doctrine console commands to extend from.
@@ -21,8 +16,7 @@ use function trigger_deprecation;
  */
 abstract class DoctrineCommand extends Command
 {
-    /** @var ManagerRegistry */
-    private $doctrine;
+    private ManagerRegistry $doctrine;
 
     public function __construct(ManagerRegistry $doctrine)
     {
@@ -61,24 +55,8 @@ abstract class DoctrineCommand extends Command
     {
         $manager = $this->getDoctrine()->getManager($name);
 
-        if ($shardId) {
-            trigger_deprecation(
-                'doctrine/doctrine-bundle',
-                '2.7',
-                'Passing a "shardId" argument to "%s" is deprecated. DBAL 3 does not support shards anymore.',
-                __METHOD__
-            );
-
-            if (! $manager instanceof EntityManagerInterface) {
-                throw new LogicException(sprintf('Sharding is supported only in EntityManager of instance "%s".', EntityManagerInterface::class));
-            }
-
-            $connection = $manager->getConnection();
-            if (! $connection instanceof PoolingShardConnection) {
-                throw new LogicException(sprintf("Connection of EntityManager '%s' must implement shards configuration.", $name));
-            }
-
-            $connection->connect($shardId);
+        if ($shardId !== null) {
+            throw new InvalidArgumentException('Shards are not supported anymore using doctrine/dbal >= 3');
         }
 
         return $manager;

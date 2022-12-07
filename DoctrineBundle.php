@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle;
 
+use Closure;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubscriberPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
@@ -13,7 +14,6 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveProfilerCo
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Common\Util\ClassUtils;
-use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
@@ -29,13 +29,11 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 use function assert;
 use function class_exists;
 use function clearstatcache;
-use function interface_exists;
 use function spl_autoload_unregister;
 
 class DoctrineBundle extends Bundle
 {
-    /** @var callable|null */
-    private $autoloader;
+    private ?Closure $autoloader = null;
 
     /**
      * {@inheritDoc}
@@ -63,12 +61,8 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new DbalSchemaFilterPass());
         $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_BEFORE_REMOVING, -10);
         $container->addCompilerPass(new RemoveProfilerControllerPass());
-
-        /** @psalm-suppress UndefinedClass */
-        if (interface_exists(Middleware::class)) {
-            $container->addCompilerPass(new RemoveLoggingMiddlewarePass());
-            $container->addCompilerPass(new MiddlewaresPass());
-        }
+        $container->addCompilerPass(new RemoveLoggingMiddlewarePass());
+        $container->addCompilerPass(new MiddlewaresPass());
 
         if (! class_exists(RegisterUidTypePass::class)) {
             return;
