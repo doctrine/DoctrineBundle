@@ -8,7 +8,7 @@ use Attribute;
  * Service tag to autoconfigure event listeners.
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
-class AsEventListener
+class AsDoctrineListener
 {
     public function __construct(
         public string $event,

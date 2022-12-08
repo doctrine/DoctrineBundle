@@ -3,8 +3,8 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Closure;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
-use Doctrine\Bundle\DoctrineBundle\Attribute\AsEventListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
@@ -1113,7 +1113,7 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /** @requires PHP 8 */
-    public function testAsEventListenerAttribute()
+    public function testAsDoctrineListenerAttribute()
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -1126,14 +1126,14 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([$config], $container);
 
         $attributes = $container->getAutoconfiguredAttributes();
-        $this->assertInstanceOf(Closure::class, $attributes[AsEventListener::class]);
+        $this->assertInstanceOf(Closure::class, $attributes[AsDoctrineListener::class]);
 
         $reflector  = new ReflectionClass(Php8EventListener::class);
         $definition = new ChildDefinition('');
         /** @psalm-suppress UndefinedMethod */
-        $attribute = $reflector->getAttributes(AsEventListener::class)[0]->newInstance();
+        $attribute = $reflector->getAttributes(AsDoctrineListener::class)[0]->newInstance();
 
-        $attributes[AsEventListener::class]($definition, $attribute);
+        $attributes[AsDoctrineListener::class]($definition, $attribute);
 
         $expected = [
             'event'      => Events::postFlush,
