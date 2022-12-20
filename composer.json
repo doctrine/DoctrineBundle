@@ -30,7 +30,7 @@
     "homepage": "https://www.doctrine-project.org",
     "require": {
         "php": "^7.4 || ^8.0",
-        "doctrine/annotations": "^1",
+        "doctrine/annotations": "^1|^2",
         "doctrine/cache": "^1.11 || ^2.0",
         "doctrine/dbal": "^3.4.0",
         "doctrine/persistence": "^2.2 || ^3",
