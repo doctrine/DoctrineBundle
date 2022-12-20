@@ -31,6 +31,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 use function array_filter;
@@ -41,6 +42,7 @@ use function assert;
 use function end;
 use function interface_exists;
 use function is_dir;
+use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 use function uniqid;
@@ -1024,20 +1026,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         }
     }
 
-    public static function dataWellKnownSchemaFilterServices(): Generator
-    {
-        yield ['cache', 'cache_items'];
-        yield ['lock', 'lock_keys'];
-        yield ['messenger', 'messenger_messages'];
-        yield ['messenger_legacy', 'messenger_messages'];
-        yield ['session', 'sessions'];
-    }
-
     /**
-     * @dataProvider dataWellKnownSchemaFilterServices
      * @group legacy
      */
-    public function testWellKnownSchemaFilterDefaultTables(string $fileName, string $tableName): void
+    public function testWellKnownSchemaFilterDefaultTables(): void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -1045,39 +1037,37 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container->addCompilerPass(new WellKnownSchemaFilterPass());
         $container->addCompilerPass(new DbalSchemaFilterPass());
 
-        $this->loadFromFile($container, 'well_known_schema_filter_default_tables_' . $fileName);
+        $this->loadFromFile($container, 'well_known_schema_filter_default_tables_session');
 
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.dbal.well_known_schema_asset_filter');
 
-        $this->assertSame([[$tableName]], $definition->getArguments());
-        $this->assertSame([['connection' => 'connection1'], ['connection' => 'connection2'], ['connection' => 'connection3']], $definition->getTag('doctrine.dbal.schema_filter'));
-
-        $definition = $container->getDefinition('doctrine.dbal.connection1_schema_asset_filter_manager');
-
-        $this->assertEquals([new Reference('doctrine.dbal.well_known_schema_asset_filter'), new Reference('doctrine.dbal.connection1_regex_schema_filter')], $definition->getArgument(0));
-
         $filter = $container->get('well_known_filter');
 
         $this->assertInstanceOf(BlacklistSchemaAssetFilter::class, $filter);
-        $this->assertFalse($filter->__invoke($tableName));
+
+        if (method_exists(PdoSessionHandler::class, 'configureSchema')) {
+            $this->assertNotSame([['sessions']], $definition->getArguments());
+            $this->assertTrue($filter->__invoke('sessions'));
+        } else {
+            $this->assertSame([['sessions']], $definition->getArguments());
+
+            $this->assertSame([['connection' => 'connection1'], ['connection' => 'connection2'], ['connection' => 'connection3']], $definition->getTag('doctrine.dbal.schema_filter'));
+
+            $definition = $container->getDefinition('doctrine.dbal.connection1_schema_asset_filter_manager');
+
+            $this->assertEquals([new Reference('doctrine.dbal.well_known_schema_asset_filter'), new Reference('doctrine.dbal.connection1_regex_schema_filter')], $definition->getArgument(0));
+            $this->assertFalse($filter->__invoke('sessions'));
+        }
+
         $this->assertTrue($filter->__invoke('anything_else'));
     }
 
-    public static function dataWellKnownSchemaOverriddenTablesFilterServices(): Generator
-    {
-        yield ['cache', 'app_cache'];
-        yield ['lock', 'app_locks'];
-        yield ['messenger', 'app_messages'];
-        yield ['session', 'app_session'];
-    }
-
     /**
-     * @dataProvider dataWellKnownSchemaOverriddenTablesFilterServices
      * @group legacy
      */
-    public function testWellKnownSchemaFilterOverriddenTables(string $fileName, string $tableName): void
+    public function testWellKnownSchemaFilterOverriddenTables(): void
     {
         $container = $this->getContainer([]);
         $loader    = new DoctrineExtension();
@@ -1085,14 +1075,19 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $container->addCompilerPass(new WellKnownSchemaFilterPass());
         $container->addCompilerPass(new DbalSchemaFilterPass());
 
-        $this->loadFromFile($container, 'well_known_schema_filter_overridden_tables_' . $fileName);
+        $this->loadFromFile($container, 'well_known_schema_filter_overridden_tables_session');
 
         $this->compileContainer($container);
 
         $filter = $container->get('well_known_filter');
 
         $this->assertInstanceOf(BlacklistSchemaAssetFilter::class, $filter);
-        $this->assertFalse($filter->__invoke($tableName));
+
+        if (method_exists(PdoSessionHandler::class, 'configureSchema')) {
+            $this->assertTrue($filter->__invoke('app_session'));
+        } else {
+            $this->assertFalse($filter->__invoke('app_session'));
+        }
     }
 
     public function testEntityListenerResolver(): void

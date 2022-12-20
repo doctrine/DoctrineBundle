@@ -2,15 +2,9 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
-use Symfony\Component\Cache\Adapter\DoctrineDbalAdapter;
-use Symfony\Component\Cache\Adapter\PdoAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
-use Symfony\Component\Lock\Store\DoctrineDbalStore;
-use Symfony\Component\Lock\Store\PdoStore;
-use Symfony\Component\Messenger\Bridge\Doctrine\Transport\Connection;
-use Symfony\Component\Messenger\Transport\Doctrine\Connection as LegacyConnection;
 
 use function array_keys;
 use function method_exists;
@@ -34,32 +28,17 @@ class WellKnownSchemaFilterPass implements CompilerPassInterface
                 continue;
             }
 
-            $table = null;
-
-            switch ($definition->getClass()) {
-                case DoctrineDbalAdapter::class:
-                case PdoAdapter::class:
-                    $table = $definition->getArguments()[3]['db_table'] ?? 'cache_items';
-                    break;
-
-                case PdoSessionHandler::class:
-                    $table = $definition->getArguments()[1]['db_table'] ?? 'sessions';
-                    break;
-
-                case DoctrineDbalStore::class:
-                case PdoStore::class:
-                    $table = $definition->getArguments()[1]['db_table'] ?? 'lock_keys';
-                    break;
-
-                case LegacyConnection::class:
-                case Connection::class:
-                    $table = $definition->getArguments()[0]['table_name'] ?? 'messenger_messages';
-                    break;
+            if ($definition->getClass() !== PdoSessionHandler::class) {
+                continue;
             }
 
-            if ($table && ! method_exists($definition->getClass(), 'configureSchema')) {
+            $table = $definition->getArguments()[1]['db_table'] ?? 'sessions';
+
+            if (! method_exists($definition->getClass(), 'configureSchema')) {
                 $blacklist[] = $table;
             }
+
+            break;
         }
 
         if (! $blacklist) {
