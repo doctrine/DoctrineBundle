@@ -35,11 +35,15 @@ class ContainerTest extends TestCase
 
         $container = $this->createXmlBundleTestContainer();
 
+        /** @psalm-suppress UndefinedClass */
+        if (interface_exists(Reader::class)) {
+            $this->assertInstanceOf(Reader::class, $container->get('doctrine.orm.metadata.annotation_reader'));
+        }
+
         $this->assertInstanceOf(DoctrineDataCollector::class, $container->get('data_collector.doctrine'));
         $this->assertInstanceOf(DBALConfiguration::class, $container->get('doctrine.dbal.default_connection.configuration'));
         $this->assertInstanceOf(EventManager::class, $container->get('doctrine.dbal.default_connection.event_manager'));
         $this->assertInstanceOf(Connection::class, $container->get('doctrine.dbal.default_connection'));
-        $this->assertInstanceOf(Reader::class, $container->get('doctrine.orm.metadata.annotation_reader'));
         $this->assertInstanceOf(Configuration::class, $container->get('doctrine.orm.default_configuration'));
         $this->assertInstanceOf(MappingDriverChain::class, $container->get('doctrine.orm.default_metadata_driver'));
         $this->assertInstanceOf(PhpArrayAdapter::class, $container->get('doctrine.orm.default_metadata_cache'));

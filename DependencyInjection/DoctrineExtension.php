@@ -12,6 +12,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\Common\Annotations\Annotation;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
@@ -374,6 +375,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (class_exists(AbstractType::class)) {
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
+        }
+
+        if (! class_exists(Annotation::class)) {
+            $container->removeAlias('doctrine.orm.metadata.annotation_reader');
         }
 
         // available in Symfony 5.1 and up to Symfony 5.4 (deprecated)

@@ -16,6 +16,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+use function class_exists;
 use function sys_get_temp_dir;
 use function uniqid;
 
@@ -37,7 +38,10 @@ class TestCase extends BaseTestCase
             'kernel.bundles_metadata' => [],
             'container.build_id' => uniqid(),
         ]));
-        $container->set('annotation_reader', new AnnotationReader());
+
+        if (class_exists(AnnotationReader::class)) {
+            $container->set('annotation_reader', new AnnotationReader());
+        }
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);

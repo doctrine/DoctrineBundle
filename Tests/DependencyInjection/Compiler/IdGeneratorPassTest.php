@@ -9,21 +9,30 @@ use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\CustomIdGe
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
 use Fixtures\Bundles\AnnotationsBundle\AnnotationsBundle;
-use Fixtures\Bundles\AnnotationsBundle\Entity\TestCustomIdGeneratorEntity;
+use Fixtures\Bundles\AnnotationsBundle\Entity\TestCustomIdGeneratorEntity as AnnotationCustomIdGeneratorEntity;
+use Fixtures\Bundles\AttributesBundle\AttributesBundle;
+use Fixtures\Bundles\AttributesBundle\Entity\TestCustomIdGeneratorEntity as AttributeCustomIdGeneratorEntity;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 use function assert;
+use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 use function uniqid;
+
+use const PHP_VERSION_ID;
 
 class IdGeneratorPassTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
+        if (PHP_VERSION_ID < 80000 && ! class_exists(AnnotationReader::class)) {
+            self::markTestSkipped('This test requires Annotations when run on PHP 7');
+        }
+
         if (interface_exists(EntityManagerInterface::class)) {
             return;
         }
@@ -33,9 +42,31 @@ class IdGeneratorPassTest extends TestCase
 
     public function testRepositoryServiceWiring(): void
     {
+        if (PHP_VERSION_ID >= 80000) {
+            $bundles  = ['AttributesBundle' => AttributesBundle::class];
+            $entity   = AttributeCustomIdGeneratorEntity::class;
+            $mappings = [
+                'AttributesBundle' => [
+                    'type' => 'attribute',
+                    'dir' => __DIR__ . '/../Fixtures/Bundles/AttributesBundle/Entity',
+                    'prefix' => 'Fixtures\Bundles\AttributesBundle\Entity',
+                ],
+            ];
+        } else {
+            $bundles  = ['AnnotationsBundle' => AnnotationsBundle::class];
+            $entity   = AnnotationCustomIdGeneratorEntity::class;
+            $mappings = [
+                'AnnotationsBundle' => [
+                    'type' => 'annotation',
+                    'dir' => __DIR__ . '/../Fixtures/Bundles/AnnotationsBundle/Entity',
+                    'prefix' => 'Fixtures\Bundles\AnnotationsBundle\Entity',
+                ],
+            ];
+        }
+
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.debug' => false,
-            'kernel.bundles' => ['AnnotationsBundle' => AnnotationsBundle::class],
+            'kernel.bundles' => $bundles,
             'kernel.cache_dir' => sys_get_temp_dir(),
             'kernel.environment' => 'test',
             'kernel.runtime_environment' => '%%env(default:kernel.environment:APP_RUNTIME_ENV)%%',
@@ -50,11 +81,21 @@ class IdGeneratorPassTest extends TestCase
             'env(base64:default::SYMFONY_DECRYPTION_SECRET)' => 'foo',
             'debug.file_link_format' => null,
         ]));
-        $container->set('annotation_reader', new AnnotationReader());
+
+        if (class_exists(AnnotationReader::class)) {
+            $container->set('annotation_reader', new AnnotationReader());
+        }
 
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
-        $extension->load(['framework' => ['http_method_override' => false]], $container);
+        $extension->load([
+            'framework' => [
+                'http_method_override' => false,
+                'annotations' => [
+                    'enabled' => class_exists(AnnotationReader::class),
+                ],
+            ],
+        ], $container);
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
@@ -64,15 +105,7 @@ class IdGeneratorPassTest extends TestCase
                     'driver' => 'pdo_sqlite',
                     'charset' => 'UTF8',
                 ],
-                'orm' => [
-                    'mappings' => [
-                        'AnnotationsBundle' => [
-                            'type' => 'annotation',
-                            'dir' => __DIR__ . '/../Fixtures/Bundles/AnnotationsBundle/Entity',
-                            'prefix' => 'Fixtures\Bundles\AnnotationsBundle\Entity',
-                        ],
-                    ],
-                ],
+                'orm' => ['mappings' => $mappings],
             ],
         ], $container);
 
@@ -87,7 +120,7 @@ class IdGeneratorPassTest extends TestCase
         $em = $container->get('doctrine.orm.default_entity_manager');
         assert($em instanceof EntityManagerInterface);
 
-        $metadata = $em->getClassMetadata(TestCustomIdGeneratorEntity::class);
+        $metadata = $em->getClassMetadata($entity);
         $this->assertInstanceOf(CustomIdGenerator::class, $metadata->idGenerator);
     }
 }

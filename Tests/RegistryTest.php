@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Closure;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
@@ -16,7 +17,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 
 use function assert;
+use function class_exists;
 use function interface_exists;
+
+use const PHP_VERSION_ID;
 
 class RegistryTest extends TestCase
 {
@@ -199,6 +203,10 @@ class RegistryTest extends TestCase
 
     public function testIdentityMapsStayConsistentAfterReset(): void
     {
+        if (PHP_VERSION_ID < 80000 && ! class_exists(AnnotationReader::class)) {
+            self::markTestSkipped('This test requires Annotations when run on PHP 7');
+        }
+
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
         }
