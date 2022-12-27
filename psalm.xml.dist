@@ -51,6 +51,7 @@
                 <!-- We use the "Foo" namespace in unit tests. We are aware that those classes don't exist. -->
                 <referencedClass name="Foo\*"/>
                 <referencedClass name="Symfony\Bridge\Doctrine\Attribute\MapEntity"/>
+                <referencedClass name="Symfony\Component\VarExporter\LazyGhostTrait"/>
                 <referencedClass name="Symfony\Component\VarExporter\LazyObjectInterface"/>
             </errorLevel>
         </UndefinedClass>
