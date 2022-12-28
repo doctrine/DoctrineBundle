@@ -30,7 +30,6 @@
     "homepage": "https://www.doctrine-project.org",
     "require": {
         "php": "^7.4 || ^8.0",
-        "doctrine/annotations": "^1",
         "doctrine/cache": "^1.11 || ^2.0",
         "doctrine/dbal": "^3.4.0",
         "doctrine/persistence": "^2.2 || ^3",
@@ -45,6 +44,7 @@
         "symfony/service-contracts": "^1.1.1 || ^2.0 || ^3"
     },
     "require-dev": {
+        "doctrine/annotations": "^1 || ^2",
         "doctrine/coding-standard": "^9.0",
         "doctrine/orm": "^2.11 || ^3.0",
         "friendsofphp/proxy-manager-lts": "^1.0",
@@ -64,6 +64,7 @@
         "vimeo/psalm": "^4.30"
     },
     "conflict": {
+        "doctrine/annotations": ">=3.0",
         "doctrine/orm": "<2.11 || >=3.0",
         "twig/twig": "<1.34 || >=2.0,<2.4"
     },

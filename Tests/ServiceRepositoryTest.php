@@ -20,14 +20,21 @@ use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 use function uniqid;
+
+use const PHP_VERSION_ID;
 
 class ServiceRepositoryTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
+        if (PHP_VERSION_ID < 80000 && ! class_exists(AnnotationReader::class)) {
+            self::markTestSkipped('This test requires Annotations when run on PHP 7');
+        }
+
         if (interface_exists(EntityManagerInterface::class)) {
             return;
         }
@@ -54,11 +61,21 @@ class ServiceRepositoryTest extends TestCase
             'env(base64:default::SYMFONY_DECRYPTION_SECRET)' => 'foo',
             'debug.file_link_format' => null,
         ]));
-        $container->set('annotation_reader', new AnnotationReader());
+
+        if (class_exists(AnnotationReader::class)) {
+            $container->set('annotation_reader', new AnnotationReader());
+        }
 
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
-        $extension->load(['framework' => ['http_method_override' => false]], $container);
+        $extension->load([
+            'framework' => [
+                'http_method_override' => false,
+                'annotations' => [
+                    'enabled' => class_exists(AnnotationReader::class),
+                ],
+            ],
+        ], $container);
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
@@ -71,7 +88,7 @@ class ServiceRepositoryTest extends TestCase
                 'orm' => [
                     'mappings' => [
                         'RepositoryServiceBundle' => [
-                            'type' => 'annotation',
+                            'type' => PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation',
                             'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/RepositoryServiceBundle/Entity',
                             'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
                         ],
