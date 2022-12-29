@@ -48,6 +48,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
@@ -1030,7 +1031,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     private function loadMessengerServices(ContainerBuilder $container): void
     {
-        // If the Messenger component is installed and the doctrine transaction middleware is available, wire it:
+        // If the Messenger component is installed, wire it:
+
         /** @psalm-suppress UndefinedClass Optional dependency */
         if (! interface_exists(MessageBusInterface::class)) {
             return;
@@ -1038,6 +1040,18 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('messenger.xml');
+
+        /**
+         * The Doctrine transport component (symfony/doctrine-messenger) is optional.
+         * Remove service definition, if it is not available
+         *
+         * @psalm-suppress UndefinedClass Optional dependency
+         */
+        if (class_exists(DoctrineTransportFactory::class)) {
+            return;
+        }
+
+        $container->removeDefinition('messenger.transport.doctrine.factory');
     }
 
     private function createArrayAdapterCachePool(ContainerBuilder $container, string $objectManagerName, string $cacheName): string
