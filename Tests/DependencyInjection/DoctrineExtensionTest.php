@@ -49,6 +49,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 use function array_values;
@@ -939,6 +940,64 @@ class DoctrineExtensionTest extends TestCase
         } else {
             $this->assertFalse($container->hasDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager'));
         }
+    }
+
+    public function testMessengerIntegrationWithDoctrineTransport(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(MessageBusInterface::class)) {
+            $this->markTestSkipped('Symfony Messenger component is not installed');
+        }
+
+        /** @psalm-suppress UndefinedClass */
+        if (! class_exists(DoctrineTransportFactory::class)) {
+            $this->markTestSkipped('This test requires Symfony Messenger Doctrine transport to be installed');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+                ->addBaseConnection()
+                ->build();
+        $extension->load([$config], $container);
+
+        $this->assertTrue($container->hasDefinition('messenger.transport.doctrine.factory'));
+
+        $messengerTransportDoctrineFactory = $container->getDefinition('messenger.transport.doctrine.factory');
+
+        $this->assertCount(1, $messengerTransportDoctrineFactory->getArguments());
+        $this->assertSame('doctrine', (string) $messengerTransportDoctrineFactory->getArgument(0));
+
+        /** @psalm-suppress UndefinedClass */
+        $this->assertSame(DoctrineTransportFactory::class, $messengerTransportDoctrineFactory->getClass());
+
+        $this->assertTrue($messengerTransportDoctrineFactory->hasTag('messenger.transport_factory'));
+        $this->assertContains('messenger.transport_factory', $container->findTags());
+    }
+
+    public function testMessengerIntegrationWithoutDoctrineTransport(): void
+    {
+        /** @psalm-suppress UndefinedClass */
+        if (! interface_exists(MessageBusInterface::class)) {
+            $this->markTestSkipped('Symfony Messenger component is not installed');
+        }
+
+        /** @psalm-suppress UndefinedClass */
+        if (class_exists(DoctrineTransportFactory::class)) {
+            $this->markTestSkipped('This test requires Symfony Messenger Doctrine transport to not be installed');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+                ->addBaseConnection()
+                ->build();
+        $extension->load([$config], $container);
+
+        $this->assertFalse($container->hasDefinition('messenger.transport.doctrine.factory'));
+        $this->assertNotContains('messenger.transport_factory', $container->findTags());
     }
 
     /** @group legacy */
