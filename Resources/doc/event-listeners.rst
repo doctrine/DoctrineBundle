@@ -1,16 +1,16 @@
 Event Listeners
 ===============
 
-In opposite to :doc:`Entity Listeners </entity-listeners>`, Events listeners
+In opposite to :doc:`Entity Listeners </entity-listeners>`, Event listeners
 are services that listen for all entities in your application.
 
 See https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#implementing-event-listeners
-for more info on events listeners.
+for more info on event listeners.
 
 To register a service to act as an event listener you have to tag it with the
 ``doctrine.event_listener`` tag:
 
-Starting with Doctrine bundle 2.8, you can use the ``AsEventListener``
+Starting with Doctrine bundle 2.8, you can use the ``AsDoctrineListener``
 attribute to tag the service.
 
 .. configuration-block::
@@ -20,10 +20,10 @@ attribute to tag the service.
         // src/App/EventListener/SearchIndexer.php
         namespace App\EventListener;
 
-        use Doctrine\Bundle\DoctrineBundle\Attribute\AsEventListener;
+        use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
         use Doctrine\ORM\Event\LifecycleEventArgs;
 
-        #[AsEventListener('postPersist'/*, 500, 'default'*/)]
+        #[AsDoctrineListener('postPersist'/*, 500, 'default'*/)]
         class SearchIndexer
         {
             public function postPersist(LifecycleEventArgs $event): void
@@ -96,7 +96,7 @@ attribute to tag the service.
                     // to the same event (default priority = 0; higher numbers = listener is run earlier)
                     'priority' => 500,
 
-                    # you can also restrict listeners to a specific Doctrine connection
+                    // you can also restrict listeners to a specific Doctrine connection
                     'connection' => 'default',
                 ])
             ;
