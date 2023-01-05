@@ -8,7 +8,7 @@
         {% set icon %}
             {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' %}
 
-            {{ include('@Doctrine/Collector/icon.svg') }}
+            <span class="icon">{{ include('@Doctrine/Collector/' ~ (profiler_markup_version < 3 ? 'icon' : 'database') ~ '.svg') }}</span>
 
             {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
                 <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
@@ -68,7 +68,7 @@
 
 {% block menu %}
     <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }} {{ collector.querycount == 0 ? 'disabled' }}">
-        <span class="icon">{{ include('@Doctrine/Collector/icon.svg') }}</span>
+        <span class="icon">{{ include('@Doctrine/Collector/' ~ (profiler_markup_version < 3 ? 'icon' : 'database') ~ '.svg') }}</span>
         <strong>Doctrine</strong>
         {% if collector.invalidEntityCount %}
             <span class="count">
@@ -103,38 +103,42 @@
     <h2>Query Metrics</h2>
 
     <div class="metrics">
-        <div class="metric">
-            <span class="value">{{ collector.querycount }}</span>
-            <span class="label">Database Queries</span>
-        </div>
+        <div class="metric-group">
+            <div class="metric">
+                <span class="value">{{ collector.querycount }}</span>
+                <span class="label">Database Queries</span>
+            </div>
 
-        <div class="metric">
-            <span class="value">{{ collector.groupedQueryCount }}</span>
-            <span class="label">Different statements</span>
-        </div>
+            <div class="metric">
+                <span class="value">{{ collector.groupedQueryCount }}</span>
+                <span class="label">Different statements</span>
+            </div>
 
-        <div class="metric">
-            <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
-            <span class="label">Query time</span>
-        </div>
+            <div class="metric">
+                <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
+                <span class="label">Query time</span>
+            </div>
 
-        <div class="metric">
-            <span class="value">{{ collector.invalidEntityCount }}</span>
-            <span class="label">Invalid entities</span>
+            <div class="metric">
+                <span class="value">{{ collector.invalidEntityCount }}</span>
+                <span class="label">Invalid entities</span>
+            </div>
         </div>
 
         {% if collector.cacheEnabled %}
-            <div class="metric">
-                <span class="value">{{ collector.cacheHitsCount }}</span>
-                <span class="label">Cache hits</span>
-            </div>
-            <div class="metric">
-                <span class="value">{{ collector.cacheMissesCount }}</span>
-                <span class="label">Cache misses</span>
-            </div>
-            <div class="metric">
-                <span class="value">{{ collector.cachePutsCount }}</span>
-                <span class="label">Cache puts</span>
+            <div class="metric-group">
+                <div class="metric">
+                    <span class="value">{{ collector.cacheHitsCount }}</span>
+                    <span class="label">Cache hits</span>
+                </div>
+                <div class="metric">
+                    <span class="value">{{ collector.cacheMissesCount }}</span>
+                    <span class="label">Cache misses</span>
+                </div>
+                <div class="metric">
+                    <span class="value">{{ collector.cachePutsCount }}</span>
+                    <span class="label">Cache puts</span>
+                </div>
             </div>
         {% endif %}
     </div>
@@ -175,98 +179,98 @@
                 </tr>
                 </thead>
                 <tbody id="queries-{{ loop.index }}">
-                    {% for i, query in queries %}
-                        {% set i = group_queries ? query.index : i %}
-                        <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
-                            {% if group_queries %}
-                                <td class="time-container">
-                                    <span class="time-bar" style="width:{{ '%0.2f'|format(query.executionPercent) }}%"></span>
-                                    <span class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms<br />({{ '%0.2f'|format(query.executionPercent) }}%)</span>
-                                </td>
-                                <td class="nowrap">{{ query.count }}</td>
-                            {% else %}
-                                <td class="nowrap">{{ loop.index }}</td>
-                                <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
-                            {% endif %}
-                            <td>
-                                {{ query.sql|doctrine_prettify_sql }}
+                {% for i, query in queries %}
+                    {% set i = group_queries ? query.index : i %}
+                    <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
+                        {% if group_queries %}
+                            <td class="time-container">
+                                <span class="time-bar" style="width:{{ '%0.2f'|format(query.executionPercent) }}%"></span>
+                                <span class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms<br />({{ '%0.2f'|format(query.executionPercent) }}%)</span>
+                            </td>
+                            <td class="nowrap">{{ query.count }}</td>
+                        {% else %}
+                            <td class="nowrap">{{ loop.index }}</td>
+                            <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                        {% endif %}
+                        <td>
+                            {{ query.sql|doctrine_prettify_sql }}
 
-                                <div>
-                                    <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(query.params, 2) }}
-                                </div>
+                            <div>
+                                <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(query.params, 2) }}
+                            </div>
 
-                                <div class="text-small font-normal">
-                                    <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
-
-                                    {% if query.runnable %}
-                                        &nbsp;&nbsp;
-                                        <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
-                                    {% endif %}
-
-                                    {% if query.explainable %}
-                                        &nbsp;&nbsp;
-                                        <a class="link-inverse" href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
-                                    {% endif %}
-
-                                    {% if query.backtrace is defined %}
-                                        &nbsp;&nbsp;
-                                        <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#backtrace-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide query backtrace">View query backtrace</a>
-                                    {% endif %}
-                                </div>
-
-                                <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
-                                    {{ query.sql|doctrine_format_sql(highlight = true) }}
-                                    <button class="btn btn-sm hidden" data-clipboard-text="{{ query.sql|doctrine_format_sql(highlight = false)|e('html_attr') }}">Copy</button>
-                                </div>
+                            <div class="text-small font-normal">
+                                <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
 
                                 {% if query.runnable %}
-                                    <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
-                                        {% set runnable_sql = (query.sql ~ ';')|doctrine_replace_query_parameters(query.params) %}
-                                        {{ runnable_sql|doctrine_prettify_sql }}
-                                        <button class="btn btn-sm hidden" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
-                                    </div>
+                                    &nbsp;&nbsp;
+                                    <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
                                 {% endif %}
 
                                 {% if query.explainable %}
-                                    <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="sql-explain"></div>
+                                    &nbsp;&nbsp;
+                                    <a class="link-inverse" href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
                                 {% endif %}
 
                                 {% if query.backtrace is defined %}
-                                    <div id="backtrace-{{ i }}-{{ loop.parent.loop.index }}" class="hidden">
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">File/Call</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for trace in query.backtrace %}
-                                                    <tr>
-                                                        <td>{{ loop.index }}</td>
-                                                        <td>
+                                    &nbsp;&nbsp;
+                                    <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#backtrace-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide query backtrace">View query backtrace</a>
+                                {% endif %}
+                            </div>
+
+                            <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                {{ query.sql|doctrine_format_sql(highlight = true) }}
+                                <button class="btn btn-sm hidden" data-clipboard-text="{{ query.sql|doctrine_format_sql(highlight = false)|e('html_attr') }}">Copy</button>
+                            </div>
+
+                            {% if query.runnable %}
+                                <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                    {% set runnable_sql = (query.sql ~ ';')|doctrine_replace_query_parameters(query.params) %}
+                                    {{ runnable_sql|doctrine_prettify_sql }}
+                                    <button class="btn btn-sm hidden" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
+                                </div>
+                            {% endif %}
+
+                            {% if query.explainable %}
+                                <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="sql-explain"></div>
+                            {% endif %}
+
+                            {% if query.backtrace is defined %}
+                                <div id="backtrace-{{ i }}-{{ loop.parent.loop.index }}" class="hidden">
+                                    <table>
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">File/Call</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for trace in query.backtrace %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>
                                                             <span class="text-small">
                                                                 {% set line_number = trace.line|default(1) %}
                                                                 {% if trace.file is defined %}
                                                                     <a href="{{ trace.file|file_link(line_number) }}">
                                                                 {% endif %}
-                                                                    {{- trace.class|default ~ (trace.class is defined ? trace.type|default('::')) -}}
+                                                                        {{- trace.class|default ~ (trace.class is defined ? trace.type|default('::')) -}}
                                                                     <span class="status-warning">{{ trace.function }}</span>
                                                                 {% if trace.file is defined %}
                                                                     </a>
                                                                 {% endif %}
                                                                 (line {{ line_number }})
                                                             </span>
-                                                        </td>
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         {% endif %}
