@@ -116,7 +116,12 @@ class DoctrineDataCollector extends BaseCollector
                     }
 
                     $classErrors                        = $validator->validateClass($class);
-                    $entities[$name][$class->getName()] = $class->getName();
+                    $r                                  = $class->getReflectionClass();
+                    $entities[$name][$class->getName()] = [
+                        'class' => $class->getName(),
+                        'file' => $r->getFileName(),
+                        'line' => $r->getStartLine(),
+                    ];
 
                     if (empty($classErrors)) {
                         continue;
