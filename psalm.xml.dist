@@ -63,5 +63,17 @@
                 <directory name="Tests/DependencyInjection"/>
             </errorLevel>
         </UndefinedDocblockClass>
+        <UndefinedTrait>
+            <errorLevel type="suppress">
+                <!-- Consumer is meant to check if trait exists before using this class -->
+                <file name="Repository/LazyServiceEntityRepository.php"/>
+            </errorLevel>
+        </UndefinedTrait>
+        <DuplicateClass>
+            <errorLevel type="suppress">
+                <!-- Conditional class definition-->
+                <file name="Repository/ServiceEntityRepository.php"/>
+            </errorLevel>
+        </DuplicateClass>
     </issueHandlers>
 </psalm>
