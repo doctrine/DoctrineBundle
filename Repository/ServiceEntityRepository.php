@@ -11,6 +11,10 @@ use function sprintf;
 use function trait_exists;
 
 if (trait_exists(LazyGhostTrait::class)) {
+    /**
+     * @template T of object
+     * @template-extends LazyServiceEntityRepository<T>
+     */
     class ServiceEntityRepository extends LazyServiceEntityRepository
     {
     }
