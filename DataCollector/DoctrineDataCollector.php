@@ -12,8 +12,6 @@ use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\AbstractClassMetadataFactory;
-use ReflectionClass;
-use ReflectionException;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\HttpFoundation\Request;
@@ -117,21 +115,13 @@ class DoctrineDataCollector extends BaseCollector
                         continue;
                     }
 
-                    $classErrors = $validator->validateClass($class);
-                    try {
-                        $r                                  = new ReflectionClass($class->getName());
-                        $entities[$name][$class->getName()] = [
-                            'class' => $class->getName(),
-                            'file' => $r->getFileName(),
-                            'line' => $r->getStartLine(),
-                        ];
-                    } catch (ReflectionException $e) {
-                        $entities[$name][$class->getName()] = [
-                            'class' => $class->getName(),
-                            'file' => 'n/a',
-                            'line' => 'n/a',
-                        ];
-                    }
+                    $classErrors                        = $validator->validateClass($class);
+                    $r                                  = $class->getReflectionClass();
+                    $entities[$name][$class->getName()] = [
+                        'class' => $class->getName(),
+                        'file' => $r->getFileName(),
+                        'line' => $r->getStartLine(),
+                    ];
 
                     if (empty($classErrors)) {
                         continue;
