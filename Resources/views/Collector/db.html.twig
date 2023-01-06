@@ -143,248 +143,285 @@
         {% endif %}
     </div>
 
-    {% set group_queries = request.query.getBoolean('group') %}
-    {% if group_queries %}
-        <h2>Grouped Statements</h2>
-        <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Show all queries</a></p>
-    {% else %}
-        <h2>Queries</h2>
-        <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar statements</a></p>
-    {% endif %}
+    <div class="sf-tabs" style="margin-top: 20px;">
+        <div class="tab {{ collector.queries is empty ? 'disabled' }}">
+            {% set group_queries = request.query.getBoolean('group') %}
+            <h3 class="tab-title">
+                {% if group_queries %}
+                    Grouped Statements
+                {% else %}
+                    Queries
+                {% endif %}
+            </h3>
 
-    {% for connection, queries in collector.queries %}
-        {% if collector.connections|length > 1 %}
-            <h3>{{ connection }} <small>connection</small></h3>
-        {% endif %}
-
-        {% if queries is empty %}
-            <div class="empty">
-                <p>No database queries were performed.</p>
-            </div>
-        {% else %}
-            {% if group_queries %}
-                {% set queries = collector.groupedQueries[connection] %}
-            {% endif %}
-            <table class="alt queries-table">
-                <thead>
-                <tr>
+            <div class="tab-content">
+                {% if not collector.queries %}
+                    <div class="empty">
+                        <p>No executed queries.</p>
+                    </div>
+                {% else %}
                     {% if group_queries %}
-                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="1" style="cursor: pointer;">Time<span class="text-muted">&#9660;</span></th>
-                        <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Count<span></span></th>
+                        <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Show all queries</a></p>
                     {% else %}
-                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;">#<span class="text-muted">&#9650;</span></th>
-                        <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time<span></span></th>
+                        <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar statements</a></p>
                     {% endif %}
-                    <th style="width: 100%;">Info</th>
-                </tr>
-                </thead>
-                <tbody id="queries-{{ loop.index }}">
-                {% for i, query in queries %}
-                    {% set i = group_queries ? query.index : i %}
-                    <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
-                        {% if group_queries %}
-                            <td class="time-container">
-                                <span class="time-bar" style="width:{{ '%0.2f'|format(query.executionPercent) }}%"></span>
-                                <span class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms<br />({{ '%0.2f'|format(query.executionPercent) }}%)</span>
-                            </td>
-                            <td class="nowrap">{{ query.count }}</td>
-                        {% else %}
-                            <td class="nowrap">{{ loop.index }}</td>
-                            <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+
+                    {% for connection, queries in collector.queries %}
+                        {% if collector.connections|length > 1 %}
+                            <h3>{{ connection }} <small>connection</small></h3>
                         {% endif %}
-                        <td>
-                            {{ query.sql|doctrine_prettify_sql }}
 
-                            <div>
-                                <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(query.params, 2) }}
+                        {% if queries is empty %}
+                            <div class="empty">
+                                <p>No database queries were performed.</p>
                             </div>
-
-                            <div class="text-small font-normal">
-                                <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
-
-                                {% if query.runnable %}
-                                    &nbsp;&nbsp;
-                                    <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
-                                {% endif %}
-
-                                {% if query.explainable %}
-                                    &nbsp;&nbsp;
-                                    <a class="link-inverse" href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
-                                {% endif %}
-
-                                {% if query.backtrace is defined %}
-                                    &nbsp;&nbsp;
-                                    <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#backtrace-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide query backtrace">View query backtrace</a>
-                                {% endif %}
-                            </div>
-
-                            <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
-                                {{ query.sql|doctrine_format_sql(highlight = true) }}
-                                <button class="btn btn-sm hidden" data-clipboard-text="{{ query.sql|doctrine_format_sql(highlight = false)|e('html_attr') }}">Copy</button>
-                            </div>
-
-                            {% if query.runnable %}
-                                <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
-                                    {% set runnable_sql = (query.sql ~ ';')|doctrine_replace_query_parameters(query.params) %}
-                                    {{ runnable_sql|doctrine_prettify_sql }}
-                                    <button class="btn btn-sm hidden" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
-                                </div>
+                        {% else %}
+                            {% if group_queries %}
+                                {% set queries = collector.groupedQueries[connection] %}
                             {% endif %}
+                            <table class="alt queries-table">
+                                <thead>
+                                <tr>
+                                    {% if group_queries %}
+                                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="1" style="cursor: pointer;">Time<span class="text-muted">&#9660;</span></th>
+                                        <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Count<span></span></th>
+                                    {% else %}
+                                        <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-{{ loop.index }}')" data-sort-direction="-1" style="cursor: pointer;">#<span class="text-muted">&#9650;</span></th>
+                                        <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-{{ loop.index }}')" style="cursor: pointer;">Time<span></span></th>
+                                    {% endif %}
+                                    <th style="width: 100%;">Info</th>
+                                </tr>
+                                </thead>
+                                <tbody id="queries-{{ loop.index }}">
+                                {% for i, query in queries %}
+                                    {% set i = group_queries ? query.index : i %}
+                                    <tr id="queryNo-{{ i }}-{{ loop.parent.loop.index }}">
+                                        {% if group_queries %}
+                                            <td class="time-container">
+                                                <span class="time-bar" style="width:{{ '%0.2f'|format(query.executionPercent) }}%"></span>
+                                                <span class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms<br />({{ '%0.2f'|format(query.executionPercent) }}%)</span>
+                                            </td>
+                                            <td class="nowrap">{{ query.count }}</td>
+                                        {% else %}
+                                            <td class="nowrap">{{ loop.index }}</td>
+                                            <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                                        {% endif %}
+                                        <td>
+                                            {{ query.sql|doctrine_prettify_sql }}
 
-                            {% if query.explainable %}
-                                <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="sql-explain"></div>
-                            {% endif %}
+                                            <div>
+                                                <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(query.params, 2) }}
+                                            </div>
 
-                            {% if query.backtrace is defined %}
-                                <div id="backtrace-{{ i }}-{{ loop.parent.loop.index }}" class="hidden">
-                                    <table>
-                                        <thead>
-                                        <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">File/Call</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for trace in query.backtrace %}
-                                            <tr>
-                                                <td>{{ loop.index }}</td>
-                                                <td>
-                                                            <span class="text-small">
-                                                                {% set line_number = trace.line|default(1) %}
-                                                                {% if trace.file is defined %}
-                                                                    <a href="{{ trace.file|file_link(line_number) }}">
-                                                                {% endif %}
-                                                                        {{- trace.class|default ~ (trace.class is defined ? trace.type|default('::')) -}}
-                                                                    <span class="status-warning">{{ trace.function }}</span>
-                                                                {% if trace.file is defined %}
-                                                                    </a>
-                                                                {% endif %}
-                                                                (line {{ line_number }})
-                                                            </span>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    {% endfor %}
+                                            <div class="text-small font-normal">
+                                                <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
 
-    <h2>Database Connections</h2>
+                                                {% if query.runnable %}
+                                                    &nbsp;&nbsp;
+                                                    <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
+                                                {% endif %}
 
-    {% if not collector.connections %}
-        <div class="empty">
-            <p>There are no configured database connections.</p>
-        </div>
-    {% else %}
-        {{ helper.render_simple_table('Name', 'Service', collector.connections) }}
-    {% endif %}
+                                                {% if query.explainable %}
+                                                    &nbsp;&nbsp;
+                                                    <a class="link-inverse" href="{{ path('_profiler', { panel: 'db', token: token, page: 'explain', connection: connection, query: i }) }}" onclick="return explain(this);" data-target-id="explain-{{ i }}-{{ loop.parent.loop.index }}">Explain query</a>
+                                                {% endif %}
 
-    <h2>Entity Managers</h2>
+                                                {% if query.backtrace is defined %}
+                                                    &nbsp;&nbsp;
+                                                    <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#backtrace-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide query backtrace">View query backtrace</a>
+                                                {% endif %}
+                                            </div>
 
-    {% if not collector.managers %}
-        <div class="empty">
-            <p>There are no configured entity managers.</p>
-        </div>
-    {% else %}
-        {{ helper.render_simple_table('Name', 'Service', collector.managers) }}
-    {% endif %}
+                                            <div id="formatted-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                                {{ query.sql|doctrine_format_sql(highlight = true) }}
+                                                <button class="btn btn-sm hidden" data-clipboard-text="{{ query.sql|doctrine_format_sql(highlight = false)|e('html_attr') }}">Copy</button>
+                                            </div>
 
-    <h2>Second Level Cache</h2>
+                                            {% if query.runnable %}
+                                                <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                                    {% set runnable_sql = (query.sql ~ ';')|doctrine_replace_query_parameters(query.params) %}
+                                                    {{ runnable_sql|doctrine_prettify_sql }}
+                                                    <button class="btn btn-sm hidden" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
+                                                </div>
+                                            {% endif %}
 
-    {% if not collector.cacheEnabled %}
-        <div class="empty">
-            <p>Second Level Cache is not enabled.</p>
-        </div>
-    {% else %}
-        {% if not collector.cacheCounts %}
-            <div class="empty">
-                <p>Second level cache information is not available.</p>
-            </div>
-        {% else %}
-            <div class="metrics">
-                <div class="metric">
-                    <span class="value">{{ collector.cacheCounts.hits }}</span>
-                    <span class="label">Hits</span>
-                </div>
+                                            {% if query.explainable %}
+                                                <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="sql-explain"></div>
+                                            {% endif %}
 
-                <div class="metric">
-                    <span class="value">{{ collector.cacheCounts.misses }}</span>
-                    <span class="label">Misses</span>
-                </div>
-
-                <div class="metric">
-                    <span class="value">{{ collector.cacheCounts.puts }}</span>
-                    <span class="label">Puts</span>
-                </div>
-            </div>
-
-            {% if collector.cacheRegions.hits %}
-                <h3>Number of cache hits</h3>
-                {{ helper.render_simple_table('Region', 'Hits', collector.cacheRegions.hits) }}
-            {% endif %}
-
-            {% if collector.cacheRegions.misses %}
-                <h3>Number of cache misses</h3>
-                {{ helper.render_simple_table('Region', 'Misses', collector.cacheRegions.misses) }}
-            {% endif %}
-
-            {% if collector.cacheRegions.puts %}
-                <h3>Number of cache puts</h3>
-                {{ helper.render_simple_table('Region', 'Puts', collector.cacheRegions.puts) }}
-            {% endif %}
-        {% endif %}
-    {% endif %}
-
-    {% if collector.entities|length > 0 %}
-        <h2>Entities Mapping</h2>
-
-        {% for manager, classes in collector.entities %}
-            {% if collector.managers|length > 1 %}
-                <h3>{{ manager }} <small>entity manager</small></h3>
-            {% endif %}
-
-            {% if classes is empty %}
-                <div class="empty">
-                    <p>No loaded entities.</p>
-                </div>
-            {% else %}
-                <table>
-                    <thead>
-                    <tr>
-                        <th scope="col">Class</th>
-                        <th scope="col">Mapping errors</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for class in classes %}
-                        {% set contains_errors = collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
-                        <tr class="{{ contains_errors ? 'status-error' }}">
-                            <td>{{ class }}</td>
-                            <td class="font-normal">
-                                {% if contains_errors %}
-                                    <ul>
-                                        {% for error in collector.mappingErrors[manager][class] %}
-                                            <li>{{ error }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    No errors.
-                                {% endif %}
-                            </td>
-                        </tr>
+                                            {% if query.backtrace is defined %}
+                                                <div id="backtrace-{{ i }}-{{ loop.parent.loop.index }}" class="hidden">
+                                                    <table>
+                                                        <thead>
+                                                        <tr>
+                                                            <th scope="col">#</th>
+                                                            <th scope="col">File/Call</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        {% for trace in query.backtrace %}
+                                                            <tr>
+                                                                <td>{{ loop.index }}</td>
+                                                                <td>
+                                                                            <span class="text-small">
+                                                                                {% set line_number = trace.line|default(1) %}
+                                                                                {% if trace.file is defined %}
+                                                                                    <a href="{{ trace.file|file_link(line_number) }}">
+                                                                                {% endif %}
+                                                                                        {{- trace.class|default ~ (trace.class is defined ? trace.type|default('::')) -}}
+                                                                                    <span class="status-warning">{{ trace.function }}</span>
+                                                                                {% if trace.file is defined %}
+                                                                                    </a>
+                                                                                {% endif %}
+                                                                                (line {{ line_number }})
+                                                                            </span>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
                     {% endfor %}
-                    </tbody>
-                </table>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tab {{ collector.connections is empty ? 'disabled' }}">
+            <h3 class="tab-title">Database Connections</h3>
+            <div class="tab-content">
+                {% if not collector.connections %}
+                    <div class="empty">
+                        <p>There are no configured database connections.</p>
+                    </div>
+                {% else %}
+                    {{ helper.render_simple_table('Name', 'Service', collector.connections) }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tab {{ collector.managers is empty ? 'disabled' }}">
+            <h3 class="tab-title">Entity Managers</h3>
+            <div class="tab-content">
+
+                {% if not collector.managers %}
+                    <div class="empty">
+                        <p>There are no configured entity managers.</p>
+                    </div>
+                {% else %}
+                    {{ helper.render_simple_table('Name', 'Service', collector.managers) }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tab {{ not collector.cacheEnabled ? 'disabled' }}">
+            <h3 class="tab-title">Second Level Cache</h3>
+            <div class="tab-content">
+
+                {% if not collector.cacheEnabled %}
+                    <div class="empty">
+                        <p>Second Level Cache is not enabled.</p>
+                    </div>
+                {% else %}
+                    {% if not collector.cacheCounts %}
+                        <div class="empty">
+                            <p>Second level cache information is not available.</p>
+                        </div>
+                    {% else %}
+                        <div class="metrics">
+                            <div class="metric">
+                                <span class="value">{{ collector.cacheCounts.hits }}</span>
+                                <span class="label">Hits</span>
+                            </div>
+
+                            <div class="metric">
+                                <span class="value">{{ collector.cacheCounts.misses }}</span>
+                                <span class="label">Misses</span>
+                            </div>
+
+                            <div class="metric">
+                                <span class="value">{{ collector.cacheCounts.puts }}</span>
+                                <span class="label">Puts</span>
+                            </div>
+                        </div>
+
+                        {% if collector.cacheRegions.hits %}
+                            <h3>Number of cache hits</h3>
+                            {{ helper.render_simple_table('Region', 'Hits', collector.cacheRegions.hits) }}
+                        {% endif %}
+
+                        {% if collector.cacheRegions.misses %}
+                            <h3>Number of cache misses</h3>
+                            {{ helper.render_simple_table('Region', 'Misses', collector.cacheRegions.misses) }}
+                        {% endif %}
+
+                        {% if collector.cacheRegions.puts %}
+                            <h3>Number of cache puts</h3>
+                            {{ helper.render_simple_table('Region', 'Puts', collector.cacheRegions.puts) }}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tab {{ not collector.entities ? 'disabled' }}">
+            <h3 class="tab-title">Entities Mapping</h3>
+            <div class="tab-content">
+
+                {% if not collector.entities %}
+                    <div class="empty">
+                        <p>No mapped entities.</p>
+                    </div>
+                {% else %}
+                    {% for manager, classes in collector.entities %}
+                        {% if collector.managers|length > 1 %}
+                            <h3>{{ manager }} <small>entity manager</small></h3>
+                        {% endif %}
+
+                        {% if classes is empty %}
+                            <div class="empty">
+                                <p>No loaded entities.</p>
+                            </div>
+                        {% else %}
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th scope="col">Class</th>
+                                    <th scope="col">Mapping errors</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for class in classes %}
+                                    {% set contains_errors = collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
+                                    <tr class="{{ contains_errors ? 'status-error' }}">
+                                        <td>{{ class }}</td>
+                                        <td class="font-normal">
+                                            {% if contains_errors %}
+                                                <ul>
+                                                    {% for error in collector.mappingErrors[manager][class] %}
+                                                        <li>{{ error }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                No errors.
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
     <script type="text/javascript">//<![CDATA[
         function explain(link) {
