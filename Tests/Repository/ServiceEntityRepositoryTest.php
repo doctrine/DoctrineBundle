@@ -30,6 +30,7 @@ Could not find the entity manager for class "Doctrine\Bundle\DoctrineBundle\Test
 EXCEPTION
         );
         /** @psalm-suppress UndefinedClass */
-        new ServiceEntityRepository($registry, TestEntity::class);
+        $repo = new ServiceEntityRepository($registry, TestEntity::class);
+        $repo->getClassName();
     }
 }
