@@ -363,19 +363,19 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for class in classes|keys %}
-                        {% set contains_errors = collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class] is defined %}
+                    {% for class in classes %}
+                        {% set contains_errors = collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class.class] is defined %}
                         <tr class="{{ contains_errors ? 'status-error' }}">
                             <td>
-                                {%- set link = classes[class].file|file_link(classes[class].line) %}
-                                {%- if link %}<a href="{{ link }}" title="{{ class }}">{% else %}<span title="{{ class }}">{% endif %}
-                                    {{ class }}
+                                {%- set link = class.file|file_link(class.line) %}
+                                {%- if link %}<a href="{{ link }}" title="{{ class.class }}">{% else %}<span title="{{ class.class }}">{% endif %}
+                                    {{ class.class }}
                                 {%- if link %}</a>{% else %}</span>{% endif %}
                             </td>
                             <td class="font-normal">
                                 {% if contains_errors %}
                                     <ul>
-                                        {% for error in collector.mappingErrors[manager][class] %}
+                                        {% for error in collector.mappingErrors[manager][class.class] %}
                                             <li>{{ error }}</li>
                                         {% endfor %}
                                     </ul>
