@@ -51,6 +51,7 @@
                 <!-- We use the "Foo" namespace in unit tests. We are aware that those classes don't exist. -->
                 <referencedClass name="Foo\*"/>
                 <referencedClass name="Symfony\Bridge\Doctrine\Attribute\MapEntity"/>
+                <referencedClass name="Symfony\Component\VarExporter\LazyGhostTrait"/>
                 <referencedClass name="Symfony\Component\VarExporter\LazyObjectInterface"/>
             </errorLevel>
         </UndefinedClass>
@@ -62,5 +63,17 @@
                 <directory name="Tests/DependencyInjection"/>
             </errorLevel>
         </UndefinedDocblockClass>
+        <UndefinedTrait>
+            <errorLevel type="suppress">
+                <!-- Consumer is meant to check if trait exists before using this class -->
+                <file name="Repository/LazyServiceEntityRepository.php"/>
+            </errorLevel>
+        </UndefinedTrait>
+        <DuplicateClass>
+            <errorLevel type="suppress">
+                <!-- Conditional class definition-->
+                <file name="Repository/ServiceEntityRepository.php"/>
+            </errorLevel>
+        </DuplicateClass>
     </issueHandlers>
 </psalm>
