@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use Symfony\Component\VarExporter\LazyGhostTrait;
+use Symfony\Component\VarExporter\LazyObjectInterface;
 
 use function sprintf;
 
@@ -30,7 +31,9 @@ use function sprintf;
  */
 class LazyServiceEntityRepository extends EntityRepository implements ServiceEntityRepositoryInterface
 {
-    use LazyGhostTrait;
+    use LazyGhostTrait {
+        createLazyGhost as private;
+    }
 
     /**
      * @param string $entityClass The class name of the entity this repository manages
@@ -52,6 +55,12 @@ class LazyServiceEntityRepository extends EntityRepository implements ServiceEnt
 
             return $this->$property;
         };
+
+        if ($this instanceof LazyObjectInterface) {
+            $initializer($this, '_entityName');
+
+            return;
+        }
 
         self::createLazyGhost([
             "\0*\0_em" => $initializer,
