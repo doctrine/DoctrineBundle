@@ -7,6 +7,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\VarExporter\LazyGhostTrait;
+use Symfony\Component\VarExporter\LazyObjectInterface;
 
 use function interface_exists;
 
@@ -32,5 +34,20 @@ EXCEPTION
         /** @psalm-suppress UndefinedClass */
         $repo = new ServiceEntityRepository($registry, TestEntity::class);
         $repo->getClassName();
+    }
+
+    /** @requires function \Symfony\Component\VarExporter\ProxyHelper::generateLazyGhost */
+    public function testConstructInitializesWhenImplementingLazyObjectInterface(): void
+    {
+        $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
+        $this->expectException(LogicException::class);
+
+        /**
+         * @psalm-suppress MissingDependency
+         * @psalm-suppress UndefinedClass
+         */
+        new class ($registry, TestEntity::class) extends ServiceEntityRepository implements LazyObjectInterface {
+            use LazyGhostTrait;
+        };
     }
 }
