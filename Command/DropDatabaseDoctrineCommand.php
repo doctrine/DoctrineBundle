@@ -73,7 +73,6 @@ EOT
             throw new InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
 
-        /** @psalm-suppress InvalidArrayOffset */
         unset($params['dbname'], $params['url']);
 
         if (! $input->getOption('force')) {

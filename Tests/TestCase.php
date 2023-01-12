@@ -22,10 +22,6 @@ use function uniqid;
 
 class TestCase extends BaseTestCase
 {
-    /**
-     * @psalm-suppress InvalidClass
-     * @psalm-suppress UndefinedClass
-     */
     public function createXmlBundleTestContainer(): ContainerBuilder
     {
         $container = new ContainerBuilder(new ParameterBag([

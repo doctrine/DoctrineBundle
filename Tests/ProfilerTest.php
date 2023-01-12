@@ -91,7 +91,6 @@ class ProfilerTest extends BaseTestCase
         $requestStack = new RequestStack();
         $requestStack->push($request);
 
-        /** @psalm-suppress TooManyArguments Since Symfony 5.2 */
         $requestDataCollector = new RequestDataCollector($requestStack);
         $requestDataCollector->collect($request, new Response());
         $requestDataCollector->lateCollect();

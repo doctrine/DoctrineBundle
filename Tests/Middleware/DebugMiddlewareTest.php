@@ -32,10 +32,6 @@ class DebugMiddlewareTest extends TestCase
     {
         $configuration   = new Configuration();
         $debugDataHolder = new BacktraceDebugDataHolder(['default']);
-        /**
-         * @psalm-suppress UndefinedMethod
-         * @psalm-suppress InvalidArgument
-         */
         $configuration->setMiddlewares([new DebugMiddleware($debugDataHolder, null)]);
 
         $conn = DriverManager::getConnection([
