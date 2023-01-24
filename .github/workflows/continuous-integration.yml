@@ -92,7 +92,7 @@ jobs:
         run: "vendor/bin/phpunit --coverage-clover=coverage.xml"
 
       - name: "Upload coverage file"
-        uses: "actions/upload-artifact@v2"
+        uses: "actions/upload-artifact@v3"
         with:
           name: "phpunit-${{ matrix.php-version }}-${{ matrix.dependencies }}-${{ hashFiles('composer.lock') }}.coverage"
           path: "coverage.xml"
@@ -110,11 +110,11 @@ jobs:
           fetch-depth: 2
 
       - name: "Download coverage files"
-        uses: "actions/download-artifact@v2"
+        uses: "actions/download-artifact@v3"
         with:
           path: "reports"
 
       - name: "Upload to Codecov"
-        uses: "codecov/codecov-action@v1"
+        uses: "codecov/codecov-action@v3"
         with:
           directory: reports
