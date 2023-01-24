@@ -145,7 +145,7 @@
             <tag name="doctrine.event_subscriber" />
         </service>
         <service id="doctrine.orm.listeners.pdo_session_handler_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\PdoSessionHandlerSchemaSubscriber">
-            <argument type="collection" /> <!-- PdoSessionHandler instances -->
+            <argument type="service" id="session.handler" />
             <tag name="doctrine.event_subscriber" />
         </service>
 
