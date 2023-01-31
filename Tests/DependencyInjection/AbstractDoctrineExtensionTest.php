@@ -452,7 +452,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
 
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', [
-            new Reference('doctrine.orm.default_attribute_metadata_driver'),
+            new Reference('doctrine.orm.default_annotation_metadata_driver'),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
 
@@ -474,7 +474,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $attrDef = $container->getDefinition('doctrine.orm.default_attribute_metadata_driver');
         $this->assertDICConstructorArguments($attrDef, [
             [
-                __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
                 __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity',
             ],
         ]);
@@ -504,7 +503,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $def1   = $container->getDefinition('doctrine.orm.em1_metadata_driver');
         $def2   = $container->getDefinition('doctrine.orm.em2_metadata_driver');
-        $def1Id = sprintf('doctrine.orm.em1_%s_metadata_driver', 'attribute');
+        $def1Id = 'doctrine.orm.em1_annotation_metadata_driver';
 
         $this->assertDICDefinitionMethodCallAt(0, $def1, 'addDriver', [
             new Reference($def1Id),
@@ -528,9 +527,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $annDef = $container->getDefinition($def1Id);
         $this->assertDICConstructorArguments($annDef, [
+            new Reference('doctrine.orm.metadata.annotation_reader'),
             [
                 __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
-                __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity',
             ],
         ]);
 

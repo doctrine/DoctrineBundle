@@ -74,7 +74,6 @@ class BacktraceDebugDataHolderTest extends TestCase
         $this->assertSame(__FUNCTION__, $lastCall['function']);
     }
 
-    /** @psalm-suppress MissingDependency */
     private function funcForBacktraceGeneration(BacktraceDebugDataHolder $sut): void
     {
         $sut->addQuery('myconn1', new Query('SELECT * FROM product'));

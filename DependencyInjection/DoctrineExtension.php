@@ -1049,8 +1049,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         /**
          * The Doctrine transport component (symfony/doctrine-messenger) is optional.
          * Remove service definition, if it is not available
-         *
-         * @psalm-suppress UndefinedClass Optional dependency
          */
         if (class_exists(DoctrineTransportFactory::class)) {
             return;

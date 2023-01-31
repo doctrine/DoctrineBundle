@@ -423,7 +423,6 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals(MappingDriverChain::class, $container->getParameter('doctrine.orm.metadata.driver_chain.class'));
         $this->assertEquals(AnnotationDriver::class, $container->getParameter('doctrine.orm.metadata.annotation.class'));
         $this->assertEquals(SimplifiedXmlDriver::class, $container->getParameter('doctrine.orm.metadata.xml.class'));
-        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
         $this->assertEquals(SimplifiedYamlDriver::class, $container->getParameter('doctrine.orm.metadata.yml.class'));
 
         // second-level cache
@@ -777,7 +776,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', [
-            new Reference(sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation')),
+            new Reference('doctrine.orm.default_annotation_metadata_driver'),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
     }
@@ -855,7 +854,7 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', [
-            new Reference(sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation')),
+            new Reference('doctrine.orm.default_annotation_metadata_driver'),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
@@ -949,7 +948,6 @@ class DoctrineExtensionTest extends TestCase
             $this->markTestSkipped('Symfony Messenger component is not installed');
         }
 
-        /** @psalm-suppress UndefinedClass */
         if (! class_exists(DoctrineTransportFactory::class)) {
             $this->markTestSkipped('This test requires Symfony Messenger Doctrine transport to be installed');
         }
@@ -969,7 +967,6 @@ class DoctrineExtensionTest extends TestCase
         $this->assertCount(1, $messengerTransportDoctrineFactory->getArguments());
         $this->assertSame('doctrine', (string) $messengerTransportDoctrineFactory->getArgument(0));
 
-        /** @psalm-suppress UndefinedClass */
         $this->assertSame(DoctrineTransportFactory::class, $messengerTransportDoctrineFactory->getClass());
 
         $this->assertTrue($messengerTransportDoctrineFactory->hasTag('messenger.transport_factory'));
@@ -983,7 +980,6 @@ class DoctrineExtensionTest extends TestCase
             $this->markTestSkipped('Symfony Messenger component is not installed');
         }
 
-        /** @psalm-suppress UndefinedClass */
         if (class_exists(DoctrineTransportFactory::class)) {
             $this->markTestSkipped('This test requires Symfony Messenger Doctrine transport to not be installed');
         }

@@ -35,7 +35,6 @@ class ContainerTest extends TestCase
 
         $container = $this->createXmlBundleTestContainer();
 
-        /** @psalm-suppress UndefinedClass */
         if (interface_exists(Reader::class)) {
             $this->assertInstanceOf(Reader::class, $container->get('doctrine.orm.metadata.annotation_reader'));
         }

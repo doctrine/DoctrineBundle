@@ -36,4 +36,4 @@ jobs:
         uses: "ramsey/composer-install@v2"
 
       - name: "Run a static analysis with vimeo/psalm"
-        run: "vendor/bin/psalm --show-info=false --stats --output-format=github --threads=$(nproc)"
+        run: "vendor/bin/psalm --show-info=false --stats --output-format=github --threads=$(nproc) --find-unused-psalm-suppress"

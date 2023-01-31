@@ -61,7 +61,6 @@ class DoctrineDataCollector extends BaseCollector
 
     private bool $shouldValidateSchema;
 
-    /** @psalm-suppress UndefinedClass */
     public function __construct(ManagerRegistry $registry, bool $shouldValidateSchema = true, ?DebugDataHolder $debugDataHolder = null)
     {
         $this->registry             = $registry;
@@ -70,7 +69,6 @@ class DoctrineDataCollector extends BaseCollector
         if ($debugDataHolder === null) {
             parent::__construct($registry);
         } else {
-            /** @psalm-suppress TooManyArguments */
             parent::__construct($registry, $debugDataHolder);
         }
     }
