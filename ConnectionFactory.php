@@ -120,7 +120,8 @@ class ConnectionFactory
      *
      * This could fail if types should be registered to an predefined/unused connection
      * and the platform version is unknown.
-     * For details have a look at DoctrineBundle issue #673.
+     *
+     * @link https://github.com/doctrine/DoctrineBundle/issues/673
      *
      * @throws DBALException
      */
