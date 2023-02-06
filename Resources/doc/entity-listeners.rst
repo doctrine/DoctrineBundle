@@ -112,6 +112,8 @@ definition:
             </services>
         </container>
 
+This configuration is not valuable from doctrine/doctrine-bundle 2.6 version with symfony 5.4. You'll have to use the entity annotation for listeners.
+
 The ``event`` attribute is required if the entity listener is not registered on
 the entity. If you don't specify the ``method`` attribute, it falls back on the
 subscribed event name.
