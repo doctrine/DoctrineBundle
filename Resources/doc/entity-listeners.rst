@@ -2,7 +2,7 @@ Entity Listeners
 ================
 
 Entity listeners that are services must be registered with the entity listener
-resolver. On top of the annotation in the entity class, you have to tag the
+resolver. Starting with doctrine/orm 2.6, on top of the annotation in the entity class, you have to tag the
 service with ``doctrine.orm.entity_listener`` for it to be automatically added
 to the resolver. Use the (optional) ``entity_manager`` attribute to specify
 which entity manager it should be registered with.
@@ -70,9 +70,8 @@ Full example:
             </services>
         </container>
 
-Starting with doctrine/orm 2.5 and Doctrine bundle 1.5.2, instead of registering
-the entity listener on the entity, you can declare all options from the service
-definition:
+Starting with doctrine/orm 2.5 and Doctrine bundle 1.5.2, you can declare all options from the service
+definition :
 
 .. configuration-block::
 
@@ -112,7 +111,7 @@ definition:
             </services>
         </container>
 
-This configuration is not valuable from doctrine/doctrine-bundle 2.6 version with symfony 5.4. You'll have to use the entity annotation for listeners.
+If your listener has some dependencies you have to declare it in services.yaml in order to autowire the services. There no need to repeat parameters, only mention the tag "doctrine.orm.entity_listener".
 
 The ``event`` attribute is required if the entity listener is not registered on
 the entity. If you don't specify the ``method`` attribute, it falls back on the
