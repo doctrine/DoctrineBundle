@@ -52,6 +52,7 @@ class ConnectionFactoryTest extends TestCase
         );
     }
 
+    /** @group legacy */
     public function testCollateMapsToCollationForMySql(): void
     {
         $factory = new ConnectionFactory([]);
