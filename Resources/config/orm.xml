@@ -148,6 +148,10 @@
             <argument type="service" id="session.handler" />
             <tag name="doctrine.event_subscriber" />
         </service>
+        <service id="doctrine.orm.listeners.lock_store_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaSubscriber">
+            <argument type="tagged" tag="lock.store" />
+            <tag name="doctrine.event_subscriber" />
+        </service>
 
         <!-- naming strategy -->
         <service id="doctrine.orm.naming_strategy.default" class="%doctrine.orm.naming_strategy.default.class%" public="false" />

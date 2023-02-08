@@ -35,6 +35,7 @@ use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
+use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaSubscriber;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoSessionHandlerSchemaSubscriber;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
@@ -390,6 +391,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (! class_exists(PdoSessionHandlerSchemaSubscriber::class)) {
             $container->removeDefinition('doctrine.orm.listeners.pdo_session_handler_schema_subscriber');
+        }
+
+        // available in Symfony 6.3 and higher
+        if (! class_exists(LockStoreSchemaSubscriber::class)) {
+            $container->removeDefinition('doctrine.orm.listeners.lock_store_schema_subscriber');
         }
 
         if (! class_exists(UlidGenerator::class)) {
