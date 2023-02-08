@@ -8,7 +8,7 @@
     </testsuites>
 
     <php>
-        <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[direct]=0&amp;ignoreFile=./Tests/baseline-ignore"/>
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[direct]=0&amp;max[self]=0&amp;max[indirect]=99&amp;ignoreFile=./Tests/baseline-ignore"/>
     </php>
 
     <filter>
