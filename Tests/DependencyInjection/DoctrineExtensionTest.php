@@ -1159,11 +1159,11 @@ class DoctrineExtensionTest extends TestCase
 
         $expected = [
             'event'          => null,
-            'priority'       => null,
             'method'         => null,
             'lazy'           => null,
             'entity_manager' => null,
             'entity'         => null,
+            'priority'       => null,
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
