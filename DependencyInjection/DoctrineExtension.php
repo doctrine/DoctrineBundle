@@ -535,6 +535,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->registerAttributeForAutoconfiguration(AsEntityListener::class, static function (ChildDefinition $definition, AsEntityListener $attribute) {
             $definition->addTag('doctrine.orm.entity_listener', [
                 'event'          => $attribute->event,
+                'priority'       => $attribute->priority,
                 'method'         => $attribute->method,
                 'lazy'           => $attribute->lazy,
                 'entity_manager' => $attribute->entityManager,

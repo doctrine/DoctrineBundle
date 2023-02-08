@@ -12,6 +12,7 @@ class AsEntityListener
 {
     public function __construct(
         public ?string $event = null,
+        public ?int $priority = null,
         public ?string $method = null,
         public ?bool $lazy = null,
         public ?string $entityManager = null,
