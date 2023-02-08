@@ -4,7 +4,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\EntityManagerInterface;
-use Generator;
 use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaSubscriber;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\Alias;
@@ -18,11 +17,14 @@ use function sys_get_temp_dir;
 class LockStoreSchemaSubscriberTest extends TestCase
 {
     /**
-     * @dataProvider getSchemaSubscribers
+     * @param array<string, mixed> $config
+     *
+     * @testWith [{}, 0]
+     *           [{"lock": "flock"}, 1]
      */
-    public function testLockStoreSchemaSubscriberWiring(string $subscriberId, string $class, ?string $tag = null): void
+    public function testLockStoreSchemaSubscriberWiring(array $config, int $expectedCount): void
     {
-        if (! class_exists($class)) {
+        if (! class_exists(LockStoreSchemaSubscriber::class)) {
             self::markTestSkipped('symfony/doctrine-bridge version not supported');
         }
 
@@ -49,38 +51,21 @@ class LockStoreSchemaSubscriberTest extends TestCase
 
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
-
-        $config = ['framework' => ['http_method_override' => false]];
-
-        if ($tag) {
-            $config['framework']['lock'] = 'flock';
-        }
-
-        $extension->load($config, $container);
+        $extension->load(['framework' => ['http_method_override' => false] + $config], $container);
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
-        $extension->load([
-            [
-                'dbal' => [],
-                'orm' => [],
-            ],
-        ], $container);
+        $extension->load([['dbal' => [], 'orm' => []]], $container);
 
-        $container->setAlias('test_subscriber_lock_alias', new Alias($subscriberId, true));
-
+        $container->setAlias(
+            'test_subscriber_lock_alias',
+            new Alias('doctrine.orm.listeners.lock_store_schema_subscriber', true),
+        );
         $container->compile();
 
-        $definition = $container->findDefinition('test_subscriber_lock_alias');
-
-        $expectedCount = $tag ? 1 : 0;
-
-        $this->assertCount($expectedCount, $definition->getArguments()[0]->getValues());
-    }
-
-    public function getSchemaSubscribers(): Generator
-    {
-        yield ['doctrine.orm.listeners.lock_store_schema_subscriber', LockStoreSchemaSubscriber::class, 'lock.store'];
-        yield ['doctrine.orm.listeners.lock_store_schema_subscriber', LockStoreSchemaSubscriber::class];
+        $this->assertCount(
+            $expectedCount,
+            $container->findDefinition('test_subscriber_lock_alias')->getArguments()[0]->getValues(),
+        );
     }
 }
