@@ -550,6 +550,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'lazy'           => $attribute->lazy,
                 'entity_manager' => $attribute->entityManager,
                 'entity'         => $attribute->entity,
+                'priority'       => $attribute->priority,
             ]);
         });
         $container->registerAttributeForAutoconfiguration(AsDoctrineListener::class, static function (ChildDefinition $definition, AsDoctrineListener $attribute) {
