@@ -15,7 +15,7 @@ jobs:
     runs-on: "ubuntu-20.04"
     env:
       SYMFONY_REQUIRE: ${{matrix.symfony-require}}
-      SYMFONY_DEPRECATIONS_HELPER: ${{matrix.symfony-deprecations-helper}}
+      SYMFONY_DEPRECATIONS_HELPER: weak
 
     strategy:
       fail-fast: false
@@ -30,32 +30,26 @@ jobs:
           - "stable"
         symfony-require:
           - ""
-        symfony-deprecations-helper:
-          - ""
         include:
           # Tests the lowest set of dependencies
           - dependencies: "lowest"
             stability: "stable"
             php-version: "7.4"
-            symfony-deprecations-helper: "weak"
 
           # Test LTS
           - symfony-require: "5.4.*"
             dependencies: "highest"
             php-version: "8.0"
-            symfony-deprecations-helper: "weak"
 
           # Test last supported minor version
           - symfony-require: "6.*"
             dependencies: "highest"
             php-version: "8.1"
-            symfony-deprecations-helper: "weak"
 
           # Bleeding edge
           - php-version: "8.1"
             dependencies: "highest"
             stability: "dev"
-            symfony-deprecations-helper: "weak"
 
     steps:
       - name: "Checkout"
