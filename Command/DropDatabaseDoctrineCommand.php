@@ -88,7 +88,7 @@ EOT
         // Reopen connection without database name set
         // as some vendors do not allow dropping the database connected to.
         $connection->close();
-        $connection         = DriverManager::getConnection($params);
+        $connection         = DriverManager::getConnection($params, $connection->getConfiguration());
         $schemaManager      = method_exists($connection, 'createSchemaManager')
             ? $connection->createSchemaManager()
             : $connection->getSchemaManager();

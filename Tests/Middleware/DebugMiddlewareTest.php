@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Middleware\DebugMiddleware;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 
@@ -30,7 +31,8 @@ class DebugMiddlewareTest extends TestCase
 
     public function testData(): void
     {
-        $configuration   = new Configuration();
+        $configuration = new Configuration();
+        $configuration->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
         $debugDataHolder = new BacktraceDebugDataHolder(['default']);
         $configuration->setMiddlewares([new DebugMiddleware($debugDataHolder, null)]);
 

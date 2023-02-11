@@ -235,6 +235,23 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertCount(0, $calls);
     }
 
+    public function testDbalSchemaManagerFactory(): void
+    {
+        $container = $this->loadContainer('dbal_schema_manager_factory');
+
+        $this->assertDICDefinitionMethodCallOnce(
+            $container->getDefinition('doctrine.dbal.default_schema_manager_factory_connection.configuration'),
+            'setSchemaManagerFactory',
+            [new Reference('doctrine.dbal.default_schema_manager_factory')]
+        );
+
+        $this->assertDICDefinitionMethodCallOnce(
+            $container->getDefinition('doctrine.dbal.custom_schema_manager_factory_connection.configuration'),
+            'setSchemaManagerFactory',
+            [new Reference('custom_factory')]
+        );
+    }
+
     public function testLoadSimpleSingleConnection(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {

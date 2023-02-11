@@ -3,9 +3,11 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\DropDatabaseDoctrineCommand;
+use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\Persistence\ManagerRegistry;
 use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -150,10 +152,10 @@ class DropDatabaseDoctrineTest extends TestCase
             ->withAnyParameters()
             ->willReturn($connectionName);
 
-        $mockConnection = $this->getMockBuilder(Connection::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getParams'])
-            ->getMockForAbstractClass();
+        $config = (new Configuration())->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
+
+        $mockConnection = $this->createMock(Connection::class);
+        $mockConnection->method('getConfiguration')->willReturn($config);
 
         $mockConnection->expects($this->any())
             ->method('getParams')

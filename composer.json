@@ -31,7 +31,7 @@
     "require": {
         "php": "^7.4 || ^8.0",
         "doctrine/cache": "^1.11 || ^2.0",
-        "doctrine/dbal": "^3.4.0",
+        "doctrine/dbal": "^3.6.0",
         "doctrine/persistence": "^2.2 || ^3",
         "doctrine/sql-formatter": "^1.0.1",
         "symfony/cache": "^5.4 || ^6.0",

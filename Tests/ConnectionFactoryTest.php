@@ -7,6 +7,7 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
 
 use function array_intersect_key;
@@ -14,6 +15,14 @@ use function array_intersect_key;
 class ConnectionFactoryTest extends TestCase
 {
     use VerifyDeprecations;
+
+    private Configuration $configuration;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->configuration = (new Configuration())->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
+    }
 
     public function testDefaultCharsetNonMySql(): void
     {
@@ -24,7 +33,7 @@ class ConnectionFactoryTest extends TestCase
         ];
 
         $creationCount = FakeConnection::$creationCount;
-        $connection    = $factory->createConnection($params);
+        $connection    = $factory->createConnection($params, $this->configuration);
 
         $this->assertInstanceof(FakeConnection::class, $connection);
         $this->assertSame('utf8', $connection->getParams()['charset']);
@@ -36,7 +45,7 @@ class ConnectionFactoryTest extends TestCase
         $factory = new ConnectionFactory([]);
         $params  = ['driver' => 'pdo_mysql'];
 
-        $connection = $factory->createConnection($params);
+        $connection = $factory->createConnection($params, $this->configuration);
 
         $this->assertSame('utf8mb4', $connection->getParams()['charset']);
     }
@@ -44,7 +53,7 @@ class ConnectionFactoryTest extends TestCase
     public function testDefaultCollationMySql(): void
     {
         $factory    = new ConnectionFactory([]);
-        $connection = $factory->createConnection(['driver' => 'pdo_mysql']);
+        $connection = $factory->createConnection(['driver' => 'pdo_mysql'], $this->configuration);
 
         $this->assertSame(
             'utf8mb4_unicode_ci',
@@ -59,10 +68,13 @@ class ConnectionFactoryTest extends TestCase
         $this->expectDeprecationWithIdentifier(
             'https://github.com/doctrine/dbal/issues/5214'
         );
-        $connection = $factory->createConnection([
-            'driver' => 'pdo_mysql',
-            'defaultTableOptions' => ['collate' => 'my_collation'],
-        ]);
+        $connection = $factory->createConnection(
+            [
+                'driver' => 'pdo_mysql',
+                'defaultTableOptions' => ['collate' => 'my_collation'],
+            ],
+            $this->configuration
+        );
 
         $tableOptions = $connection->getParams()['defaultTableOptions'];
         $this->assertArrayNotHasKey('collate', $tableOptions);
@@ -83,46 +95,58 @@ class ConnectionFactoryTest extends TestCase
             'password' => 'wordpass',
         ];
 
-        $connection = (new ConnectionFactory([]))->createConnection([
-            'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
-            'connection_override_options' => $params,
-        ]);
+        $connection = (new ConnectionFactory([]))->createConnection(
+            [
+                'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
+                'connection_override_options' => $params,
+            ],
+            $this->configuration
+        );
 
         $this->assertEquals($params, array_intersect_key($connection->getParams(), $params));
     }
 
     public function testConnectionCharsetFromUrl()
     {
-        $connection = (new ConnectionFactory([]))->createConnection(['url' => 'mysql://root:password@database:3306/main?charset=utf8mb4_unicode_ci']);
+        $connection = (new ConnectionFactory([]))->createConnection(
+            ['url' => 'mysql://root:password@database:3306/main?charset=utf8mb4_unicode_ci'],
+            $this->configuration
+        );
 
         $this->assertEquals('utf8mb4_unicode_ci', $connection->getParams()['charset']);
     }
 
     public function testDbnameSuffix(): void
     {
-        $connection = (new ConnectionFactory([]))->createConnection([
-            'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
-            'dbname_suffix' => '_test',
-        ]);
+        $connection = (new ConnectionFactory([]))->createConnection(
+            [
+                'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
+                'dbname_suffix' => '_test',
+            ],
+            $this->configuration
+        );
 
         $this->assertSame('main_test', $connection->getParams()['dbname']);
     }
 
     public function testDbnameSuffixForReplicas(): void
     {
-        $connection = (new ConnectionFactory([]))->createConnection([
-            'driver' => 'pdo_mysql',
-            'primary' => [
-                'url' => 'mysql://root:password@database:3306/primary?serverVersion=mariadb-10.5.8',
-                'dbname_suffix' => '_test',
-            ],
-            'replica' => [
-                'replica1' => [
-                    'url' => 'mysql://root:password@database:3306/replica?serverVersion=mariadb-10.5.8',
+        $connection = (new ConnectionFactory([]))->createConnection(
+            [
+                'driver' => 'pdo_mysql',
+                'primary' => [
+                    'url' => 'mysql://root:password@database:3306/primary?serverVersion=mariadb-10.5.8',
                     'dbname_suffix' => '_test',
                 ],
+                'replica' => [
+                    'replica1' => [
+                        'url' => 'mysql://root:password@database:3306/replica?serverVersion=mariadb-10.5.8',
+                        'dbname_suffix' => '_test',
+                    ],
+                ],
             ],
-        ]);
+            $this->configuration
+        );
 
         $parsedParams = $connection->getParams();
         $this->assertArrayHasKey('primary', $parsedParams);

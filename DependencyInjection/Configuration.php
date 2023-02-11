@@ -195,6 +195,9 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey('name')
                     ->prototype('scalar')->end()
                 ->end()
+                ->scalarNode('schema_manager_factory')
+                    ->defaultValue('doctrine.dbal.default_schema_manager_factory')
+                ->end()
             ->end();
 
         // dbal < 2.11

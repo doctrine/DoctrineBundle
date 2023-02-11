@@ -242,6 +242,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ManagerRegistryAwareConnectionProvider::class,
             new Definition(ManagerRegistryAwareConnectionProvider::class, [$container->getDefinition('doctrine')])
         );
+
+        $configuration->addMethodCall('setSchemaManagerFactory', [new Reference($connection['schema_manager_factory'])]);
     }
 
     /**
@@ -265,6 +267,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         unset($options['override_url']);
+        unset($options['schema_manager_factory']);
 
         $options += $connectionDefaults;
 
