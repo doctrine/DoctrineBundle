@@ -98,7 +98,9 @@
         </service>
 
         <service id="doctrine.dbal.default_schema_manager_factory" class="Doctrine\DBAL\Schema\DefaultSchemaManagerFactory" />
-        <service id="doctrine.dbal.legacy_schema_manager_factory" class="Doctrine\DBAL\Schema\LegacySchemaManagerFactory" />
+        <service id="doctrine.dbal.legacy_schema_manager_factory" class="Doctrine\DBAL\Schema\LegacySchemaManagerFactory">
+            <deprecated package="doctrine/doctrine-bundle" version="2.9">The "%service_id%" service is deprecated. Use "doctrine.dbal.default_schema_manager_factory" instead.</deprecated>
+        </service>
 
     </services>
 </container>
