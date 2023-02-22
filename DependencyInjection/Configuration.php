@@ -197,7 +197,6 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('schema_manager_factory')
                     ->defaultNull()
-                    ->end()
                 ->end()
             ->end();
 
