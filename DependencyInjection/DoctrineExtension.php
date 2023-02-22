@@ -245,17 +245,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
         );
 
         $schemaManagerFactoryId = $connection['schema_manager_factory'];
-        if ($schemaManagerFactoryId === 'doctrine.dbal.legacy_schema_manager_factory') {
+        if ($schemaManagerFactoryId === null) {
             trigger_deprecation(
                 'doctrine/doctrine-bundle',
                 '2.9',
-                'Using "%s" as schema_manager_factory is deprecated. Use "%s" or a custom factory instead. See UPGRADE-2.9.md for details.',
-                'doctrine.dbal.legacy_schema_manager_factory',
+                'Not configuring schema_manager_factory is deprecated. Use "%s" or a custom factory instead. See UPGRADE-2.9.md for details.',
                 'doctrine.dbal.default_schema_manager_factory',
             );
+        } else {
+            $configuration->addMethodCall('setSchemaManagerFactory', [new Reference($schemaManagerFactoryId)]);
         }
-
-        $configuration->addMethodCall('setSchemaManagerFactory', [new Reference($schemaManagerFactoryId)]);
     }
 
     /**

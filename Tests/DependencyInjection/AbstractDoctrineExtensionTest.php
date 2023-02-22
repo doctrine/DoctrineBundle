@@ -247,10 +247,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         );
 
         // Remove when DBAL 3 support is dropped
-        $this->assertDICDefinitionMethodCallOnce(
+        $this->assertDICDefinitionNoMethodCall(
             $container->getDefinition('doctrine.dbal.legacy_schema_manager_factory_connection.configuration'),
             'setSchemaManagerFactory',
-            [new Reference('doctrine.dbal.legacy_schema_manager_factory')]
         );
 
         $this->assertDICDefinitionMethodCallOnce(

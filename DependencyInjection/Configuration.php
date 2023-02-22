@@ -196,8 +196,7 @@ class Configuration implements ConfigurationInterface
                     ->prototype('scalar')->end()
                 ->end()
                 ->scalarNode('schema_manager_factory')
-                    ->defaultValue('doctrine.dbal.legacy_schema_manager_factory')
-                    ->cannotBeEmpty()
+                    ->defaultNull()
                     ->end()
                 ->end()
             ->end();
