@@ -8,7 +8,8 @@
 
     <config>
         <dbal default-connection="custom_schema_manager_factory">
-            <connection name="default_schema_manager_factory" />
+            <connection name="legacy_schema_manager_factory" />
+            <connection name="default_schema_manager_factory" schema-manager-factory="doctrine.dbal.default_schema_manager_factory" />
             <connection name="custom_schema_manager_factory" schema-manager-factory="custom_factory" />
         </dbal>
     </config>

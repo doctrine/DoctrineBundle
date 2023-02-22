@@ -235,6 +235,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertCount(0, $calls);
     }
 
+    /** @group legacy */
     public function testDbalSchemaManagerFactory(): void
     {
         $container = $this->loadContainer('dbal_schema_manager_factory');
@@ -243,6 +244,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             $container->getDefinition('doctrine.dbal.default_schema_manager_factory_connection.configuration'),
             'setSchemaManagerFactory',
             [new Reference('doctrine.dbal.default_schema_manager_factory')]
+        );
+
+        // Remove when DBAL 3 support is dropped
+        $this->assertDICDefinitionMethodCallOnce(
+            $container->getDefinition('doctrine.dbal.legacy_schema_manager_factory_connection.configuration'),
+            'setSchemaManagerFactory',
+            [new Reference('doctrine.dbal.legacy_schema_manager_factory')]
         );
 
         $this->assertDICDefinitionMethodCallOnce(

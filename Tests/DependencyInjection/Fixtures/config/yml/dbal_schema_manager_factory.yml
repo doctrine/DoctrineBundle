@@ -2,6 +2,8 @@ doctrine:
     dbal:
         default_connection: custom_schema_manager_factory
         connections:
-            default_schema_manager_factory: ~
+            legacy_schema_manager_factory: ~
+            default_schema_manager_factory:
+                schema_manager_factory: doctrine.dbal.default_schema_manager_factory
             custom_schema_manager_factory:
                 schema_manager_factory: custom_factory
