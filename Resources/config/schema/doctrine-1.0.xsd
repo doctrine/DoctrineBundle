@@ -38,7 +38,7 @@
         <xsd:attribute name="profiling-collect-backtrace" type="xsd:string" default="false" />
         <xsd:attribute name="profiling-collect-schema-errors" type="xsd:string" default="true" />
         <xsd:attribute name="server-version" type="xsd:string" />
-        <xsd:attribute name="schema-manager-factory" type="xsd:string" default="doctrine.dbal.default_schema_manager_factory" />
+        <xsd:attribute name="schema-manager-factory" type="xsd:string" />
         <xsd:attribute name="use-savepoints" type="xsd:boolean" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:attributeGroup>
