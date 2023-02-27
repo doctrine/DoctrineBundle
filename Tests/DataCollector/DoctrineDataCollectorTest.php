@@ -87,7 +87,16 @@ class DoctrineDataCollectorTest extends TestCase
     {
         $debugDataHolder = new DebugDataHolder();
 
+        /**
+         * @psalm-suppress InternalClass
+         * @psalm-suppress InternalMethod
+         */
         $debugDataHolder->addQuery('default', new Query('SELECT * FROM foo WHERE bar = :bar'));
+
+        /**
+         * @psalm-suppress InternalClass
+         * @psalm-suppress InternalMethod
+         */
         $debugDataHolder->addQuery('default', new Query('SELECT * FROM foo WHERE bar = :bar'));
 
         $collector = $this->createCollector([], true, $debugDataHolder);
@@ -97,6 +106,10 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame('SELECT * FROM foo WHERE bar = :bar', $groupedQueries['default'][0]['sql']);
         $this->assertSame(2, $groupedQueries['default'][0]['count']);
 
+        /**
+         * @psalm-suppress InternalClass
+         * @psalm-suppress InternalMethod
+         */
         $debugDataHolder->addQuery('default', new Query('SELECT * FROM bar'));
         $collector->collect(new Request(), new Response());
         $groupedQueries = $collector->getGroupedQueries();
