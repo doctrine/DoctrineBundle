@@ -8,9 +8,10 @@ Configuration
 
 Due to changes and deprecations on `doctrine/dbal` 3.6+ we introduced a new option to configure a Schema manager factory.
 
-Not setting this option is deprecated and won't work with the upcoming DBAL 4 anymore.
+On DBAL 3 the default factory is an instance of `Doctrine\DBAL\Schema\LegacySchemaManagerFactory`. 
+For the upcoming DBAL 4 release the default will change to `Doctrine\DBAL\Schema\DefaultSchemaManagerFactory`.
 
-To fix this deprecation you need to configure an instance of `Doctrine\DBAL\Schema\DefaultSchemaManagerFactory` (or possibly a custom implementation that suits your needs).
+To prepare for DBAL 4 and fix DBAL related deprecations we recommend changing the configuration to use the new factory.
 
 Before:
 ```yaml
