@@ -7,11 +7,13 @@ use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
+use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -28,9 +30,9 @@ class DoctrineDataCollectorTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $manager   = $this->getMockBuilder(EntityManager::class)->disableOriginalConstructor()->getMock();
-        $config    = $this->getMockBuilder(Configuration::class)->getMock();
-        $factory   = $this->getMockBuilder(ClassMetadataFactory::class)->setMethods(['getLoadedMetadata'])->getMock();
+        $manager   = $this->createMock(EntityManagerInterface::class);
+        $config    = $this->createMock(Configuration::class);
+        $factory   = $this->createMock(ClassMetadataFactory::class);
         $collector = $this->createCollector(['default' => $manager]);
 
         $manager->expects($this->any())
@@ -83,6 +85,29 @@ class DoctrineDataCollectorTest extends TestCase
 
     public function testGetGroupedQueries(): void
     {
+        $debugDataHolder = new DebugDataHolder();
+
+        $debugDataHolder->addQuery('default', new Query('SELECT * FROM foo WHERE bar = :bar'));
+        $debugDataHolder->addQuery('default', new Query('SELECT * FROM foo WHERE bar = :bar'));
+
+        $collector = $this->createCollector([], true, $debugDataHolder);
+        $collector->collect(new Request(), new Response());
+        $groupedQueries = $collector->getGroupedQueries();
+        $this->assertCount(1, $groupedQueries['default']);
+        $this->assertSame('SELECT * FROM foo WHERE bar = :bar', $groupedQueries['default'][0]['sql']);
+        $this->assertSame(2, $groupedQueries['default'][0]['count']);
+
+        $debugDataHolder->addQuery('default', new Query('SELECT * FROM bar'));
+        $collector->collect(new Request(), new Response());
+        $groupedQueries = $collector->getGroupedQueries();
+        $this->assertCount(2, $groupedQueries['default']);
+        $this->assertSame('SELECT * FROM bar', $groupedQueries['default'][1]['sql']);
+        $this->assertSame(1, $groupedQueries['default'][1]['count']);
+    }
+
+    /** @group legacy */
+    public function testGetGroupedQueriesWithDeprecatedDebugStackLogger(): void
+    {
         $logger            = $this->getMockBuilder(DebugStack::class)->getMock();
         $logger->queries   = [];
         $logger->queries[] = [
@@ -118,9 +143,9 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame(1, $groupedQueries['default'][1]['count']);
     }
 
-    private function createEntityMetadata(string $entityFQCN): ClassMetadataInfo
+    private function createEntityMetadata(string $entityFQCN): ClassMetadata
     {
-        $metadata            = new ClassMetadataInfo($entityFQCN);
+        $metadata            = new ClassMetadata($entityFQCN);
         $metadata->name      = $entityFQCN;
         $metadata->reflClass = new ReflectionClass('stdClass');
 
@@ -128,9 +153,12 @@ class DoctrineDataCollectorTest extends TestCase
     }
 
     /** @param array<string, object> $managers */
-    private function createCollector(array $managers, bool $shouldValidateSchema = true): DoctrineDataCollector
-    {
-        $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
+    private function createCollector(
+        array $managers,
+        bool $shouldValidateSchema = true,
+        ?DebugDataHolder $debugDataHolder = null
+    ): DoctrineDataCollector {
+        $registry = $this->createMock(ManagerRegistry::class);
         $registry
             ->expects($this->any())
             ->method('getConnectionNames')
@@ -144,6 +172,6 @@ class DoctrineDataCollectorTest extends TestCase
             ->method('getManagers')
             ->will($this->returnValue($managers));
 
-        return new DoctrineDataCollector($registry, $shouldValidateSchema);
+        return new DoctrineDataCollector($registry, $shouldValidateSchema, $debugDataHolder);
     }
 }

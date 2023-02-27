@@ -1025,9 +1025,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         }
     }
 
-    /**
-     * @group legacy
-     */
+    /** @group legacy */
     public function testWellKnownSchemaFilterDefaultTables(): void
     {
         $container = $this->getContainer([]);
@@ -1063,9 +1061,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertTrue($filter->__invoke('anything_else'));
     }
 
-    /**
-     * @group legacy
-     */
+    /** @group legacy */
     public function testWellKnownSchemaFilterOverriddenTables(): void
     {
         $container = $this->getContainer([]);

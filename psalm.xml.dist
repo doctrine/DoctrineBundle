@@ -75,5 +75,15 @@
                 <file name="Repository/ServiceEntityRepository.php"/>
             </errorLevel>
         </DuplicateClass>
+        <InternalClass>
+            <errorLevel type="suppress">
+                <file name="Tests/DataCollector/DoctrineDataCollectorTest.php"/>
+            </errorLevel>
+        </InternalClass>
+        <InternalMethod>
+            <errorLevel type="suppress">
+                <file name="Tests/DataCollector/DoctrineDataCollectorTest.php"/>
+            </errorLevel>
+        </InternalMethod>
     </issueHandlers>
 </psalm>
