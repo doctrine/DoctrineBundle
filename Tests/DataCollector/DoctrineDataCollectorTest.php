@@ -13,7 +13,6 @@ use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
-use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -85,19 +84,29 @@ class DoctrineDataCollectorTest extends TestCase
 
     public function testGetGroupedQueries(): void
     {
-        $debugDataHolder = new DebugDataHolder();
+        $debugDataHolder = $this->createMock(DebugDataHolder::class);
 
-        /**
-         * @psalm-suppress InternalClass
-         * @psalm-suppress InternalMethod
-         */
-        $debugDataHolder->addQuery('default', new Query('SELECT * FROM foo WHERE bar = :bar'));
+        $queries = [
+            'default' => [
+                [
+                    'sql' => 'SELECT * FROM foo WHERE bar = :bar',
+                    'params' => [':bar' => 1],
+                    'types' => null,
+                    'executionMS' => 32,
+                ],
+                [
+                    'sql' => 'SELECT * FROM foo WHERE bar = :bar',
+                    'params' => [':bar' => 2],
+                    'types' => null,
+                    'executionMS' => 25,
+                ],
+            ],
+        ];
 
-        /**
-         * @psalm-suppress InternalClass
-         * @psalm-suppress InternalMethod
-         */
-        $debugDataHolder->addQuery('default', new Query('SELECT * FROM foo WHERE bar = :bar'));
+        $debugDataHolder->method('getData')
+            ->willReturnCallback(static function () use (&$queries) {
+                return $queries;
+            });
 
         $collector = $this->createCollector([], true, $debugDataHolder);
         $collector->collect(new Request(), new Response());
@@ -106,11 +115,13 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame('SELECT * FROM foo WHERE bar = :bar', $groupedQueries['default'][0]['sql']);
         $this->assertSame(2, $groupedQueries['default'][0]['count']);
 
-        /**
-         * @psalm-suppress InternalClass
-         * @psalm-suppress InternalMethod
-         */
-        $debugDataHolder->addQuery('default', new Query('SELECT * FROM bar'));
+        $queries['default'][] = [
+            'sql' => 'SELECT * FROM bar',
+            'params' => [],
+            'types' => null,
+            'executionMS' => 25,
+        ];
+
         $collector->collect(new Request(), new Response());
         $groupedQueries = $collector->getGroupedQueries();
         $this->assertCount(2, $groupedQueries['default']);
