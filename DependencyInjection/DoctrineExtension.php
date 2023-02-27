@@ -16,6 +16,7 @@ use Doctrine\Common\Annotations\Annotation;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
+use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -66,7 +67,6 @@ use function reset;
 use function sprintf;
 use function str_replace;
 use function trait_exists;
-use function trigger_deprecation;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -244,17 +244,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
             new Definition(ManagerRegistryAwareConnectionProvider::class, [$container->getDefinition('doctrine')])
         );
 
-        $schemaManagerFactoryId = $connection['schema_manager_factory'];
-        if ($schemaManagerFactoryId === null) {
-            trigger_deprecation(
-                'doctrine/doctrine-bundle',
-                '2.9',
-                'Not configuring schema_manager_factory is deprecated. Use "%s" or a custom factory instead. See UPGRADE-2.9.md for details.',
-                'doctrine.dbal.default_schema_manager_factory',
-            );
-        } else {
-            $configuration->addMethodCall('setSchemaManagerFactory', [new Reference($schemaManagerFactoryId)]);
+        $configuration->addMethodCall('setSchemaManagerFactory', [new Reference($connection['schema_manager_factory'])]);
+
+        if (class_exists(LegacySchemaManagerFactory::class)) {
+            return;
         }
+
+        $container->removeDefinition('doctrine.dbal.legacy_schema_manager_factory');
     }
 
     /**
