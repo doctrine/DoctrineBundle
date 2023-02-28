@@ -73,10 +73,7 @@ class DoctrineDataCollector extends BaseCollector
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function collect(Request $request, Response $response, ?Throwable $exception = null)
+    public function collect(Request $request, Response $response, ?Throwable $exception = null): void
     {
         parent::collect($request, $response, $exception);
 
