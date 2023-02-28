@@ -48,7 +48,10 @@ class TestKernel extends Kernel
             ]);
 
             $container->loadFromExtension('doctrine', [
-                'dbal' => ['driver' => 'pdo_sqlite'],
+                'dbal' => [
+                    'driver' => 'pdo_sqlite',
+                    'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
+                ],
                 'orm' => [
                     'auto_generate_proxy_classes' => true,
                     'mappings' => [

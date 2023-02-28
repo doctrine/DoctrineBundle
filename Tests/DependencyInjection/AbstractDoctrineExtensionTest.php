@@ -13,6 +13,7 @@ use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Generator;
@@ -39,6 +40,7 @@ use function array_intersect_key;
 use function array_keys;
 use function array_values;
 use function assert;
+use function class_exists;
 use function end;
 use function interface_exists;
 use function is_dir;
@@ -233,6 +235,28 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $calls = $container->getDefinition('doctrine.dbal.notset_connection')->getMethodCalls();
         $this->assertCount(0, $calls);
+    }
+
+    /** @group legacy */
+    public function testDbalSchemaManagerFactory(): void
+    {
+        $container = $this->loadContainer('dbal_schema_manager_factory');
+
+        $this->assertDICDefinitionMethodCallOnce(
+            $container->getDefinition('doctrine.dbal.default_schema_manager_factory_connection.configuration'),
+            'setSchemaManagerFactory',
+            [
+                new Reference(class_exists(LegacySchemaManagerFactory::class)
+                ? 'doctrine.dbal.legacy_schema_manager_factory'
+                : 'doctrine.dbal.default_schema_manager_factory'),
+            ]
+        );
+
+        $this->assertDICDefinitionMethodCallOnce(
+            $container->getDefinition('doctrine.dbal.custom_schema_manager_factory_connection.configuration'),
+            'setSchemaManagerFactory',
+            [new Reference('custom_factory')]
+        );
     }
 
     public function testLoadSimpleSingleConnection(): void

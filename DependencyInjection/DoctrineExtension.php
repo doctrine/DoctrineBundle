@@ -16,6 +16,7 @@ use Doctrine\Common\Annotations\Annotation;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
+use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -242,6 +243,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ManagerRegistryAwareConnectionProvider::class,
             new Definition(ManagerRegistryAwareConnectionProvider::class, [$container->getDefinition('doctrine')])
         );
+
+        $configuration->addMethodCall('setSchemaManagerFactory', [new Reference($connection['schema_manager_factory'])]);
+
+        if (class_exists(LegacySchemaManagerFactory::class)) {
+            return;
+        }
+
+        $container->removeDefinition('doctrine.dbal.legacy_schema_manager_factory');
     }
 
     /**
@@ -265,6 +274,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         unset($options['override_url']);
+        unset($options['schema_manager_factory']);
 
         $options += $connectionDefaults;
 

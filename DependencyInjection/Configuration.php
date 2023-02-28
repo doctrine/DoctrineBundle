@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
 use Doctrine\Common\Proxy\AbstractProxyFactory;
+use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
@@ -194,6 +195,10 @@ class Configuration implements ConfigurationInterface
                 ))
                     ->useAttributeAsKey('name')
                     ->prototype('scalar')->end()
+                ->end()
+                ->scalarNode('schema_manager_factory')
+                    ->cannotBeEmpty()
+                    ->defaultValue($this->getDefaultSchemaManagerFactory())
                 ->end()
             ->end();
 
@@ -786,5 +791,14 @@ class Configuration implements ConfigurationInterface
             'names' => $namesArray,
             'values' => $valuesArray,
         ];
+    }
+
+    private function getDefaultSchemaManagerFactory(): string
+    {
+        if (class_exists(LegacySchemaManagerFactory::class)) {
+            return 'doctrine.dbal.legacy_schema_manager_factory';
+        }
+
+        return 'doctrine.dbal.default_schema_manager_factory';
     }
 }

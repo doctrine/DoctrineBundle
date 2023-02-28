@@ -97,5 +97,8 @@
             <tag name="controller.service_arguments" />
         </service>
 
+        <service id="doctrine.dbal.default_schema_manager_factory" class="Doctrine\DBAL\Schema\DefaultSchemaManagerFactory" />
+        <service id="doctrine.dbal.legacy_schema_manager_factory" class="Doctrine\DBAL\Schema\LegacySchemaManagerFactory" />
+
     </services>
 </container>

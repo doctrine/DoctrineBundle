@@ -49,6 +49,7 @@ class TestCase extends BaseTestCase
                             'driver' => 'pdo_mysql',
                             'charset' => 'UTF8',
                             'platform-service' => 'my.platform',
+                            'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
                         ],
                     ],
                     'default_connection' => 'default',

@@ -104,6 +104,7 @@ class IdGeneratorPassTest extends TestCase
                 'dbal' => [
                     'driver' => 'pdo_sqlite',
                     'charset' => 'UTF8',
+                    'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
                 ],
                 'orm' => ['mappings' => $mappings],
             ],

@@ -3,8 +3,10 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\CreateDatabaseDoctrineCommand;
+use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Schema\SchemaManagerFactory;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -68,10 +70,10 @@ class CreateDatabaseDoctrineTest extends TestCase
             ->withAnyParameters()
             ->willReturn($connectionName);
 
-        $mockConnection = $this->getMockBuilder(Connection::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getParams'])
-            ->getMockForAbstractClass();
+        $config = (new Configuration())->setSchemaManagerFactory($this->createMock(SchemaManagerFactory::class));
+
+        $mockConnection = $this->createMock(Connection::class);
+        $mockConnection->method('getConfiguration')->willReturn($config);
 
         $mockConnection->expects($this->any())
             ->method('getParams')
