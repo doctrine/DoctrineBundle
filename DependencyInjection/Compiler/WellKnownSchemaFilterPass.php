@@ -16,9 +16,7 @@ use function method_exists;
  */
 class WellKnownSchemaFilterPass implements CompilerPassInterface
 {
-    /**
-     * {@inheritDoc}
-     */
+    /** @return void */
     public function process(ContainerBuilder $container)
     {
         $blacklist = [];

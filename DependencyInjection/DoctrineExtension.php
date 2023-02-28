@@ -80,6 +80,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     /**
      * {@inheritDoc}
+     *
+     * @return void
      */
     public function load(array $configs, ContainerBuilder $container)
     {
@@ -1029,6 +1031,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
     /**
      * @param array<string, mixed> $objectManager
      * @param string               $cacheName
+     *
+     * @return void
      *
      * @psalm-suppress MoreSpecificImplementedParamType
      */

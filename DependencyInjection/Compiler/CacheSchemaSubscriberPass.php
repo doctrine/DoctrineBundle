@@ -15,9 +15,7 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class CacheSchemaSubscriberPass implements CompilerPassInterface
 {
-    /**
-     * {@inheritDoc}
-     */
+    /** @return void */
     public function process(ContainerBuilder $container)
     {
         // deprecated in Symfony 6.3
