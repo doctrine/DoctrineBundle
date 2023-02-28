@@ -12,6 +12,8 @@ use Symfony\Component\DependencyInjection\Reference;
  * Injects Doctrine DBAL and legacy PDO adapters into their schema subscribers.
  *
  * Must be run later after ResolveChildDefinitionsPass.
+ *
+ * @final since 2.9
  */
 class CacheSchemaSubscriberPass implements CompilerPassInterface
 {

@@ -11,6 +11,8 @@ use function sprintf;
 
 /**
  * Processes the doctrine.dbal.schema_filter
+ *
+ * @final since 2.9
  */
 class DbalSchemaFilterPass implements CompilerPassInterface
 {

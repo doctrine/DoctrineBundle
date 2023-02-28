@@ -43,6 +43,8 @@ use function trigger_deprecation;
  *
  * This information is solely responsible for how the different configuration
  * sections are normalized, and merged.
+ *
+ * @final since 2.9
  */
 class Configuration implements ConfigurationInterface
 {

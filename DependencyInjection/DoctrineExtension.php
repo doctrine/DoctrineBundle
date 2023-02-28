@@ -73,6 +73,8 @@ use function trait_exists;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
+ *
+ * @final since 2.9
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {

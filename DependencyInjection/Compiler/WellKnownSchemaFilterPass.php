@@ -13,6 +13,8 @@ use function method_exists;
  * Blacklist tables used by well-known Symfony classes.
  *
  * @deprecated Implement your own include/exclude mechanism
+ *
+ * @final since 2.9
  */
 class WellKnownSchemaFilterPass implements CompilerPassInterface
 {

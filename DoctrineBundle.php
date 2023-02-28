@@ -32,6 +32,7 @@ use function class_exists;
 use function clearstatcache;
 use function spl_autoload_unregister;
 
+/** @final since 2.9 */
 class DoctrineBundle extends Bundle
 {
     private ?Closure $autoloader = null;
