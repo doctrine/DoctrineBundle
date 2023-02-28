@@ -95,7 +95,7 @@ final class CacheCompatibilityPass implements CompilerPassInterface
             $definition = $container->findDefinition($definition->getParent());
         }
 
-        if (is_a($definition->getClass(), CacheItemPoolInterface::class, true) === true) {
+        if (is_a($definition->getClass(), CacheItemPoolInterface::class, true)) {
             return null;
         }
 
