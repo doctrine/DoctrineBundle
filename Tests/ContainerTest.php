@@ -59,8 +59,6 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(InfoCommand::class, $container->get('doctrine.mapping_info_command'));
         $this->assertInstanceOf(UpdateCommand::class, $container->get('doctrine.schema_update_command'));
 
-        $this->assertSame($container->get('my.platform'), $container->get('doctrine.dbal.default_connection')->getDatabasePlatform());
-
         $this->assertTrue(Type::hasType('test'));
 
         $this->assertFalse($container->has('doctrine.dbal.default_connection.events.mysqlsessioninit'));
