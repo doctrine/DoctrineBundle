@@ -50,7 +50,7 @@ class DoctrineBundle extends Bundle
                     return;
                 }
 
-                $container->removeDefinition('doctrine.orm.listeners.pdo_session_handler_schema_subscriber');
+                $container->removeDefinition('doctrine.orm.listeners.pdo_session_handler_schema_listener');
             }
         }, PassConfig::TYPE_BEFORE_OPTIMIZATION);
 

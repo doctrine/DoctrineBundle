@@ -36,9 +36,12 @@ use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
-use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaSubscriber;
+use Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaListener;
+use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaListener;
+use Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaListener;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
-use Symfony\Bridge\Doctrine\SchemaListener\PdoSessionHandlerSchemaSubscriber;
+use Symfony\Bridge\Doctrine\SchemaListener\PdoSessionHandlerSchemaListener;
+use Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaListener;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
@@ -394,18 +397,24 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->removeAlias('doctrine.orm.metadata.annotation_reader');
         }
 
+        // available in Symfony 6.3
+        $container->removeDefinition('doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_' . (class_exists(DoctrineDbalCacheAdapterSchemaListener::class) ? 'subscriber' : 'listener'));
+
+        // available in Symfony 6.3
+        $container->removeDefinition('doctrine.orm.listeners.doctrine_token_provider_schema_' . (class_exists(RememberMeTokenProviderDoctrineSchemaListener::class) ? 'subscriber' : 'listener'));
+
         // available in Symfony 5.1 and up to Symfony 5.4 (deprecated)
         if (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
             $container->removeDefinition('doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber');
         }
 
-        if (! class_exists(PdoSessionHandlerSchemaSubscriber::class)) {
-            $container->removeDefinition('doctrine.orm.listeners.pdo_session_handler_schema_subscriber');
+        if (! class_exists(PdoSessionHandlerSchemaListener::class)) {
+            $container->removeDefinition('doctrine.orm.listeners.pdo_session_handler_schema_listener');
         }
 
         // available in Symfony 6.3 and higher
-        if (! class_exists(LockStoreSchemaSubscriber::class)) {
-            $container->removeDefinition('doctrine.orm.listeners.lock_store_schema_subscriber');
+        if (! class_exists(LockStoreSchemaListener::class)) {
+            $container->removeDefinition('doctrine.orm.listeners.lock_store_schema_listener');
         }
 
         if (! class_exists(UlidGenerator::class)) {
@@ -1062,6 +1071,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('messenger.xml');
+
+        // available in Symfony 6.3
+        $container->removeDefinition('doctrine.orm.messenger.doctrine_schema_' . (class_exists(MessengerTransportDoctrineSchemaListener::class) ? 'subscriber' : 'listener'));
 
         /**
          * The Doctrine transport component (symfony/doctrine-messenger) is optional.
