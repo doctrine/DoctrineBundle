@@ -6,7 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubsc
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\EntityManagerInterface;
 use Generator;
-use Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaSubscriber;
+use Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaListener;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\Alias;
@@ -76,7 +76,7 @@ class CacheSchemaSubscriberTest extends TestCase
         ], $container);
 
         $container->setAlias('test_subscriber_alias', new Alias($subscriberId, true));
-        // prevent my_cache_apapter from inlining
+        // prevent my_cache_adapter from inlining
         $container->register('uses_my_cache_adapter', 'stdClass')
             ->addArgument(new Reference('my_cache_adapter'))
             ->setPublic(true);
@@ -90,7 +90,12 @@ class CacheSchemaSubscriberTest extends TestCase
 
     public function getSchemaSubscribers(): Generator
     {
-        yield ['cache.adapter.doctrine_dbal', 'doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_subscriber', DoctrineDbalCacheAdapterSchemaSubscriber::class];
+        /**
+         * available in Symfony 6.3
+         *
+         * @psalm-suppress UndefinedClass
+         */
+        yield ['cache.adapter.doctrine_dbal', 'doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_listener', DoctrineDbalCacheAdapterSchemaListener::class];
 
         /**
          * available in Symfony 5.1 and up to Symfony 5.4 (deprecated)

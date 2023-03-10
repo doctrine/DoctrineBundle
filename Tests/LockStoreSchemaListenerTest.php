@@ -4,7 +4,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaSubscriber;
+use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaListener;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -14,7 +14,7 @@ use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 
-class LockStoreSchemaSubscriberTest extends TestCase
+class LockStoreSchemaListenerTest extends TestCase
 {
     /**
      * @param array<string, mixed> $config
@@ -24,7 +24,7 @@ class LockStoreSchemaSubscriberTest extends TestCase
      */
     public function testLockStoreSchemaSubscriberWiring(array $config, int $expectedCount): void
     {
-        if (! class_exists(LockStoreSchemaSubscriber::class)) {
+        if (! class_exists(LockStoreSchemaListener::class)) {
             self::markTestSkipped('symfony/doctrine-bridge version not supported');
         }
 
@@ -59,7 +59,7 @@ class LockStoreSchemaSubscriberTest extends TestCase
 
         $container->setAlias(
             'test_subscriber_lock_alias',
-            new Alias('doctrine.orm.listeners.lock_store_schema_subscriber', true),
+            new Alias('doctrine.orm.listeners.lock_store_schema_listener', true),
         );
         $container->compile();
 
