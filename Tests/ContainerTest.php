@@ -59,6 +59,10 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(InfoCommand::class, $container->get('doctrine.mapping_info_command'));
         $this->assertInstanceOf(UpdateCommand::class, $container->get('doctrine.schema_update_command'));
 
+        $xmlDriverDef =  $container->getDefinition('doctrine.orm.default_xml_metadata_driver');
+        $this->assertCount(3, $xmlDriverDef->getArguments());
+        $this->assertTrue($xmlDriverDef->getArguments()[2]);
+
         $this->assertTrue(Type::hasType('test'));
 
         $this->assertFalse($container->has('doctrine.dbal.default_connection.events.mysqlsessioninit'));

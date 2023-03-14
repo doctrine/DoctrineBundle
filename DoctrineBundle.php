@@ -13,6 +13,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveLoggingMid
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveProfilerControllerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\XmlMappingDriverPass;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Proxy\Autoloader;
@@ -74,6 +75,7 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new RemoveProfilerControllerPass());
         $container->addCompilerPass(new RemoveLoggingMiddlewarePass());
         $container->addCompilerPass(new MiddlewaresPass());
+        $container->addCompilerPass(new XmlMappingDriverPass());
 
         if (! class_exists(RegisterUidTypePass::class)) {
             return;
