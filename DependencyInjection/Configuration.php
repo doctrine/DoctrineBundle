@@ -43,6 +43,8 @@ use function trigger_deprecation;
  *
  * This information is solely responsible for how the different configuration
  * sections are normalized, and merged.
+ *
+ * @final since 2.9
  */
 class Configuration implements ConfigurationInterface
 {
@@ -156,7 +158,13 @@ class Configuration implements ConfigurationInterface
             ->fixXmlConfig('default_table_option')
             ->children()
                 ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
-                ->scalarNode('platform_service')->end()
+                ->scalarNode('platform_service')
+                    ->setDeprecated(
+                        'doctrine/doctrine-bundle',
+                        '2.9',
+                        'The "platform_service" configuration key is deprecated since doctrine-bundle 2.9. DBAL 4 will not support setting a custom platform via connection params anymore.'
+                    )
+                ->end()
                 ->booleanNode('auto_commit')->end()
                 ->scalarNode('schema_filter')->end()
                 ->booleanNode('logging')->defaultValue($this->debug)->end()

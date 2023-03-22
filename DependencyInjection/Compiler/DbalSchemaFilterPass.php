@@ -11,12 +11,12 @@ use function sprintf;
 
 /**
  * Processes the doctrine.dbal.schema_filter
+ *
+ * @final since 2.9
  */
 class DbalSchemaFilterPass implements CompilerPassInterface
 {
-    /**
-     * {@inheritDoc}
-     */
+    /** @return void */
     public function process(ContainerBuilder $container)
     {
         $filters = $container->findTaggedServiceIds('doctrine.dbal.schema_filter');

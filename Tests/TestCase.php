@@ -6,9 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibili
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use PHPUnit\Framework\TestCase as BaseTestCase;
-use ReflectionClass;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -46,9 +44,8 @@ class TestCase extends BaseTestCase
                 'dbal' => [
                     'connections' => [
                         'default' => [
-                            'driver' => 'pdo_mysql',
+                            'driver' => 'pdo_sqlite',
                             'charset' => 'UTF8',
-                            'platform-service' => 'my.platform',
                             'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
                         ],
                     ],
@@ -76,9 +73,6 @@ class TestCase extends BaseTestCase
                 ],
             ],
         ], $container);
-
-        $platformClassName = (new ReflectionClass(MySQLPlatform::class))->getName();
-        $container->setDefinition('my.platform', new Definition($platformClassName))->setPublic(true);
 
         // Register dummy cache services so we don't have to load the FrameworkExtension
         $container->setDefinition('cache.system', (new Definition(ArrayAdapter::class))->setPublic(true));

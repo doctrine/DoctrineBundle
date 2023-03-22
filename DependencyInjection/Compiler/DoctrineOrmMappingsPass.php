@@ -18,6 +18,8 @@ use Symfony\Component\DependencyInjection\Reference;
  * auto-mapped folder.
  *
  * NOTE: alias is only supported by Symfony 2.6+ and will be ignored with older versions.
+ *
+ * @final since 2.9
  */
 class DoctrineOrmMappingsPass extends RegisterMappingsPass
 {

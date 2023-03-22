@@ -2,9 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
-use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\Psr6\CacheAdapter;
-use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -44,7 +42,7 @@ final class CacheCompatibilityPass implements CompilerPassInterface
                 $aliasId      = (string) $methodCall[1][0];
                 $definitionId = (string) $container->getAlias($aliasId);
 
-                $this->wrapIfNecessary($container, $aliasId, $definitionId, true);
+                $this->wrapIfNecessary($container, $aliasId, $definitionId);
             }
         }
     }
@@ -59,7 +57,7 @@ final class CacheCompatibilityPass implements CompilerPassInterface
             $factoryDefinition = $methodCall[1][0];
             assert($factoryDefinition instanceof Definition);
             $aliasId = (string) $factoryDefinition->getArgument(1);
-            $this->wrapIfNecessary($container, $aliasId, (string) $container->getAlias($aliasId), false);
+            $this->wrapIfNecessary($container, $aliasId, (string) $container->getAlias($aliasId));
             foreach ($factoryDefinition->getMethodCalls() as $factoryMethodCall) {
                 if ($factoryMethodCall[0] !== 'setRegion') {
                     continue;
@@ -82,14 +80,14 @@ final class CacheCompatibilityPass implements CompilerPassInterface
                     continue;
                 }
 
-                $this->wrapIfNecessary($container, $driverId, (string) $container->getAlias($driverId), false);
+                $this->wrapIfNecessary($container, $driverId, (string) $container->getAlias($driverId));
             }
 
             break;
         }
     }
 
-    private function createCompatibilityLayerDefinition(ContainerBuilder $container, string $definitionId, bool $shouldBePsr6): ?Definition
+    private function createCompatibilityLayerDefinition(ContainerBuilder $container, string $definitionId): ?Definition
     {
         $definition = $container->getDefinition($definitionId);
 
@@ -97,33 +95,25 @@ final class CacheCompatibilityPass implements CompilerPassInterface
             $definition = $container->findDefinition($definition->getParent());
         }
 
-        if ($shouldBePsr6 === is_a($definition->getClass(), CacheItemPoolInterface::class, true)) {
+        if (is_a($definition->getClass(), CacheItemPoolInterface::class, true)) {
             return null;
         }
 
-        $targetClass   = CacheProvider::class;
-        $targetFactory = DoctrineProvider::class;
+        trigger_deprecation(
+            'doctrine/doctrine-bundle',
+            '2.4',
+            'Configuring doctrine/cache is deprecated. Please update the cache service "%s" to use a PSR-6 cache.',
+            $definitionId
+        );
 
-        if ($shouldBePsr6) {
-            $targetClass   = CacheItemPoolInterface::class;
-            $targetFactory = CacheAdapter::class;
-
-            trigger_deprecation(
-                'doctrine/doctrine-bundle',
-                '2.4',
-                'Configuring doctrine/cache is deprecated. Please update the cache service "%s" to use a PSR-6 cache.',
-                $definitionId
-            );
-        }
-
-        return (new Definition($targetClass))
-            ->setFactory([$targetFactory, 'wrap'])
+        return (new Definition(CacheItemPoolInterface::class))
+            ->setFactory([CacheAdapter::class, 'wrap'])
             ->addArgument(new Reference($definitionId));
     }
 
-    private function wrapIfNecessary(ContainerBuilder $container, string $aliasId, string $definitionId, bool $shouldBePsr6): void
+    private function wrapIfNecessary(ContainerBuilder $container, string $aliasId, string $definitionId): void
     {
-        $compatibilityLayer = $this->createCompatibilityLayerDefinition($container, $definitionId, $shouldBePsr6);
+        $compatibilityLayer = $this->createCompatibilityLayerDefinition($container, $definitionId);
         if ($compatibilityLayer === null) {
             return;
         }

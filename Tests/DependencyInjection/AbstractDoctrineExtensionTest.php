@@ -8,7 +8,6 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilter
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
-use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
@@ -16,6 +15,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Generator;
 use InvalidArgumentException;
 use PDO;
@@ -510,6 +510,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $xmlDef = $container->getDefinition('doctrine.orm.default_xml_metadata_driver');
         $this->assertDICConstructorArguments($xmlDef, [
             [__DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'XmlBundle' . DIRECTORY_SEPARATOR . 'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'doctrine' => 'Fixtures\Bundles\XmlBundle'],
+            SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION,
+            true,
         ]);
     }
 
@@ -565,6 +567,8 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $xmlDef = $container->getDefinition('doctrine.orm.em2_xml_metadata_driver');
         $this->assertDICConstructorArguments($xmlDef, [
             [__DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'XmlBundle' . DIRECTORY_SEPARATOR . 'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'doctrine' => 'Fixtures\Bundles\XmlBundle'],
+            SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION,
+            true,
         ]);
     }
 
@@ -802,7 +806,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionClass($myEntityRegionDef, '%doctrine.orm.second_level_cache.default_region.class%');
         $this->assertDICDefinitionClass($loggerChainDef, '%doctrine.orm.second_level_cache.logger_chain.class%');
         $this->assertDICDefinitionClass($loggerStatisticsDef, '%doctrine.orm.second_level_cache.logger_statistics.class%');
-        $this->assertDICDefinitionClass($cacheDriverDef, CacheProvider::class);
+        $this->assertDICDefinitionClass($cacheDriverDef, ArrayAdapter::class);
         $this->assertDICDefinitionMethodCallOnce($configDef, 'setSecondLevelCacheConfiguration');
         $this->assertDICDefinitionMethodCallCount($slcFactoryDef, 'setRegion', [], 3);
         $this->assertDICDefinitionMethodCallCount($loggerChainDef, 'setLogger', [], 3);

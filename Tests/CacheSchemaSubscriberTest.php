@@ -21,7 +21,10 @@ use function sys_get_temp_dir;
 
 class CacheSchemaSubscriberTest extends TestCase
 {
-    /** @dataProvider getSchemaSubscribers */
+    /**
+     * @group legacy
+     * @dataProvider getSchemaSubscribers
+     */
     public function testSchemaSubscriberWiring(string $adapterId, string $subscriberId, string $class): void
     {
         if (! class_exists($class)) {

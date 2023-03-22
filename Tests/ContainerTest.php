@@ -59,7 +59,9 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(InfoCommand::class, $container->get('doctrine.mapping_info_command'));
         $this->assertInstanceOf(UpdateCommand::class, $container->get('doctrine.schema_update_command'));
 
-        $this->assertSame($container->get('my.platform'), $container->get('doctrine.dbal.default_connection')->getDatabasePlatform());
+        $xmlDriverDef =  $container->getDefinition('doctrine.orm.default_xml_metadata_driver');
+        $this->assertCount(3, $xmlDriverDef->getArguments());
+        $this->assertTrue($xmlDriverDef->getArguments()[2]);
 
         $this->assertTrue(Type::hasType('test'));
 

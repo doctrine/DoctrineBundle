@@ -21,6 +21,7 @@ use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Id\AbstractIdGenerator;
+use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
 use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand;
@@ -63,6 +64,7 @@ use Symfony\Component\VarExporter\LazyGhostTrait;
 use function array_intersect_key;
 use function array_keys;
 use function class_exists;
+use function count;
 use function interface_exists;
 use function is_dir;
 use function method_exists;
@@ -73,6 +75,8 @@ use function trait_exists;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
+ *
+ * @final since 2.9
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {
@@ -80,6 +84,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     /**
      * {@inheritDoc}
+     *
+     * @return void
      */
     public function load(array $configs, ContainerBuilder $container)
     {
@@ -779,6 +785,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $this->loadMappingInformation($entityManager, $container);
         $this->registerMappingDrivers($entityManager, $container);
+        $this->enableXmlMappingDriverXsdValidation($entityManager['name'], $container);
 
         $ormConfigDef->addMethodCall('setEntityNamespaces', [$this->aliasMap]);
     }
@@ -1030,6 +1037,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * @param array<string, mixed> $objectManager
      * @param string               $cacheName
      *
+     * @return void
+     *
      * @psalm-suppress MoreSpecificImplementedParamType
      */
     public function loadObjectManagerCacheDriver(array $objectManager, ContainerBuilder $container, $cacheName)
@@ -1122,5 +1131,33 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $debugMiddlewareAbstractDef
                 ->addTag('doctrine.middleware', ['connection' => $connName]);
         }
+    }
+
+    /**
+     * TODO: remove this once we dropped support for ORM < 3.0
+     */
+    private function enableXmlMappingDriverXsdValidation(string $managerName, ContainerBuilder $container): void
+    {
+        $xmlDriverId = sprintf('doctrine.orm.%s_xml_metadata_driver', $managerName);
+
+        if (! $container->hasDefinition($xmlDriverId)) {
+            return;
+        }
+
+        $xmlDriverDef = $container->getDefinition($xmlDriverId);
+        $args         = $xmlDriverDef->getArguments();
+        $numberOfArgs = count($args);
+        if ($numberOfArgs === 0 || $numberOfArgs === 3) {
+            return;
+        }
+
+        if ($numberOfArgs < 2) {
+            $args[] = SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION;
+        }
+
+        // enable validation
+        $args[] = true;
+
+        $xmlDriverDef->setArguments($args);
     }
 }

@@ -20,14 +20,14 @@ use function substr;
 
 /**
  * Class for Symfony bundles to register entity listeners
+ *
+ * @final since 2.9
  */
 class EntityListenerPass implements CompilerPassInterface
 {
     use PriorityTaggedServiceTrait;
 
-    /**
-     * {@inheritDoc}
-     */
+    /** @return void */
     public function process(ContainerBuilder $container)
     {
         $resolvers = $this->findAndSortTaggedServices('doctrine.orm.entity_listener', $container);
