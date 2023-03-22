@@ -52,7 +52,6 @@
         </service>
 
         <service id="doctrine.orm.messenger.doctrine_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaSubscriber">
-            <deprecated package="doctrine/doctrine-bundle" version="2.9">The "%service_id%" service is deprecated. You should stop using it, as it will be removed in the future.</deprecated>
             <argument type="tagged" tag="messenger.receiver" />
             <tag name="doctrine.event_subscriber" />
         </service>
