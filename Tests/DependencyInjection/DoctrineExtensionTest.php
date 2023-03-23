@@ -17,7 +17,6 @@ use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\MemcacheCache;
 use Doctrine\Common\Cache\XcacheCache;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
@@ -82,7 +81,6 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([$config], $container);
 
         $expectedAliases = [
-            DriverConnection::class => 'database_connection',
             Connection::class => 'database_connection',
             EntityManagerInterface::class => 'doctrine.orm.entity_manager',
         ];

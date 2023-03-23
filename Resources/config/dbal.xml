@@ -17,7 +17,6 @@
     </parameters>
 
     <services>
-        <service id="Doctrine\DBAL\Driver\Connection" alias="database_connection" public="false" />
         <service id="Doctrine\DBAL\Connection" alias="database_connection" public="false" />
 
         <service id="data_collector.doctrine" class="%doctrine.data_collector.class%" public="false">
