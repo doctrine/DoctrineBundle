@@ -8,7 +8,11 @@
         {% set icon %}
             {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' %}
 
-            <span class="icon">{{ include('@Doctrine/Collector/' ~ (profiler_markup_version < 3 ? 'icon' : 'database') ~ '.svg') }}</span>
+            {% if profiler_markup_version >= 3 %}
+                {{ include('@Doctrine/Collector/database.svg') }}
+            {% else %}
+                <span class="icon">{{ include('@Doctrine/Collector/icon.svg') }}</span>
+            {% endif %}
 
             {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
                 <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
