@@ -30,10 +30,6 @@ doctrine:
                 schema_manager_factory: doctrine.dbal.default_schema_manager_factory
 ```
 
-### XSD Schema validation
-
-Starting with `doctrine/orm` 2.14.2 the XML mapping driver will have XSD validation enabled.
-
 ### Deprecations
 
 - the DBAL `platform_service` connection option is deprecated now. Use a driver middleware that would instantiate the platform instead.
