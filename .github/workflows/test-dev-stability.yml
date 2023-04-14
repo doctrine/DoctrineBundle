@@ -52,4 +52,4 @@ jobs:
           composer-options: "--prefer-dist"
 
       - name: "Run PHPUnit"
-        run: "SYMFONY_DEPRECATIONS_HELPER=${{env.GITHUB_WORKSPACE}}/tests/baseline-ignore vendor/bin/phpunit"
+        run: "vendor/bin/phpunit"
