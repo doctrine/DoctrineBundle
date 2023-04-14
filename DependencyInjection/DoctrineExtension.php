@@ -91,6 +91,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $config        = $this->processConfiguration($configuration, $configs);
 
         if (! empty($config['dbal'])) {
+            // if no DB connection defined, append an empty one for the default
+            // connection name in order to make Symfony Config resolve the
+            // default values
+            if (empty($config['dbal']['connections'])) {
+                $configs[] = ['dbal' => ['connections' => [($config['dbal']['default_connection'] ?? 'default') => []]]];
+                $config    = $this->processConfiguration($configuration, $configs);
+            }
+
             $this->dbalLoad($config['dbal'], $container);
 
             $this->loadMessengerServices($container);
@@ -102,6 +110,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (empty($config['dbal'])) {
             throw new LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
+        }
+
+        // if no EM defined, append an empty one for the default EM name in
+        // order to make Symfony Config resolve the default values
+        if (empty($config['orm']['entity_managers'])) {
+            $configs[] = ['orm' => ['entity_managers' => [($config['orm']['default_entity_manager'] ?? 'default') => []]]];
+            $config    = $this->processConfiguration($configuration, $configs);
         }
 
         $this->ormLoad($config['orm'], $container);
