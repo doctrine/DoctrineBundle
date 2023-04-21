@@ -20,6 +20,7 @@ use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
@@ -554,7 +555,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 ]);
             }
 
-            $def->addTag('doctrine.event_subscriber');
+            $def
+                ->addTag('doctrine.event_listener', ['event' => Events::loadClassMetadata])
+                ->addTag('doctrine.event_listener', ['event' => Events::onClassMetadataNotFound]);
         }
 
         $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
