@@ -45,6 +45,7 @@ use Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchema
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -62,6 +63,7 @@ use Symfony\Component\VarExporter\LazyGhostTrait;
 
 use function array_intersect_key;
 use function array_keys;
+use function array_merge;
 use function class_exists;
 use function interface_exists;
 use function is_dir;
@@ -88,7 +90,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = $this->getConfiguration($configs, $container);
-        $config        = $this->processConfiguration($configuration, $configs);
+        $config        = $this->processConfigurationPrependingDefaults($configuration, $configs);
 
         if (! empty($config['dbal'])) {
             $this->dbalLoad($config['dbal'], $container);
@@ -105,6 +107,40 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         $this->ormLoad($config['orm'], $container);
+    }
+
+    /**
+     * Process user configuration and adds a default DBAL connection and/or a
+     * default EM if required, then process again the configuration to get
+     * default values for each.
+     *
+     * @param array<array<mixed>> $configs
+     *
+     * @return array<mixed>
+     */
+    private function processConfigurationPrependingDefaults(ConfigurationInterface $configuration, array $configs): array
+    {
+        $config      = $this->processConfiguration($configuration, $configs);
+        $configToAdd = [];
+
+        // if no DB connection defined, prepend an empty one for the default
+        // connection name in order to make Symfony Config resolve the default
+        // values
+        if (isset($config['dbal']) && empty($config['dbal']['connections'])) {
+            $configToAdd['dbal'] = ['connections' => [($config['dbal']['default_connection'] ?? 'default') => []]];
+        }
+
+        // if no EM defined, prepend an empty one for the default EM name in
+        // order to make Symfony Config resolve the default values
+        if (isset($config['orm']) && empty($config['orm']['entity_managers'])) {
+            $configToAdd['orm'] = ['entity_managers' => [($config['orm']['default_entity_manager'] ?? 'default') => []]];
+        }
+
+        if (! $configToAdd) {
+            return $config;
+        }
+
+        return $this->processConfiguration($configuration, array_merge([$configToAdd], $configs));
     }
 
     /**

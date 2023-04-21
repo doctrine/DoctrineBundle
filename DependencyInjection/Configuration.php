@@ -14,6 +14,7 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
 
+use function array_diff_key;
 use function array_intersect_key;
 use function array_key_exists;
 use function array_keys;
@@ -72,17 +73,27 @@ class Configuration implements ConfigurationInterface
      */
     private function addDbalSection(ArrayNodeDefinition $node): void
     {
+        // Key that should not be rewritten to the connection config
+        $excludedKeys = ['default_connection' => true, 'types' => true, 'type' => true];
+
         $node
             ->children()
             ->arrayNode('dbal')
                 ->beforeNormalization()
-                    ->ifTrue(static function ($v) {
-                        return is_array($v) && ! array_key_exists('connections', $v) && ! array_key_exists('connection', $v);
+                    ->ifTrue(static function ($v) use ($excludedKeys) {
+                        if (! is_array($v)) {
+                            return false;
+                        }
+
+                        if (array_key_exists('connections', $v) || array_key_exists('connection', $v)) {
+                            return false;
+                        }
+
+                        // Is there actually anything to use once excluded keys are considered?
+                        return (bool) array_diff_key($v, $excludedKeys);
                     })
-                    ->then(static function ($v) {
-                        // Key that should not be rewritten to the connection config
-                        $excludedKeys = ['default_connection' => true, 'types' => true, 'type' => true];
-                        $connection   = [];
+                    ->then(static function ($v) use ($excludedKeys) {
+                        $connection = [];
                         foreach ($v as $key => $value) {
                             if (isset($excludedKeys[$key])) {
                                 continue;
@@ -92,8 +103,7 @@ class Configuration implements ConfigurationInterface
                             unset($v[$key]);
                         }
 
-                        $v['default_connection'] = isset($v['default_connection']) ? (string) $v['default_connection'] : 'default';
-                        $v['connections']        = [$v['default_connection'] => $connection];
+                        $v['connections'] = [($v['default_connection'] ?? 'default') => $connection];
 
                         return $v;
                     })
@@ -380,30 +390,39 @@ class Configuration implements ConfigurationInterface
      */
     private function addOrmSection(ArrayNodeDefinition $node): void
     {
+        // Key that should not be rewritten to the entity-manager config
+        $excludedKeys = [
+            'default_entity_manager' => true,
+            'auto_generate_proxy_classes' => true,
+            'enable_lazy_ghost_objects' => true,
+            'proxy_dir' => true,
+            'proxy_namespace' => true,
+            'resolve_target_entities' => true,
+            'resolve_target_entity' => true,
+            'controller_resolver' => true,
+        ];
+
         $node
             ->children()
                 ->arrayNode('orm')
                     ->beforeNormalization()
-                        ->ifTrue(static function ($v) {
+                        ->ifTrue(static function ($v) use ($excludedKeys) {
                             if (! empty($v) && ! class_exists(EntityManager::class)) {
                                 throw new LogicException('The doctrine/orm package is required when the doctrine.orm config is set.');
                             }
 
-                            return $v === null || (is_array($v) && ! array_key_exists('entity_managers', $v) && ! array_key_exists('entity_manager', $v));
+                            if (! is_array($v)) {
+                                return false;
+                            }
+
+                            if (array_key_exists('entity_managers', $v) || array_key_exists('entity_manager', $v)) {
+                                return false;
+                            }
+
+                            // Is there actually anything to use once excluded keys are considered?
+                            return (bool) array_diff_key($v, $excludedKeys);
                         })
-                        ->then(static function ($v) {
-                            $v = (array) $v;
-                            // Key that should not be rewritten to the entity-manager config
-                            $excludedKeys  = [
-                                'default_entity_manager' => true,
-                                'auto_generate_proxy_classes' => true,
-                                'enable_lazy_ghost_objects' => true,
-                                'proxy_dir' => true,
-                                'proxy_namespace' => true,
-                                'resolve_target_entities' => true,
-                                'resolve_target_entity' => true,
-                                'controller_resolver' => true,
-                            ];
+                        ->then(static function ($v) use ($excludedKeys) {
                             $entityManager = [];
                             foreach ($v as $key => $value) {
                                 if (isset($excludedKeys[$key])) {
@@ -414,8 +433,7 @@ class Configuration implements ConfigurationInterface
                                 unset($v[$key]);
                             }
 
-                            $v['default_entity_manager'] = isset($v['default_entity_manager']) ? (string) $v['default_entity_manager'] : 'default';
-                            $v['entity_managers']        = [$v['default_entity_manager'] => $entityManager];
+                            $v['entity_managers'] = [($v['default_entity_manager'] ?? 'default') => $entityManager];
 
                             return $v;
                         })
