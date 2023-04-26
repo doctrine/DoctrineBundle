@@ -890,7 +890,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $tags = $definition->getTags();
         unset($tags['container.no_preload']);
-        $this->assertEquals(['doctrine.event_subscriber' => [[]]], $tags);
+        $this->assertEquals(['doctrine.event_listener' => [['event' => 'loadClassMetadata'], ['event' => 'onClassMetadataNotFound']]], $tags);
     }
 
     public function testSchemaIgnoreClasses(): void
