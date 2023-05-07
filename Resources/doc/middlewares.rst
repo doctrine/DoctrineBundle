@@ -7,10 +7,10 @@ Doctrine DBAL supports middlewares. According to the `DBAL documentation`_:
 
 They allows to decorate the following DBAL classes:
 
-- Doctrine\\DBAL\\Driver
-- Doctrine\\DBAL\\Driver\\Connection
-- Doctrine\\DBAL\\Driver\\Statement
-- Doctrine\\DBAL\\Driver\\Result
+- ``Doctrine\\DBAL\\Driver``
+- ``Doctrine\\DBAL\\Driver\\Connection``
+- ``Doctrine\\DBAL\\Driver\\Statement``
+- ``Doctrine\\DBAL\\Driver\\Result``
 
 Symfony, for instance, uses a middleware to harvest the queries executed by the current page and make them available in the profiler.
 
