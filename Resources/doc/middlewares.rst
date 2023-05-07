@@ -87,4 +87,4 @@ All the examples presented above assume ``autoconfigure`` is enabled. If ``autoc
 
 .. note::
 
-    Middlewares has been introduced in the version 3.2 of ``doctrine/dbal`` and at least the 2.6 version of ``doctrine/doctrine-bundle`` is needed to integrate them in Symfony as shown above.
+    Middlewares have been introduced in version 3.2 of ``doctrine/dbal`` and at least the 2.6 version of ``doctrine/doctrine-bundle`` is needed to integrate them in Symfony as shown above.
