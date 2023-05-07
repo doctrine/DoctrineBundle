@@ -16,7 +16,7 @@ Symfony, for instance, uses a middleware to harvest the queries executed by the 
 
 .. _`DBAL documentation`: https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/architecture.html#middlewares
 
-You can also create your own middleware. This is an example of a (very) simple middleware that prevent database connection with the root user.
+You can also create your own middleware. This is an example of a (very) simple middleware that prevents database connections with the root user.
 The first step is to create the middleware:
 
 .. code-block:: php
