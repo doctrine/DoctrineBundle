@@ -36,7 +36,7 @@ The first step is to create the middleware:
         }
     }
 
-As you can see in the ``wrap`` method, middlewares principle is to decorate Doctrine objects with your own objects bearing the logic you need. Now, the connect method of the driver must be decorated in ``PreventRootConnectionDriver`` to prevent connection with the root user:
+As you can see in the ``wrap`` method, the principle of a middleware is to decorate Doctrine objects with your own objects bearing the logic you need. Now, the ``connect`` method of the driver must be decorated in ``PreventRootConnectionDriver`` to prevent connections with the root user:
 
 .. code-block:: php
 
