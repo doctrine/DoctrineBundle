@@ -1,7 +1,7 @@
 Middlewares
 ===========
 
-Doctrine DBAL supports middlewares. According to the `Doctrine documentation`_:
+Doctrine DBAL supports middlewares. According to the `DBAL documentation`_:
 
     "A middleware sits in the middle between the wrapper components and the driver"
 
