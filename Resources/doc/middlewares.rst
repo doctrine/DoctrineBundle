@@ -5,7 +5,7 @@ Doctrine DBAL supports middlewares. According to the `DBAL documentation`_:
 
     "A middleware sits in the middle between the wrapper components and the driver"
 
-They allows to decorates the following DBAL classes:
+They allows to decorate the following DBAL classes:
 
 - Doctrine\\DBAL\\Driver
 - Doctrine\\DBAL\\Driver\\Connection
