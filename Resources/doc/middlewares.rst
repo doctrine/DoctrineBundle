@@ -53,7 +53,7 @@ As you can see in the ``wrap`` method, the principle of a middleware is to decor
         public function connect(array $params): Connection
         {
             if (isset($params['user']) && $params['user'] === 'root') {
-                throw new \LogicException('Connecting database with root user is not allowed.');
+                throw new \LogicException('Connecting to the database with the root user is not allowed.');
             }
 
             return parent::connect($params);
