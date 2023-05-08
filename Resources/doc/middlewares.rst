@@ -65,7 +65,7 @@ need. Now, the ``connect`` method of the driver must be decorated in
         }
     }
 
-That's all ! Connection with the root user is not possible anymore. Note
+That's all! Connection with the root user is not possible anymore. Note
 that ``connect`` is not the only method you can decorate in a ``Connection``.
 But thanks to the ``AbstractDriverMiddleware`` default implementation,
 you only need to decorate the methods for which you want to add some logic.
