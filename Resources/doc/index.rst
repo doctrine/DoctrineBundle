@@ -10,4 +10,5 @@ configuration options, console commands and even a web debug toolbar collector.
     entity-listeners
     event-listeners
     custom-id-generators
+    middlewares
     configuration
