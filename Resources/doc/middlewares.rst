@@ -7,10 +7,10 @@ Doctrine DBAL supports middlewares. According to the `DBAL documentation`_:
 
 They allow to decorate the following DBAL classes:
 
-- ``Doctrine\\DBAL\\Driver``
-- ``Doctrine\\DBAL\\Driver\\Connection``
-- ``Doctrine\\DBAL\\Driver\\Statement``
-- ``Doctrine\\DBAL\\Driver\\Result``
+- ``Doctrine\DBAL\Driver``
+- ``Doctrine\DBAL\Driver\Connection``
+- ``Doctrine\DBAL\Driver\Statement``
+- ``Doctrine\DBAL\Driver\Result``
 
 Symfony, for instance, uses a middleware to harvest the queries executed
 by the current page and make them available in the profiler.
@@ -71,7 +71,7 @@ But thanks to the ``AbstractDriverMiddleware`` default implementation,
 you only need to decorate the methods for which you want to add some logic.
 Too see a more advanced example with a decoration of the ``Statement`` class,
 you can look at the middleware implementation starting in the class
-:class:`Symfony\\Bridge\\Doctrine\\Middleware\\Debug\\Middleware` of the
+``Symfony\Bridge\Doctrine\Middleware\Debug\Middleware`` of the
 Doctrine Bridge. Decorating the ``Result`` class follows the same principle.
 
 The middleware we've just created applies by default to all the connections.
