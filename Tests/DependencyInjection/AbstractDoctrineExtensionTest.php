@@ -499,6 +499,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             [
                 __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity',
             ],
+            false,
         ]);
 
         $ymlDef = $container->getDefinition('doctrine.orm.default_yml_metadata_driver');
@@ -554,6 +555,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             [
                 __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
             ],
+            false,
         ]);
 
         $ymlDef = $container->getDefinition('doctrine.orm.em2_yml_metadata_driver');
