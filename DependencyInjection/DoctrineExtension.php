@@ -823,6 +823,22 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->loadMappingInformation($entityManager, $container);
         $this->registerMappingDrivers($entityManager, $container);
 
+        $chainDriverDef = $container->getDefinition($this->getObjectManagerElementName($entityManager['name'] . '_metadata_driver'));
+        foreach (array_keys($this->drivers) as $driverType) {
+            $mappingService   = $this->getObjectManagerElementName($entityManager['name'] . '_' . $driverType . '_metadata_driver');
+            $mappingDriverDef = $container->getDefinition($mappingService);
+            $args             = $mappingDriverDef->getArguments();
+            if ($driverType === 'annotation') {
+                $args[2] = $entityManager['report_fields_where_declared'];
+            } elseif ($driverType === 'attribute') {
+                $args[1] = $entityManager['report_fields_where_declared'];
+            } else {
+                continue;
+            }
+
+            $mappingDriverDef->setArguments($args);
+        }
+
         $ormConfigDef->addMethodCall('setEntityNamespaces', [$this->aliasMap]);
     }
 

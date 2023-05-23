@@ -628,6 +628,7 @@ class Configuration implements ConfigurationInterface
                     ->arrayNode('schema_ignore_classes')
                         ->prototype('scalar')->end()
                     ->end()
+                    ->scalarNode('report_fields_where_declared')->defaultFalse()->info('Set to "true" to opt-in to the new mapping driver mode that was added in Doctrine ORM 2.16 and will be mandatory in ORM 3.0. See https://github.com/doctrine/orm/pull/10455.')->end()
                 ->end()
                 ->children()
                     ->arrayNode('second_level_cache')
