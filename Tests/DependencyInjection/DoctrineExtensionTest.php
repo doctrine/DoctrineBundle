@@ -217,6 +217,20 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('foo', $container->getParameter('doctrine.default_connection'), '->load() overrides existing configuration options');
     }
 
+    public function testDbalOverrideDefaultConnectionWithAdditionalConfiguration(): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $container->registerExtension($extension);
+
+        $extension->load([['dbal' => ['default_connection' => 'foo']], ['dbal' => ['types' => ['foo' => 'App\\Doctrine\\FooType']]]], $container);
+
+        // doctrine.dbal.default_connection
+        $this->assertEquals('%doctrine.default_connection%', $container->getDefinition('doctrine')->getArgument(3), '->load() overrides existing configuration options');
+        $this->assertEquals('foo', $container->getParameter('doctrine.default_connection'), '->load() overrides existing configuration options');
+    }
+
     public function testOrmRequiresDbal(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -586,6 +600,29 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
+    /**
+     * @testWith [[]]
+     *           [null]
+     */
+    public function testSingleEntityManagerWithEmptyConfiguration(?array $ormConfiguration): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $extension->load([
+            [
+                'dbal' => [],
+                'orm' => $ormConfiguration,
+            ],
+        ], $container);
+
+        $this->assertEquals('default', $container->getParameter('doctrine.default_entity_manager'));
+    }
+
     public function testSingleEntityManagerWithDefaultSecondLevelCacheConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -693,6 +730,23 @@ class DoctrineExtensionTest extends TestCase
             'setEntityNamespaces',
             [['yml' => 'Fixtures\Bundles\YamlBundle\Entity']]
         );
+    }
+
+    public function testOverrideDefaultEntityManagerWithAdditionalConfiguration(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $extension->load([
+            ['dbal' => [], 'orm' => ['default_entity_manager' => 'app', 'entity_managers' => ['app' => ['mappings' => ['YamlBundle' => ['alias' => 'yml']]]]]],
+            ['orm' => ['metadata_cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool']]],
+        ], $container);
+
+        $this->assertEquals('app', $container->getParameter('doctrine.default_entity_manager'));
     }
 
     public function testYamlBundleMappingDetection(): void
