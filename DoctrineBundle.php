@@ -14,6 +14,7 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveProfilerCo
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\Common\Util\ClassUtils;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Proxy\Autoloader;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
@@ -85,6 +86,10 @@ class DoctrineBundle extends Bundle
     /** @return void */
     public function boot()
     {
+        if ($this->container->getParameter('doctrine.use_trigger_error_for_deprecations')) {
+            Deprecation::enableWithTriggerError();
+        }
+
         // Register an autoloader for proxies to avoid issues when unserializing them
         // when the ORM is used.
         if (! $this->container->hasParameter('doctrine.orm.proxy_namespace')) {

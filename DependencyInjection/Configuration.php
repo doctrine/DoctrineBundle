@@ -65,6 +65,12 @@ class Configuration implements ConfigurationInterface
         $this->addDbalSection($rootNode);
         $this->addOrmSection($rootNode);
 
+        $rootNode
+            ->children()
+            ->booleanNode('use_trigger_error_for_deprecations')
+            ->defaultFalse()
+            ->info('Setting this to "true" will make Doctrine use trigger_error() to report deprecations, just like Symfony does');
+
         return $treeBuilder;
     }
 

@@ -92,6 +92,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $configuration = $this->getConfiguration($configs, $container);
         $config        = $this->processConfigurationPrependingDefaults($configuration, $configs);
 
+        $container->setParameter('doctrine.use_trigger_error_for_deprecations', $config['use_trigger_error_for_deprecations']);
+
         if (! empty($config['dbal'])) {
             $this->dbalLoad($config['dbal'], $container);
 
