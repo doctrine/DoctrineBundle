@@ -218,6 +218,7 @@
         <xsd:attribute name="quote-strategy" type="xsd:string" />
         <xsd:attribute name="entity-listener-resolver" type="xsd:string" />
         <xsd:attribute name="repository-factory" type="xsd:string" />
+        <xsd:attribute name="report-fields-where-declared" type="xsd:string" />
     </xsd:attributeGroup>
 
     <xsd:complexType name="filter" mixed="true">
