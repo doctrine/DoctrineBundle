@@ -53,6 +53,7 @@ class TestKernel extends Kernel
                     'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
                 ],
                 'orm' => [
+                    'report_fields_where_declared' => true,
                     'auto_generate_proxy_classes' => true,
                     'mappings' => [
                         'RepositoryServiceBundle' => [

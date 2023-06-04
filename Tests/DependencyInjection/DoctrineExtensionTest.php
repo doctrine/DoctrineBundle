@@ -597,6 +597,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
             new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.dbal.default_connection.event_manager'),
         ]);
     }
 
@@ -645,6 +646,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
             new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.dbal.default_connection.event_manager'),
         ]);
 
         $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
@@ -680,6 +682,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
             new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.dbal.default_connection.event_manager'),
         ]);
 
         $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');

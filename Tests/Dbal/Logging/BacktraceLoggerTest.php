@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 use function current;
 
+/** @group legacy */
 class BacktraceLoggerTest extends TestCase
 {
     public function testBacktraceLogged(): void

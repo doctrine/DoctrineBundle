@@ -4,9 +4,10 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
-use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
+use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Bridge\Twig\Extension\CodeExtension;
 use Symfony\Bridge\Twig\Extension\HttpKernelExtension;
 use Symfony\Bridge\Twig\Extension\HttpKernelRuntime;
@@ -28,21 +29,24 @@ use function preg_match;
 use function preg_quote;
 use function str_replace;
 
+/**
+ * @psalm-suppress InternalMethod
+ * @psalm-suppress InternalClass
+ */
 class ProfilerTest extends BaseTestCase
 {
-    private DebugStack $logger;
+    private DebugDataHolder $debugDataHolder;
     private Environment $twig;
     private DoctrineDataCollector $collector;
 
     public function setUp(): void
     {
-        $this->logger = new DebugStack();
-        $registry     = $this->getMockBuilder(ManagerRegistry::class)->getMock();
+        $this->debugDataHolder = new DebugDataHolder();
+        $registry              = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $registry->method('getConnectionNames')->willReturn([]);
         $registry->method('getManagerNames')->willReturn([]);
         $registry->method('getManagers')->willReturn([]);
-        $this->collector = new DoctrineDataCollector($registry);
-        $this->collector->addLogger('foo', $this->logger);
+        $this->collector = new DoctrineDataCollector($registry, true, $this->debugDataHolder);
 
         $twigLoaderFilesystem = new FilesystemLoader(__DIR__ . '/../Resources/views/Collector');
         $twigLoaderFilesystem->addPath(__DIR__ . '/../vendor/symfony/web-profiler-bundle/Resources/views', 'WebProfiler');
@@ -75,14 +79,7 @@ class ProfilerTest extends BaseTestCase
 
     public function testRender(): void
     {
-        $this->logger->queries = [
-            [
-                'sql' => 'SELECT * FROM foo WHERE bar IN (?, ?) AND "" >= ""',
-                'params' => ['foo', 'bar'],
-                'types' => null,
-                'executionMS' => 1,
-            ],
-        ];
+        $this->debugDataHolder->addQuery('foo', new Query('SELECT * FROM foo WHERE bar IN (?, ?) AND "" >= ""'));
 
         $this->collector->collect($request = new Request(['group' => '0']), new Response());
 
@@ -103,7 +100,7 @@ class ProfilerTest extends BaseTestCase
             'page' => 'foo',
             'profile' => $profile,
             'collector' => $this->collector,
-            'queries' => $this->logger->queries,
+            'queries' => $this->debugDataHolder->getData(),
         ]);
 
         $expectedEscapedSql = 'SELECT&#x0A;&#x20;&#x20;&#x2A;&#x0A;FROM&#x0A;&#x20;&#x20;foo&#x0A;WHERE&#x0A;&#x20;&#x20;bar&#x20;IN&#x20;&#x28;&#x3F;,&#x20;&#x3F;&#x29;&#x0A;&#x20;&#x20;AND&#x20;&quot;&quot;&#x20;&gt;&#x3D;&#x20;&quot;&quot;';
