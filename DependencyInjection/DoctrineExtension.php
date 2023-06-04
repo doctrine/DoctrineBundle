@@ -745,6 +745,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ->setArguments([
                 new Reference(sprintf('doctrine.dbal.%s_connection', $entityManager['connection'])),
                 new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager['name'])),
+                new Reference(sprintf('doctrine.dbal.%s_connection.event_manager', $entityManager['connection'])),
             ])
             ->setConfigurator([new Reference($managerConfiguratorName), 'configure']);
 

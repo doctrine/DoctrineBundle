@@ -296,6 +296,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
             new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.dbal.default_connection.event_manager'),
         ]);
     }
 
@@ -334,6 +335,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
             new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.dbal.default_connection.event_manager'),
         ]);
     }
 
@@ -370,6 +372,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
             new Reference('doctrine.orm.default_configuration'),
+            new Reference('doctrine.dbal.default_connection.event_manager'),
         ]);
 
         $configDef = $container->getDefinition('doctrine.orm.default_configuration');
@@ -1426,8 +1429,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
             $this->fail(sprintf('Method call at position %s not found!', $pos));
-
-            return;
         }
 
         $this->assertEquals($methodName, $calls[$pos][0], "Method '" . $methodName . "' is expected to be called at position " . $pos . '.');
