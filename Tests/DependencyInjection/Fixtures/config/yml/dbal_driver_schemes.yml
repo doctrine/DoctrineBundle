@@ -1,0 +1,6 @@
+doctrine:
+    dbal:
+        url: 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8'
+        driver_schemes:
+            postgresql: pgsql
+            my-scheme: my_driver

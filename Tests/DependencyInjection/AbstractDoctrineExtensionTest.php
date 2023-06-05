@@ -186,6 +186,16 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertSame('_test', $config['dbname_suffix']);
     }
 
+    public function testDbalDriverScheme(): void
+    {
+        $container = $this->loadContainer('dbal_driver_schemes');
+        $schemes   = $container->getDefinition('doctrine.dbal.connection_factory.dsn_parser')->getArgument(0);
+
+        $this->assertSame('my_driver', $schemes['my-scheme']);
+        $this->assertSame('pgsql', $schemes['postgresql'], 'Overriding a default mapping should be supported.');
+        $this->assertSame('pdo_mysql', $schemes['mysql']);
+    }
+
     public function testDbalLoadSinglePrimaryReplicaConnection(): void
     {
         $container = $this->loadContainer('dbal_service_single_primary_replica_connection');

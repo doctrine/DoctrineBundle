@@ -89,11 +89,20 @@
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="connection" type="connection" />
             <xsd:element name="type" type="named_scalar" />
+            <xsd:element name="driver-scheme" type="driver_scheme" />
             <xsd:group ref="connection-child-config" />
         </xsd:choice>
 
         <xsd:attribute name="default-connection" type="xsd:string" />
         <xsd:attributeGroup ref="connection-config" />
+    </xsd:complexType>
+
+    <xsd:complexType name="driver_scheme">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="scheme" type="xsd:string" use="required" />
+            </xsd:extension>
+        </xsd:simpleContent>
     </xsd:complexType>
 
     <xsd:complexType name="option">

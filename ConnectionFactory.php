@@ -6,10 +6,13 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
+use Doctrine\DBAL\Exception\MalformedDsnException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\Deprecations\Deprecation;
 
@@ -22,15 +25,33 @@ use const PHP_EOL;
 /** @psalm-import-type Params from DriverManager */
 class ConnectionFactory
 {
+    /**
+     * @internal
+     */
+    public const DEFAULT_SCHEME_MAP = [
+        'db2'        => 'ibm_db2',
+        'mssql'      => 'pdo_sqlsrv',
+        'mysql'      => 'pdo_mysql',
+        'mysql2'     => 'pdo_mysql', // Amazon RDS, for some weird reason
+        'postgres'   => 'pdo_pgsql',
+        'postgresql' => 'pdo_pgsql',
+        'pgsql'      => 'pdo_pgsql',
+        'sqlite'     => 'pdo_sqlite',
+        'sqlite3'    => 'pdo_sqlite',
+    ];
+
     /** @var mixed[][] */
     private array $typesConfig = [];
+
+    private DsnParser $dsnParser;
 
     private bool $initialized = false;
 
     /** @param mixed[][] $typesConfig */
-    public function __construct(array $typesConfig)
+    public function __construct(array $typesConfig, ?DsnParser $dsnParser = null)
     {
         $this->typesConfig = $typesConfig;
+        $this->dsnParser   = $dsnParser ?? new DsnParser(self::DEFAULT_SCHEME_MAP);
     }
 
     /**
@@ -53,6 +74,19 @@ class ConnectionFactory
             trigger_deprecation('doctrine/doctrine-bundle', '2.4', 'The "connection_override_options" connection parameter is deprecated');
             $overriddenOptions = $params['connection_override_options'];
             unset($params['connection_override_options']);
+        }
+
+        $params = $this->parseDatabaseUrl($params);
+
+        // URL support for PrimaryReplicaConnection
+        if (isset($params['primary'])) {
+            $params['primary'] = $this->parseDatabaseUrl($params['primary']);
+        }
+
+        if (isset($params['replica'])) {
+            foreach ($params['replica'] as $key => $replicaParams) {
+                $params['replica'][$key] = $this->parseDatabaseUrl($replicaParams);
+            }
         }
 
         if (! isset($params['pdo']) && (! isset($params['charset']) || $overriddenOptions || isset($params['dbname_suffix']))) {
@@ -179,6 +213,50 @@ class ConnectionFactory
         if (isset($params['primary']['dbname'], $params['primary']['dbname_suffix'])) {
             $params['primary']['dbname'] .= $params['primary']['dbname_suffix'];
         }
+
+        return $params;
+    }
+
+    /**
+     * Extracts parts from a database URL, if present, and returns an
+     * updated list of parameters.
+     *
+     * @param mixed[] $params The list of parameters.
+     * @psalm-param Params $params
+     *
+     * @return mixed[] A modified list of parameters with info from a database
+     *                 URL extracted into individual parameter parts.
+     * @psalm-return Params
+     *
+     * @throws Exception
+     */
+    private function parseDatabaseUrl(array $params): array
+    {
+        if (! isset($params['url'])) {
+            return $params;
+        }
+
+        try {
+            $parsedParams = $this->dsnParser->parse($params['url']);
+        } catch (MalformedDsnException $e) {
+            throw new Exception('Malformed parameter "url".', 0, $e);
+        }
+
+        if (isset($parsedParams['driver'])) {
+            // The requested driver from the URL scheme takes precedence
+            // over the default custom driver from the connection parameters (if any).
+            unset($params['driverClass']);
+        }
+
+        $params = array_merge($params, $parsedParams);
+
+        // If a schemeless connection URL is given, we require a default driver or default custom driver
+        // as connection parameter.
+        if (! isset($params['driverClass']) && ! isset($params['driver'])) {
+            throw Exception::driverRequired($params['url']);
+        }
+
+        unset($params['url']);
 
         return $params;
     }

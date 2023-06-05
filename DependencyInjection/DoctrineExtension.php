@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsMiddleware;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
+use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
@@ -171,6 +172,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setAlias('doctrine.dbal.event_manager', new Alias(sprintf('doctrine.dbal.%s_connection.event_manager', $this->defaultConnection), false));
 
         $container->setParameter('doctrine.dbal.connection_factory.types', $config['types']);
+
+        $container->getDefinition('doctrine.dbal.connection_factory.dsn_parser')->setArgument(0, array_merge(ConnectionFactory::DEFAULT_SCHEME_MAP, $config['driver_schemes']));
 
         $connections = [];
 
