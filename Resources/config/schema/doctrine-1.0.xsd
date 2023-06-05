@@ -228,6 +228,7 @@
         <xsd:attribute name="entity-listener-resolver" type="xsd:string" />
         <xsd:attribute name="repository-factory" type="xsd:string" />
         <xsd:attribute name="report-fields-where-declared" type="xsd:boolean" />
+        <xsd:attribute name="validate-xml-mapping" type="xsd:boolean" />
     </xsd:attributeGroup>
 
     <xsd:complexType name="filter" mixed="true">

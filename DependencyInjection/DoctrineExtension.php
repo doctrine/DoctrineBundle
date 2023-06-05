@@ -23,6 +23,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
+use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
 use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand;
@@ -836,6 +837,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $args[2] = $entityManager['report_fields_where_declared'];
             } elseif ($driverType === 'attribute') {
                 $args[1] = $entityManager['report_fields_where_declared'];
+            } elseif ($driverType === 'xml') {
+                $args[1] ??= SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION;
+                $args[2]   = $entityManager['validate_xml_mapping'];
             } else {
                 continue;
             }

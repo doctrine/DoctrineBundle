@@ -14,6 +14,14 @@ In version 2.10+ of this bundle, a new configuration setting `report_fields_wher
 
 Unless you set it to `true`, Doctrine ORM will emit deprecation messages mentioning this new setting.
 
+### Preparing for the XSD validation for XML drivers
+
+Doctrine ORM 2.14+ adds support for validating the XSD of XML mapping files. In ORM 3.0, this validation will be mandatory.
+
+As the ecosystem is known to rely on custom elements in the XML mapping files that are forbidden when validating the XSD (for instance when using `gedmo/doctrine-extensions`), this validation is opt-in thanks to a `validate_xml_mapping` setting at the entity manager configuration level.
+
+Unless you set it to `true`, Doctrine ORM will emit deprecation messages mentioning the XSD validation.
+
 ### Deprecations
 
 - `Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface` has been deprecated. Use the `#[AsDoctrineListener]` attribute instead.
