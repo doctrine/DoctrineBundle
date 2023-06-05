@@ -106,7 +106,7 @@ class IdGeneratorPassTest extends TestCase
                     'charset' => 'UTF8',
                     'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
                 ],
-                'orm' => ['mappings' => $mappings],
+                'orm' => ['mappings' => $mappings, 'report_fields_where_declared' => true],
             ],
         ], $container);
 

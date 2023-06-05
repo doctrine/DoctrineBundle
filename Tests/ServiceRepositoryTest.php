@@ -87,6 +87,7 @@ class ServiceRepositoryTest extends TestCase
                     'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
                 ],
                 'orm' => [
+                    'report_fields_where_declared' => true,
                     'mappings' => [
                         'RepositoryServiceBundle' => [
                             'type' => PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation',

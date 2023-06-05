@@ -859,6 +859,7 @@ class DoctrineExtensionTest extends TestCase
                 'default_entity_manager' => 'default',
                 'entity_managers' => [
                     'default' => [
+                        'report_fields_where_declared' => true,
                         'mappings' => [
                             'AttributesBundle' => ['type' => 'attribute'],
                         ],
