@@ -14,6 +14,7 @@ doctrine:
                     AttributesBundle:
                       type: attribute
             em2:
+                validate_xml_mapping: true
                 mappings:
                     YamlBundle:
                         dir: Resources/config/doctrine

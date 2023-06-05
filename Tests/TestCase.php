@@ -60,6 +60,7 @@ class TestCase extends BaseTestCase
                     'default_entity_manager' => 'default',
                     'entity_managers' => [
                         'default' => [
+                            'validate_xml_mapping' => true,
                             'mappings' => [
                                 'XmlBundle' => [
                                     'type' => 'xml',

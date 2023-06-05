@@ -248,6 +248,8 @@ Configuration Reference
                         auto_mapping:                 false
                         # Opt-in to new mapping driver mode as of Doctrine ORM 2.16, https://github.com/doctrine/orm/pull/10455
                         report_fields_where_declared: false
+                        # 0pt-in to the new mapping driver mode as of Doctrine ORM 2.14. See https://github.com/doctrine/orm/pull/6728.
+                        validate_xml_mapping: false
                         naming_strategy:              doctrine.orm.naming_strategy.default
                         quote_strategy:               doctrine.orm.quote_strategy.default
                         entity_listener_resolver:     ~
