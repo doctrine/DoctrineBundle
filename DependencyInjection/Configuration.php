@@ -7,6 +7,7 @@ use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
+use InvalidArgumentException;
 use ReflectionClass;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
@@ -74,7 +75,7 @@ class Configuration implements ConfigurationInterface
     private function addDbalSection(ArrayNodeDefinition $node): void
     {
         // Key that should not be rewritten to the connection config
-        $excludedKeys = ['default_connection' => true, 'types' => true, 'type' => true];
+        $excludedKeys = ['default_connection' => true, 'driver_schemes' => true, 'driver_scheme' => true, 'types' => true, 'type' => true];
 
         $node
             ->children()
@@ -132,6 +133,35 @@ class Configuration implements ConfigurationInterface
                                     )
                                 ->end()
                             ->end()
+                        ->end()
+                    ->end()
+                ->end()
+                ->fixXmlConfig('driver_scheme')
+                ->children()
+                    ->arrayNode('driver_schemes')
+                        ->useAttributeAsKey('scheme')
+                        ->normalizeKeys(false)
+                        ->scalarPrototype()->end()
+                        ->info('Defines a driver for given URL schemes. Schemes being driver names cannot be redefined. However, other default schemes can be overwritten.')
+                        ->validate()
+                            ->always()
+                            ->then(static function (array $value) {
+                                $unsupportedSchemes = [];
+
+                                foreach ($value as $scheme => $driver) {
+                                    if (! in_array($scheme, ['pdo-mysql', 'pdo-sqlite', 'pdo-pgsql', 'pdo-oci', 'oci8', 'ibm-db2', 'pdo-sqlsrv', 'mysqli', 'pgsql', 'sqlsrv', 'sqlite3'], true)) {
+                                        continue;
+                                    }
+
+                                    $unsupportedSchemes[] = $scheme;
+                                }
+
+                                if ($unsupportedSchemes) {
+                                    throw new InvalidArgumentException(sprintf('Registering a scheme with the name of one of the official drivers is forbidden, as those are defined in DBAL itself. The following schemes are forbidden: %s', implode(', ', $unsupportedSchemes)));
+                                }
+
+                                return $value;
+                            })
                         ->end()
                     ->end()
                 ->end()

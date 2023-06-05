@@ -28,6 +28,11 @@
 
         <service id="doctrine.dbal.connection_factory" class="%doctrine.dbal.connection_factory.class%">
             <argument>%doctrine.dbal.connection_factory.types%</argument>
+            <argument type="service" id="doctrine.dbal.connection_factory.dsn_parser" />
+        </service>
+
+        <service id="doctrine.dbal.connection_factory.dsn_parser" class="Doctrine\DBAL\Tools\DsnParser">
+            <argument type="collection" />
         </service>
 
         <service id="doctrine.dbal.connection" class="Doctrine\DBAL\Connection" abstract="true">

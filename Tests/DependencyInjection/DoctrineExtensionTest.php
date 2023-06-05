@@ -42,6 +42,7 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -229,6 +230,16 @@ class DoctrineExtensionTest extends TestCase
         // doctrine.dbal.default_connection
         $this->assertEquals('%doctrine.default_connection%', $container->getDefinition('doctrine')->getArgument(3), '->load() overrides existing configuration options');
         $this->assertEquals('foo', $container->getParameter('doctrine.default_connection'), '->load() overrides existing configuration options');
+    }
+
+    public function testDbalInvalidDriverScheme(): void
+    {
+        $extension = new DoctrineExtension();
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Invalid configuration for path "doctrine.dbal.driver_schemes": Registering a scheme with the name of one of the official drivers is forbidden, as those are defined in DBAL itself. The following schemes are forbidden: pdo-mysql, pgsql');
+
+        $extension->load([['dbal' => ['driver_schemes' => ['pdo-mysql' => 'sqlite3', 'pgsql' => 'pgsql', 'other' => 'mysqli']]]], $this->getContainer());
     }
 
     public function testOrmRequiresDbal(): void
