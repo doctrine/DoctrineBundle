@@ -242,12 +242,6 @@ class ConnectionFactory
             throw new Exception('Malformed parameter "url".', 0, $e);
         }
 
-        if (isset($parsedParams['driver'])) {
-            // The requested driver from the URL scheme takes precedence
-            // over the default custom driver from the connection parameters (if any).
-            unset($params['driverClass']);
-        }
-
         $params = array_merge($params, $parsedParams);
 
         // If a schemeless connection URL is given, we require a default driver or default custom driver

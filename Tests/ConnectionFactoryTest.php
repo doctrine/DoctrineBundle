@@ -11,6 +11,7 @@ use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
 
 use function array_intersect_key;
+use function get_class;
 
 class ConnectionFactoryTest extends TestCase
 {
@@ -155,6 +156,29 @@ class ConnectionFactoryTest extends TestCase
 
         $this->assertSame('primary_test', $parsedParams['primary']['dbname']);
         $this->assertSame('replica_test', $parsedParams['replica']['replica1']['dbname']);
+    }
+
+    public function testCanUseDriverClassWithUrl(): void
+    {
+        $driver     = $this->createMock(Driver::class);
+        $connection = (new ConnectionFactory([]))->createConnection(
+            [
+                'driverClass' => get_class($driver),
+                'url' => 'foo://root:pAssword@database:3306/main',
+                'serverVersion' => '6',
+            ],
+            $this->configuration
+        );
+
+        $params = $connection->getParams();
+
+        $this->assertSame(get_class($driver), $params['driverClass']);
+        $this->assertSame('foo', $params['driver']);
+        $this->assertSame('root', $params['user']);
+        $this->assertSame('pAssword', $params['password']);
+        $this->assertSame(3306, $params['port']);
+        $this->assertSame('main', $params['dbname']);
+        $this->assertSame('6', $params['serverVersion']);
     }
 }
 
