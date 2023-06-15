@@ -14,6 +14,8 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function array_map;
+use function implode;
 use function sprintf;
 
 use const PHP_VERSION_ID;
@@ -148,6 +150,194 @@ class MiddlewarePassTest extends TestCase
         self::assertCount(0, $middlewareDefinitions);
     }
 
+    public function testAddMiddlewareOrderingWithDefaultPriority(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container) {
+            $container
+                ->register('middleware1', PHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware');
+
+            $container
+                ->register('middleware2', ConnectionAwarePHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware');
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
+        $this->assertMiddlewareInjected($container, 'conn1', ConnectionAwarePHP7Middleware::class, true);
+        $this->assertMiddlewareOrdering($container, 'conn1', [PHP7Middleware::class, ConnectionAwarePHP7Middleware::class]);
+    }
+
+    public function testAddMiddlewareOrderingWithExplicitPriority(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container) {
+            $container
+                ->register('middleware1', PHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware');
+
+            $container
+                ->register('middleware2', ConnectionAwarePHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware', ['priority' => 2]);
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
+        $this->assertMiddlewareInjected($container, 'conn1', ConnectionAwarePHP7Middleware::class, true);
+        $this->assertMiddlewareOrdering($container, 'conn1', [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class]);
+    }
+
+    public function testAddMiddlewareOrderingWithExplicitPriorityAndConnection(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container) {
+            $container
+                ->register('middleware1', PHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware');
+
+            $container
+                ->register('middleware2', ConnectionAwarePHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware', ['connection' => 'conn1', 'priority' => 2]);
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+
+            $container
+                ->setAlias('conf_conn2', 'doctrine.dbal.conn2_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
+        $this->assertMiddlewareInjected($container, 'conn1', ConnectionAwarePHP7Middleware::class, true);
+        $this->assertMiddlewareInjected($container, 'conn2', PHP7Middleware::class);
+        $this->assertMiddlewareNotInjected($container, 'conn2', ConnectionAwarePHP7Middleware::class);
+        $this->assertMiddlewareOrdering($container, 'conn1', [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class]);
+    }
+
+    public function testAddMiddlewareOrderingWithExplicitPriorityPerConnection(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container) {
+            $container
+                ->register('middleware1', PHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware');
+
+            $container
+                ->register('middleware2', ConnectionAwarePHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware', ['connection' => 'conn1', 'priority' => 2])
+                ->addTag('doctrine.middleware', ['connection' => 'conn2', 'priority' => -2]);
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+
+            $container
+                ->setAlias('conf_conn2', 'doctrine.dbal.conn2_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
+        $this->assertMiddlewareInjected($container, 'conn1', ConnectionAwarePHP7Middleware::class, true);
+        $this->assertMiddlewareInjected($container, 'conn2', PHP7Middleware::class);
+        $this->assertMiddlewareInjected($container, 'conn2', ConnectionAwarePHP7Middleware::class, true);
+        $this->assertMiddlewareOrdering($container, 'conn1', [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class]);
+        $this->assertMiddlewareOrdering($container, 'conn2', [PHP7Middleware::class, ConnectionAwarePHP7Middleware::class]);
+    }
+
+    public function testAddMiddlewareOrderingWithInheritedPriorityPerConnection(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container) {
+            $container
+                ->register('middleware1', PHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware');
+
+            $container
+                ->register('middleware2', ConnectionAwarePHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware', ['priority' => 2])
+                ->addTag('doctrine.middleware', ['connection' => 'conn1']);
+
+            $container
+                ->register('middleware3', 'some_middleware_class')
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware', ['priority' => 1])
+                ->addTag('doctrine.middleware', ['connection' => 'conn1'])
+                ->addTag('doctrine.middleware', ['connection' => 'conn2', 'priority' => -1]);
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+
+            $container
+                ->setAlias('conf_conn2', 'doctrine.dbal.conn2_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
+        $this->assertMiddlewareInjected($container, 'conn1', ConnectionAwarePHP7Middleware::class, true);
+        $this->assertMiddlewareInjected($container, 'conn1', 'some_middleware_class');
+        $this->assertMiddlewareInjected($container, 'conn2', PHP7Middleware::class);
+        $this->assertMiddlewareNotInjected($container, 'conn2', ConnectionAwarePHP7Middleware::class);
+        $this->assertMiddlewareInjected($container, 'conn2', 'some_middleware_class');
+        $this->assertMiddlewareOrdering($container, 'conn1', [ConnectionAwarePHP7Middleware::class, 'some_middleware_class', PHP7Middleware::class]);
+        $this->assertMiddlewareOrdering($container, 'conn2', [PHP7Middleware::class, 'some_middleware_class']);
+    }
+
+    /** @requires PHP 8 */
+    public function testAddMiddlewareOrderingWithAttributeForAutoconfiguration(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container) {
+            $container
+                ->register('middleware1', AutoconfiguredMiddleware::class)
+                ->setAutoconfigured(true);
+
+            $container
+                ->register('middleware2', AutoconfiguredMiddlewareWithConnection::class)
+                ->setAutoconfigured(true);
+
+            $container
+                ->register('middleware3', AutoconfiguredMiddlewareWithPriority::class)
+                ->setAutoconfigured(true);
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+
+            $container
+                ->setAlias('conf_conn2', 'doctrine.dbal.conn2_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        $this->assertMiddlewareInjected($container, 'conn1', AutoconfiguredMiddleware::class);
+        $this->assertMiddlewareNotInjected($container, 'conn1', AutoconfiguredMiddlewareWithConnection::class);
+        $this->assertMiddlewareInjected($container, 'conn1', AutoconfiguredMiddlewareWithPriority::class);
+        $this->assertMiddlewareInjected($container, 'conn2', AutoconfiguredMiddleware::class);
+        $this->assertMiddlewareInjected($container, 'conn2', AutoconfiguredMiddlewareWithConnection::class);
+        $this->assertMiddlewareInjected($container, 'conn2', AutoconfiguredMiddlewareWithPriority::class);
+        $this->assertMiddlewareOrdering($container, 'conn1', [
+            AutoconfiguredMiddlewareWithPriority::class,
+            AutoconfiguredMiddleware::class,
+        ]);
+        $this->assertMiddlewareOrdering($container, 'conn2', [
+            AutoconfiguredMiddlewareWithPriority::class,
+            AutoconfiguredMiddleware::class,
+            AutoconfiguredMiddlewareWithConnection::class,
+        ]);
+    }
+
     private function createContainer(callable $func, bool $addConnections = true): ContainerBuilder
     {
         $container = new ContainerBuilder(new ParameterBag(['kernel.debug' => false]));
@@ -223,8 +413,27 @@ class MiddlewarePassTest extends TestCase
         ));
     }
 
+    /** @param string[] $expectedOrder */
+    private function assertMiddlewareOrdering(
+        ContainerBuilder $container,
+        string $connName,
+        array $expectedOrder
+    ): void {
+        $middlewareFound = $this->getMiddlewaresForConn($container, $connName);
+        $classes         = array_map(
+            static fn (Definition $def): string => $def->getClass() ?? '',
+            $middlewareFound,
+        );
+
+        $this->assertSame($expectedOrder, $classes, sprintf(
+            'Middlewares ordered as %s in doctrine.dbal.%s_connection.configuration',
+            implode(', ', $classes),
+            $connName
+        ));
+    }
+
     /** @return Definition[] */
-    private function getMiddlewaresForConn(ContainerBuilder $container, string $connName, string $middlewareClass): array
+    private function getMiddlewaresForConn(ContainerBuilder $container, string $connName, ?string $middlewareClass = null): array
     {
         $calls            = $container->getDefinition('conf_' . $connName)->getMethodCalls();
         $middlewaresFound = [];
@@ -234,7 +443,7 @@ class MiddlewarePassTest extends TestCase
             }
 
             foreach ($call[1][0] as $middlewareDef) {
-                if ($middlewareDef->getClass() !== $middlewareClass) {
+                if (isset($middlewareClass) && $middlewareDef->getClass() !== $middlewareClass) {
                     continue;
                 }
 
@@ -273,6 +482,11 @@ if (PHP_VERSION_ID >= 80000) {
 
     #[AsMiddleware(connections: ['conn2'])]
     class AutoconfiguredMiddlewareWithConnection
+    {
+    }
+
+    #[AsMiddleware(priority: 2)]
+    class AutoconfiguredMiddlewareWithPriority
     {
     }
 }

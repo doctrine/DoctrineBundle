@@ -207,14 +207,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->registerForAutoconfiguration(MiddlewareInterface::class)->addTag('doctrine.middleware');
 
         $container->registerAttributeForAutoconfiguration(AsMiddleware::class, static function (ChildDefinition $definition, AsMiddleware $attribute) {
+            $priority = isset($attribute->priority) ? ['priority' => $attribute->priority] : [];
+
             if ($attribute->connections === []) {
-                $definition->addTag('doctrine.middleware');
+                $definition->addTag('doctrine.middleware', $priority);
 
                 return;
             }
 
             foreach ($attribute->connections as $connName) {
-                $definition->addTag('doctrine.middleware', ['connection' => $connName]);
+                $definition->addTag('doctrine.middleware', array_merge($priority, ['connection' => $connName]));
             }
         });
 
