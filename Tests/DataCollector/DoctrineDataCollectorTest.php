@@ -32,7 +32,7 @@ class DoctrineDataCollectorTest extends TestCase
         $manager   = $this->createMock(EntityManagerInterface::class);
         $config    = $this->createMock(Configuration::class);
         $factory   = $this->createMock(ClassMetadataFactory::class);
-        $collector = $this->createCollector(['default' => $manager]);
+        $collector = $this->createCollector(['default' => $manager], true, $this->createMock(DebugDataHolder::class));
 
         $manager->expects($this->any())
             ->method('getMetadataFactory')
@@ -69,7 +69,7 @@ class DoctrineDataCollectorTest extends TestCase
 
         $manager   = $this->createMock(EntityManager::class);
         $config    = $this->createMock(Configuration::class);
-        $collector = $this->createCollector(['default' => $manager], false);
+        $collector = $this->createCollector(['default' => $manager], false, $this->createMock(DebugDataHolder::class));
 
         $manager->expects($this->never())
             ->method('getMetadataFactory');
