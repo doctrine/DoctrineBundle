@@ -101,6 +101,7 @@ class ProfilerTest extends BaseTestCase
             'profile' => $profile,
             'collector' => $this->collector,
             'queries' => $this->debugDataHolder->getData(),
+            'profiler_markup_version' => 3,
         ]);
 
         $expectedEscapedSql = 'SELECT&#x0A;&#x20;&#x20;&#x2A;&#x0A;FROM&#x0A;&#x20;&#x20;foo&#x0A;WHERE&#x0A;&#x20;&#x20;bar&#x20;IN&#x20;&#x28;&#x3F;,&#x20;&#x3F;&#x29;&#x0A;&#x20;&#x20;AND&#x20;&quot;&quot;&#x20;&gt;&#x3D;&#x20;&quot;&quot;';
