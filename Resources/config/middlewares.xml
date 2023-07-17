@@ -11,6 +11,7 @@
         </service>
         <service id="doctrine.debug_data_holder" class="Doctrine\Bundle\DoctrineBundle\Middleware\BacktraceDebugDataHolder">
             <argument type="collection" />
+            <tag name="kernel.reset" method="reset" />
         </service>
         <service id="doctrine.dbal.debug_middleware" class="Doctrine\Bundle\DoctrineBundle\Middleware\DebugMiddleware" abstract="true">
             <argument type="service" id="doctrine.debug_data_holder" />
