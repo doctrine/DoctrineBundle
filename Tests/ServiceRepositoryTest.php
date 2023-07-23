@@ -19,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\HttpKernel\Kernel;
 
 use function class_exists;
 use function interface_exists;
@@ -72,7 +73,7 @@ class ServiceRepositoryTest extends TestCase
             'framework' => [
                 'http_method_override' => false,
                 'annotations' => [
-                    'enabled' => class_exists(AnnotationReader::class),
+                    'enabled' => class_exists(AnnotationReader::class) && Kernel::VERSION_ID < 64000,
                 ],
             ],
         ], $container);

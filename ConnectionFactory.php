@@ -25,9 +25,7 @@ use const PHP_EOL;
 /** @psalm-import-type Params from DriverManager */
 class ConnectionFactory
 {
-    /**
-     * @internal
-     */
+    /** @internal */
     public const DEFAULT_SCHEME_MAP = [
         'db2'        => 'ibm_db2',
         'mssql'      => 'pdo_sqlsrv',
