@@ -44,10 +44,10 @@ jobs:
           # Test last supported minor version
           - symfony-require: "6.*"
             dependencies: "highest"
-            php-version: "8.1"
+            php-version: "8.2"
 
           # Bleeding edge
-          - php-version: "8.1"
+          - php-version: "8.2"
             dependencies: "highest"
             stability: "dev"
 
