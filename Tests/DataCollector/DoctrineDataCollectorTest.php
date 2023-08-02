@@ -15,6 +15,7 @@ use ReflectionClass;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Kernel;
 
 use function interface_exists;
 
@@ -132,6 +133,10 @@ class DoctrineDataCollectorTest extends TestCase
     /** @group legacy */
     public function testGetGroupedQueriesWithDeprecatedDebugStackLogger(): void
     {
+        if (Kernel::VERSION_ID >= 70000) {
+            $this->markTestSkipped('This test requires symfony < 7.0');
+        }
+
         $logger            = $this->getMockBuilder(DebugStack::class)->getMock();
         $logger->queries   = [];
         $logger->queries[] = [
