@@ -828,7 +828,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->loadMappingInformation($entityManager, $container);
         $this->registerMappingDrivers($entityManager, $container);
 
-        $chainDriverDef = $container->getDefinition($this->getObjectManagerElementName($entityManager['name'] . '_metadata_driver'));
+        $container->getDefinition($this->getObjectManagerElementName($entityManager['name'] . '_metadata_driver'));
         foreach (array_keys($this->drivers) as $driverType) {
             $mappingService   = $this->getObjectManagerElementName($entityManager['name'] . '_' . $driverType . '_metadata_driver');
             $mappingDriverDef = $container->getDefinition($mappingService);
