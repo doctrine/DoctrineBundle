@@ -1095,19 +1095,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $validatorLoaderDefinition->addTag('validator.auto_mapper', ['priority' => -100]);
     }
 
-    /**
-     * @param array<string, mixed> $objectManager
-     * @param string               $cacheName
-     *
-     * @return void
-     *
-     * @psalm-suppress MoreSpecificImplementedParamType
-     */
-    public function loadObjectManagerCacheDriver(array $objectManager, ContainerBuilder $container, $cacheName)
-    {
-        $this->loadCacheDriver($cacheName, $objectManager['name'], $objectManager[$cacheName . '_driver'], $container);
-    }
-
     public function getXsdValidationBasePath(): string
     {
         return __DIR__ . '/../Resources/config/schema';
