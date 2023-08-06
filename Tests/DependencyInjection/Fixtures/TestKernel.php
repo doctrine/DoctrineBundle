@@ -43,7 +43,7 @@ class TestKernel extends Kernel
                 'secret' => 'F00',
                 'http_method_override' => false,
                 'annotations' => [
-                    'enabled' => class_exists(Annotation::class),
+                    'enabled' => class_exists(Annotation::class) && Kernel::VERSION_ID <= 64000,
                 ],
             ]);
 
