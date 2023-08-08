@@ -117,44 +117,46 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
     }
 
     /**
-     * @param string[]     $namespaces        List of namespaces that are handled with annotation mapping
-     * @param string[]     $directories       List of directories to look for annotated classes
-     * @param string[]     $managerParameters List of parameters that could which object manager name
-     *                                        your bundle uses. This compiler pass will automatically
-     *                                        append the parameter name for the default entity manager
-     *                                        to this list.
-     * @param string|false $enabledParameter  Service container parameter that must be present to
-     *                                        enable the mapping. Set to false to not do any check,
-     *                                        optional.
-     * @param string[]     $aliasMap          Map of alias to namespace.
+     * @param string[]     $namespaces                List of namespaces that are handled with annotation mapping
+     * @param string[]     $directories               List of directories to look for annotated classes
+     * @param string[]     $managerParameters         List of parameters that could which object manager name
+     *                                                your bundle uses. This compiler pass will automatically
+     *                                                append the parameter name for the default entity manager
+     *                                                to this list.
+     * @param string|false $enabledParameter          Service container parameter that must be present to
+     *                                                enable the mapping. Set to false to not do any check,
+     *                                                optional.
+     * @param string[]     $aliasMap                  Map of alias to namespace.
+     * @param bool         $reportFieldsWhereDeclared Will report fields for the classes where they are declared
      *
      * @return self
      */
-    public static function createAnnotationMappingDriver(array $namespaces, array $directories, array $managerParameters = [], $enabledParameter = false, array $aliasMap = [])
+    public static function createAnnotationMappingDriver(array $namespaces, array $directories, array $managerParameters = [], $enabledParameter = false, array $aliasMap = [], bool $reportFieldsWhereDeclared = false)
     {
         $reader = new Reference('annotation_reader');
-        $driver = new Definition(AnnotationDriver::class, [$reader, $directories]);
+        $driver = new Definition(AnnotationDriver::class, [$reader, $directories, $reportFieldsWhereDeclared]);
 
         return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter, $aliasMap);
     }
 
     /**
-     * @param string[]     $namespaces        List of namespaces that are handled with annotation mapping
-     * @param string[]     $directories       List of directories to look for annotated classes
-     * @param string[]     $managerParameters List of parameters that could which object manager name
-     *                                        your bundle uses. This compiler pass will automatically
-     *                                        append the parameter name for the default entity manager
-     *                                        to this list.
-     * @param string|false $enabledParameter  Service container parameter that must be present to
-     *                                        enable the mapping. Set to false to not do any check,
-     *                                        optional.
-     * @param string[]     $aliasMap          Map of alias to namespace.
+     * @param string[]     $namespaces                List of namespaces that are handled with annotation mapping
+     * @param string[]     $directories               List of directories to look for annotated classes
+     * @param string[]     $managerParameters         List of parameters that could which object manager name
+     *                                                your bundle uses. This compiler pass will automatically
+     *                                                append the parameter name for the default entity manager
+     *                                                to this list.
+     * @param string|false $enabledParameter          Service container parameter that must be present to
+     *                                                enable the mapping. Set to false to not do any check,
+     *                                                optional.
+     * @param string[]     $aliasMap                  Map of alias to namespace.
+     * @param bool         $reportFieldsWhereDeclared Will report fields for the classes where they are declared
      *
      * @return self
      */
-    public static function createAttributeMappingDriver(array $namespaces, array $directories, array $managerParameters = [], $enabledParameter = false, array $aliasMap = [])
+    public static function createAttributeMappingDriver(array $namespaces, array $directories, array $managerParameters = [], $enabledParameter = false, array $aliasMap = [], bool $reportFieldsWhereDeclared = false)
     {
-        $driver = new Definition(AttributeDriver::class, [$directories]);
+        $driver = new Definition(AttributeDriver::class, [$directories, $reportFieldsWhereDeclared]);
 
         return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter, $aliasMap);
     }
