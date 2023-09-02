@@ -95,7 +95,8 @@ class IdGeneratorPassTest extends TestCase
                 'annotations' => [
                     'enabled' => class_exists(AnnotationReader::class) && Kernel::VERSION_ID < 64000,
                 ],
-            ],
+                'php_errors' => ['log' => true],
+            ] + (Kernel::VERSION_ID >= 62000 ? ['handle_all_throwables' => true] : []),
         ], $container);
 
         $extension = new DoctrineExtension();
@@ -107,7 +108,10 @@ class IdGeneratorPassTest extends TestCase
                     'charset' => 'UTF8',
                     'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
                 ],
-                'orm' => ['mappings' => $mappings, 'report_fields_where_declared' => true],
+                'orm' => [
+                    'mappings' => $mappings,
+                    'report_fields_where_declared' => true,
+                ],
             ],
         ], $container);
 

@@ -42,11 +42,9 @@ class TestKernel extends Kernel
             $container->loadFromExtension('framework', [
                 'secret' => 'F00',
                 'http_method_override' => false,
-                'annotations' => [
-                    'enabled' => class_exists(Annotation::class) && Kernel::VERSION_ID <= 64000,
-                ],
-            ]);
-
+                'annotations' => class_exists(Annotation::class) && Kernel::VERSION_ID <= 64000,
+                'php_errors' => ['log' => true],
+            ] + (Kernel::VERSION_ID >= 62000 ? ['handle_all_throwables' => true] : []));
             $container->loadFromExtension('doctrine', [
                 'dbal' => [
                     'driver' => 'pdo_sqlite',

@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\HttpKernel\Kernel;
 
 use function class_exists;
 use function interface_exists;
@@ -51,7 +52,13 @@ class LockStoreSchemaListenerTest extends TestCase
 
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
-        $extension->load(['framework' => ['http_method_override' => false] + $config], $container);
+        $extension->load(
+            [
+                'framework' => ['http_method_override' => false, 'php_errors' => ['log' => true]]
+                + (Kernel::VERSION_ID >= 62000 ? ['handle_all_throwables' => true] : []) + $config,
+            ],
+            $container
+        );
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);

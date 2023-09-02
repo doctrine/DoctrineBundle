@@ -47,7 +47,7 @@
         "doctrine/annotations": "^1 || ^2",
         "doctrine/coding-standard": "^9.0",
         "doctrine/deprecations": "^1.0",
-        "doctrine/orm": "^2.11 || ^3.0",
+        "doctrine/orm": "^2.14 || ^3.0",
         "friendsofphp/proxy-manager-lts": "^1.0",
         "phpunit/phpunit": "^9.5.26 || ^10.0",
         "psalm/plugin-phpunit": "^0.18.4",
@@ -57,6 +57,7 @@
         "symfony/property-info": "^5.4 || ^6.0",
         "symfony/proxy-manager-bridge": "^5.4 || ^6.0",
         "symfony/security-bundle": "^5.4 || ^6.0",
+        "symfony/string": "^5.4 || ^6.0",
         "symfony/twig-bridge": "^5.4 || ^6.0",
         "symfony/validator": "^5.4 || ^6.0",
         "symfony/web-profiler-bundle": "^5.4 || ^6.0",
@@ -92,5 +93,11 @@
             "symfony/flex": true
         },
         "sort-packages": true
+    },
+    "scripts": {
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+        }
     }
 }
