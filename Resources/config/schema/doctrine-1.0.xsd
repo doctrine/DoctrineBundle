@@ -147,6 +147,7 @@
         <xsd:attribute name="proxy-dir" type="xsd:string" />
         <xsd:attribute name="proxy-namespace" type="xsd:string" />
         <xsd:attribute name="auto-generate-proxy-classes" type="xsd:string" default="false" />
+        <xsd:attribute name="enable-lazy-ghost-objects" type="xsd:boolean" />
         <xsd:attributeGroup ref="entity-manager-config" />
     </xsd:complexType>
 

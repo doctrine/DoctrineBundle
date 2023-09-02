@@ -72,10 +72,11 @@ class ServiceRepositoryTest extends TestCase
         $extension->load([
             'framework' => [
                 'http_method_override' => false,
+                'php_errors' => ['log' => true],
                 'annotations' => [
                     'enabled' => class_exists(AnnotationReader::class) && Kernel::VERSION_ID < 64000,
                 ],
-            ],
+            ] + (Kernel::VERSION_ID >= 62000 ? ['handle_all_throwables' => true] : []),
         ], $container);
 
         $extension = new DoctrineExtension();
@@ -102,7 +103,7 @@ class ServiceRepositoryTest extends TestCase
 
         $def = $container->register(TestCustomServiceRepoRepository::class, TestCustomServiceRepoRepository::class)
             ->setPublic(false);
-        // create a public alias so we can use it below for testing
+        // create a public alias, so we can use it below for testing
         $container->setAlias('test_alias__' . TestCustomServiceRepoRepository::class, new Alias(TestCustomServiceRepoRepository::class, true));
 
         $def->setAutowired(true);

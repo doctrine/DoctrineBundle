@@ -7,6 +7,10 @@
         </testsuite>
     </testsuites>
 
+    <php>
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="ignoreFile=./Tests/baseline-ignore"/>
+    </php>
+
     <filter>
         <whitelist>
             <directory>.</directory>
