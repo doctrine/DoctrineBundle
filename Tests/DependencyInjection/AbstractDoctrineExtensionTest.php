@@ -874,6 +874,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomHydrationMode', ['test_hydrator', TestHydrator::class]);
     }
 
+    /** @requires PHP 8.1 */
     public function testAddFilter(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {

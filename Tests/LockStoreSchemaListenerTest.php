@@ -55,7 +55,7 @@ class LockStoreSchemaListenerTest extends TestCase
         $extension->load(
             [
                 'framework' => ['http_method_override' => false, 'php_errors' => ['log' => true]]
-                + (Kernel::VERSION_ID >= 62000 ? ['handle_all_throwables' => true] : []) + $config,
+                + (Kernel::VERSION_ID >= 60200 ? ['handle_all_throwables' => true] : []) + $config,
             ],
             $container
         );

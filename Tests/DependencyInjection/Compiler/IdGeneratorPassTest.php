@@ -93,10 +93,10 @@ class IdGeneratorPassTest extends TestCase
             'framework' => [
                 'http_method_override' => false,
                 'annotations' => [
-                    'enabled' => class_exists(AnnotationReader::class) && Kernel::VERSION_ID < 64000,
+                    'enabled' => class_exists(AnnotationReader::class) && Kernel::VERSION_ID < 60400,
                 ],
                 'php_errors' => ['log' => true],
-            ] + (Kernel::VERSION_ID >= 62000 ? ['handle_all_throwables' => true] : []),
+            ] + (Kernel::VERSION_ID >= 60200 ? ['handle_all_throwables' => true] : []),
         ], $container);
 
         $extension = new DoctrineExtension();
@@ -111,6 +111,7 @@ class IdGeneratorPassTest extends TestCase
                 'orm' => [
                     'mappings' => $mappings,
                     'report_fields_where_declared' => true,
+                    'enable_lazy_ghost_objects' => PHP_VERSION_ID >= 80100,
                 ],
             ],
         ], $container);
