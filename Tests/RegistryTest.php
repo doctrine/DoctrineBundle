@@ -13,7 +13,7 @@ use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepos
 use InvalidArgumentException;
 use ProxyManager\Proxy\ProxyInterface;
 use stdClass;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 
 use function assert;
@@ -26,16 +26,14 @@ class RegistryTest extends TestCase
 {
     public function testGetDefaultConnectionName(): void
     {
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $registry  = new Registry($container, [], [], 'default', 'default');
+        $registry = new Registry(new Container(), [], [], 'default', 'default');
 
         $this->assertEquals('default', $registry->getDefaultConnectionName());
     }
 
     public function testGetDefaultEntityManagerName(): void
     {
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $registry  = new Registry($container, [], [], 'default', 'default');
+        $registry = new Registry(new Container(), [], [], 'default', 'default');
 
         $this->assertEquals('default', $registry->getDefaultManagerName());
     }
@@ -43,11 +41,8 @@ class RegistryTest extends TestCase
     public function testGetDefaultConnection(): void
     {
         $conn      = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $container->expects($this->once())
-                  ->method('get')
-                  ->with($this->equalTo('doctrine.dbal.default_connection'))
-                  ->will($this->returnValue($conn));
+        $container = new Container();
+        $container->set('doctrine.dbal.default_connection', $conn);
 
         $registry = new Registry($container, ['default' => 'doctrine.dbal.default_connection'], [], 'default', 'default');
 
@@ -57,11 +52,8 @@ class RegistryTest extends TestCase
     public function testGetConnection(): void
     {
         $conn      = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $container->expects($this->once())
-                  ->method('get')
-                  ->with($this->equalTo('doctrine.dbal.default_connection'))
-                  ->will($this->returnValue($conn));
+        $container = new Container();
+        $container->set('doctrine.dbal.default_connection', $conn);
 
         $registry = new Registry($container, ['default' => 'doctrine.dbal.default_connection'], [], 'default', 'default');
 
@@ -70,8 +62,7 @@ class RegistryTest extends TestCase
 
     public function testGetUnknownConnection(): void
     {
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $registry  = new Registry($container, [], [], 'default', 'default');
+        $registry = new Registry(new Container(), [], [], 'default', 'default');
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Doctrine ORM Connection named "default" does not exist.');
@@ -80,8 +71,7 @@ class RegistryTest extends TestCase
 
     public function testGetConnectionNames(): void
     {
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $registry  = new Registry($container, ['default' => 'doctrine.dbal.default_connection'], [], 'default', 'default');
+        $registry = new Registry(new Container(), ['default' => 'doctrine.dbal.default_connection'], [], 'default', 'default');
 
         $this->assertEquals(['default' => 'doctrine.dbal.default_connection'], $registry->getConnectionNames());
     }
@@ -89,11 +79,8 @@ class RegistryTest extends TestCase
     public function testGetDefaultEntityManager(): void
     {
         $em        = new stdClass();
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $container->expects($this->once())
-                  ->method('get')
-                  ->with($this->equalTo('doctrine.orm.default_entity_manager'))
-                  ->will($this->returnValue($em));
+        $container = new Container();
+        $container->set('doctrine.orm.default_entity_manager', $em);
 
         $registry = new Registry($container, [], ['default' => 'doctrine.orm.default_entity_manager'], 'default', 'default');
 
@@ -103,11 +90,8 @@ class RegistryTest extends TestCase
     public function testGetEntityManager(): void
     {
         $em        = new stdClass();
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $container->expects($this->once())
-                  ->method('get')
-                  ->with($this->equalTo('doctrine.orm.default_entity_manager'))
-                  ->will($this->returnValue($em));
+        $container = new Container();
+        $container->set('doctrine.orm.default_entity_manager', $em);
 
         $registry = new Registry($container, [], ['default' => 'doctrine.orm.default_entity_manager'], 'default', 'default');
 
@@ -116,8 +100,7 @@ class RegistryTest extends TestCase
 
     public function testGetUnknownEntityManager(): void
     {
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $registry  = new Registry($container, [], [], 'default', 'default');
+        $registry = new Registry(new Container(), [], [], 'default', 'default');
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
@@ -128,8 +111,7 @@ class RegistryTest extends TestCase
 
     public function testResetUnknownEntityManager(): void
     {
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $registry  = new Registry($container, [], [], 'default', 'default');
+        $registry = new Registry(new Container(), [], [], 'default', 'default');
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
@@ -153,16 +135,9 @@ class RegistryTest extends TestCase
             ->method('setProxyInitializer')
             ->with($this->isInstanceOf(Closure::class));
 
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $container->expects($this->any())
-            ->method('initialized')
-            ->withConsecutive(['doctrine.orm.uninitialized_entity_manager'], ['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
-            ->willReturnOnConsecutiveCalls(false, true, true, true);
-
-        $container->expects($this->any())
-            ->method('get')
-            ->withConsecutive(['doctrine.orm.noproxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'], ['doctrine.orm.proxy_entity_manager'])
-            ->willReturnOnConsecutiveCalls($noProxyManager, $proxyManager, $proxyManager, $proxyManager);
+        $container = new Container();
+        $container->set('doctrine.orm.noproxy_entity_manager', $noProxyManager);
+        $container->set('doctrine.orm.proxy_entity_manager', $proxyManager);
 
         $entityManagers = [
             'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
@@ -185,13 +160,8 @@ class RegistryTest extends TestCase
         /** @psalm-suppress MissingDependency https://github.com/vimeo/psalm/issues/8258 */
         $ghostManager->expects($this->once())->method('resetLazyObject')->willReturn(true);
 
-        $container = $this->createMock(ContainerInterface::class);
-        $container->method('initialized')
-            ->withConsecutive(['doctrine.orm.uninitialized_entity_manager'], ['doctrine.orm.ghost_entity_manager'])
-            ->willReturnOnConsecutiveCalls(false, true, true);
-        $container->method('get')
-            ->withConsecutive(['doctrine.orm.ghost_entity_manager'], ['doctrine.orm.ghost_entity_manager'], ['doctrine.orm.ghost_entity_manager'])
-            ->willReturnOnConsecutiveCalls($ghostManager, $ghostManager, $ghostManager);
+        $container = new Container();
+        $container->set('doctrine.orm.ghost_entity_manager', $ghostManager);
 
         $entityManagers = [
             'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
