@@ -5,10 +5,9 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Mapping;
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Container;
 
 use function interface_exists;
 
@@ -16,8 +15,7 @@ class ContainerEntityListenerResolverTest extends TestCase
 {
     private ContainerEntityListenerResolver $resolver;
 
-    /** @var ContainerInterface&MockObject */
-    private ContainerInterface $container;
+    private Container $container;
 
     public static function setUpBeforeClass(): void
     {
@@ -32,7 +30,7 @@ class ContainerEntityListenerResolverTest extends TestCase
     {
         parent::setUp();
 
-        $this->container = $this->createMock(ContainerInterface::class);
+        $this->container = new Container();
         $this->resolver  = new ContainerEntityListenerResolver($this->container);
     }
 
@@ -62,16 +60,7 @@ class ContainerEntityListenerResolverTest extends TestCase
         $object    = new $className();
 
         $this->resolver->registerService($className, $serviceId);
-        $this->container
-            ->expects($this->any())
-            ->method('has')
-            ->with($serviceId)
-            ->will($this->returnValue(true));
-        $this->container
-            ->expects($this->any())
-            ->method('get')
-            ->with($serviceId)
-            ->will($this->returnValue($object));
+        $this->container->set($serviceId, $object);
 
         $this->assertInstanceOf($className, $this->resolver->resolve($className));
         $this->assertSame($object, $this->resolver->resolve($className));
@@ -83,11 +72,6 @@ class ContainerEntityListenerResolverTest extends TestCase
         $serviceId = 'app.entity_listener';
 
         $this->resolver->registerService($className, $serviceId);
-        $this->container
-            ->expects($this->any())
-            ->method('has')
-            ->with($serviceId)
-            ->will($this->returnValue(false));
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('There is no service named');
