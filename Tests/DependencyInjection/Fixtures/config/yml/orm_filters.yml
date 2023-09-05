@@ -6,6 +6,7 @@ doctrine:
                 dbname: db
 
     orm:
+        enable_lazy_ghost_objects: true
         filters:
             soft_delete:
                 class: Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter

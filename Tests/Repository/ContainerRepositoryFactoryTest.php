@@ -10,9 +10,9 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectRepository;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use RuntimeException;
 use stdClass;
+use Symfony\Component\DependencyInjection\Container;
 
 use function interface_exists;
 
@@ -127,19 +127,13 @@ EXCEPTION
     }
 
     /** @param array<string, object> $services */
-    private function createContainer(array $services): ContainerInterface
+    private function createContainer(array $services): Container
     {
-        $container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $container->expects($this->any())
-            ->method('has')
-            ->willReturnCallback(static function ($id) use ($services) {
-                return isset($services[$id]);
-            });
-        $container->expects($this->any())
-            ->method('get')
-            ->willReturnCallback(static function ($id) use ($services) {
-                return $services[$id];
-            });
+        $container = new Container();
+
+        foreach ($services as $id => $service) {
+            $container->set($id, $service);
+        }
 
         return $container;
     }

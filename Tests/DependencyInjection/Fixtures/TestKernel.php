@@ -42,9 +42,9 @@ class TestKernel extends Kernel
             $container->loadFromExtension('framework', [
                 'secret' => 'F00',
                 'http_method_override' => false,
-                'annotations' => class_exists(Annotation::class) && Kernel::VERSION_ID <= 64000,
+                'annotations' => class_exists(Annotation::class) && Kernel::VERSION_ID <= 60400,
                 'php_errors' => ['log' => true],
-            ] + (Kernel::VERSION_ID >= 62000 ? ['handle_all_throwables' => true] : []));
+            ] + (Kernel::VERSION_ID >= 60200 ? ['handle_all_throwables' => true] : []));
             $container->loadFromExtension('doctrine', [
                 'dbal' => [
                     'driver' => 'pdo_sqlite',
@@ -53,6 +53,7 @@ class TestKernel extends Kernel
                 'orm' => [
                     'report_fields_where_declared' => true,
                     'auto_generate_proxy_classes' => true,
+                    'enable_lazy_ghost_objects' => PHP_VERSION_ID >= 80100,
                     'mappings' => [
                         'RepositoryServiceBundle' => [
                             'type' => PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation',

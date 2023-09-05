@@ -74,9 +74,9 @@ class ServiceRepositoryTest extends TestCase
                 'http_method_override' => false,
                 'php_errors' => ['log' => true],
                 'annotations' => [
-                    'enabled' => class_exists(AnnotationReader::class) && Kernel::VERSION_ID < 64000,
+                    'enabled' => class_exists(AnnotationReader::class) && Kernel::VERSION_ID < 60400,
                 ],
-            ] + (Kernel::VERSION_ID >= 62000 ? ['handle_all_throwables' => true] : []),
+            ] + (Kernel::VERSION_ID >= 60200 ? ['handle_all_throwables' => true] : []),
         ], $container);
 
         $extension = new DoctrineExtension();
@@ -90,6 +90,7 @@ class ServiceRepositoryTest extends TestCase
                 ],
                 'orm' => [
                     'report_fields_where_declared' => true,
+                    'enable_lazy_ghost_objects' => PHP_VERSION_ID >= 80100,
                     'mappings' => [
                         'RepositoryServiceBundle' => [
                             'type' => PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation',
