@@ -54,6 +54,12 @@ jobs:
             stability: "stable"
             remove-orm: true
 
+          # DBAL 4
+          - php-version: "8.2"
+            dependencies: "highest"
+            stability: "dev"
+            remove-orm: true
+
           # Bleeding edge
           - php-version: "8.2"
             dependencies: "highest"
