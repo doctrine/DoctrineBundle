@@ -42,7 +42,7 @@ class TestKernel extends Kernel
             $container->loadFromExtension('framework', [
                 'secret' => 'F00',
                 'http_method_override' => false,
-                'annotations' => class_exists(Annotation::class) && Kernel::VERSION_ID <= 60400,
+                'annotations' => class_exists(Annotation::class) && Kernel::VERSION_ID < 60400,
                 'php_errors' => ['log' => true],
             ] + (Kernel::VERSION_ID >= 60200 ? ['handle_all_throwables' => true] : []));
             $container->loadFromExtension('doctrine', [
