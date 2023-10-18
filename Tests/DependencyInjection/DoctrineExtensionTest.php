@@ -850,6 +850,10 @@ class DoctrineExtensionTest extends TestCase
     /** @requires PHP 8 */
     public function testAttributesBundleMappingDetection(): void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer(['AttributesBundle']);
         $extension = new DoctrineExtension();
 
@@ -1204,6 +1208,10 @@ class DoctrineExtensionTest extends TestCase
     /** @requires PHP 8 */
     public function testAsEntityListenerAttribute()
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -1238,6 +1246,10 @@ class DoctrineExtensionTest extends TestCase
     /** @requires PHP 8 */
     public function testAsDoctrineListenerAttribute()
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
@@ -1271,7 +1283,7 @@ class DoctrineExtensionTest extends TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+        $config = BundleConfigurationBuilder::createBuilder()
             ->addConnection([
                 'connections' => [
                     'conn1' => [
@@ -1293,7 +1305,6 @@ class DoctrineExtensionTest extends TestCase
                     ],
                 ],
             ])
-            ->addBaseEntityManager()
             ->build();
 
         $extension->load([$config], $container);
@@ -1341,7 +1352,7 @@ class DoctrineExtensionTest extends TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+        $config = BundleConfigurationBuilder::createBuilder()
             ->addConnection([
                 'connections' => [
                     'conn1' => [
@@ -1356,7 +1367,6 @@ class DoctrineExtensionTest extends TestCase
                     ],
                 ],
             ])
-            ->addBaseEntityManager()
             ->build();
 
         $extension->load([$config], $container);
@@ -1395,7 +1405,7 @@ class DoctrineExtensionTest extends TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
-        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+        $config = BundleConfigurationBuilder::createBuilder()
             ->addConnection([
                 'connections' => [
                     'conn' => [
@@ -1404,7 +1414,6 @@ class DoctrineExtensionTest extends TestCase
                     ],
                 ],
             ])
-            ->addBaseEntityManager()
             ->build();
 
         $extension->load([$config], $container);
@@ -1421,6 +1430,10 @@ class DoctrineExtensionTest extends TestCase
      */
     public function testControllerResolver(bool $simpleEntityManagerConfig): void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
         $config    = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();

@@ -30,6 +30,8 @@ jobs:
           - "stable"
         symfony-require:
           - ""
+        remove-orm:
+          - false
         include:
           # Tests the lowest set of dependencies
           - dependencies: "lowest"
@@ -45,6 +47,12 @@ jobs:
           - symfony-require: "6.*"
             dependencies: "highest"
             php-version: "8.2"
+
+          # DBAL only without ORM
+          - php-version: "8.2"
+            dependencies: "highest"
+            stability: "stable"
+            remove-orm: true
 
           # Bleeding edge
           - php-version: "8.2"
@@ -75,6 +83,10 @@ jobs:
       - name: "Enforce using stable dependencies"
         run: "composer config minimum-stability stable"
         if: "${{ matrix.stability == 'stable' }}"
+
+      - name: "Remove doctrine/orm"
+        run: "composer remove doctrine/orm --dev --no-update"
+        if: "${{ matrix.remove-orm }}"
 
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v2"
