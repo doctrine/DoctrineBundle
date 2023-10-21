@@ -17,6 +17,7 @@ use Doctrine\Common\Annotations\Annotation;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
@@ -278,7 +279,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ->setArguments([
                 $options,
                 new Reference(sprintf('doctrine.dbal.%s_connection.configuration', $name)),
-                new Reference(sprintf('doctrine.dbal.%s_connection.event_manager', $name)),
+                // event manager is only supported on DBAL < 4
+                class_exists(DBALException::class) ? new Reference(sprintf('doctrine.dbal.%s_connection.event_manager', $name)) : null,
                 $connection['mapping_types'],
             ]);
 

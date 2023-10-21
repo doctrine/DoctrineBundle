@@ -5,20 +5,24 @@ namespace Doctrine\Bundle\DoctrineBundle;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Connection\StaticServerVersionProvider;
+use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Exception\DriverRequired;
 use Doctrine\DBAL\Exception\InvalidWrapperClass;
+use Doctrine\DBAL\Exception\MalformedDsnException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\Deprecations\Deprecation;
-use RuntimeException;
+use InvalidArgumentException;
 
 use function array_merge;
 use function class_exists;
+use function interface_exists;
 use function is_subclass_of;
 use function trigger_deprecation;
 
@@ -65,6 +69,10 @@ class ConnectionFactory
      */
     public function createConnection(array $params, ?Configuration $config = null, ?EventManager $eventManager = null, array $mappingTypes = [])
     {
+        if (interface_exists(DBALException::class) && $eventManager !== null) {
+            throw new InvalidArgumentException('Passing an EventManager instance is not supported with DBAL 4');
+        }
+
         if (! $this->initialized) {
             $this->initializeTypes();
         }
@@ -105,11 +113,11 @@ class ConnectionFactory
                 $params['wrapperClass'] = null;
             }
 
-            $connection = DriverManager::getConnection($params, $config, $eventManager);
+            $connection = DriverManager::getConnection(...array_merge([$params, $config], $eventManager ? [$eventManager] : []));
             $params     = $this->addDatabaseSuffix(array_merge($connection->getParams(), $overriddenOptions));
             $driver     = $connection->getDriver();
-            if (class_exists(Connection\StaticServerVersionProvider::class)) {
-                $platform = $driver->getDatabasePlatform(new Connection\StaticServerVersionProvider($params['serverVersion'] ?? ''));
+            if (class_exists(StaticServerVersionProvider::class)) {
+                $platform = $driver->getDatabasePlatform(new StaticServerVersionProvider($params['serverVersion'] ?? ''));
             } else {
                 $platform = $driver->getDatabasePlatform();
             }
@@ -144,7 +152,7 @@ class ConnectionFactory
 
             $connection = new $wrapperClass($params, $driver, $config, $eventManager);
         } else {
-            $connection = DriverManager::getConnection($params, $config, $eventManager);
+            $connection = DriverManager::getConnection(...array_merge([$params, $config], $eventManager ? [$eventManager] : []));
         }
 
         if (! empty($mappingTypes)) {
@@ -172,8 +180,7 @@ class ConnectionFactory
         try {
             return $connection->getDatabasePlatform();
         } catch (DriverException $driverException) {
-            //TODO: what more specific exception class should we throw with DBAL 4?
-            $class = class_exists(DBALException::class) ? DBALException::class : RuntimeException::class;
+            $class = class_exists(DBALException::class) ? DBALException::class : ConnectionException::class;
 
             throw new $class(
                 'An exception occurred while establishing a connection to figure out your platform version.' . PHP_EOL .
@@ -247,7 +254,11 @@ class ConnectionFactory
             return $params;
         }
 
-        $parsedParams = $this->dsnParser->parse($params['url']);
+        try {
+            $parsedParams = $this->dsnParser->parse($params['url']);
+        } catch (MalformedDsnException $e) {
+            throw new MalformedDsnException('Malformed parameter "url".', 0, $e);
+        }
 
         if (isset($parsedParams['driver'])) {
             // The requested driver from the URL scheme takes precedence
@@ -257,7 +268,7 @@ class ConnectionFactory
 
         $params = array_merge($params, $parsedParams);
 
-        // If a schemaless connection URL is given, we require a default driver or default custom driver
+        // If a schemeless connection URL is given, we require a default driver or default custom driver
         // as connection parameter.
         if (! isset($params['driverClass']) && ! isset($params['driver'])) {
             if (class_exists(DriverRequired::class)) {
