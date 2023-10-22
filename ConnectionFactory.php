@@ -22,8 +22,8 @@ use InvalidArgumentException;
 
 use function array_merge;
 use function class_exists;
-use function interface_exists;
 use function is_subclass_of;
+use function method_exists;
 use function trigger_deprecation;
 
 use const PHP_EOL;
@@ -69,8 +69,8 @@ class ConnectionFactory
      */
     public function createConnection(array $params, ?Configuration $config = null, ?EventManager $eventManager = null, array $mappingTypes = [])
     {
-        if (interface_exists(DBALException::class) && $eventManager !== null) {
-            throw new InvalidArgumentException('Passing an EventManager instance is not supported with DBAL 4');
+        if (! method_exists(Connection::class, 'getEventManager') && $eventManager !== null) {
+            throw new InvalidArgumentException('Passing an EventManager instance is not supported with DBAL > 3');
         }
 
         if (! $this->initialized) {
