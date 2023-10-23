@@ -217,6 +217,7 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue(true)
                     ->info('Enables collecting schema errors when profiling is enabled')
                 ->end()
+                ->booleanNode('disable_type_comments')->end()
                 ->scalarNode('server_version')->end()
                 ->scalarNode('driver_class')->end()
                 ->scalarNode('wrapper_class')->end()

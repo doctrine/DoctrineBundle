@@ -113,6 +113,10 @@ Configuration Reference
                         # When true, profiling also collects schema errors for each query
                         profiling_collect_schema_errors: true
 
+                        # When true, type comments are skipped in the database schema, matching the behavior of DBAL 4.
+                        # This requires using the non-deprecated schema comparison APIs of DBAL.
+                        disable_type_comments: false
+
                         server_version:       ~
                         driver_class:         ~
                         # Allows to specify a custom wrapper implementation to use.
@@ -417,6 +421,7 @@ Configuration Reference
                         profiling="%kernel.debug%"
                         profiling-collect-backtrace="false"
                         profiling-collect-schema-errors="true"
+                        disable-type-comments="false"
                         server-version=""
                         driver-class=""
                         wrapper-class=""
