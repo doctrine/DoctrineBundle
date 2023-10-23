@@ -116,11 +116,9 @@ class ConnectionFactory
             $connection = DriverManager::getConnection(...array_merge([$params, $config], $eventManager ? [$eventManager] : []));
             $params     = $this->addDatabaseSuffix(array_merge($connection->getParams(), $overriddenOptions));
             $driver     = $connection->getDriver();
-            if (class_exists(StaticServerVersionProvider::class)) {
-                $platform = $driver->getDatabasePlatform(new StaticServerVersionProvider($params['serverVersion'] ?? ''));
-            } else {
-                $platform = $driver->getDatabasePlatform();
-            }
+            $platform   = $driver->getDatabasePlatform(
+                ...(class_exists(StaticServerVersionProvider::class) ? [new StaticServerVersionProvider($params['serverVersion'] ?? '')] : [])
+            );
 
             if (! isset($params['charset'])) {
                 if ($platform instanceof AbstractMySQLPlatform) {
