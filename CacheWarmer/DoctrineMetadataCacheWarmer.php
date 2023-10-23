@@ -31,7 +31,8 @@ class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
         return false;
     }
 
-    protected function doWarmUp(string $cacheDir, ArrayAdapter $arrayAdapter, ?string $buildDir = null): bool
+    /** @param string $cacheDir */
+    protected function doWarmUp($cacheDir, ArrayAdapter $arrayAdapter): bool
     {
         // cache already warmed up, no needs to do it again
         if (is_file($this->phpArrayFile)) {
