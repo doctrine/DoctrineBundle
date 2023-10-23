@@ -34,10 +34,12 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Mapping\Loader\AnnotationLoader;
 
 use function array_filter;
 use function array_intersect_key;
 use function array_keys;
+use function array_merge;
 use function array_values;
 use function assert;
 use function class_exists;
@@ -489,7 +491,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
 
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', [
-            new Reference('doctrine.orm.default_annotation_metadata_driver'),
+            new Reference(class_exists(AnnotationLoader::class) ? 'doctrine.orm.default_annotation_metadata_driver' : 'doctrine.orm.default_attribute_metadata_driver'),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
 
@@ -510,9 +512,14 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $attrDef = $container->getDefinition('doctrine.orm.default_attribute_metadata_driver');
         $this->assertDICConstructorArguments($attrDef, [
-            [
-                __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity',
-            ],
+            array_merge(
+                ! class_exists(AnnotationLoader::class) ? [
+                    __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
+                ] : [],
+                [
+                    __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity',
+                ]
+            ),
             false,
         ]);
 
@@ -543,7 +550,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $def1   = $container->getDefinition('doctrine.orm.em1_metadata_driver');
         $def2   = $container->getDefinition('doctrine.orm.em2_metadata_driver');
-        $def1Id = 'doctrine.orm.em1_annotation_metadata_driver';
+        $def1Id = class_exists(AnnotationLoader::class) ? 'doctrine.orm.em1_annotation_metadata_driver' : 'doctrine.orm.em1_attribute_metadata_driver';
 
         $this->assertDICDefinitionMethodCallAt(0, $def1, 'addDriver', [
             new Reference($def1Id),
@@ -565,14 +572,16 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             'Fixtures\Bundles\XmlBundle',
         ]);
 
-        $annDef = $container->getDefinition($def1Id);
-        $this->assertDICConstructorArguments($annDef, [
-            new Reference('doctrine.orm.metadata.annotation_reader'),
-            [
-                __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
-            ],
-            false,
-        ]);
+        if (class_exists(AnnotationLoader::class)) {
+            $annDef = $container->getDefinition($def1Id);
+            $this->assertDICConstructorArguments($annDef, [
+                new Reference('doctrine.orm.metadata.annotation_reader'),
+                [
+                    __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
+                ],
+                false,
+            ]);
+        }
 
         $ymlDef = $container->getDefinition('doctrine.orm.em2_yml_metadata_driver');
         $this->assertDICConstructorArguments($ymlDef, [

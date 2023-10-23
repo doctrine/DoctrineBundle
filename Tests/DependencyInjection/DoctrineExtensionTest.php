@@ -51,6 +51,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Validator\Mapping\Loader\AnnotationLoader;
 
 use function array_values;
 use function class_exists;
@@ -842,7 +843,9 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', [
-            new Reference('doctrine.orm.default_annotation_metadata_driver'),
+            new Reference(class_exists(AnnotationLoader::class)
+                ? 'doctrine.orm.default_annotation_metadata_driver'
+                : 'doctrine.orm.default_attribute_metadata_driver'),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
     }
@@ -925,7 +928,9 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', [
-            new Reference('doctrine.orm.default_annotation_metadata_driver'),
+            new Reference(class_exists(AnnotationLoader::class)
+                ? 'doctrine.orm.default_annotation_metadata_driver'
+                : 'doctrine.orm.default_attribute_metadata_driver'),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
         $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
