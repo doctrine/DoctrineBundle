@@ -10,6 +10,7 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 use function is_file;
 
+/** @final since 2.11 */
 class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
 {
     private EntityManagerInterface $entityManager;
@@ -31,8 +32,7 @@ class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
         return false;
     }
 
-    /** @param string $cacheDir */
-    protected function doWarmUp($cacheDir, ArrayAdapter $arrayAdapter): bool
+    protected function doWarmUp(string $cacheDir, ArrayAdapter $arrayAdapter, ?string $buildDir = null): bool
     {
         // cache already warmed up, no needs to do it again
         if (is_file($this->phpArrayFile)) {
