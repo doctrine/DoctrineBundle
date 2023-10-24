@@ -7,3 +7,4 @@ phpcs.xml.dist         export-ignore
 psalm.xml.dist         export-ignore
 /Resources/doc         export-ignore
 /Tests                 export-ignore
+/vendor-bin/**/composer.lock binary

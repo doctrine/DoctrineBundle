@@ -4,14 +4,16 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    autoloader="vendor-bin/psalm/autoload.php"
 >
     <plugins>
         <pluginClass class="Psalm\SymfonyPsalmPlugin\Plugin"/>
-        <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
-    </plugins>
+        
+    <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/></plugins>
     <projectFiles>
         <ignoreFiles>
             <directory name="vendor"/>
+            <directory name="vendor-bin/"/>
             <!-- Deprecated classes, not worth fixing -->
             <file name="Command/ImportMappingDoctrineCommand.php"/>
             <file name="Command/Proxy/OrmProxyCommand.php"/>
@@ -58,7 +60,7 @@
         <UndefinedDocblockClass>
             <errorLevel type="suppress">
                 <!-- https://github.com/symfony/symfony/issues/45609 -->
-                <referencedClass name="UnitEnum" />
+                <referencedClass name="UnitEnum"/>
                 <directory name="DependencyInjection"/>
                 <directory name="Tests/DependencyInjection"/>
             </errorLevel>

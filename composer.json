@@ -44,16 +44,13 @@
         "symfony/service-contracts": "^1.1.1 || ^2.0 || ^3"
     },
     "require-dev": {
+        "bamarni/composer-bin-plugin": "^1.5",
         "doctrine/annotations": "^1 || ^2",
         "doctrine/coding-standard": "^9.0",
         "doctrine/deprecations": "^1.0",
         "doctrine/orm": "^2.14 || ^3.0",
         "friendsofphp/proxy-manager-lts": "^1.0",
-        "phpunit/phpunit": "^9.5.26 || ^10.0",
-        "psalm/plugin-phpunit": "^0.18.4",
-        "psalm/plugin-symfony": "^4",
         "psr/log": "^1.1.4 || ^2.0 || ^3.0",
-        "symfony/phpunit-bridge": "^6.1",
         "symfony/property-info": "^5.4 || ^6.0",
         "symfony/proxy-manager-bridge": "^5.4 || ^6.0",
         "symfony/security-bundle": "^5.4 || ^6.0",
@@ -63,8 +60,7 @@
         "symfony/var-exporter": "^5.4 || ^6.2 || ^7.0",
         "symfony/web-profiler-bundle": "^5.4 || ^6.0",
         "symfony/yaml": "^5.4 || ^6.0",
-        "twig/twig": "^1.34 || ^2.12 || ^3.0",
-        "vimeo/psalm": "^4.30"
+        "twig/twig": "^1.34 || ^2.12 || ^3.0"
     },
     "conflict": {
         "doctrine/annotations": ">=3.0",
@@ -91,11 +87,20 @@
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "symfony/flex": true
+            "symfony/flex": true,
+            "bamarni/composer-bin-plugin": true
+        },
+        "extra": {
+            "bamarni-bin": {
+                "bin-links": true,
+                "target-directory": "vendor-bin",
+                "forward-command": true
+            }
         },
         "sort-packages": true
     },
     "scripts": {
+        "bin": "echo 'bin not installed'",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"

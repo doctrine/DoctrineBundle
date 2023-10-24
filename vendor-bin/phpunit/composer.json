@@ -1,0 +1,6 @@
+{
+    "require-dev": {
+        "phpunit/phpunit": "^9.5.26",
+        "symfony/phpunit-bridge": "^6.1"
+    }
+}

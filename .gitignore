@@ -5,3 +5,5 @@ phpunit.xml
 /.phpunit.result.cache
 /phpcs.xml
 /.phpcs-cache
+/vendor-bin/**/vendor/
+!/vendor-bin/**/composer.lock
