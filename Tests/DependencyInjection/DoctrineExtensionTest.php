@@ -1069,6 +1069,8 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([$config], $container);
 
         $this->assertFalse($container->hasDefinition('messenger.transport.doctrine.factory'));
+        $this->assertFalse($container->hasDefinition('doctrine.orm.messenger.doctrine_schema_subscriber'));
+        $this->assertFalse($container->hasDefinition('doctrine.orm.messenger.doctrine_schema_listener'));
         $this->assertNotContains('messenger.transport_factory', $container->findTags());
     }
 

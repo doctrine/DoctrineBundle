@@ -38,17 +38,17 @@
             <argument type="service" id="logger" />
         </service>
 
+        <service id="doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager" class="Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber" public="false">
+            <tag name="kernel.event_subscriber" />
+            <argument type="service" id="doctrine" />
+        </service>
+
         <!--
-        The following service is removed conditionally in DoctrineExtension, if symfony/doctrine-messenger is not installed.
+        The services below will be removed conditionally in DoctrineExtension, if symfony/doctrine-messenger is not installed.
         -->
         <service id="messenger.transport.doctrine.factory" class="Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory" public="false">
             <argument type="service" id="doctrine" />
             <tag name="messenger.transport_factory" />
-        </service>
-
-        <service id="doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager" class="Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber" public="false">
-            <tag name="kernel.event_subscriber" />
-            <argument type="service" id="doctrine" />
         </service>
 
         <service id="doctrine.orm.messenger.doctrine_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaSubscriber">

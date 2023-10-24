@@ -1148,6 +1148,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         $container->removeDefinition('messenger.transport.doctrine.factory');
+        $container->removeDefinition('doctrine.orm.messenger.doctrine_schema_subscriber');
+        $container->removeDefinition('doctrine.orm.messenger.doctrine_schema_listener');
     }
 
     private function createArrayAdapterCachePool(ContainerBuilder $container, string $objectManagerName, string $cacheName): string
