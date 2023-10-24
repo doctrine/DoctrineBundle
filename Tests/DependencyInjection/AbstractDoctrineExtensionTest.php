@@ -249,6 +249,26 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertCount(0, $calls);
     }
 
+    public function testDbalLoadDisableTypeComments(): void
+    {
+        $container = $this->loadContainer('dbal_disable_type_comments');
+
+        $calls = $container->getDefinition('doctrine.dbal.no_comments_connection.configuration')->getMethodCalls();
+        $calls = array_values(array_filter($calls, static fn ($call) => $call[0] === 'setDisableTypeComments'));
+        $this->assertCount(1, $calls);
+        $this->assertEquals('setDisableTypeComments', $calls[0][0]);
+        $this->assertTrue($calls[0][1][0]);
+
+        $calls = $container->getDefinition('doctrine.dbal.comments_connection.configuration')->getMethodCalls();
+        $calls = array_values(array_filter($calls, static fn ($call) => $call[0] === 'setDisableTypeComments'));
+        $this->assertCount(1, $calls);
+        $this->assertFalse($calls[0][1][0]);
+
+        $calls = $container->getDefinition('doctrine.dbal.notset_connection.configuration')->getMethodCalls();
+        $calls = array_values(array_filter($calls, static fn ($call) => $call[0] === 'setDisableTypeComments'));
+        $this->assertCount(0, $calls);
+    }
+
     /** @group legacy */
     public function testDbalSchemaManagerFactory(): void
     {

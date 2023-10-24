@@ -250,6 +250,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         unset($connection['auto_commit']);
 
+        if (isset($connection['disable_type_comments'])) {
+            $configuration->addMethodCall('setDisableTypeComments', [$connection['disable_type_comments']]);
+        }
+
+        unset($connection['disable_type_comments']);
+
         if (isset($connection['schema_filter']) && $connection['schema_filter']) {
             $definition = new Definition(RegexSchemaAssetFilter::class, [$connection['schema_filter']]);
             $definition->addTag('doctrine.dbal.schema_filter', ['connection' => $name]);
