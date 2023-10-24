@@ -85,25 +85,25 @@
     },
     "config": {
         "allow-plugins": {
+            "bamarni/composer-bin-plugin": true,
             "composer/package-versions-deprecated": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "symfony/flex": true,
-            "bamarni/composer-bin-plugin": true
+            "symfony/flex": true
         },
         "extra": {
             "bamarni-bin": {
                 "bin-links": true,
-                "target-directory": "vendor-bin",
-                "forward-command": true
+                "forward-command": true,
+                "target-directory": "vendor-bin"
             }
         },
         "sort-packages": true
     },
     "scripts": {
-        "bin": "echo 'bin not installed'",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
-        }
+        },
+        "bin": "echo 'bin not installed'"
     }
 }
