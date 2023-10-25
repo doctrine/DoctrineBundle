@@ -35,5 +35,8 @@ jobs:
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v2"
 
+      - name: "Install tools"
+        run: "composer bin all install"
+
       - name: "Run a static analysis with vimeo/psalm"
         run: "vendor/bin/psalm --show-info=false --stats --output-format=github --threads=$(nproc) --find-unused-psalm-suppress"
