@@ -30,12 +30,15 @@ class ConnectionFactory
         'db2'        => 'ibm_db2',
         'mssql'      => 'pdo_sqlsrv',
         'mysql'      => 'pdo_mysql',
+        'mysqli'     => 'mysqli',
         'mysql2'     => 'pdo_mysql', // Amazon RDS, for some weird reason
+        'oci8'       => 'oci8',
         'postgres'   => 'pdo_pgsql',
         'postgresql' => 'pdo_pgsql',
         'pgsql'      => 'pdo_pgsql',
         'sqlite'     => 'pdo_sqlite',
         'sqlite3'    => 'pdo_sqlite',
+        'sqlsrv'     => 'sqlsrv',
     ];
 
     /** @var mixed[][] */
