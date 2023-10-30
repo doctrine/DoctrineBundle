@@ -220,7 +220,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         });
 
-        $this->useMiddlewaresIfAvailable($container, $connWithLogging, $connWithProfiling, $connWithBacktrace);
+        $this->registerDbalMiddlewares($container, $connWithLogging, $connWithProfiling, $connWithBacktrace);
     }
 
     /**
@@ -1168,7 +1168,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * @param string[] $connWithProfiling
      * @param string[] $connWithBacktrace
      */
-    private function useMiddlewaresIfAvailable(
+    private function registerDbalMiddlewares(
         ContainerBuilder $container,
         array $connWithLogging,
         array $connWithProfiling,
