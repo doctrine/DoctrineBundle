@@ -278,7 +278,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
             ->setArguments([
                 $options,
                 new Reference(sprintf('doctrine.dbal.%s_connection.configuration', $name)),
-                new Reference(sprintf('doctrine.dbal.%s_connection.event_manager', $name)),
+                // event manager is only supported on DBAL < 4
+                method_exists(Connection::class, 'getEventManager') ? new Reference(sprintf('doctrine.dbal.%s_connection.event_manager', $name)) : null,
                 $connection['mapping_types'],
             ]);
 
