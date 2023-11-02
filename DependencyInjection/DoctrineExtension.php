@@ -19,12 +19,12 @@ use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
 use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\Configuration as OrmConfiguration;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Proxy\Autoloader;
+use Doctrine\ORM\Proxy\ProxyFactory;
 use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
 use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand;
 use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
@@ -32,7 +32,6 @@ use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\Reflection\RuntimeReflectionProperty;
 use InvalidArgumentException;
 use LogicException;
-use ReflectionMethod;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
@@ -75,6 +74,9 @@ use function reset;
 use function sprintf;
 use function str_replace;
 use function trait_exists;
+use function trigger_deprecation;
+
+use const PHP_VERSION_ID;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -438,11 +440,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('orm.xml');
 
-        if (! (new ReflectionMethod(EntityManager::class, '__construct'))->isPublic()) {
-            $container->getDefinition('doctrine.orm.entity_manager.abstract')
-                ->setFactory(['%doctrine.orm.entity_manager.class%', 'create']);
-        }
-
         if (class_exists(AbstractType::class)) {
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
         }
@@ -545,13 +542,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setParameter('doctrine.default_entity_manager', $config['default_entity_manager']);
 
         if ($config['enable_lazy_ghost_objects'] ?? false) {
-            if (! method_exists(OrmConfiguration::class, 'setLazyGhostObjectEnabled')) {
-                throw new LogicException(
-                    'Lazy ghost objects cannot be enabled because the "doctrine/orm" library'
-                    . ' version 2.14 or higher is not installed. Please run "composer update doctrine/orm".',
-                );
-            }
-
             // available in Symfony 6.2 and higher
             /** @psalm-suppress UndefinedClass */
             if (! trait_exists(LazyGhostTrait::class)) {
@@ -567,6 +557,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     . ' version 3.1 or higher is not installed. Please run "composer update doctrine/persistence".',
                 );
             }
+        } elseif (! method_exists(ProxyFactory::class, 'resetUninitializedProxy')) {
+            throw new LogicException(
+                'Lazy ghost objects cannot be disabled for ORM 3.',
+            );
+        } elseif (PHP_VERSION_ID >= 80100) {
+            trigger_deprecation('doctrine/doctrine-bundle', '2.11', 'Not setting "enable_lazy_ghost_objects" to true is deprecated.');
         }
 
         $options = ['auto_generate_proxy_classes', 'enable_lazy_ghost_objects', 'proxy_dir', 'proxy_namespace'];

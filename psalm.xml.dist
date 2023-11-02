@@ -16,6 +16,8 @@
             <file name="Command/ImportMappingDoctrineCommand.php"/>
             <file name="Command/Proxy/OrmProxyCommand.php"/>
             <file name="DependencyInjection/Compiler/WellKnownSchemaFilterPass.php"/>
+            <!-- We need Psalm 5 to analyze this file -->
+            <file name="Repository/ServiceEntityRepositoryProxy.php"/>
         </ignoreFiles>
         <directory name="CacheWarmer"/>
         <directory name="Command"/>
@@ -72,6 +74,7 @@
         <DuplicateClass>
             <errorLevel type="suppress">
                 <!-- Conditional class definition-->
+                <file name="Repository/RepositoryFactoryCompatibility.php"/>
                 <file name="Repository/ServiceEntityRepository.php"/>
             </errorLevel>
         </DuplicateClass>

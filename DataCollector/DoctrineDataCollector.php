@@ -8,7 +8,7 @@ use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\AbstractClassMetadataFactory;
@@ -105,7 +105,7 @@ class DoctrineDataCollector extends BaseCollector
                 assert($factory instanceof AbstractClassMetadataFactory);
 
                 foreach ($factory->getLoadedMetadata() as $class) {
-                    assert($class instanceof ClassMetadataInfo);
+                    assert($class instanceof ClassMetadata);
                     if (isset($entities[$name][$class->getName()])) {
                         continue;
                     }

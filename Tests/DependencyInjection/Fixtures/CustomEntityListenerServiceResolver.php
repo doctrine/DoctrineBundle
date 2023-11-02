@@ -24,7 +24,7 @@ class CustomEntityListenerServiceResolver implements EntityListenerServiceResolv
     /**
      * {@inheritDoc}
      */
-    public function resolve($className)
+    public function resolve($className): object
     {
         return $this->resolver->resolve($className);
     }

@@ -6,7 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\Mapping\ClassMetadataCollection;
 use Doctrine\Bundle\DoctrineBundle\Mapping\DisconnectedMetadataFactory;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
 use RuntimeException;
 
@@ -25,7 +25,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
 
     public function testCannotFindNamespaceAndPathForMetadata(): void
     {
-        $class      = new ClassMetadataInfo(self::class);
+        $class      = new ClassMetadata(self::class);
         $collection = new ClassMetadataCollection([$class]);
 
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
@@ -41,7 +41,7 @@ EXCEPTION);
     public function testFindNamespaceAndPathForMetadata(): void
     {
         /** @psalm-suppress UndefinedClass */
-        $class      = new ClassMetadataInfo('\Vendor\Package\Class');
+        $class      = new ClassMetadata('\Vendor\Package\Class');
         $collection = new ClassMetadataCollection([$class]);
 
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();

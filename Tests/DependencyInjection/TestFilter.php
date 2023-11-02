@@ -12,7 +12,8 @@ class TestFilter extends SQLFilter
      *
      * {@inheritDoc}
      */
-    public function addFilterConstraint(ClassMetadata $targetEntity, $targetTableAlias): void
+    public function addFilterConstraint(ClassMetadata $targetEntity, $targetTableAlias): string
     {
+        return '';
     }
 }

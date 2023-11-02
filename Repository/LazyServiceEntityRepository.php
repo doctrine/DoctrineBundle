@@ -11,20 +11,7 @@ use Symfony\Component\VarExporter\LazyObjectInterface;
 use function sprintf;
 
 /**
- * Optional EntityRepository base class with a simplified constructor (for autowiring).
- *
- * To use in your class, inject the "registry" service and call
- * the parent constructor. For example:
- *
- * class YourEntityRepository extends ServiceEntityRepository
- * {
- *     public function __construct(ManagerRegistry $registry)
- *     {
- *         parent::__construct($registry, YourEntity::class);
- *     }
- * }
- *
- * @internal to be renamed ServiceEntityRepository when PHP 8.1 / Symfony 6.2 becomes required
+ * @internal Extend {@see ServiceEntityRepository} instead.
  *
  * @template T of object
  * @template-extends EntityRepository<T>
