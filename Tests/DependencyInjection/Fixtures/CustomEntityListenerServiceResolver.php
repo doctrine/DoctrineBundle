@@ -14,7 +14,7 @@ class CustomEntityListenerServiceResolver implements EntityListenerServiceResolv
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function clear($className = null): void
     {
@@ -22,7 +22,7 @@ class CustomEntityListenerServiceResolver implements EntityListenerServiceResolv
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function resolve($className)
     {
@@ -30,7 +30,7 @@ class CustomEntityListenerServiceResolver implements EntityListenerServiceResolv
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function register($object): void
     {
@@ -38,7 +38,7 @@ class CustomEntityListenerServiceResolver implements EntityListenerServiceResolv
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function registerService($className, $serviceId): void
     {

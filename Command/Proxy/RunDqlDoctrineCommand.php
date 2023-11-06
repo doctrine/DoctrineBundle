@@ -20,7 +20,7 @@ class RunDqlDoctrineCommand extends RunDqlCommand
 
         $this
             ->setName('doctrine:query:dql')
-            ->setHelp(<<<EOT
+            ->setHelp(<<<'EOT'
 The <info>%command.name%</info> command executes the given DQL query and
 outputs the results:
 
@@ -35,8 +35,7 @@ Additionally you can specify the first result and maximum amount of results to
 show:
 
 <info>php %command.full_name% "SELECT u FROM UserBundle:User u" --first-result=0 --max-result=30</info>
-EOT
-        );
+EOT);
 
         if ($this->getDefinition()->hasOption('em')) {
             return;

@@ -379,7 +379,7 @@ class MiddlewarePassTest extends TestCase
         $this->assertCount(1, $middlewareFound, sprintf(
             'Middleware %s not injected in doctrine.dbal.%s_connection.configuration',
             $middlewareClass,
-            $connName
+            $connName,
         ));
 
         $callsFound = [];
@@ -409,7 +409,7 @@ class MiddlewarePassTest extends TestCase
         $this->assertCount(0, $middlewareFound, sprintf(
             'Middleware %s injected in doctrine.dbal.%s_connection.configuration',
             $middlewareClass,
-            $connName
+            $connName,
         ));
     }
 
@@ -428,7 +428,7 @@ class MiddlewarePassTest extends TestCase
         $this->assertSame($expectedOrder, $classes, sprintf(
             'Middlewares ordered as %s in doctrine.dbal.%s_connection.configuration',
             implode(', ', $classes),
-            $connName
+            $connName,
         ));
     }
 

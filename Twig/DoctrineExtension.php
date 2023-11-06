@@ -130,7 +130,7 @@ class DoctrineExtension extends AbstractExtension
 
                 return $result;
             },
-            $query
+            $query,
         );
     }
 
@@ -148,7 +148,7 @@ class DoctrineExtension extends AbstractExtension
             'doctrine/doctrine-bundle',
             '2.1',
             'The "%s()" method is deprecated and will be removed in doctrine-bundle 3.0.',
-            __METHOD__
+            __METHOD__,
         );
 
         $this->setUpSqlFormatter(true, true);
@@ -159,7 +159,7 @@ class DoctrineExtension extends AbstractExtension
 
         return sprintf(
             '<div class="highlight highlight-sql"><pre>%s</pre></div>',
-            $this->sqlFormatter->format($sql)
+            $this->sqlFormatter->format($sql),
         );
     }
 

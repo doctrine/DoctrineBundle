@@ -21,13 +21,12 @@ class RunSqlDoctrineCommand extends RunSqlCommand
 
         $this
             ->setName('doctrine:query:sql')
-            ->setHelp(<<<EOT
+            ->setHelp(<<<'EOT'
 The <info>%command.name%</info> command executes the given SQL query and
 outputs the results:
 
 <info>php %command.full_name% "SELECT * FROM users"</info>
-EOT
-        );
+EOT);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -36,7 +35,7 @@ EOT
             'doctrine/doctrine-bundle',
             '2.2',
             'The "%s" (doctrine:query:sql) is deprecated, use dbal:run-sql command instead.',
-            self::class
+            self::class,
         );
 
         return parent::execute($input, $output);

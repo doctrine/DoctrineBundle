@@ -14,6 +14,8 @@ class TestDefaultRepoEntity
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
      */
-    #[ORM\Id, ORM\GeneratedValue(strategy: 'AUTO'), ORM\Column(type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 }

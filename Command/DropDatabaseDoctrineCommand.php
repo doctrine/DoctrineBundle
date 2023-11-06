@@ -36,7 +36,7 @@ class DropDatabaseDoctrineCommand extends DoctrineCommand
             ->addOption('connection', 'c', InputOption::VALUE_OPTIONAL, 'The connection to use for this command')
             ->addOption('if-exists', null, InputOption::VALUE_NONE, 'Don\'t trigger an error, when the database doesn\'t exist')
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Set this parameter to execute this action')
-            ->setHelp(<<<EOT
+            ->setHelp(<<<'EOT'
 The <info>%command.name%</info> command drops the default connections database:
 
     <info>php %command.full_name%</info>
@@ -48,8 +48,7 @@ You can also optionally specify the name of a connection to drop the database fo
     <info>php %command.full_name% --connection=default</info>
 
 <error>Be careful: All data in a given database will be lost when executing this command.</error>
-EOT
-        );
+EOT);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

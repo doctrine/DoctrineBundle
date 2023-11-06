@@ -109,11 +109,11 @@ class DoctrineExtensionTest extends TestCase
         $extension = new DoctrineExtension();
         self::assertStringContainsString(
             'class=',
-            $extension->formatQuery('CREATE DATABASE 📚;')
+            $extension->formatQuery('CREATE DATABASE 📚;'),
         );
         self::assertStringContainsString(
             'class=',
-            $extension->formatSql('CREATE DATABASE 📚;', true)
+            $extension->formatSql('CREATE DATABASE 📚;', true),
         );
     }
 
@@ -123,11 +123,11 @@ class DoctrineExtensionTest extends TestCase
         $extension = new DoctrineExtension();
         self::assertSame(
             1,
-            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<pre')
+            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<pre'),
         );
         self::assertSame(
             1,
-            substr_count($extension->formatSQL('CREATE DATABASE 📚;', true), '<pre')
+            substr_count($extension->formatSQL('CREATE DATABASE 📚;', true), '<pre'),
         );
     }
 
@@ -137,11 +137,11 @@ class DoctrineExtensionTest extends TestCase
         $extension = new DoctrineExtension();
         self::assertSame(
             1,
-            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<div class=')
+            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<div class='),
         );
         self::assertSame(
             1,
-            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<pre>')
+            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<pre>'),
         );
     }
 
@@ -150,7 +150,7 @@ class DoctrineExtensionTest extends TestCase
         $extension = new DoctrineExtension();
         self::assertSame(
             1,
-            substr_count($extension->formatSQL('CREATE DATABASE 📚;', true), '<pre class=')
+            substr_count($extension->formatSQL('CREATE DATABASE 📚;', true), '<pre class='),
         );
     }
 }

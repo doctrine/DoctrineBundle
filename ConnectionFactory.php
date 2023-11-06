@@ -117,7 +117,7 @@ class ConnectionFactory
             $params     = $this->addDatabaseSuffix(array_merge($connection->getParams(), $overriddenOptions));
             $driver     = $connection->getDriver();
             $platform   = $driver->getDatabasePlatform(
-                ...(class_exists(StaticServerVersionProvider::class) ? [new StaticServerVersionProvider($params['serverVersion'] ?? '')] : [])
+                ...(class_exists(StaticServerVersionProvider::class) ? [new StaticServerVersionProvider($params['serverVersion'] ?? '')] : []),
             );
 
             if (! isset($params['charset'])) {
@@ -128,7 +128,7 @@ class ConnectionFactory
                         Deprecation::trigger(
                             'doctrine/doctrine-bundle',
                             'https://github.com/doctrine/dbal/issues/5214',
-                            'The "collate" default table option is deprecated in favor of "collation" and will be removed in doctrine/doctrine-bundle 3.0. '
+                            'The "collate" default table option is deprecated in favor of "collation" and will be removed in doctrine/doctrine-bundle 3.0. ',
                         );
                         $params['defaultTableOptions']['collation'] = $params['defaultTableOptions']['collate'];
                         unset($params['defaultTableOptions']['collate']);
@@ -186,7 +186,7 @@ class ConnectionFactory
                 'For further information have a look at:' . PHP_EOL .
                 'https://github.com/doctrine/DoctrineBundle/issues/673',
                 0,
-                $driverException
+                $driverException,
             );
         }
     }

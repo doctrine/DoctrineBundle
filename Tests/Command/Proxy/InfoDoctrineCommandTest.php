@@ -42,7 +42,7 @@ class InfoDoctrineCommandTest extends TestCase
 
         $this->assertStringContainsString(
             'Found 3 mapped entities',
-            $commandTester->getDisplay()
+            $commandTester->getDisplay(),
         );
     }
 }

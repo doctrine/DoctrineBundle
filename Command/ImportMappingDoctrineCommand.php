@@ -52,15 +52,15 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force to overwrite existing mapping files.')
             ->addOption('path', null, InputOption::VALUE_REQUIRED, 'The path where the files would be generated (not used when a bundle is passed).')
             ->setDescription('Imports mapping information from an existing database')
-            ->setHelp(<<<EOT
+            ->setHelp(<<<'EOT'
 The <info>%command.name%</info> command imports mapping information
 from an existing database:
 
 Generate annotation mappings into the src/ directory using App as the namespace:
-<info>php %command.full_name% App\\\Entity annotation --path=src/Entity</info>
+<info>php %command.full_name% App\\Entity annotation --path=src/Entity</info>
 
 Generate xml mappings into the config/doctrine/ directory using App as the namespace:
-<info>php %command.full_name% App\\\Entity xml --path=config/doctrine</info>
+<info>php %command.full_name% App\\Entity xml --path=config/doctrine</info>
 
 Generate XML mappings into a bundle:
 <info>php %command.full_name% "MyCustomBundle" xml</info>
@@ -79,8 +79,7 @@ provided pattern string.
 Use the <info>--force</info> option, if you want to override existing mapping files:
 
 <info>php %command.full_name% "MyCustomBundle" xml --force</info>
-EOT
-        );
+EOT);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -253,7 +253,7 @@ class DoctrineExtensionTest extends TestCase
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(
-            'Configuring the ORM layer requires to configure the DBAL layer as well.'
+            'Configuring the ORM layer requires to configure the DBAL layer as well.',
         );
         $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
     }
@@ -335,7 +335,7 @@ class DoctrineExtensionTest extends TestCase
                     'orm' => ['entity_managers' => $entityManagers],
                 ],
             ],
-            $container
+            $container,
         );
 
         $configEm1 = $container->getDefinition('doctrine.orm.em1_configuration');
@@ -349,7 +349,7 @@ class DoctrineExtensionTest extends TestCase
                     ['YamlBundle' => 'Fixtures\Bundles\YamlBundle\Entity'],
                 ],
             ],
-            $configEm1->getMethodCalls()
+            $configEm1->getMethodCalls(),
         );
 
         $this->assertContains(
@@ -359,7 +359,7 @@ class DoctrineExtensionTest extends TestCase
                     ['XmlBundle' => 'Fixtures\Bundles\XmlBundle\Entity'],
                 ],
             ],
-            $configEm2->getMethodCalls()
+            $configEm2->getMethodCalls(),
         );
 
         $this->assertContains(
@@ -369,7 +369,7 @@ class DoctrineExtensionTest extends TestCase
                     ['NewXmlBundle' => 'Fixtures\Bundles\NewXmlBundle\Entity'],
                 ],
             ],
-            $configEm3->getMethodCalls()
+            $configEm3->getMethodCalls(),
         );
     }
 
@@ -410,7 +410,7 @@ class DoctrineExtensionTest extends TestCase
                 ['dbal' => ['default_connection' => 'foo']],
                 [],
             ],
-            $container
+            $container,
         );
 
         $this->assertEquals(TestWrapperClass::class, $container->getDefinition('doctrine.dbal.default_connection')->getClass());
@@ -522,7 +522,7 @@ class DoctrineExtensionTest extends TestCase
                 new Reference('doctrine.orm.default_entity_manager'),
                 '%kernel.cache_dir%/doctrine/orm/default_metadata.php',
             ],
-            $definition->getArguments()
+            $definition->getArguments(),
         );
 
         $definition = $container->getDefinition((string) $container->getAlias('doctrine.orm.default_metadata_cache'));
@@ -720,7 +720,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce(
             $definition,
             'setEntityNamespaces',
-            [['YamlBundle' => 'Fixtures\Bundles\YamlBundle\Entity']]
+            [['YamlBundle' => 'Fixtures\Bundles\YamlBundle\Entity']],
         );
     }
 
@@ -743,7 +743,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce(
             $definition,
             'setEntityNamespaces',
-            [['yml' => 'Fixtures\Bundles\YamlBundle\Entity']]
+            [['yml' => 'Fixtures\Bundles\YamlBundle\Entity']],
         );
     }
 
@@ -982,7 +982,7 @@ class DoctrineExtensionTest extends TestCase
         $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
         $this->assertEquals(
             sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation'),
-            (string) $calls[0][1][0]
+            (string) $calls[0][1][0],
         );
         $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
     }

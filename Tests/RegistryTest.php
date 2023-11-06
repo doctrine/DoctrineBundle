@@ -104,7 +104,7 @@ class RegistryTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Doctrine ORM Manager named "default" does not exist.'
+            'Doctrine ORM Manager named "default" does not exist.',
         );
         $registry->getManager('default');
     }
@@ -115,7 +115,7 @@ class RegistryTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Doctrine ORM Manager named "default" does not exist.'
+            'Doctrine ORM Manager named "default" does not exist.',
         );
         $registry->resetManager('default');
     }

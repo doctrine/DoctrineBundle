@@ -47,16 +47,16 @@ class DropDatabaseDoctrineTest extends TestCase
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
-            array_merge(['command' => $command->getName()], $options)
+            array_merge(['command' => $command->getName()], $options),
         );
 
         $this->assertStringContainsString(
             sprintf(
                 'Dropped database %s for connection named %s',
                 sys_get_temp_dir() . '/' . $dbName,
-                $connectionName
+                $connectionName,
             ),
-            $commandTester->getDisplay()
+            $commandTester->getDisplay(),
         );
     }
 
@@ -90,20 +90,20 @@ class DropDatabaseDoctrineTest extends TestCase
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
-            array_merge(['command' => $command->getName()])
+            array_merge(['command' => $command->getName()]),
         );
 
         $this->assertStringContainsString(
             sprintf(
                 'Would drop the database %s for connection named %s.',
                 sys_get_temp_dir() . '/' . $dbName,
-                $connectionName
+                $connectionName,
             ),
-            $commandTester->getDisplay()
+            $commandTester->getDisplay(),
         );
         $this->assertStringContainsString(
             'Please run the operation with --force to execute',
-            $commandTester->getDisplay()
+            $commandTester->getDisplay(),
         );
     }
 

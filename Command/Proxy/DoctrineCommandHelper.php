@@ -35,7 +35,7 @@ abstract class DoctrineCommandHelper
             '2.7',
             'Providing an EntityManager using "%s" is deprecated. Use an instance of "%s" instead.',
             EntityManagerHelper::class,
-            EntityManagerProvider::class
+            EntityManagerProvider::class,
         );
     }
 }

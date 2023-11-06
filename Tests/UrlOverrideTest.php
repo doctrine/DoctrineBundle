@@ -24,8 +24,8 @@ class UrlOverrideTest extends TestCase
             $expectedParams,
             array_intersect_key(
                 $kernel->getContainer()->get('doctrine.dbal.default_connection')->getParams(),
-                $expectedParams
-            )
+                $expectedParams,
+            ),
         );
     }
 

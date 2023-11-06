@@ -75,8 +75,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(<<<'EXCEPTION'
 The service "my_repo" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).
-EXCEPTION
-        );
+EXCEPTION);
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
@@ -106,8 +105,7 @@ EXCEPTION
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(<<<'EXCEPTION'
 The "Doctrine\Bundle\DoctrineBundle\Tests\Repository\StubServiceRepository" entity repository implements "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
-EXCEPTION
-        );
+EXCEPTION);
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
@@ -121,8 +119,7 @@ EXCEPTION
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(<<<'EXCEPTION'
 The "Foo\CoolEntity" entity has a repositoryClass set to "not_a_real_class", but this is not a valid class. Check your class naming. If this is meant to be a service id, make sure this service exists and is tagged with "doctrine.repository_service".
-EXCEPTION
-        );
+EXCEPTION);
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
@@ -179,7 +176,7 @@ class NonDeprecatedRepository implements ObjectRepository
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function findAll(): array
     {
@@ -187,7 +184,7 @@ class NonDeprecatedRepository implements ObjectRepository
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
     {

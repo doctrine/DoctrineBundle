@@ -241,7 +241,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         unset(
             $connection['profiling'],
             $connection['profiling_collect_backtrace'],
-            $connection['profiling_collect_schema_errors']
+            $connection['profiling_collect_schema_errors'],
         );
 
         if (isset($connection['auto_commit'])) {
@@ -298,7 +298,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->setDefinition(
             ManagerRegistryAwareConnectionProvider::class,
-            new Definition(ManagerRegistryAwareConnectionProvider::class, [$container->getDefinition('doctrine')])
+            new Definition(ManagerRegistryAwareConnectionProvider::class, [$container->getDefinition('doctrine')]),
         );
 
         $configuration->addMethodCall('setSchemaManagerFactory', [new Reference($connection['schema_manager_factory'])]);
@@ -548,7 +548,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             if (! method_exists(OrmConfiguration::class, 'setLazyGhostObjectEnabled')) {
                 throw new LogicException(
                     'Lazy ghost objects cannot be enabled because the "doctrine/orm" library'
-                    . ' version 2.14 or higher is not installed. Please run "composer update doctrine/orm".'
+                    . ' version 2.14 or higher is not installed. Please run "composer update doctrine/orm".',
                 );
             }
 
@@ -557,14 +557,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
             if (! trait_exists(LazyGhostTrait::class)) {
                 throw new LogicException(
                     'Lazy ghost objects cannot be enabled because the "symfony/var-exporter" library'
-                    . ' version 6.2 or higher is not installed. Please run "composer require symfony/var-exporter:^6.2".'
+                    . ' version 6.2 or higher is not installed. Please run "composer require symfony/var-exporter:^6.2".',
                 );
             }
 
             if (! class_exists(RuntimeReflectionProperty::class)) {
                 throw new LogicException(
                     'Lazy ghost objects cannot be enabled because the "doctrine/persistence" library'
-                    . ' version 3.1 or higher is not installed. Please run "composer update doctrine/persistence".'
+                    . ' version 3.1 or higher is not installed. Please run "composer update doctrine/persistence".',
                 );
             }
         }
@@ -768,7 +768,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->setAlias(
             sprintf('doctrine.orm.%s_entity_manager.event_manager', $entityManager['name']),
-            new Alias(sprintf('doctrine.dbal.%s_connection.event_manager', $entityManager['connection']), false)
+            new Alias(sprintf('doctrine.dbal.%s_connection.event_manager', $entityManager['connection']), false),
         );
 
         if (! isset($entityManager['entity_listeners'])) {
@@ -1028,7 +1028,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     'Unknown cache of type "%s" configured for cache "%s" in entity manager "%s".',
                     $cacheDriver['type'],
                     $cacheName,
-                    $objectManagerName
+                    $objectManagerName,
                 ));
         }
 

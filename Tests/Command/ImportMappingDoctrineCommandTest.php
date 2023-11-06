@@ -82,7 +82,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->assertStringContainsString(
             '"Doctrine\Bundle\DoctrineBundle\Tests\Command\Entity\Product"',
             file_get_contents($expectedMetadataPath),
-            'Metadata contains correct namespace'
+            'Metadata contains correct namespace',
         );
     }
 
@@ -98,7 +98,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->assertStringContainsString(
             'namespace Doctrine\Bundle\DoctrineBundle\Tests\Command\Entity;',
             file_get_contents($expectedMetadataPath),
-            'File contains correct namespace'
+            'File contains correct namespace',
         );
     }
 
@@ -121,7 +121,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->assertStringContainsString(
             '"Some\Namespace\Entity\Product"',
             file_get_contents($expectedMetadataPath),
-            'Metadata contains correct namespace'
+            'Metadata contains correct namespace',
         );
     }
 
@@ -138,7 +138,7 @@ class ImportMappingDoctrineCommandTest extends TestCase
         $this->assertStringContainsString(
             'namespace Some\Namespace\Entity;',
             file_get_contents($expectedMetadataPath),
-            'Metadata contains correct namespace'
+            'Metadata contains correct namespace',
         );
     }
 }

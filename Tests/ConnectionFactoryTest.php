@@ -21,6 +21,7 @@ class ConnectionFactoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->configuration = (new Configuration())->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
     }
 
@@ -57,7 +58,7 @@ class ConnectionFactoryTest extends TestCase
 
         $this->assertSame(
             'utf8mb4_unicode_ci',
-            $connection->getParams()['defaultTableOptions']['collation']
+            $connection->getParams()['defaultTableOptions']['collation'],
         );
     }
 
@@ -66,21 +67,21 @@ class ConnectionFactoryTest extends TestCase
     {
         $factory = new ConnectionFactory([]);
         $this->expectDeprecationWithIdentifier(
-            'https://github.com/doctrine/dbal/issues/5214'
+            'https://github.com/doctrine/dbal/issues/5214',
         );
         $connection = $factory->createConnection(
             [
                 'driver' => 'pdo_mysql',
                 'defaultTableOptions' => ['collate' => 'my_collation'],
             ],
-            $this->configuration
+            $this->configuration,
         );
 
         $tableOptions = $connection->getParams()['defaultTableOptions'];
         $this->assertArrayNotHasKey('collate', $tableOptions);
         $this->assertSame(
             'my_collation',
-            $tableOptions['collation']
+            $tableOptions['collation'],
         );
     }
 
@@ -100,7 +101,7 @@ class ConnectionFactoryTest extends TestCase
                 'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
                 'connection_override_options' => $params,
             ],
-            $this->configuration
+            $this->configuration,
         );
 
         $this->assertEquals($params, array_intersect_key($connection->getParams(), $params));
@@ -110,7 +111,7 @@ class ConnectionFactoryTest extends TestCase
     {
         $connection = (new ConnectionFactory([]))->createConnection(
             ['url' => 'mysql://root:password@database:3306/main?charset=utf8mb4_unicode_ci'],
-            $this->configuration
+            $this->configuration,
         );
 
         $this->assertEquals('utf8mb4_unicode_ci', $connection->getParams()['charset']);
@@ -123,7 +124,7 @@ class ConnectionFactoryTest extends TestCase
                 'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
                 'dbname_suffix' => '_test',
             ],
-            $this->configuration
+            $this->configuration,
         );
 
         $this->assertSame('main_test', $connection->getParams()['dbname']);
@@ -145,7 +146,7 @@ class ConnectionFactoryTest extends TestCase
                     ],
                 ],
             ],
-            $this->configuration
+            $this->configuration,
         );
 
         $parsedParams = $connection->getParams();
@@ -163,7 +164,7 @@ class FakeConnection extends Connection
     public static int $creationCount = 0;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function __construct(array $params, Driver $driver, ?Configuration $config = null, ?EventManager $eventManager = null)
     {
