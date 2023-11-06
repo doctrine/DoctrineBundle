@@ -12,7 +12,7 @@ on:
 jobs:
   phpunit:
     name: "PHPUnit"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     env:
       SYMFONY_REQUIRE: ${{matrix.symfony-require}}
       SYMFONY_DEPRECATIONS_HELPER: weak
@@ -61,7 +61,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v3"
+        uses: "actions/checkout@v4"
         with:
           fetch-depth: 2
 
@@ -72,9 +72,7 @@ jobs:
           coverage: "pcov"
           ini-values: "zend.assertions=1"
           extensions: "pdo_sqlite"
-
-      - name: "Globally install symfony/flex"
-        run: "composer require --no-progress --no-scripts --no-plugins symfony/flex"
+          tools: "flex"
 
       - name: "Require symfony/messenger"
         run: "composer require --dev symfony/messenger --no-update"
@@ -105,13 +103,13 @@ jobs:
 
   upload_coverage:
     name: "Upload coverage to Codecov"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       - "phpunit"
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v3"
+        uses: "actions/checkout@v4"
         with:
           fetch-depth: 2
 
