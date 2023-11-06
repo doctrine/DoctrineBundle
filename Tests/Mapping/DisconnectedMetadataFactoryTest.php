@@ -34,8 +34,7 @@ class DisconnectedMetadataFactoryTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(<<<'EXCEPTION'
 Can't find base path for "Doctrine\Bundle\DoctrineBundle\Tests\Mapping\DisconnectedMetadataFactoryTest
-EXCEPTION
-        );
+EXCEPTION);
         $factory->findNamespaceAndPathForMetadata($collection);
     }
 

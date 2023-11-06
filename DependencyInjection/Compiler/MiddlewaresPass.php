@@ -54,7 +54,7 @@ final class MiddlewaresPass implements CompilerPassInterface
                 $middlewareDefs[$id] = [
                     $childDef = $container->setDefinition(
                         sprintf('%s.%s', $id, $name),
-                        new ChildDefinition($id)
+                        new ChildDefinition($id),
                     ),
                     ++$i,
                 ];

@@ -20,7 +20,7 @@ class SchemaAssetsFilterManagerTest extends TestCase
         $tables  = ['do_not_filter', 't_filter_me', 's_filter_me_too'];
         $this->assertSame(
             ['do_not_filter'],
-            array_values(array_filter($tables, $manager))
+            array_values(array_filter($tables, $manager)),
         );
     }
 }

@@ -30,7 +30,7 @@ class ContainerEntityListenerResolver implements EntityListenerServiceResolver
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function clear($className = null)
     {
@@ -46,7 +46,7 @@ class ContainerEntityListenerResolver implements EntityListenerServiceResolver
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function register($object)
     {
@@ -60,7 +60,7 @@ class ContainerEntityListenerResolver implements EntityListenerServiceResolver
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function registerService($className, $serviceId)
     {
@@ -68,7 +68,7 @@ class ContainerEntityListenerResolver implements EntityListenerServiceResolver
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function resolve($className)
     {

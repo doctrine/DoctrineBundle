@@ -41,6 +41,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
     public function __construct($driver, array $namespaces, array $managerParameters, $enabledParameter = false, array $aliasMap = [])
     {
         $managerParameters[] = 'doctrine.default_entity_manager';
+
         parent::__construct(
             $driver,
             $namespaces,
@@ -49,7 +50,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
             $enabledParameter,
             'doctrine.orm.%s_configuration',
             'addEntityNamespace',
-            $aliasMap
+            $aliasMap,
         );
     }
 

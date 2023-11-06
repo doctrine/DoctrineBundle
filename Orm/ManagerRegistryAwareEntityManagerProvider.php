@@ -36,8 +36,8 @@ final class ManagerRegistryAwareEntityManagerProvider implements EntityManagerPr
             sprintf(
                 'Only managers of type "%s" are supported. Instance of "%s given.',
                 EntityManagerInterface::class,
-                get_class($em)
-            )
+                get_class($em),
+            ),
         );
     }
 }

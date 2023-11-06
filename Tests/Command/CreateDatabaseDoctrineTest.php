@@ -44,12 +44,12 @@ class CreateDatabaseDoctrineTest extends TestCase
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
-            array_merge(['command' => $command->getName()])
+            array_merge(['command' => $command->getName()]),
         );
 
         $this->assertStringContainsString(
             'Created database ' . sys_get_temp_dir() . '/' . $dbName . ' for connection named ' . $connectionName,
-            $commandTester->getDisplay()
+            $commandTester->getDisplay(),
         );
     }
 

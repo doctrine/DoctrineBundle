@@ -103,7 +103,7 @@ final class CacheCompatibilityPass implements CompilerPassInterface
             'doctrine/doctrine-bundle',
             '2.4',
             'Configuring doctrine/cache is deprecated. Please update the cache service "%s" to use a PSR-6 cache.',
-            $definitionId
+            $definitionId,
         );
 
         return (new Definition(CacheItemPoolInterface::class))

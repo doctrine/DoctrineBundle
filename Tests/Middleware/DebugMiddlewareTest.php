@@ -41,15 +41,14 @@ class DebugMiddlewareTest extends TestCase
             'memory' => true,
         ], $configuration);
 
-        $conn->executeQuery(<<<EOT
+        $conn->executeQuery(<<<'EOT'
 CREATE TABLE products (
-	id INTEGER PRIMARY KEY,
-	name TEXT NOT NULL,
-	price REAL NOT NULL,
-	stock INTEGER NOT NULL
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    price REAL NOT NULL,
+    stock INTEGER NOT NULL
 );
-EOT
-        );
+EOT);
 
         $data = $debugDataHolder->getData();
         $this->assertCount(1, $data['default'] ?? []);

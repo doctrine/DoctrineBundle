@@ -8,6 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class TestCustomIdGeneratorEntity
 {
-    #[ORM\Id, ORM\GeneratedValue(strategy: 'CUSTOM'), ORM\CustomIdGenerator('my_id_generator'), ORM\Column(type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator('my_id_generator')]
+    #[ORM\Column(type: Types::INTEGER)]
     public ?int $id = null;
 }

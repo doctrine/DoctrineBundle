@@ -216,7 +216,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'unix_socket' => '/path/to/mysqld.sock',
                 'driverOptions' => [PDO::ATTR_STRINGIFY_FETCHES => 1],
             ],
-            $param['primary']
+            $param['primary'],
         );
         $this->assertEquals(
             [
@@ -228,7 +228,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'unix_socket' => '/path/to/mysqld_replica.sock',
                 'driverOptions' => [PDO::ATTR_STRINGIFY_FETCHES => 1],
             ],
-            $param['replica']['replica1']
+            $param['replica']['replica1'],
         );
         $this->assertEquals(['engine' => 'InnoDB'], $param['defaultTableOptions']);
     }
@@ -281,13 +281,13 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 new Reference(class_exists(LegacySchemaManagerFactory::class)
                 ? 'doctrine.dbal.legacy_schema_manager_factory'
                 : 'doctrine.dbal.default_schema_manager_factory'),
-            ]
+            ],
         );
 
         $this->assertDICDefinitionMethodCallOnce(
             $container->getDefinition('doctrine.dbal.custom_schema_manager_factory_connection.configuration'),
             'setSchemaManagerFactory',
-            [new Reference('custom_factory')]
+            [new Reference('custom_factory')],
         );
     }
 
@@ -538,7 +538,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 ] : [],
                 [
                     __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity',
-                ]
+                ],
             ),
             false,
         ]);
@@ -645,7 +645,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $this->assertEquals(
             ['test' => ['class' => TestType::class]],
-            $container->getParameter('doctrine.dbal.connection_factory.types')
+            $container->getParameter('doctrine.dbal.connection_factory.types'),
         );
         $this->assertEquals('%doctrine.dbal.connection_factory.types%', $container->getDefinition('doctrine.dbal.connection_factory')->getArgument(0));
     }
@@ -870,7 +870,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('doctrine.orm.default_second_level_cache.region.my_query_region', $myQueryRegionArgs[0]);
         $this->assertStringContainsString(
             '/doctrine/orm/slc/filelock',
-            $myQueryRegionArgs[1]
+            $myQueryRegionArgs[1],
         );
         $this->assertEquals(60, $myQueryRegionArgs[2]);
 

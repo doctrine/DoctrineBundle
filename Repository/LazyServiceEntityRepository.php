@@ -47,7 +47,7 @@ class LazyServiceEntityRepository extends EntityRepository implements ServiceEnt
             if ($manager === null) {
                 throw new LogicException(sprintf(
                     'Could not find the entity manager for class "%s". Check your Doctrine configuration to make sure it is configured to load this entity’s metadata.',
-                    $entityClass
+                    $entityClass,
                 ));
             }
 

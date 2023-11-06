@@ -24,6 +24,7 @@ class ConvertMappingDoctrineCommand extends ConvertMappingCommand
     protected function configure()
     {
         parent::configure();
+
         $this
             ->setName('doctrine:mapping:convert');
 

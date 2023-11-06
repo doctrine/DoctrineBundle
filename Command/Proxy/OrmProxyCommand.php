@@ -19,6 +19,7 @@ trait OrmProxyCommand
     public function __construct(?EntityManagerProvider $entityManagerProvider = null)
     {
         parent::__construct($entityManagerProvider);
+
         $this->entityManagerProvider = $entityManagerProvider;
 
         trigger_deprecation(
@@ -26,7 +27,7 @@ trait OrmProxyCommand
             '2.8',
             'Class "%s" is deprecated. Use "%s" instead.',
             self::class,
-            parent::class
+            parent::class,
         );
     }
 

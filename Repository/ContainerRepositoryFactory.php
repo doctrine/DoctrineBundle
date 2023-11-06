@@ -32,7 +32,7 @@ final class ContainerRepositoryFactory implements RepositoryFactory
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      *
      * @template T of object
      */

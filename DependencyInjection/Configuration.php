@@ -202,7 +202,7 @@ class Configuration implements ConfigurationInterface
                     ->setDeprecated(
                         'doctrine/doctrine-bundle',
                         '2.9',
-                        'The "platform_service" configuration key is deprecated since doctrine-bundle 2.9. DBAL 4 will not support setting a custom platform via connection params anymore.'
+                        'The "platform_service" configuration key is deprecated since doctrine-bundle 2.9. DBAL 4 will not support setting a custom platform via connection params anymore.',
                     )
                 ->end()
                 ->booleanNode('auto_commit')->end()
@@ -240,7 +240,7 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('default_table_options')
                 ->info(sprintf(
                     "This option is used by the schema-tool and affects generated SQL. Possible keys include 'charset','%s', and 'engine'.",
-                    $collationKey
+                    $collationKey,
                 ))
                     ->useAttributeAsKey('name')
                     ->prototype('scalar')->end()
@@ -299,7 +299,7 @@ class Configuration implements ConfigurationInterface
                         '2.4',
                         'Setting the "doctrine.dbal.%s" %s while the "url" one is defined is deprecated',
                         implode('", "', $urlConflictingValues),
-                        $tail
+                        $tail,
                     );
                 }
 
@@ -332,7 +332,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('servicename')
                     ->info(
                         'Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter ' .
-                        'for Oracle depending on the service parameter.'
+                        'for Oracle depending on the service parameter.',
                     )
                 ->end()
                 ->scalarNode('sessionMode')
@@ -343,34 +343,34 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('default_dbname')
                     ->info(
-                        'Override the default database (postgres) to connect to for PostgreSQL connexion.'
+                        'Override the default database (postgres) to connect to for PostgreSQL connexion.',
                     )
                 ->end()
                 ->scalarNode('sslmode')
                     ->info(
                         'Determines whether or with what priority a SSL TCP/IP connection will be negotiated with ' .
-                        'the server for PostgreSQL.'
+                        'the server for PostgreSQL.',
                     )
                 ->end()
                 ->scalarNode('sslrootcert')
                     ->info(
                         'The name of a file containing SSL certificate authority (CA) certificate(s). ' .
-                        'If the file exists, the server\'s certificate will be verified to be signed by one of these authorities.'
+                        'If the file exists, the server\'s certificate will be verified to be signed by one of these authorities.',
                     )
                 ->end()
                 ->scalarNode('sslcert')
                     ->info(
-                        'The path to the SSL client certificate file for PostgreSQL.'
+                        'The path to the SSL client certificate file for PostgreSQL.',
                     )
                 ->end()
                 ->scalarNode('sslkey')
                     ->info(
-                        'The path to the SSL client key file for PostgreSQL.'
+                        'The path to the SSL client key file for PostgreSQL.',
                     )
                 ->end()
                 ->scalarNode('sslcrl')
                     ->info(
-                        'The file name of the SSL certificate revocation list for PostgreSQL.'
+                        'The file name of the SSL certificate revocation list for PostgreSQL.',
                     )
                 ->end()
                 ->booleanNode('pooled')->info('True to use a pooled server with the oci8/pdo_oracle driver')->end()
@@ -380,7 +380,7 @@ class Configuration implements ConfigurationInterface
                 ->info(
                     'Optional parameter, complete whether to add the INSTANCE_NAME parameter in the connection.' .
                     ' It is generally used to connect to an Oracle RAC server to select the name' .
-                    ' of a particular instance.'
+                    ' of a particular instance.',
                 )
                 ->end()
                 ->scalarNode('connectstring')
@@ -388,7 +388,7 @@ class Configuration implements ConfigurationInterface
                     'Complete Easy Connect connection descriptor, see https://docs.oracle.com/database/121/NETAG/naming.htm.' .
                     'When using this option, you will still need to provide the user and password parameters, but the other ' .
                     'parameters will no longer be used. Note that when using this parameter, the getHost and getPort methods' .
-                    ' from Doctrine\DBAL\Connection will no longer function as expected.'
+                    ' from Doctrine\DBAL\Connection will no longer function as expected.',
                 )
                 ->end()
             ->end()
