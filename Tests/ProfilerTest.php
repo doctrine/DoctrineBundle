@@ -8,10 +8,11 @@ use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
-use Symfony\Bridge\Twig\Extension\CodeExtension;
+use Symfony\Bridge\Twig\Extension\CodeExtension as CodeExtensionLegacy;
 use Symfony\Bridge\Twig\Extension\HttpKernelExtension;
 use Symfony\Bridge\Twig\Extension\HttpKernelRuntime;
 use Symfony\Bridge\Twig\Extension\RoutingExtension;
+use Symfony\Bundle\WebProfilerBundle\Profiler\CodeExtension;
 use Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -24,6 +25,7 @@ use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\RuntimeLoader\RuntimeLoaderInterface;
 
+use function class_exists;
 use function html_entity_decode;
 use function preg_match;
 use function preg_quote;
@@ -62,7 +64,12 @@ class ProfilerTest extends BaseTestCase
         $urlGenerator = $this->getMockBuilder(UrlGeneratorInterface::class)->getMock();
         $urlGenerator->method('generate')->willReturn('');
 
-        $this->twig->addExtension(new CodeExtension('', '', ''));
+        if (class_exists(CodeExtension::class)) {
+            $this->twig->addExtension(new CodeExtension('', '', ''));
+        } else {
+            $this->twig->addExtension(new CodeExtensionLegacy('', '', ''));
+        }
+
         $this->twig->addExtension(new RoutingExtension($urlGenerator));
         $this->twig->addExtension(new HttpKernelExtension());
         /**
