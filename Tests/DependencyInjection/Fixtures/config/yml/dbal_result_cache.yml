@@ -1,0 +1,7 @@
+doctrine:
+    dbal:
+        default_connection: connection_with_cache
+        connections:
+            connection_with_cache:
+                result_cache: example.cache
+            connection_without_cache: ~
