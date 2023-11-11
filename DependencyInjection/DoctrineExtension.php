@@ -303,6 +303,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $configuration->addMethodCall('setSchemaManagerFactory', [new Reference($connection['schema_manager_factory'])]);
 
+        if (isset($connection['result_cache'])) {
+            $configuration->addMethodCall('setResultCache', [new Reference($connection['result_cache'])]);
+        }
+
         if (class_exists(LegacySchemaManagerFactory::class)) {
             return;
         }

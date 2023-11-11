@@ -249,6 +249,7 @@ class Configuration implements ConfigurationInterface
                     ->cannotBeEmpty()
                     ->defaultValue($this->getDefaultSchemaManagerFactory())
                 ->end()
+                ->scalarNode('result_cache')->end()
             ->end();
 
         // dbal < 2.11

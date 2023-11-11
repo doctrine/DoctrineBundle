@@ -142,6 +142,10 @@ Configuration Reference
                             # collation:    utf8mb4_unicode_ci # When using doctrine/dbal 3.x
                             # engine:       InnoDB
 
+                        # Service identifier of a Psr\Cache\CacheItemPoolInterface implementation
+                        # to use as the cache driver for dbal result sets.
+                        result_cache:        ~
+
                         replicas:
                             # A collection of named replica connections (e.g. replica1, replica2)
                             replica1:

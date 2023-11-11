@@ -291,6 +291,26 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         );
     }
 
+    public function testDbalResultCache(): void
+    {
+        $container = $this->loadContainer('dbal_result_cache');
+
+        $this->assertDICDefinitionMethodCallOnce(
+            $container->getDefinition('doctrine.dbal.connection_with_cache_connection.configuration'),
+            'setResultCache',
+            [
+                new Reference('example.cache'),
+            ],
+        );
+
+        $this->assertDICDefinitionMethodCallCount(
+            $container->getDefinition('doctrine.dbal.connection_without_cache_connection.configuration'),
+            'setResultCache',
+            [],
+            0,
+        );
+    }
+
     public function testLoadSimpleSingleConnection(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
