@@ -2,11 +2,11 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
-use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
+use Doctrine\ORM\Proxy\ProxyFactory;
 use InvalidArgumentException;
 use ReflectionClass;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -32,6 +32,7 @@ use function is_bool;
 use function is_int;
 use function is_string;
 use function key;
+use function method_exists;
 use function reset;
 use function sprintf;
 use function strlen;
@@ -499,11 +500,11 @@ class Configuration implements ConfigurationInterface
                             ->validate()
                                 ->ifString()
                                 ->then(static function ($v) {
-                                    return constant('Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_' . strtoupper($v));
+                                    return constant('Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_' . strtoupper($v));
                                 })
                             ->end()
                         ->end()
-                        ->booleanNode('enable_lazy_ghost_objects')->defaultFalse()
+                        ->booleanNode('enable_lazy_ghost_objects')->defaultValue(! method_exists(ProxyFactory::class, 'resetUninitializedProxy'))
                         ->end()
                         ->scalarNode('proxy_dir')->defaultValue('%kernel.cache_dir%/doctrine/orm/Proxies')->end()
                         ->scalarNode('proxy_namespace')->defaultValue('Proxies')->end()
@@ -833,7 +834,7 @@ class Configuration implements ConfigurationInterface
     {
         $constPrefix = 'AUTOGENERATE_';
         $prefixLen   = strlen($constPrefix);
-        $refClass    = new ReflectionClass(AbstractProxyFactory::class);
+        $refClass    = new ReflectionClass(ProxyFactory::class);
         $constsArray = $refClass->getConstants();
         $namesArray  = [];
         $valuesArray = [];

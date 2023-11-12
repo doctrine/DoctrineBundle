@@ -3,13 +3,15 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
+use Doctrine\Bundle\DoctrineBundle\Tests\Repository\Fixtures\StubRepository;
+use Doctrine\Bundle\DoctrineBundle\Tests\Repository\Fixtures\StubServiceRepository;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\Persistence\ObjectRepository;
+use Doctrine\ORM\Repository\RepositoryFactory;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 use RuntimeException;
 use stdClass;
 use Symfony\Component\DependencyInjection\Container;
@@ -30,7 +32,7 @@ class ContainerRepositoryFactoryTest extends TestCase
     public function testGetRepositoryReturnsService(): void
     {
         $em        = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
-        $repo      = new StubRepository();
+        $repo      = new StubRepository($em, new ClassMetadata('Foo\CoolEntity'));
         $container = $this->createContainer(['my_repo' => $repo]);
 
         $factory = new ContainerRepositoryFactory($container);
@@ -73,15 +75,18 @@ class ContainerRepositoryFactoryTest extends TestCase
 
         $factory = new ContainerRepositoryFactory($container);
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage(<<<'EXCEPTION'
-The service "my_repo" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository).
-EXCEPTION);
+        if ((new ReflectionMethod(RepositoryFactory::class, 'getRepository'))->hasReturnType()) {
+            $this->expectExceptionMessage('The service "my_repo" must extend EntityRepository (e.g. by extending ServiceEntityRepository), "stdClass" given.');
+        } else {
+            $this->expectExceptionMessage('The service "my_repo" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository), "stdClass" given.');
+        }
+
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
     public function testServiceRepositoriesCanNotExtendsEntityRepository(): void
     {
-        $repo = $this->getMockBuilder(ObjectRepository::class)->getMock();
+        $repo = $this->createStub(EntityRepository::class);
 
         $container = $this->createContainer(['my_repo' => $repo]);
 
@@ -104,7 +109,7 @@ EXCEPTION);
         $factory = new ContainerRepositoryFactory($container);
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(<<<'EXCEPTION'
-The "Doctrine\Bundle\DoctrineBundle\Tests\Repository\StubServiceRepository" entity repository implements "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
+The "Doctrine\Bundle\DoctrineBundle\Tests\Repository\Fixtures\StubServiceRepository" entity repository implements "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
 EXCEPTION);
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
@@ -159,56 +164,4 @@ EXCEPTION);
 
         return $em;
     }
-}
-
-/**
- * Repository implementing non-deprecated interface, as current interface implemented in ORM\EntityRepository
- * uses deprecated one and Composer autoload triggers deprecations that can't be silenced by @group legacy
- */
-class NonDeprecatedRepository implements ObjectRepository
-{
-    /**
-     * {@inheritDoc}
-     */
-    public function find($id)
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function findAll(): array
-    {
-        return [];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
-    {
-        return [];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function findOneBy(array $criteria)
-    {
-        return null;
-    }
-
-    public function getClassName(): string
-    {
-        return stdClass::class;
-    }
-}
-
-class StubRepository extends NonDeprecatedRepository
-{
-}
-
-class StubServiceRepository extends NonDeprecatedRepository implements ServiceEntityRepositoryInterface
-{
 }

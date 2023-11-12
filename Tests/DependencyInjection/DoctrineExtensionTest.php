@@ -37,7 +37,6 @@ use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use ReflectionMethod;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -58,6 +57,7 @@ use function class_exists;
 use function in_array;
 use function interface_exists;
 use function is_dir;
+use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 
@@ -483,17 +483,16 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('localhost', $args[0]['host']);
         $this->assertEquals('root', $args[0]['user']);
         $this->assertEquals('doctrine.dbal.default_connection.configuration', (string) $args[1]);
-        $this->assertEquals('doctrine.dbal.default_connection.event_manager', (string) $args[2]);
+        if (method_exists(Connection::class, 'getEventManager')) {
+            $this->assertEquals('doctrine.dbal.default_connection.event_manager', (string) $args[2]);
+        }
+
         $this->assertCount(0, $definition->getMethodCalls());
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
 
-        if (! (new ReflectionMethod(EntityManager::class, '__construct'))->isPublic()) {
-            $this->assertSame(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertNull($definition->getFactory());
-        }
+        $this->assertNull($definition->getFactory());
 
         $this->assertEquals(['default' => 'doctrine.orm.default_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');

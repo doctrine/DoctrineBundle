@@ -3,22 +3,59 @@
 namespace Doctrine\Bundle\DoctrineBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
-use LogicException;
 use Symfony\Component\VarExporter\LazyGhostTrait;
 
-use function sprintf;
+use function property_exists;
 use function trait_exists;
 
-if (trait_exists(LazyGhostTrait::class)) {
-    /**
-     * @template T of object
-     * @template-extends LazyServiceEntityRepository<T>
-     */
-    class ServiceEntityRepository extends LazyServiceEntityRepository
-    {
+if (property_exists(EntityRepository::class, '_entityName')) {
+    if (trait_exists(LazyGhostTrait::class)) {
+        // ORM 2 with VarExporter
+        /**
+         * Optional EntityRepository base class with a simplified constructor (for autowiring).
+         *
+         * To use in your class, inject the "registry" service and call
+         * the parent constructor. For example:
+         *
+         * class YourEntityRepository extends ServiceEntityRepository
+         * {
+         *     public function __construct(ManagerRegistry $registry)
+         *     {
+         *         parent::__construct($registry, YourEntity::class);
+         *     }
+         * }
+         *
+         * @template T of object
+         * @template-extends LazyServiceEntityRepository<T>
+         */
+        class ServiceEntityRepository extends LazyServiceEntityRepository
+        {
+        }
+    } else {
+        // ORM 2 without VarExporter
+        /**
+         * Optional EntityRepository base class with a simplified constructor (for autowiring).
+         *
+         * To use in your class, inject the "registry" service and call
+         * the parent constructor. For example:
+         *
+         * class YourEntityRepository extends ServiceEntityRepository
+         * {
+         *     public function __construct(ManagerRegistry $registry)
+         *     {
+         *         parent::__construct($registry, YourEntity::class);
+         *     }
+         * }
+         *
+         * @template T of object
+         * @template-extends LegacyServiceEntityRepository<T>
+         */
+        class ServiceEntityRepository extends LegacyServiceEntityRepository
+        {
+        }
     }
 } else {
+    // ORM 3
     /**
      * Optional EntityRepository base class with a simplified constructor (for autowiring).
      *
@@ -34,26 +71,9 @@ if (trait_exists(LazyGhostTrait::class)) {
      * }
      *
      * @template T of object
-     * @template-extends EntityRepository<T>
+     * @template-extends ServiceEntityRepositoryProxy<T>
      */
-    class ServiceEntityRepository extends EntityRepository implements ServiceEntityRepositoryInterface
+    class ServiceEntityRepository extends ServiceEntityRepositoryProxy
     {
-        /**
-         * @param string $entityClass The class name of the entity this repository manages
-         * @psalm-param class-string<T> $entityClass
-         */
-        public function __construct(ManagerRegistry $registry, string $entityClass)
-        {
-            $manager = $registry->getManagerForClass($entityClass);
-
-            if ($manager === null) {
-                throw new LogicException(sprintf(
-                    'Could not find the entity manager for class "%s". Check your Doctrine configuration to make sure it is configured to load this entity’s metadata.',
-                    $entityClass,
-                ));
-            }
-
-            parent::__construct($manager, $manager->getClassMetadata($entityClass));
-        }
     }
 }

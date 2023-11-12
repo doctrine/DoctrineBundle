@@ -2,7 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Mapping;
 
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\ClassMetadata as OrmClassMetadata;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\Mapping\Driver\MappingDriver as MappingDriverInterface;
 use Psr\Container\ContainerInterface;
@@ -42,8 +42,8 @@ class MappingDriver implements MappingDriverInterface
         $this->driver->loadMetadataForClass($className, $metadata);
 
         if (
-            ! $metadata instanceof ClassMetadataInfo
-            || $metadata->generatorType !== ClassMetadataInfo::GENERATOR_TYPE_CUSTOM
+            ! $metadata instanceof OrmClassMetadata
+            || $metadata->generatorType !== OrmClassMetadata::GENERATOR_TYPE_CUSTOM
             || ! isset($metadata->customGeneratorDefinition['class'])
             || ! $this->idGeneratorLocator->has($metadata->customGeneratorDefinition['class'])
         ) {
@@ -52,7 +52,7 @@ class MappingDriver implements MappingDriverInterface
 
         $idGenerator = $this->idGeneratorLocator->get($metadata->customGeneratorDefinition['class']);
         $metadata->setCustomGeneratorDefinition(['instance' => $idGenerator] + $metadata->customGeneratorDefinition);
-        $metadata->setIdGeneratorType(ClassMetadataInfo::GENERATOR_TYPE_NONE);
+        $metadata->setIdGeneratorType(OrmClassMetadata::GENERATOR_TYPE_NONE);
     }
 
     /**

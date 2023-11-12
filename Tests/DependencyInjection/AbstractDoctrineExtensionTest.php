@@ -10,17 +10,20 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaF
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
+use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
+use Doctrine\ORM\Proxy\ProxyFactory;
 use Generator;
 use InvalidArgumentException;
+use LogicException;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use ReflectionMethod;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -333,18 +336,15 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'defaultTableOptions' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
-            new Reference('doctrine.dbal.default_connection.event_manager'),
+            method_exists(Connection::class, 'getEventManager')
+                ? new Reference('doctrine.dbal.default_connection.event_manager')
+                : null,
             [],
         ]);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
-
-        if (! (new ReflectionMethod(EntityManager::class, '__construct'))->isPublic()) {
-            $this->assertSame(['%doctrine.orm.entity_manager.class%', 'create'], $definition->getFactory());
-        } else {
-            $this->assertNull($definition->getFactory());
-        }
+        $this->assertNull($definition->getFactory());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -378,7 +378,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'defaultTableOptions' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
-            new Reference('doctrine.dbal.default_connection.event_manager'),
+            method_exists(Connection::class, 'getEventManager')
+                ? new Reference('doctrine.dbal.default_connection.event_manager')
+                : null,
             [],
         ]);
 
@@ -415,7 +417,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'defaultTableOptions' => [],
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
-            new Reference('doctrine.dbal.default_connection.event_manager'),
+            method_exists(Connection::class, 'getEventManager')
+                ? new Reference('doctrine.dbal.default_connection.event_manager')
+                : null,
             [],
         ]);
 
@@ -447,7 +451,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('localhost', $args[0]['host']);
         $this->assertEquals('sqlite_user', $args[0]['user']);
         $this->assertEquals('doctrine.dbal.conn1_connection.configuration', (string) $args[1]);
-        $this->assertEquals('doctrine.dbal.conn1_connection.event_manager', (string) $args[2]);
+        if (method_exists(Connection::class, 'getEventManager')) {
+            $this->assertEquals('doctrine.dbal.conn1_connection.event_manager', (string) $args[2]);
+        }
 
         $this->assertEquals('doctrine.orm.em2_entity_manager', (string) $container->getAlias('doctrine.orm.entity_manager'));
 
@@ -467,7 +473,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('localhost', $args[0]['host']);
         $this->assertEquals('sqlite_user', $args[0]['user']);
         $this->assertEquals('doctrine.dbal.conn2_connection.configuration', (string) $args[1]);
-        $this->assertEquals('doctrine.dbal.conn2_connection.event_manager', (string) $args[2]);
+        if (method_exists(Connection::class, 'getEventManager')) {
+            $this->assertEquals('doctrine.dbal.conn2_connection.event_manager', (string) $args[2]);
+        }
 
         $definition = $container->getDefinition('doctrine.orm.em2_entity_manager');
         $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
@@ -773,41 +781,43 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             'cacheGetter' => 'getMetadataCache',
         ];
 
-        yield 'query_cache_pool' => [
-            'expectedClass' => DoctrineProvider::class,
-            'entityManagerName' => 'query_cache_pool',
-            'cacheGetter' => 'getQueryCacheImpl',
-        ];
+        if (method_exists(OrmConfiguration::class, 'getQueryCacheImpl')) {
+            yield 'query_cache_pool' => [
+                'expectedClass' => DoctrineProvider::class,
+                'entityManagerName' => 'query_cache_pool',
+                'cacheGetter' => 'getQueryCacheImpl',
+            ];
 
-        yield 'query_cache_service_psr6' => [
-            'expectedClass' => DoctrineProvider::class,
-            'entityManagerName' => 'query_cache_service_psr6',
-            'cacheGetter' => 'getQueryCacheImpl',
-        ];
+            yield 'query_cache_service_psr6' => [
+                'expectedClass' => DoctrineProvider::class,
+                'entityManagerName' => 'query_cache_service_psr6',
+                'cacheGetter' => 'getQueryCacheImpl',
+            ];
 
-        yield 'query_cache_service_doctrine' => [
-            'expectedClass' => DoctrineProvider::class,
-            'entityManagerName' => 'query_cache_service_doctrine',
-            'cacheGetter' => 'getQueryCacheImpl',
-        ];
+            yield 'query_cache_service_doctrine' => [
+                'expectedClass' => DoctrineProvider::class,
+                'entityManagerName' => 'query_cache_service_doctrine',
+                'cacheGetter' => 'getQueryCacheImpl',
+            ];
 
-        yield 'result_cache_pool' => [
-            'expectedClass' => DoctrineProvider::class,
-            'entityManagerName' => 'result_cache_pool',
-            'cacheGetter' => 'getResultCacheImpl',
-        ];
+            yield 'result_cache_pool' => [
+                'expectedClass' => DoctrineProvider::class,
+                'entityManagerName' => 'result_cache_pool',
+                'cacheGetter' => 'getResultCacheImpl',
+            ];
 
-        yield 'result_cache_service_psr6' => [
-            'expectedClass' => DoctrineProvider::class,
-            'entityManagerName' => 'result_cache_service_psr6',
-            'cacheGetter' => 'getResultCacheImpl',
-        ];
+            yield 'result_cache_service_psr6' => [
+                'expectedClass' => DoctrineProvider::class,
+                'entityManagerName' => 'result_cache_service_psr6',
+                'cacheGetter' => 'getResultCacheImpl',
+            ];
 
-        yield 'result_cache_service_doctrine' => [
-            'expectedClass' => DoctrineProvider::class,
-            'entityManagerName' => 'result_cache_service_doctrine',
-            'cacheGetter' => 'getResultCacheImpl',
-        ];
+            yield 'result_cache_service_doctrine' => [
+                'expectedClass' => DoctrineProvider::class,
+                'entityManagerName' => 'result_cache_service_doctrine',
+                'cacheGetter' => 'getResultCacheImpl',
+            ];
+        }
 
         yield 'second_level_cache_pool' => [
             'expectedClass' => null,
@@ -945,6 +955,21 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $entityManager = $container->get('doctrine.orm.entity_manager');
         assert($entityManager instanceof EntityManagerInterface);
         $this->assertCount(2, $entityManager->getFilters()->getEnabledFilters());
+    }
+
+    public function testDisablingLazyGhostOnOrm3Throws(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        if (method_exists(ProxyFactory::class, 'resetUninitializedProxy')) {
+            self::markTestSkipped('This test requires ORM 3.');
+        }
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Lazy ghost objects cannot be disabled for ORM 3.');
+        $this->loadContainer('orm_no_lazy_ghost');
     }
 
     public function testResolveTargetEntity(): void
