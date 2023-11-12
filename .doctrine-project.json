@@ -13,7 +13,7 @@
       "name": "2.11",
       "branchName": "2.11.x",
       "slug": "2.11",
-      "aliases": ["current", "stable"]
+      "current": true
     },
     {
       "name": "2.10",
