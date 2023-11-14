@@ -5,10 +5,12 @@ namespace Doctrine\Bundle\DoctrineBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
-use Symfony\Component\VarExporter\LazyGhostTrait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 
+use function debug_backtrace;
 use function sprintf;
+
+use const DEBUG_BACKTRACE_IGNORE_ARGS;
 
 /**
  * @internal Extend {@see ServiceEntityRepository} instead.
@@ -18,9 +20,8 @@ use function sprintf;
  */
 class LazyServiceEntityRepository extends EntityRepository implements ServiceEntityRepositoryInterface
 {
-    use LazyGhostTrait {
-        createLazyGhost as private;
-    }
+    private ManagerRegistry $registry;
+    private string $entityClass;
 
     /**
      * @param string $entityClass The class name of the entity this repository manages
@@ -28,31 +29,54 @@ class LazyServiceEntityRepository extends EntityRepository implements ServiceEnt
      */
     public function __construct(ManagerRegistry $registry, string $entityClass)
     {
-        $initializer = function ($instance, $property) use ($registry, $entityClass) {
-            $manager = $registry->getManagerForClass($entityClass);
-
-            if ($manager === null) {
-                throw new LogicException(sprintf(
-                    'Could not find the entity manager for class "%s". Check your Doctrine configuration to make sure it is configured to load this entity’s metadata.',
-                    $entityClass,
-                ));
-            }
-
-            parent::__construct($manager, $manager->getClassMetadata($entityClass));
-
-            return $this->$property;
-        };
+        $this->registry    = $registry;
+        $this->entityClass = $entityClass;
 
         if ($this instanceof LazyObjectInterface) {
-            $initializer($this, '_entityName');
+            $this->initialize();
 
             return;
         }
 
-        self::createLazyGhost([
-            "\0*\0_em" => $initializer,
-            "\0*\0_class" => $initializer,
-            "\0*\0_entityName" => $initializer,
-        ], null, $this);
+        unset($this->_em);
+        unset($this->_class);
+        unset($this->_entityName);
+    }
+
+    /** @return mixed */
+    public function __get(string $name)
+    {
+        $this->initialize();
+
+        $scope = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class'] ?? null;
+
+        return (function () use ($name) {
+            return $this->$name;
+        })->bindTo($this, $scope)();
+    }
+
+    public function __isset(string $name): bool
+    {
+        $this->initialize();
+
+        $scope = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class'] ?? null;
+
+        return (function () use ($name) {
+            return isset($this->$name);
+        })->bindTo($this, $scope)();
+    }
+
+    private function initialize(): void
+    {
+        $manager = $this->registry->getManagerForClass($this->entityClass);
+
+        if ($manager === null) {
+            throw new LogicException(sprintf(
+                'Could not find the entity manager for class "%s". Check your Doctrine configuration to make sure it is configured to load this entity’s metadata.',
+                $this->entityClass,
+            ));
+        }
+
+        parent::__construct($manager, $manager->getClassMetadata($this->entityClass));
     }
 }
