@@ -6,6 +6,7 @@ use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
+use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Proxy\ProxyFactory;
 use InvalidArgumentException;
 use ReflectionClass;
@@ -661,7 +662,14 @@ class Configuration implements ConfigurationInterface
                     ->arrayNode('schema_ignore_classes')
                         ->prototype('scalar')->end()
                     ->end()
-                    ->scalarNode('report_fields_where_declared')->defaultFalse()->info('Set to "true" to opt-in to the new mapping driver mode that was added in Doctrine ORM 2.16 and will be mandatory in ORM 3.0. See https://github.com/doctrine/orm/pull/10455.')->end()
+                    ->booleanNode('report_fields_where_declared')
+                        ->defaultValue(! class_exists(AnnotationDriver::class))
+                        ->info('Set to "true" to opt-in to the new mapping driver mode that was added in Doctrine ORM 2.16 and will be mandatory in ORM 3.0. See https://github.com/doctrine/orm/pull/10455.')
+                        ->validate()
+                            ->ifTrue(static fn (bool $v): bool => ! class_exists(AnnotationDriver::class) && ! $v)
+                            ->thenInvalid('The setting "report_fields_where_declared" cannot be disabled for ORM 3.')
+                        ->end()
+                    ->end()
                     ->booleanNode('validate_xml_mapping')->defaultFalse()->info('Set to "true" to opt-in to the new mapping driver mode that was added in Doctrine ORM 2.14 and will be mandatory in ORM 3.0. See https://github.com/doctrine/orm/pull/6728.')->end()
                 ->end()
                 ->children()
