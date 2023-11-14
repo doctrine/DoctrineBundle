@@ -97,6 +97,7 @@ class DoctrineBundle extends Bundle
 
         if ($this->container->getParameter('doctrine.orm.auto_generate_proxy_classes')) {
             // See https://github.com/symfony/symfony/pull/3419 for usage of references
+            /** @psalm-suppress UnsupportedPropertyReferenceUsage */
             $container = &$this->container;
 
             $proxyGenerator = static function ($proxyDir, $proxyNamespace, $class) use (&$container): void {

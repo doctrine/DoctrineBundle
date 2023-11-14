@@ -308,7 +308,7 @@ class DoctrineExtensionTest extends TestCase
      *
      * @dataProvider getAutomappingConfigurations
      */
-    public function testAutomapping(array $entityManagers): void
+    public static function testAutomapping(array $entityManagers): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -316,7 +316,7 @@ class DoctrineExtensionTest extends TestCase
 
         $extension = new DoctrineExtension();
 
-        $container = $this->getContainer([
+        $container = self::getContainer([
             'YamlBundle',
             'XmlBundle',
             'NewXmlBundle',
@@ -342,7 +342,7 @@ class DoctrineExtensionTest extends TestCase
         $configEm2 = $container->getDefinition('doctrine.orm.em2_configuration');
         $configEm3 = $container->getDefinition('doctrine.orm.em3_configuration');
 
-        $this->assertContains(
+        self::assertContains(
             [
                 'setEntityNamespaces',
                 [
@@ -352,7 +352,7 @@ class DoctrineExtensionTest extends TestCase
             $configEm1->getMethodCalls(),
         );
 
-        $this->assertContains(
+        self::assertContains(
             [
                 'setEntityNamespaces',
                 [
@@ -362,7 +362,7 @@ class DoctrineExtensionTest extends TestCase
             $configEm2->getMethodCalls(),
         );
 
-        $this->assertContains(
+        self::assertContains(
             [
                 'setEntityNamespaces',
                 [
@@ -1095,11 +1095,11 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /**
-     * @param array{pool?: string, type: ?string} $cacheConfig
+     * @param array{pool?: string, type: ?string, id?: string} $cacheConfig
      *
      * @dataProvider cacheConfigurationProvider
      */
-    public function testCacheConfiguration(string $expectedAliasName, string $expectedTarget, string $cacheName, $cacheConfig): void
+    public function testCacheConfiguration(string $expectedAliasName, string $expectedTarget, string $cacheName, array $cacheConfig): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -1121,7 +1121,7 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /**
-     * @param array{pool?: string, type: ?string} $cacheConfig
+     * @param array{type: ?string, pool?: string, id?: string} $cacheConfig
      *
      * @dataProvider legacyCacheConfigurationProvider
      * @group legacy
@@ -1131,7 +1131,7 @@ class DoctrineExtensionTest extends TestCase
         $this->testCacheConfiguration($expectedAliasName, $expectedAliasTarget, $cacheName, $cacheConfig);
     }
 
-    /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
+    /** @return array<string, array{expectedAliasName: string, expectedAliasTarget: string, cacheName: string, cacheConfig: array{type: ?string, pool?: string, id?: string}}> */
     public static function legacyCacheConfigurationProvider(): array
     {
         return [
@@ -1168,7 +1168,7 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
+    /** @return array<string, array<string, string|array{type: ?string, pool?: string, id?: string}>> */
     public static function cacheConfigurationProvider(): array
     {
         return [
@@ -1471,7 +1471,7 @@ class DoctrineExtensionTest extends TestCase
     // phpcs:enable
 
     /** @param list<string> $bundles */
-    private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
+    private static function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
     {
         $map         = [];
         $metadataMap = [];

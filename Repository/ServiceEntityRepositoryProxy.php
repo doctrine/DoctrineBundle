@@ -107,6 +107,7 @@ class ServiceEntityRepositoryProxy extends EntityRepository implements ServiceEn
 
     private function resolveRepository(): EntityRepository
     {
+        /** @psalm-suppress UndefinedThisPropertyFetch We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
         $manager = $this->registry->getManagerForClass($this->entityClass);
 
         if ($manager === null) {

@@ -3,6 +3,8 @@
     errorLevel="4"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="false"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 >
     <plugins>
@@ -16,8 +18,10 @@
             <file name="Command/ImportMappingDoctrineCommand.php"/>
             <file name="Command/Proxy/OrmProxyCommand.php"/>
             <file name="DependencyInjection/Compiler/WellKnownSchemaFilterPass.php"/>
-            <!-- We need Psalm 5 to analyze this file -->
+            <!-- We need to run Psalm under >= PHP 8.1 to analyze this file due to intersection types (ParseError) -->
             <file name="Repository/ServiceEntityRepositoryProxy.php"/>
+            <!-- Psalm crashes on this file if we attempt to suppress UndefinedClass for LazyObjectInterface -->
+            <file name="Repository/LazyServiceEntityRepository.php"/>
         </ignoreFiles>
         <directory name="CacheWarmer"/>
         <directory name="Command"/>
@@ -53,7 +57,7 @@
                 <!-- We use the "Foo" namespace in unit tests. We are aware that those classes don't exist. -->
                 <referencedClass name="Foo\*"/>
                 <referencedClass name="Symfony\Bridge\Doctrine\Attribute\MapEntity"/>
-                <referencedClass name="Symfony\Component\VarExporter\LazyGhostTrait"/>
+                <!-- Since Symfony 6.2 -->
                 <referencedClass name="Symfony\Component\VarExporter\LazyObjectInterface"/>
             </errorLevel>
         </UndefinedClass>
@@ -78,5 +82,11 @@
                 <file name="Repository/ServiceEntityRepository.php"/>
             </errorLevel>
         </DuplicateClass>
+        <UndefinedMethod>
+            <errorLevel type="suppress">
+                <!-- Too tricky to configure very nested configuration in a way Psalm understands -->
+                <file name="DependencyInjection/Configuration.php" />
+            </errorLevel>
+        </UndefinedMethod>
     </issueHandlers>
 </psalm>

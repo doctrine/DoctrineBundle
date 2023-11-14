@@ -68,9 +68,4 @@ class DbalTestKernel extends Kernel
     {
         return $this->projectDir ??= sys_get_temp_dir() . '/sf_kernel_' . md5((string) mt_rand());
     }
-
-    public function getRootDir(): string
-    {
-        return $this->getProjectDir();
-    }
 }

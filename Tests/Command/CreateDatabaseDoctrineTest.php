@@ -86,7 +86,7 @@ class CreateDatabaseDoctrineTest extends TestCase
             ->willReturn($mockConnection);
 
         $mockContainer = $this->getMockBuilder(Container::class)
-            ->setMethods(['get'])
+            ->onlyMethods(['get'])
             ->getMock();
 
         $mockContainer->expects($this->any())
