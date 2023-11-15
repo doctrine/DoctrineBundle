@@ -17,6 +17,7 @@ use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Proxy\ProxyFactory;
 use Generator;
@@ -28,6 +29,7 @@ use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListen
 use Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -568,7 +570,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                     __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity',
                 ],
             ),
-            false,
+            ! class_exists(AnnotationDriver::class),
         ]);
 
         $ymlDef = $container->getDefinition('doctrine.orm.default_yml_metadata_driver');
@@ -627,7 +629,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 [
                     __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
                 ],
-                false,
+                ! class_exists(AnnotationDriver::class),
             ]);
         }
 
@@ -970,6 +972,21 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Lazy ghost objects cannot be disabled for ORM 3.');
         $this->loadContainer('orm_no_lazy_ghost');
+    }
+
+    public function testDisablingReportFieldsWhereDeclaredOnOrm3Throws(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        if (class_exists(AnnotationDriver::class)) {
+            self::markTestSkipped('This test requires ORM 3.');
+        }
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Invalid configuration for path "doctrine.orm.entity_managers.default.report_fields_where_declared": The setting "report_fields_where_declared" cannot be disabled for ORM 3.');
+        $this->loadContainer('orm_no_report_fields');
     }
 
     public function testResolveTargetEntity(): void
