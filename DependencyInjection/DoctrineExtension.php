@@ -549,7 +549,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if ($config['enable_lazy_ghost_objects'] ?? false) {
             // available in Symfony 6.2 and higher
-            /** @psalm-suppress UndefinedClass */
             if (! trait_exists(LazyGhostTrait::class)) {
                 throw new LogicException(
                     'Lazy ghost objects cannot be enabled because the "symfony/var-exporter" library'

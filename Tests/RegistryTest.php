@@ -155,9 +155,7 @@ class RegistryTest extends TestCase
             self::markTestSkipped('This test requires ORM and VarExporter 6.2+');
         }
 
-        /** @psalm-suppress MissingDependency https://github.com/vimeo/psalm/issues/8258 */
         $ghostManager = $this->createMock(LazyObjectEntityManagerInterface::class);
-        /** @psalm-suppress MissingDependency https://github.com/vimeo/psalm/issues/8258 */
         $ghostManager->expects($this->once())->method('resetLazyObject')->willReturn(true);
 
         $container = new Container();

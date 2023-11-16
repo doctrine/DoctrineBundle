@@ -1229,8 +1229,7 @@ class DoctrineExtensionTest extends TestCase
 
         $reflector  = new ReflectionClass(Php8EntityListener::class);
         $definition = new ChildDefinition('');
-        /** @psalm-suppress UndefinedMethod */
-        $attribute = $reflector->getAttributes(AsEntityListener::class)[0]->newInstance();
+        $attribute  = $reflector->getAttributes(AsEntityListener::class)[0]->newInstance();
 
         $attributes[AsEntityListener::class]($definition, $attribute);
 
@@ -1267,8 +1266,7 @@ class DoctrineExtensionTest extends TestCase
 
         $reflector  = new ReflectionClass(Php8EventListener::class);
         $definition = new ChildDefinition('');
-        /** @psalm-suppress UndefinedMethod */
-        $attribute = $reflector->getAttributes(AsDoctrineListener::class)[0]->newInstance();
+        $attribute  = $reflector->getAttributes(AsDoctrineListener::class)[0]->newInstance();
 
         $attributes[AsDoctrineListener::class]($definition, $attribute);
 
