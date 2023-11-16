@@ -181,7 +181,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $connections = [];
 
         foreach (array_keys($config['connections']) as $name) {
-            /** @psalm-suppress InvalidArrayOffset */
+            /** @psalm-suppress InvalidArrayOffset https://github.com/vimeo/psalm/issues/10382 */
             $connections[$name] = sprintf('doctrine.dbal.%s_connection', $name);
         }
 

@@ -363,10 +363,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $container = $this->loadContainer('orm_service_simple_single_entity_manager_without_dbname');
 
-        $definition = $container->getDefinition('doctrine.dbal.default_connection');
-        assert($definition instanceof Definition);
-
-        $this->assertDICConstructorArguments($definition, [
+        $this->assertDICConstructorArguments($container->getDefinition('doctrine.dbal.default_connection'), [
             [
                 'host' => 'localhost',
                 'port' => null,

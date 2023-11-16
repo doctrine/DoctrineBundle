@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <psalm
     errorLevel="4"
+    phpVersion="8.2"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     findUnusedBaselineEntry="true"
@@ -18,10 +19,6 @@
             <file name="Command/ImportMappingDoctrineCommand.php"/>
             <file name="Command/Proxy/OrmProxyCommand.php"/>
             <file name="DependencyInjection/Compiler/WellKnownSchemaFilterPass.php"/>
-            <!-- We need to run Psalm under >= PHP 8.1 to analyze this file due to intersection types (ParseError) -->
-            <file name="Repository/ServiceEntityRepositoryProxy.php"/>
-            <!-- Psalm crashes on this file if we attempt to suppress UndefinedClass for LazyObjectInterface -->
-            <file name="Repository/LazyServiceEntityRepository.php"/>
         </ignoreFiles>
         <directory name="CacheWarmer"/>
         <directory name="Command"/>
@@ -40,12 +37,6 @@
         <file name="Registry.php"/>
     </projectFiles>
     <issueHandlers>
-        <InvalidArrayOffset>
-            <errorLevel type="suppress">
-                <!-- requires a release of https://github.com/doctrine/dbal/pull/5261 -->
-                <file name="Tests/ConnectionFactoryTest.php"/>
-            </errorLevel>
-        </InvalidArrayOffset>
         <RedundantPropertyInitializationCheck>
             <errorLevel type="suppress">
                 <!-- Properties can be uninitialized in tests if setUp() fails. -->
@@ -56,25 +47,8 @@
             <errorLevel type="suppress">
                 <!-- We use the "Foo" namespace in unit tests. We are aware that those classes don't exist. -->
                 <referencedClass name="Foo\*"/>
-                <referencedClass name="Symfony\Bridge\Doctrine\Attribute\MapEntity"/>
-                <!-- Since Symfony 6.2 -->
-                <referencedClass name="Symfony\Component\VarExporter\LazyObjectInterface"/>
             </errorLevel>
         </UndefinedClass>
-        <UndefinedDocblockClass>
-            <errorLevel type="suppress">
-                <!-- https://github.com/symfony/symfony/issues/45609 -->
-                <referencedClass name="UnitEnum" />
-                <directory name="DependencyInjection"/>
-                <directory name="Tests/DependencyInjection"/>
-            </errorLevel>
-        </UndefinedDocblockClass>
-        <UndefinedTrait>
-            <errorLevel type="suppress">
-                <!-- Consumer is meant to check if trait exists before using this class -->
-                <file name="Repository/LazyServiceEntityRepository.php"/>
-            </errorLevel>
-        </UndefinedTrait>
         <DuplicateClass>
             <errorLevel type="suppress">
                 <!-- Conditional class definition-->

@@ -102,6 +102,8 @@ class CacheSchemaSubscriberTest extends TestCase
 
         /**
          * available in Symfony 5.1 and up to Symfony 5.4 (deprecated)
+         *
+         * @psalm-suppress UndefinedClass
          */
         yield ['cache.adapter.pdo', 'doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber', PdoCacheAdapterDoctrineSchemaSubscriber::class];
     }

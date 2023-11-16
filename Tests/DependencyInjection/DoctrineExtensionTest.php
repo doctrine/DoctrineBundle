@@ -1001,16 +1001,12 @@ class DoctrineExtensionTest extends TestCase
             ->build();
         $extension->load([$config], $container);
 
-        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_transaction'));
-        $this->assertCount(1, $middlewarePrototype->getArguments());
-        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_ping_connection'));
-        $this->assertCount(1, $middlewarePrototype->getArguments());
-        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_close_connection'));
-        $this->assertCount(1, $middlewarePrototype->getArguments());
+        $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_transaction')->getArguments());
+        $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_ping_connection')->getArguments());
+        $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_close_connection')->getArguments());
 
         if (class_exists(DoctrineClearEntityManagerWorkerSubscriber::class)) {
-            $this->assertNotNull($subscriber = $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager'));
-            $this->assertCount(1, $subscriber->getArguments());
+            $this->assertCount(1, $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager')->getArguments());
         } else {
             $this->assertFalse($container->hasDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager'));
         }
