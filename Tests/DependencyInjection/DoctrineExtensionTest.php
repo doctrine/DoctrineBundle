@@ -308,7 +308,7 @@ class DoctrineExtensionTest extends TestCase
      *
      * @dataProvider getAutomappingConfigurations
      */
-    public function testAutomapping(array $entityManagers): void
+    public static function testAutomapping(array $entityManagers): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -316,7 +316,7 @@ class DoctrineExtensionTest extends TestCase
 
         $extension = new DoctrineExtension();
 
-        $container = $this->getContainer([
+        $container = self::getContainer([
             'YamlBundle',
             'XmlBundle',
             'NewXmlBundle',
@@ -342,7 +342,7 @@ class DoctrineExtensionTest extends TestCase
         $configEm2 = $container->getDefinition('doctrine.orm.em2_configuration');
         $configEm3 = $container->getDefinition('doctrine.orm.em3_configuration');
 
-        $this->assertContains(
+        self::assertContains(
             [
                 'setEntityNamespaces',
                 [
@@ -352,7 +352,7 @@ class DoctrineExtensionTest extends TestCase
             $configEm1->getMethodCalls(),
         );
 
-        $this->assertContains(
+        self::assertContains(
             [
                 'setEntityNamespaces',
                 [
@@ -362,7 +362,7 @@ class DoctrineExtensionTest extends TestCase
             $configEm2->getMethodCalls(),
         );
 
-        $this->assertContains(
+        self::assertContains(
             [
                 'setEntityNamespaces',
                 [
@@ -1001,16 +1001,12 @@ class DoctrineExtensionTest extends TestCase
             ->build();
         $extension->load([$config], $container);
 
-        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_transaction'));
-        $this->assertCount(1, $middlewarePrototype->getArguments());
-        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_ping_connection'));
-        $this->assertCount(1, $middlewarePrototype->getArguments());
-        $this->assertNotNull($middlewarePrototype = $container->getDefinition('messenger.middleware.doctrine_close_connection'));
-        $this->assertCount(1, $middlewarePrototype->getArguments());
+        $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_transaction')->getArguments());
+        $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_ping_connection')->getArguments());
+        $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_close_connection')->getArguments());
 
         if (class_exists(DoctrineClearEntityManagerWorkerSubscriber::class)) {
-            $this->assertNotNull($subscriber = $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager'));
-            $this->assertCount(1, $subscriber->getArguments());
+            $this->assertCount(1, $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager')->getArguments());
         } else {
             $this->assertFalse($container->hasDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager'));
         }
@@ -1095,11 +1091,11 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /**
-     * @param array{pool?: string, type: ?string} $cacheConfig
+     * @param array{pool?: string, type: ?string, id?: string} $cacheConfig
      *
      * @dataProvider cacheConfigurationProvider
      */
-    public function testCacheConfiguration(string $expectedAliasName, string $expectedTarget, string $cacheName, $cacheConfig): void
+    public function testCacheConfiguration(string $expectedAliasName, string $expectedTarget, string $cacheName, array $cacheConfig): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -1121,7 +1117,7 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /**
-     * @param array{pool?: string, type: ?string} $cacheConfig
+     * @param array{type: ?string, pool?: string, id?: string} $cacheConfig
      *
      * @dataProvider legacyCacheConfigurationProvider
      * @group legacy
@@ -1131,7 +1127,7 @@ class DoctrineExtensionTest extends TestCase
         $this->testCacheConfiguration($expectedAliasName, $expectedAliasTarget, $cacheName, $cacheConfig);
     }
 
-    /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
+    /** @return array<string, array{expectedAliasName: string, expectedAliasTarget: string, cacheName: string, cacheConfig: array{type: ?string, pool?: string, id?: string}}> */
     public static function legacyCacheConfigurationProvider(): array
     {
         return [
@@ -1168,7 +1164,7 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    /** @return array<string, array<string, string|array{type: ?string, pool?: string}>> */
+    /** @return array<string, array<string, string|array{type: ?string, pool?: string, id?: string}>> */
     public static function cacheConfigurationProvider(): array
     {
         return [
@@ -1233,8 +1229,7 @@ class DoctrineExtensionTest extends TestCase
 
         $reflector  = new ReflectionClass(Php8EntityListener::class);
         $definition = new ChildDefinition('');
-        /** @psalm-suppress UndefinedMethod */
-        $attribute = $reflector->getAttributes(AsEntityListener::class)[0]->newInstance();
+        $attribute  = $reflector->getAttributes(AsEntityListener::class)[0]->newInstance();
 
         $attributes[AsEntityListener::class]($definition, $attribute);
 
@@ -1271,8 +1266,7 @@ class DoctrineExtensionTest extends TestCase
 
         $reflector  = new ReflectionClass(Php8EventListener::class);
         $definition = new ChildDefinition('');
-        /** @psalm-suppress UndefinedMethod */
-        $attribute = $reflector->getAttributes(AsDoctrineListener::class)[0]->newInstance();
+        $attribute  = $reflector->getAttributes(AsDoctrineListener::class)[0]->newInstance();
 
         $attributes[AsDoctrineListener::class]($definition, $attribute);
 
@@ -1471,7 +1465,7 @@ class DoctrineExtensionTest extends TestCase
     // phpcs:enable
 
     /** @param list<string> $bundles */
-    private function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
+    private static function getContainer(array $bundles = ['YamlBundle'], string $vendor = ''): ContainerBuilder
     {
         $map         = [];
         $metadataMap = [];

@@ -117,10 +117,12 @@ class DisconnectedMetadataFactory
             $ns   = $r->getNamespaceName();
         } elseif ($path) {
             // Get namespace by removing the last component of the FQCN
+            /** @psalm-suppress NoValue */
             $nsParts = explode('\\', $all[0]->name);
             array_pop($nsParts);
             $ns = implode('\\', $nsParts);
         } else {
+            /** @psalm-suppress NoValue */
             throw new RuntimeException(sprintf('Unable to determine where to save the "%s" class (use the --path option).', $all[0]->name));
         }
 

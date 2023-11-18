@@ -181,6 +181,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $connections = [];
 
         foreach (array_keys($config['connections']) as $name) {
+            /** @psalm-suppress InvalidArrayOffset https://github.com/vimeo/psalm/issues/10382 */
             $connections[$name] = sprintf('doctrine.dbal.%s_connection', $name);
         }
 
@@ -533,6 +534,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $entityManagers = [];
         foreach (array_keys($config['entity_managers']) as $name) {
+            /** @psalm-suppress InvalidArrayOffset */
             $entityManagers[$name] = sprintf('doctrine.orm.%s_entity_manager', $name);
         }
 
@@ -547,7 +549,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if ($config['enable_lazy_ghost_objects'] ?? false) {
             // available in Symfony 6.2 and higher
-            /** @psalm-suppress UndefinedClass */
             if (! trait_exists(LazyGhostTrait::class)) {
                 throw new LogicException(
                     'Lazy ghost objects cannot be enabled because the "symfony/var-exporter" library'
@@ -838,10 +839,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->registerMappingDrivers($entityManager, $container);
 
         $container->getDefinition($this->getObjectManagerElementName($entityManager['name'] . '_metadata_driver'));
+        /** @psalm-suppress NoValue $this->drivers is set by $this->loadMappingInformation() call  */
         foreach (array_keys($this->drivers) as $driverType) {
             $mappingService   = $this->getObjectManagerElementName($entityManager['name'] . '_' . $driverType . '_metadata_driver');
             $mappingDriverDef = $container->getDefinition($mappingService);
             $args             = $mappingDriverDef->getArguments();
+            /** @psalm-suppress TypeDoesNotContainType $this->drivers is set by $this->loadMappingInformation() call  */
             if ($driverType === 'annotation') {
                 $args[2] = $entityManager['report_fields_where_declared'];
             } elseif ($driverType === 'attribute') {
