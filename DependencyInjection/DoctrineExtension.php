@@ -567,7 +567,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'Lazy ghost objects cannot be disabled for ORM 3.',
             );
         } elseif (PHP_VERSION_ID >= 80100) {
-            trigger_deprecation('doctrine/doctrine-bundle', '2.11', 'Not setting "enable_lazy_ghost_objects" to true is deprecated.');
+            trigger_deprecation('doctrine/doctrine-bundle', '2.11', 'Not setting "doctrine.orm.enable_lazy_ghost_objects" to true is deprecated.');
         }
 
         $options = ['auto_generate_proxy_classes', 'enable_lazy_ghost_objects', 'proxy_dir', 'proxy_namespace'];
