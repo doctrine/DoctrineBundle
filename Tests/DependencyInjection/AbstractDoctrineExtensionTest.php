@@ -38,8 +38,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
+use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Mapping\Loader\AnnotationLoader;
 
 use function array_filter;
 use function array_intersect_key;
@@ -55,6 +55,7 @@ use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 use function uniqid;
+use function version_compare;
 
 use const DIRECTORY_SEPARATOR;
 
@@ -537,7 +538,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
 
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', [
-            new Reference(class_exists(AnnotationLoader::class) ? 'doctrine.orm.default_annotation_metadata_driver' : 'doctrine.orm.default_attribute_metadata_driver'),
+            new Reference(version_compare(Kernel::VERSION, '7.0.0', '<') ? 'doctrine.orm.default_annotation_metadata_driver' : 'doctrine.orm.default_attribute_metadata_driver'),
             'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
 
@@ -559,7 +560,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $attrDef = $container->getDefinition('doctrine.orm.default_attribute_metadata_driver');
         $this->assertDICConstructorArguments($attrDef, [
             array_merge(
-                ! class_exists(AnnotationLoader::class) ? [
+                ! version_compare(Kernel::VERSION, '7.0.0', '<') ? [
                     __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
                 ] : [],
                 [
@@ -596,7 +597,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $def1   = $container->getDefinition('doctrine.orm.em1_metadata_driver');
         $def2   = $container->getDefinition('doctrine.orm.em2_metadata_driver');
-        $def1Id = class_exists(AnnotationLoader::class) ? 'doctrine.orm.em1_annotation_metadata_driver' : 'doctrine.orm.em1_attribute_metadata_driver';
+        $def1Id = version_compare(Kernel::VERSION, '7.0.0', '<') ? 'doctrine.orm.em1_annotation_metadata_driver' : 'doctrine.orm.em1_attribute_metadata_driver';
 
         $this->assertDICDefinitionMethodCallAt(0, $def1, 'addDriver', [
             new Reference($def1Id),
@@ -618,7 +619,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             'Fixtures\Bundles\XmlBundle',
         ]);
 
-        if (class_exists(AnnotationLoader::class)) {
+        if (version_compare(Kernel::VERSION, '7.0.0', '<')) {
             $annDef = $container->getDefinition($def1Id);
             $this->assertDICConstructorArguments($annDef, [
                 new Reference('doctrine.orm.metadata.annotation_reader'),
