@@ -66,11 +66,7 @@ class DoctrineDataCollector extends BaseCollector
         $this->registry             = $registry;
         $this->shouldValidateSchema = $shouldValidateSchema;
 
-        if ($debugDataHolder === null) {
-            parent::__construct($registry);
-        } else {
-            parent::__construct($registry, $debugDataHolder);
-        }
+        parent::__construct($registry, $debugDataHolder);
     }
 
     public function collect(Request $request, Response $response, ?Throwable $exception = null): void

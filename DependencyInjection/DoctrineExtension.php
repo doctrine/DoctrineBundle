@@ -844,7 +844,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $mappingService   = $this->getObjectManagerElementName($entityManager['name'] . '_' . $driverType . '_metadata_driver');
             $mappingDriverDef = $container->getDefinition($mappingService);
             $args             = $mappingDriverDef->getArguments();
-            /** @psalm-suppress TypeDoesNotContainType $this->drivers is set by $this->loadMappingInformation() call  */
             if ($driverType === 'annotation') {
                 $args[2] = $entityManager['report_fields_where_declared'];
             } elseif ($driverType === 'attribute') {
