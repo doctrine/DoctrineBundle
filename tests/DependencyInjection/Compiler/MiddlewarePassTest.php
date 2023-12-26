@@ -6,15 +6,18 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsMiddleware;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\MiddlewaresPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Middleware\ConnectionNameAwareInterface;
+use Doctrine\Bundle\DoctrineBundle\Middleware\IdleConnectionMiddleware;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Middleware;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 use function array_map;
+use function class_exists;
 use function implode;
 use function sprintf;
 
@@ -170,7 +173,8 @@ class MiddlewarePassTest extends TestCase
 
         $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
         $this->assertMiddlewareInjected($container, 'conn1', ConnectionAwarePHP7Middleware::class, true);
-        $this->assertMiddlewareOrdering($container, 'conn1', [PHP7Middleware::class, ConnectionAwarePHP7Middleware::class]);
+        $expectedMiddlewares = class_exists(Listener::class) ? [IdleConnectionMiddleware::class, PHP7Middleware::class, ConnectionAwarePHP7Middleware::class] : [PHP7Middleware::class, ConnectionAwarePHP7Middleware::class];
+        $this->assertMiddlewareOrdering($container, 'conn1', $expectedMiddlewares);
     }
 
     public function testAddMiddlewareOrderingWithExplicitPriority(): void
@@ -193,7 +197,8 @@ class MiddlewarePassTest extends TestCase
 
         $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
         $this->assertMiddlewareInjected($container, 'conn1', ConnectionAwarePHP7Middleware::class, true);
-        $this->assertMiddlewareOrdering($container, 'conn1', [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class]);
+        $expectedMiddlewares = class_exists(Listener::class) ? [IdleConnectionMiddleware::class, ConnectionAwarePHP7Middleware::class, PHP7Middleware::class] : [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class];
+        $this->assertMiddlewareOrdering($container, 'conn1', $expectedMiddlewares);
     }
 
     public function testAddMiddlewareOrderingWithExplicitPriorityAndConnection(): void
@@ -222,7 +227,8 @@ class MiddlewarePassTest extends TestCase
         $this->assertMiddlewareInjected($container, 'conn1', ConnectionAwarePHP7Middleware::class, true);
         $this->assertMiddlewareInjected($container, 'conn2', PHP7Middleware::class);
         $this->assertMiddlewareNotInjected($container, 'conn2', ConnectionAwarePHP7Middleware::class);
-        $this->assertMiddlewareOrdering($container, 'conn1', [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class]);
+        $expectedMiddlewares = class_exists(Listener::class) ? [IdleConnectionMiddleware::class, ConnectionAwarePHP7Middleware::class, PHP7Middleware::class] : [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class];
+        $this->assertMiddlewareOrdering($container, 'conn1', $expectedMiddlewares);
     }
 
     public function testAddMiddlewareOrderingWithExplicitPriorityPerConnection(): void
@@ -252,8 +258,10 @@ class MiddlewarePassTest extends TestCase
         $this->assertMiddlewareInjected($container, 'conn1', ConnectionAwarePHP7Middleware::class, true);
         $this->assertMiddlewareInjected($container, 'conn2', PHP7Middleware::class);
         $this->assertMiddlewareInjected($container, 'conn2', ConnectionAwarePHP7Middleware::class, true);
-        $this->assertMiddlewareOrdering($container, 'conn1', [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class]);
-        $this->assertMiddlewareOrdering($container, 'conn2', [PHP7Middleware::class, ConnectionAwarePHP7Middleware::class]);
+        $expectedMiddlewares = class_exists(Listener::class) ? [IdleConnectionMiddleware::class, ConnectionAwarePHP7Middleware::class, PHP7Middleware::class] : [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class];
+        $this->assertMiddlewareOrdering($container, 'conn1', $expectedMiddlewares);
+        $expectedMiddlewares = class_exists(Listener::class) ? [IdleConnectionMiddleware::class, PHP7Middleware::class, ConnectionAwarePHP7Middleware::class] : [PHP7Middleware::class, ConnectionAwarePHP7Middleware::class];
+        $this->assertMiddlewareOrdering($container, 'conn2', $expectedMiddlewares);
     }
 
     public function testAddMiddlewareOrderingWithInheritedPriorityPerConnection(): void
@@ -292,8 +300,10 @@ class MiddlewarePassTest extends TestCase
         $this->assertMiddlewareInjected($container, 'conn2', PHP7Middleware::class);
         $this->assertMiddlewareNotInjected($container, 'conn2', ConnectionAwarePHP7Middleware::class);
         $this->assertMiddlewareInjected($container, 'conn2', 'some_middleware_class');
-        $this->assertMiddlewareOrdering($container, 'conn1', [ConnectionAwarePHP7Middleware::class, 'some_middleware_class', PHP7Middleware::class]);
-        $this->assertMiddlewareOrdering($container, 'conn2', [PHP7Middleware::class, 'some_middleware_class']);
+        $expectedMiddlewares = class_exists(Listener::class) ? [IdleConnectionMiddleware::class, ConnectionAwarePHP7Middleware::class, 'some_middleware_class', PHP7Middleware::class] : [ConnectionAwarePHP7Middleware::class, 'some_middleware_class', PHP7Middleware::class];
+        $this->assertMiddlewareOrdering($container, 'conn1', $expectedMiddlewares);
+        $expectedMiddlewares = class_exists(Listener::class) ? [IdleConnectionMiddleware::class, PHP7Middleware::class, 'some_middleware_class'] : [PHP7Middleware::class, 'some_middleware_class'];
+        $this->assertMiddlewareOrdering($container, 'conn2', $expectedMiddlewares);
     }
 
     /** @requires PHP 8 */
@@ -327,15 +337,28 @@ class MiddlewarePassTest extends TestCase
         $this->assertMiddlewareInjected($container, 'conn2', AutoconfiguredMiddleware::class);
         $this->assertMiddlewareInjected($container, 'conn2', AutoconfiguredMiddlewareWithConnection::class);
         $this->assertMiddlewareInjected($container, 'conn2', AutoconfiguredMiddlewareWithPriority::class);
-        $this->assertMiddlewareOrdering($container, 'conn1', [
+        $expectedMiddlewares = class_exists(Listener::class) ? [
+            IdleConnectionMiddleware::class,
             AutoconfiguredMiddlewareWithPriority::class,
             AutoconfiguredMiddleware::class,
-        ]);
-        $this->assertMiddlewareOrdering($container, 'conn2', [
+        ] :
+            [
+                AutoconfiguredMiddlewareWithPriority::class,
+                AutoconfiguredMiddleware::class,
+            ];
+        $this->assertMiddlewareOrdering($container, 'conn1', $expectedMiddlewares);
+        $expectedMiddlewares = class_exists(Listener::class) ? [
+            IdleConnectionMiddleware::class,
             AutoconfiguredMiddlewareWithPriority::class,
             AutoconfiguredMiddleware::class,
             AutoconfiguredMiddlewareWithConnection::class,
-        ]);
+        ] :
+            [
+                AutoconfiguredMiddlewareWithPriority::class,
+                AutoconfiguredMiddleware::class,
+                AutoconfiguredMiddlewareWithConnection::class,
+            ];
+        $this->assertMiddlewareOrdering($container, 'conn2', $expectedMiddlewares);
     }
 
     private function createContainer(callable $func, bool $addConnections = true): ContainerBuilder

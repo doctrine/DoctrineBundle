@@ -37,6 +37,7 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaListener;
 use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaListener;
@@ -83,7 +84,7 @@ use const PHP_VERSION_ID;
  *
  * @final since 2.9
  * @psalm-type DBALConfig = array{
- *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool}>,
+ *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, idle_connection_ttl: int}>,
  *      driver_schemes: array<string, string>,
  *      default_connection: string,
  *      types: array<string, string>,
@@ -196,6 +197,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $connWithLogging   = [];
         $connWithProfiling = [];
         $connWithBacktrace = [];
+        $ttlByConnection   = [];
+
         foreach ($config['connections'] as $name => $connection) {
             if ($connection['logging']) {
                 $connWithLogging[] = $name;
@@ -207,6 +210,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 if ($connection['profiling_collect_backtrace']) {
                     $connWithBacktrace[] = $name;
                 }
+            }
+
+            if ($connection['idle_connection_ttl'] > 0) {
+                $ttlByConnection[$name] = $connection['idle_connection_ttl'];
             }
 
             $this->loadDbalConnection($name, $connection, $container);
@@ -228,7 +235,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         });
 
-        $this->registerDbalMiddlewares($container, $connWithLogging, $connWithProfiling, $connWithBacktrace);
+        $this->registerDbalMiddlewares($container, $connWithLogging, $connWithProfiling, $connWithBacktrace, array_keys($ttlByConnection));
+
+        $container->getDefinition('doctrine.dbal.idle_connection_middleware')->setArgument(1, $ttlByConnection);
+
+        if (class_exists(Listener::class)) {
+            return;
+        }
+
+        $container->removeDefinition('doctrine.dbal.idle_connection_listener');
+        $container->removeDefinition('doctrine.dbal.idle_connection_middleware');
     }
 
     /**
@@ -1186,12 +1202,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * @param string[] $connWithLogging
      * @param string[] $connWithProfiling
      * @param string[] $connWithBacktrace
+     * @param string[] $connWithTtl
      */
     private function registerDbalMiddlewares(
         ContainerBuilder $container,
         array $connWithLogging,
         array $connWithProfiling,
-        array $connWithBacktrace
+        array $connWithBacktrace,
+        array $connWithTtl
     ): void {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('middlewares.xml');
@@ -1205,6 +1223,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $debugMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.debug_middleware');
         foreach ($connWithProfiling as $connName) {
             $debugMiddlewareAbstractDef
+                ->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
+        }
+
+        $idleConnectionMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.idle_connection_middleware');
+        foreach ($connWithTtl as $connName) {
+            $idleConnectionMiddlewareAbstractDef
                 ->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
         }
     }
