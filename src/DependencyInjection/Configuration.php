@@ -221,6 +221,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->booleanNode('disable_type_comments')->end()
                 ->scalarNode('server_version')->end()
+                ->integerNode('idle_connection_ttl')->defaultValue(600)->end()
                 ->scalarNode('driver_class')->end()
                 ->scalarNode('wrapper_class')->end()
                 ->booleanNode('keep_slave')

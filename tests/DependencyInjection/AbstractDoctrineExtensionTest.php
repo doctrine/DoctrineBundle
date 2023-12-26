@@ -220,6 +220,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'host' => 'localhost',
                 'unix_socket' => '/path/to/mysqld.sock',
                 'driverOptions' => [PDO::ATTR_STRINGIFY_FETCHES => 1],
+                'idle_connection_ttl' => 600,
             ],
             $param['primary'],
         );
@@ -340,6 +341,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
+                'idle_connection_ttl' => 600,
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             method_exists(Connection::class, 'getEventManager')
@@ -379,6 +381,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'driver' => 'pdo_mysql',
                 'driverOptions' => [],
                 'defaultTableOptions' => [],
+                'idle_connection_ttl' => 600,
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             method_exists(Connection::class, 'getEventManager')
@@ -418,6 +421,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
                 'dbname' => 'sqlite_db',
                 'memory' => true,
                 'defaultTableOptions' => [],
+                'idle_connection_ttl' => 600,
             ],
             new Reference('doctrine.dbal.default_connection.configuration'),
             method_exists(Connection::class, 'getEventManager')

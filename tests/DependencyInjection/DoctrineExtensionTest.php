@@ -1424,6 +1424,57 @@ class DoctrineExtensionTest extends TestCase
         $this->assertArrayNotHasKey('doctrine.middleware', $abstractMiddlewareDefTags);
     }
 
+    /** @requires function Symfony\Bridge\Doctrine\Middleware\IdleConnection\Driver::__construct */
+    public function testDefinitionsIdleConnection(): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => [
+                        'password' => 'foo',
+                        'logging' => false,
+                        'profiling' => false,
+                        'idle_connection_ttl' => 15,
+                    ],
+                    'conn2' => [
+                        'password' => 'bar',
+                        'logging' => false,
+                        'profiling' => true,
+                    ],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.idle_connection_middleware'));
+
+        $abstractMiddlewareDef = $container->getDefinition('doctrine.dbal.idle_connection_middleware');
+        $ttlByConnection       = $abstractMiddlewareDef->getArgument(1);
+
+        $this->assertArrayHasKey('conn1', $ttlByConnection);
+        $this->assertEquals(15, $ttlByConnection['conn1']);
+        $this->assertArrayHasKey('conn2', $ttlByConnection);
+        $this->assertEquals(600, $ttlByConnection['conn2']);
+
+        $abstractMiddlewareDefTags = $container->getDefinition('doctrine.dbal.idle_connection_middleware')->getTags();
+
+        $idleConnectionMiddlewareTagAttributes = [];
+        foreach ($abstractMiddlewareDefTags as $tag => $attributes) {
+            if ($tag !== 'doctrine.middleware') {
+                continue;
+            }
+
+            $idleConnectionMiddlewareTagAttributes = $attributes;
+        }
+
+        $this->assertTrue(in_array(['connection' => 'conn1', 'priority' => 10], $idleConnectionMiddlewareTagAttributes, true), 'Tag with connection conn1 not found for doctrine.dbal.idle_connection_middleware');
+        $this->assertTrue(in_array(['connection' => 'conn2', 'priority' => 10], $idleConnectionMiddlewareTagAttributes, true), 'Tag with connection conn2 found for doctrine.dbal.idle_connection_middleware');
+    }
+
     /**
      * @requires function \Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver::__construct
      * @testWith [true]

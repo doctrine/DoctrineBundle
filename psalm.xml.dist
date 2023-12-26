@@ -43,6 +43,8 @@
                 <referencedClass name="Doctrine\ORM\ORMException"/>
                 <!-- Dropped in DBAL 4 -->
                 <referencedClass name="Doctrine\DBAL\Exception"/>
+                <!-- Available starting from Symfony 7.1 -->
+                <referencedClass name="Symfony\Bridge\Doctrine\Middleware\IdleConnection\Driver"/>
             </errorLevel>
         </UndefinedClass>
         <DuplicateClass>

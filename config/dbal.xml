@@ -101,6 +101,12 @@
             <tag name="controller.service_arguments" />
         </service>
 
+        <service id="doctrine.dbal.idle_connection_listener" class="Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener">
+            <argument type="service" id="doctrine.dbal.connection_expiries" />
+            <argument type="service" id="service_container" />
+            <tag name="kernel.event_subscriber" />
+        </service>
+
         <service id="doctrine.dbal.default_schema_manager_factory" class="Doctrine\DBAL\Schema\DefaultSchemaManagerFactory" />
         <service id="doctrine.dbal.legacy_schema_manager_factory" class="Doctrine\DBAL\Schema\LegacySchemaManagerFactory" />
 
