@@ -13,9 +13,9 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveLoggingMid
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveProfilerControllerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
-use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Proxy\Autoloader;
+use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterUidTypePass;
@@ -101,7 +101,7 @@ class DoctrineBundle extends Bundle
             $container = &$this->container;
 
             $proxyGenerator = static function ($proxyDir, $proxyNamespace, $class) use (&$container): void {
-                $originalClassName = ClassUtils::getRealClass($class);
+                $originalClassName = (new DefaultProxyClassNameResolver())->resolveClassName($class);
                 $registry          = $container->get('doctrine');
                 assert($registry instanceof Registry);
 
