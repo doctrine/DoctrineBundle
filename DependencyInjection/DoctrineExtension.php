@@ -82,6 +82,12 @@ use const PHP_VERSION_ID;
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
  *
  * @final since 2.9
+ * @psalm-type DBALConfig = array{
+ *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool}>,
+ *      driver_schemes: array<string, string>,
+ *      default_connection: string,
+ *      types: array<string, string>,
+ *  }
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {
@@ -155,8 +161,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *
      *      <doctrine:dbal id="myconn" dbname="sfweb" user="root" />
      *
-     * @param array<string, mixed> $config    An array of configuration settings
-     * @param ContainerBuilder     $container A ContainerBuilder instance
+     * @param DBALConfig       $config    An array of configuration settings
+     * @param ContainerBuilder $container A ContainerBuilder instance
      */
     protected function dbalLoad(array $config, ContainerBuilder $container)
     {
@@ -181,7 +187,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $connections = [];
 
         foreach (array_keys($config['connections']) as $name) {
-            /** @psalm-suppress InvalidArrayOffset https://github.com/vimeo/psalm/issues/10382 */
             $connections[$name] = sprintf('doctrine.dbal.%s_connection', $name);
         }
 
