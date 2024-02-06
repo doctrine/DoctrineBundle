@@ -94,7 +94,7 @@ class EntityListenerPass implements CompilerPassInterface
         }
     }
 
-    /** @param array{entity: class-string, event?: ?string} $attributes */
+    /** @param array{entity: class-string, event?: ?string, method?: string} $attributes */
     private function attachToListener(ContainerBuilder $container, string $name, string $class, array $attributes): void
     {
         $listenerId = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $name);

@@ -135,7 +135,7 @@ class MiddlewarePassTest extends TestCase
     }
 
     /** @dataProvider provideAddMiddleware */
-    public function testDontAddMiddlewareWhenDbalIsNotUsed(string $middlewareClass, bool $connectionNameAware): void
+    public function testDontAddMiddlewareWhenDbalIsNotUsed(string $middlewareClass): void
     {
         $container = $this->createContainer(static function (ContainerBuilder $container) use ($middlewareClass) {
             $container

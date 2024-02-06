@@ -27,6 +27,8 @@ use function trigger_deprecation;
 
 /**
  * This class contains the needed functions in order to do the query highlighting
+ *
+ * @internal since 2.11
  */
 class DoctrineExtension extends AbstractExtension
 {
@@ -191,15 +193,5 @@ class DoctrineExtension extends AbstractExtension
             HtmlHighlighter::HIGHLIGHT_COMMENT        => 'class="comment"',
             HtmlHighlighter::HIGHLIGHT_VARIABLE       => 'class="variable"',
         ], ! $legacy) : new NullHighlighter());
-    }
-
-    /**
-     * Get the name of the extension
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return 'doctrine_extension';
     }
 }

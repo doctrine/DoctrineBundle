@@ -41,10 +41,7 @@ EXCEPTION);
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $this->expectException(LogicException::class);
 
-        /**
-         * @psalm-suppress MissingDependency
-         * @psalm-suppress UndefinedClass
-         */
+        /** @psalm-suppress UndefinedClass */
         new class ($registry, TestEntity::class) extends ServiceEntityRepository implements LazyObjectInterface {
             use LazyGhostTrait;
         };

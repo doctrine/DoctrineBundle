@@ -4,7 +4,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCaseAllPublicCompilerPass;
-use Doctrine\Common\Annotations\Annotation;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
@@ -12,10 +11,10 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\HttpKernel\Kernel;
 
-use function class_exists;
 use function md5;
 use function mt_rand;
 use function sys_get_temp_dir;
+use function version_compare;
 
 class DbalTestKernel extends Kernel
 {
@@ -48,7 +47,7 @@ class DbalTestKernel extends Kernel
                 'secret' => 'F00',
                 'http_method_override' => false,
                 'annotations' => [
-                    'enabled' => class_exists(Annotation::class),
+                    'enabled' => version_compare(Kernel::VERSION, '7.0.0', '<'),
                 ],
             ]);
 
@@ -67,10 +66,5 @@ class DbalTestKernel extends Kernel
     public function getProjectDir(): string
     {
         return $this->projectDir ??= sys_get_temp_dir() . '/sf_kernel_' . md5((string) mt_rand());
-    }
-
-    public function getRootDir(): string
-    {
-        return $this->getProjectDir();
     }
 }

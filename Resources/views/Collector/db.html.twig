@@ -447,9 +447,16 @@
             var targetElement = document.getElementById(targetId);
 
             if (targetElement.style.display != 'block') {
-                Sfjs.load(targetId, link.href, null, function(xhr, el) {
-                    el.innerHTML = 'An error occurred while loading the query explanation.';
-                });
+                if (targetElement.getAttribute('data-sfurl') !== link.href) {
+                    fetch(link.href, {
+                        headers: {'X-Requested-With': 'XMLHttpRequest'}
+                    }).then(async function (response) {
+                        targetElement.innerHTML = await response.text()
+                        targetElement.setAttribute('data-sfurl', link.href)
+                    }, function () {
+                        targetElement.innerHTML = 'An error occurred while loading the query explanation.';
+                    })
+                }
 
                 targetElement.style.display = 'block';
                 link.innerHTML = 'Hide query explanation';
@@ -490,15 +497,13 @@
             });
 
             for (i = 0; i < items.length; ++i) {
-                Sfjs.removeClass(items[i], i % 2 ? 'even' : 'odd');
-                Sfjs.addClass(items[i], i % 2 ? 'odd' : 'even');
                 target.appendChild(items[i]);
             }
         }
 
         if (navigator.clipboard) {
             document.querySelectorAll('[data-clipboard-text]').forEach(function(button) {
-                Sfjs.removeClass(button, 'hidden');
+                button.classList.remove('hidden');
                 button.addEventListener('click', function() {
                     navigator.clipboard.writeText(button.getAttribute('data-clipboard-text'));
                 })

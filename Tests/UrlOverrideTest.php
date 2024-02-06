@@ -15,12 +15,12 @@ class UrlOverrideTest extends TestCase
      *
      * @dataProvider connectionDataProvider
      */
-    public function testConnectionConfiguration(array $config, array $expectedParams): void
+    public static function testConnectionConfiguration(array $config, array $expectedParams): void
     {
         $kernel = new DbalTestKernel($config);
         $kernel->boot();
 
-        $this->assertEquals(
+        self::assertEquals(
             $expectedParams,
             array_intersect_key(
                 $kernel->getContainer()->get('doctrine.dbal.default_connection')->getParams(),
@@ -29,7 +29,7 @@ class UrlOverrideTest extends TestCase
         );
     }
 
-    /** @return array<string, list<array<string, (bool|string|null)>>> */
+    /** @return array<string, array{0: array<string, (bool|string|null)>, 1:  array<string, (bool|string|null)>}> */
     public function connectionDataProvider(): array
     {
         return [

@@ -48,11 +48,11 @@
         "doctrine/annotations": "^1 || ^2",
         "doctrine/coding-standard": "^12",
         "doctrine/deprecations": "^1.0",
-        "doctrine/orm": "^2.14 || ^3.0",
+        "doctrine/orm": "^2.17 || ^3.0",
         "friendsofphp/proxy-manager-lts": "^1.0",
-        "phpunit/phpunit": "^9.5.26 || ^10.0",
+        "phpunit/phpunit": "^9.5.26",
         "psalm/plugin-phpunit": "^0.18.4",
-        "psalm/plugin-symfony": "^4",
+        "psalm/plugin-symfony": "^5",
         "psr/log": "^1.1.4 || ^2.0 || ^3.0",
         "symfony/phpunit-bridge": "^6.1 || ^7.0",
         "symfony/property-info": "^5.4 || ^6.0 || ^7.0",
@@ -65,11 +65,11 @@
         "symfony/web-profiler-bundle": "^5.4 || ^6.0 || ^7.0",
         "symfony/yaml": "^5.4 || ^6.0 || ^7.0",
         "twig/twig": "^1.34 || ^2.12 || ^3.0",
-        "vimeo/psalm": "^4.30"
+        "vimeo/psalm": "^5.15"
     },
     "conflict": {
         "doctrine/annotations": ">=3.0",
-        "doctrine/orm": "<2.14 || >=4.0",
+        "doctrine/orm": "<2.17 || >=4.0",
         "twig/twig": "<1.34 || >=2.0 <2.4"
     },
     "suggest": {

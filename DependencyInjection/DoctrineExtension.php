@@ -82,6 +82,12 @@ use const PHP_VERSION_ID;
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
  *
  * @final since 2.9
+ * @psalm-type DBALConfig = array{
+ *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool}>,
+ *      driver_schemes: array<string, string>,
+ *      default_connection: string,
+ *      types: array<string, string>,
+ *  }
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {
@@ -155,8 +161,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
      *
      *      <doctrine:dbal id="myconn" dbname="sfweb" user="root" />
      *
-     * @param array<string, mixed> $config    An array of configuration settings
-     * @param ContainerBuilder     $container A ContainerBuilder instance
+     * @param DBALConfig       $config    An array of configuration settings
+     * @param ContainerBuilder $container A ContainerBuilder instance
      */
     protected function dbalLoad(array $config, ContainerBuilder $container)
     {
@@ -533,6 +539,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $entityManagers = [];
         foreach (array_keys($config['entity_managers']) as $name) {
+            /** @psalm-suppress InvalidArrayOffset */
             $entityManagers[$name] = sprintf('doctrine.orm.%s_entity_manager', $name);
         }
 
@@ -547,7 +554,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if ($config['enable_lazy_ghost_objects'] ?? false) {
             // available in Symfony 6.2 and higher
-            /** @psalm-suppress UndefinedClass */
             if (! trait_exists(LazyGhostTrait::class)) {
                 throw new LogicException(
                     'Lazy ghost objects cannot be enabled because the "symfony/var-exporter" library'
@@ -566,7 +572,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'Lazy ghost objects cannot be disabled for ORM 3.',
             );
         } elseif (PHP_VERSION_ID >= 80100) {
-            trigger_deprecation('doctrine/doctrine-bundle', '2.11', 'Not setting "enable_lazy_ghost_objects" to true is deprecated.');
+            trigger_deprecation('doctrine/doctrine-bundle', '2.11', 'Not setting "doctrine.orm.enable_lazy_ghost_objects" to true is deprecated.');
         }
 
         $options = ['auto_generate_proxy_classes', 'enable_lazy_ghost_objects', 'proxy_dir', 'proxy_namespace'];
@@ -838,6 +844,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $this->registerMappingDrivers($entityManager, $container);
 
         $container->getDefinition($this->getObjectManagerElementName($entityManager['name'] . '_metadata_driver'));
+        /** @psalm-suppress NoValue $this->drivers is set by $this->loadMappingInformation() call  */
         foreach (array_keys($this->drivers) as $driverType) {
             $mappingService   = $this->getObjectManagerElementName($entityManager['name'] . '_' . $driverType . '_metadata_driver');
             $mappingDriverDef = $container->getDefinition($mappingService);

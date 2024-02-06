@@ -41,7 +41,7 @@ use function usort;
  *       regions: array<"puts"|"hits"|"misses", array<string, int>>,
  *    },
  *    connections: list<string>,
- *    entities: array<string, array<class-string, class-string>>,
+ *    entities: array<string, array<class-string, array{class: class-string, file: false|string, line: false|int}>>,
  *    errors: array<string, array<class-string, list<string>>>,
  *    managers: list<string>,
  *    queries: array<string, list<QueryType>>,
@@ -55,7 +55,7 @@ class DoctrineDataCollector extends BaseCollector
 
     /**
      * @var mixed[][]|null
-     * @psalm-var ?array<string, list<QueryType&array{count: int, index: int, executionPercent: float}>>
+     * @psalm-var ?array<string, list<QueryType&array{count: int, index: int, executionPercent?: float}>>
      */
     private ?array $groupedQueries = null;
 
@@ -66,11 +66,7 @@ class DoctrineDataCollector extends BaseCollector
         $this->registry             = $registry;
         $this->shouldValidateSchema = $shouldValidateSchema;
 
-        if ($debugDataHolder === null) {
-            parent::__construct($registry);
-        } else {
-            parent::__construct($registry, $debugDataHolder);
-        }
+        parent::__construct($registry, $debugDataHolder);
     }
 
     public function collect(Request $request, Response $response, ?Throwable $exception = null): void
@@ -184,7 +180,7 @@ class DoctrineDataCollector extends BaseCollector
         $this->groupedQueries   = null;
     }
 
-    /** @return array<string, array<string, string>> */
+    /** @return array<string, array<class-string, array{class: class-string, file: false|string, line: false|int}>> */
     public function getEntities()
     {
         return $this->data['entities'];
@@ -243,7 +239,7 @@ class DoctrineDataCollector extends BaseCollector
 
     /**
      * @return string[][]
-     * @psalm-return array<string, list<QueryType&array{count: int, index: int, executionPercent: float}>>
+     * @psalm-return array<string, list<QueryType&array{count: int, index: int, executionPercent?: float}>>
      */
     public function getGroupedQueries()
     {

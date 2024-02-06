@@ -78,6 +78,7 @@ class ConnectionFactory
         }
 
         $overriddenOptions = [];
+        /** @psalm-suppress InvalidArrayOffset We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
         if (isset($params['connection_override_options'])) {
             trigger_deprecation('doctrine/doctrine-bundle', '2.4', 'The "connection_override_options" connection parameter is deprecated');
             $overriddenOptions = $params['connection_override_options'];
@@ -97,6 +98,7 @@ class ConnectionFactory
             }
         }
 
+        /** @psalm-suppress InvalidArrayOffset We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
         if (! isset($params['pdo']) && (! isset($params['charset']) || $overriddenOptions || isset($params['dbname_suffix']))) {
             $wrapperClass = null;
 

@@ -95,13 +95,13 @@ class CacheSchemaSubscriberTest extends TestCase
     {
         /**
          * available in Symfony 6.3
-         *
-         * @psalm-suppress UndefinedClass
          */
         yield ['cache.adapter.doctrine_dbal', 'doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_listener', DoctrineDbalCacheAdapterSchemaListener::class];
 
         /**
          * available in Symfony 5.1 and up to Symfony 5.4 (deprecated)
+         *
+         * @psalm-suppress UndefinedClass
          */
         yield ['cache.adapter.pdo', 'doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber', PdoCacheAdapterDoctrineSchemaSubscriber::class];
     }

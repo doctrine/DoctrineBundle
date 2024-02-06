@@ -66,7 +66,7 @@ class ProfilerTest extends BaseTestCase
 
         if (class_exists(CodeExtension::class)) {
             $this->twig->addExtension(new CodeExtension('', '', ''));
-        } else {
+        } elseif (class_exists(CodeExtensionLegacy::class)) {
             $this->twig->addExtension(new CodeExtensionLegacy('', '', ''));
         }
 

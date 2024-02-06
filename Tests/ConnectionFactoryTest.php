@@ -96,6 +96,7 @@ class ConnectionFactoryTest extends TestCase
             'password' => 'wordpass',
         ];
 
+        /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
         $connection = (new ConnectionFactory([]))->createConnection(
             [
                 'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
@@ -119,6 +120,7 @@ class ConnectionFactoryTest extends TestCase
 
     public function testDbnameSuffix(): void
     {
+        /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
         $connection = (new ConnectionFactory([]))->createConnection(
             [
                 'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8',
@@ -132,6 +134,7 @@ class ConnectionFactoryTest extends TestCase
 
     public function testDbnameSuffixForReplicas(): void
     {
+        /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
         $connection = (new ConnectionFactory([]))->createConnection(
             [
                 'driver' => 'pdo_mysql',
