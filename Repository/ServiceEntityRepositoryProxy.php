@@ -41,21 +41,18 @@ class ServiceEntityRepositoryProxy extends EntityRepository implements ServiceEn
         $this->repository = $this->resolveRepository();
     }
 
-    /** @psalm-suppress MethodSignatureMismatch This proxy is used only in combination with newer parent class */
     public function createQueryBuilder(string $alias, ?string $indexBy = null): QueryBuilder
     {
         return ($this->repository ??= $this->resolveRepository())
             ->createQueryBuilder($alias, $indexBy);
     }
 
-    /** @psalm-suppress MethodSignatureMismatch This proxy is used only in combination with newer parent class */
     public function createResultSetMappingBuilder(string $alias): ResultSetMappingBuilder
     {
         return ($this->repository ??= $this->resolveRepository())
             ->createResultSetMappingBuilder($alias);
     }
 
-    /** @psalm-suppress MethodSignatureMismatch This proxy is used only in combination with newer parent class */
     public function find(mixed $id, LockMode|int|null $lockMode = null, int|null $lockVersion = null): object|null
     {
         /** @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class */
@@ -67,7 +64,6 @@ class ServiceEntityRepositoryProxy extends EntityRepository implements ServiceEn
      * {@inheritDoc}
      *
      * @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class
-     * @psalm-suppress MethodSignatureMismatch This proxy is used only in combination with newer parent class
      * @psalm-suppress InvalidReturnType This proxy is used only in combination with newer parent class
      */
     public function findBy(array $criteria, ?array $orderBy = null, ?int $limit = null, ?int $offset = null): array
@@ -92,8 +88,6 @@ class ServiceEntityRepositoryProxy extends EntityRepository implements ServiceEn
 
     /**
      * {@inheritDoc}
-     *
-     * @psalm-suppress MethodSignatureMismatch This proxy is used only in combination with newer parent class
      */
     public function __call(string $method, array $arguments): mixed
     {

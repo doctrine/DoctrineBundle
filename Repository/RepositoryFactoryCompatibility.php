@@ -21,8 +21,6 @@ if ((new ReflectionMethod(RepositoryFactory::class, 'getRepository'))->hasReturn
          * @return EntityRepository<T>
          *
          * @template T of object
-         *
-         * @psalm-suppress MethodSignatureMismatch
          */
         public function getRepository(EntityManagerInterface $entityManager, string $entityName): EntityRepository
         {
