@@ -9,6 +9,8 @@ use Symfony\Component\Console\Input\InputOption;
  * Ensure the Doctrine ORM is configured properly for a production environment.
  *
  * @deprecated use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand instead
+ *
+ * @psalm-suppress UndefinedClass ORM < 3 specific
  */
 class EnsureProductionSettingsDoctrineCommand extends EnsureProductionSettingsCommand
 {

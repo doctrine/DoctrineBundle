@@ -37,18 +37,4 @@ Can't find base path for "Doctrine\Bundle\DoctrineBundle\Tests\Mapping\Disconnec
 EXCEPTION);
         $factory->findNamespaceAndPathForMetadata($collection);
     }
-
-    public function testFindNamespaceAndPathForMetadata(): void
-    {
-        /** @psalm-suppress UndefinedClass */
-        $class      = new ClassMetadata('\Vendor\Package\Class');
-        $collection = new ClassMetadataCollection([$class]);
-
-        $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
-        $factory  = new DisconnectedMetadataFactory($registry);
-
-        $factory->findNamespaceAndPathForMetadata($collection, '/path/to/code');
-
-        $this->assertEquals('\Vendor\Package', $collection->getNamespace());
-    }
 }

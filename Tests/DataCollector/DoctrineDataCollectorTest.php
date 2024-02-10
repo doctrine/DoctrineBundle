@@ -137,14 +137,21 @@ class DoctrineDataCollectorTest extends TestCase
             $this->markTestSkipped('This test requires symfony < 7.0');
         }
 
-        $logger            = $this->getMockBuilder(DebugStack::class)->getMock();
-        $logger->queries   = [];
+        /** @psalm-suppress UndefinedClass Symfony < 7 specific */
+        $logger = $this->getMockBuilder(DebugStack::class)->getMock();
+        /** @psalm-suppress NoInterfaceProperties */
+        $logger->queries = [];
+        /**
+         * @psalm-suppress NoInterfaceProperties
+         * @psalm-suppress UndefinedDocblockClass
+         */
         $logger->queries[] = [
             'sql' => 'SELECT * FROM foo WHERE bar = :bar',
             'params' => [':bar' => 1],
             'types' => null,
             'executionMS' => 32,
         ];
+        /** @psalm-suppress NoInterfaceProperties */
         $logger->queries[] = [
             'sql' => 'SELECT * FROM foo WHERE bar = :bar',
             'params' => [':bar' => 2],
@@ -158,7 +165,7 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertCount(1, $groupedQueries['default']);
         $this->assertSame('SELECT * FROM foo WHERE bar = :bar', $groupedQueries['default'][0]['sql']);
         $this->assertSame(2, $groupedQueries['default'][0]['count']);
-
+        /** @psalm-suppress NoInterfaceProperties */
         $logger->queries[] = [
             'sql' => 'SELECT * FROM bar',
             'params' => [],

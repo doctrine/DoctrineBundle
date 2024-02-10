@@ -38,6 +38,7 @@ class DropDatabaseDoctrineTest extends TestCase
             'driver' => 'pdo_sqlite',
         ];
 
+        /** @psalm-suppress InvalidArgument Need to be compatible with DBAL < 4, which still has `$params['url']` */
         $container = $this->getMockContainer($connectionName, $params);
 
         $application = new Application();

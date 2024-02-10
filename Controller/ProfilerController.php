@@ -5,7 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Controller;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Exception;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
@@ -64,7 +64,7 @@ class ProfilerController
         assert($connection instanceof Connection);
         try {
             $platform = $connection->getDatabasePlatform();
-            if ($platform instanceof SqlitePlatform) {
+            if ($platform instanceof SQLitePlatform) {
                 $results = $this->explainSQLitePlatform($connection, $query);
             } elseif ($platform instanceof SQLServerPlatform) {
                 throw new Exception('Explain for SQLServerPlatform is currently not supported. Contributions are welcome.');

@@ -118,7 +118,8 @@ class ConnectionFactory
             $connection = DriverManager::getConnection(...array_merge([$params, $config], $eventManager ? [$eventManager] : []));
             $params     = $this->addDatabaseSuffix(array_merge($connection->getParams(), $overriddenOptions));
             $driver     = $connection->getDriver();
-            $platform   = $driver->getDatabasePlatform(
+            /** @psalm-suppress InvalidScalarArgument Bogus error, StaticServerVersionProvider implements Doctrine\DBAL\ServerVersionProvider  */
+            $platform = $driver->getDatabasePlatform(
                 ...(class_exists(StaticServerVersionProvider::class) ? [new StaticServerVersionProvider($params['serverVersion'] ?? '')] : []),
             );
 
@@ -250,6 +251,7 @@ class ConnectionFactory
      */
     private function parseDatabaseUrl(array $params): array
     {
+        /** @psalm-suppress InvalidArrayOffset Need to be compatible with DBAL < 4, which still has `$params['url']` */
         if (! isset($params['url'])) {
             return $params;
         }

@@ -29,6 +29,8 @@ abstract class DoctrineCommand extends Command
      * get a doctrine entity generator
      *
      * @return EntityGenerator
+     *
+     * @psalm-suppress UndefinedDocblockClass ORM < 3 specific
      */
     protected function getEntityGenerator()
     {
