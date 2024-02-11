@@ -68,7 +68,7 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
     public static function createXmlMappingDriver(array $namespaces, array $managerParameters = [], $enabledParameter = false, array $aliasMap = [], bool $enableXsdValidation = false)
     {
         $locator = new Definition(SymfonyFileLocator::class, [$namespaces, '.orm.xml']);
-        $driver  = new Definition(XmlDriver::class, [$locator, null, $enableXsdValidation]);
+        $driver  = new Definition(XmlDriver::class, [$locator, XmlDriver::DEFAULT_FILE_EXTENSION, $enableXsdValidation]);
 
         return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter, $aliasMap);
     }

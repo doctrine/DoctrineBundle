@@ -10,7 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 use function in_array;
-use function method_exists;
 use function sprintf;
 
 /**
@@ -62,13 +61,11 @@ EOT);
         }
 
         // Need to get rid of _every_ occurrence of dbname from connection configuration and we have already extracted all relevant info from url
+        /** @psalm-suppress InvalidArrayOffset Need to be compatible with DBAL < 4, which still has `$params['url']` */
         unset($params['dbname'], $params['path'], $params['url']);
 
-        $tmpConnection = DriverManager::getConnection($params, $connection->getConfiguration());
-
-        $schemaManager           = method_exists($tmpConnection, 'createSchemaManager')
-            ? $tmpConnection->createSchemaManager()
-            : $tmpConnection->getSchemaManager();
+        $tmpConnection           = DriverManager::getConnection($params, $connection->getConfiguration());
+        $schemaManager           = $tmpConnection->createSchemaManager();
         $shouldNotCreateDatabase = $ifNotExists && in_array($name, $schemaManager->listDatabases());
 
         // Only quote if we don't have a path

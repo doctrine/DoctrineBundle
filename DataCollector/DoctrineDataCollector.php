@@ -6,7 +6,6 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
-use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaValidator;
@@ -122,8 +121,7 @@ class DoctrineDataCollector extends BaseCollector
                 }
             }
 
-            $emConfig = $em->getConfiguration();
-            assert($emConfig instanceof Configuration);
+            $emConfig   = $em->getConfiguration();
             $slcEnabled = $emConfig->isSecondLevelCacheEnabled();
 
             if (! $slcEnabled) {

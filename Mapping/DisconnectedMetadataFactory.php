@@ -10,11 +10,7 @@ use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
-use function array_pop;
-use function class_exists;
 use function dirname;
-use function explode;
-use function implode;
 use function sprintf;
 use function str_replace;
 use function strpos;
@@ -110,22 +106,9 @@ class DisconnectedMetadataFactory
      */
     public function findNamespaceAndPathForMetadata(ClassMetadataCollection $metadata, $path = null)
     {
-        $all = $metadata->getMetadata();
-        if (class_exists($all[0]->name)) {
-            $r    = new ReflectionClass($all[0]->name);
-            $path = $this->getBasePathForClass($r->getName(), $r->getNamespaceName(), dirname($r->getFilename()));
-            $ns   = $r->getNamespaceName();
-        } elseif ($path) {
-            // Get namespace by removing the last component of the FQCN
-            $nsParts = explode('\\', $all[0]->name);
-            array_pop($nsParts);
-            $ns = implode('\\', $nsParts);
-        } else {
-            throw new RuntimeException(sprintf('Unable to determine where to save the "%s" class (use the --path option).', $all[0]->name));
-        }
-
-        $metadata->setPath($path);
-        $metadata->setNamespace($ns);
+        $r = new ReflectionClass($metadata->getMetadata()[0]->name);
+        $metadata->setPath($this->getBasePathForClass($r->getName(), $r->getNamespaceName(), dirname($r->getFilename())));
+        $metadata->setNamespace($r->getNamespaceName());
     }
 
     /**

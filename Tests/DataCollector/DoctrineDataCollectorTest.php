@@ -3,7 +3,6 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
-use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,7 +16,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function interface_exists;
-use function method_exists;
 
 class DoctrineDataCollectorTest extends TestCase
 {
@@ -123,48 +121,6 @@ class DoctrineDataCollectorTest extends TestCase
             'executionMS' => 25,
         ];
 
-        $collector->collect(new Request(), new Response());
-        $groupedQueries = $collector->getGroupedQueries();
-        $this->assertCount(2, $groupedQueries['default']);
-        $this->assertSame('SELECT * FROM bar', $groupedQueries['default'][1]['sql']);
-        $this->assertSame(1, $groupedQueries['default'][1]['count']);
-    }
-
-    /** @group legacy */
-    public function testGetGroupedQueriesWithDeprecatedDebugStackLogger(): void
-    {
-        if (! method_exists(DoctrineDataCollector::class, 'addLogger')) {
-            $this->markTestSkipped('This test requires symfony < 7.0');
-        }
-
-        $logger            = $this->getMockBuilder(DebugStack::class)->getMock();
-        $logger->queries   = [];
-        $logger->queries[] = [
-            'sql' => 'SELECT * FROM foo WHERE bar = :bar',
-            'params' => [':bar' => 1],
-            'types' => null,
-            'executionMS' => 32,
-        ];
-        $logger->queries[] = [
-            'sql' => 'SELECT * FROM foo WHERE bar = :bar',
-            'params' => [':bar' => 2],
-            'types' => null,
-            'executionMS' => 25,
-        ];
-        $collector         = $this->createCollector([]);
-        $collector->addLogger('default', $logger);
-        $collector->collect(new Request(), new Response());
-        $groupedQueries = $collector->getGroupedQueries();
-        $this->assertCount(1, $groupedQueries['default']);
-        $this->assertSame('SELECT * FROM foo WHERE bar = :bar', $groupedQueries['default'][0]['sql']);
-        $this->assertSame(2, $groupedQueries['default'][0]['count']);
-
-        $logger->queries[] = [
-            'sql' => 'SELECT * FROM bar',
-            'params' => [],
-            'types' => null,
-            'executionMS' => 25,
-        ];
         $collector->collect(new Request(), new Response());
         $groupedQueries = $collector->getGroupedQueries();
         $this->assertCount(2, $groupedQueries['default']);

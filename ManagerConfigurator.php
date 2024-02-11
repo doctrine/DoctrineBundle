@@ -45,12 +45,7 @@ class ManagerConfigurator
 
         $filterCollection = $entityManager->getFilters();
         foreach ($this->enabledFilters as $filter) {
-            $filterObject = $filterCollection->enable($filter);
-            if ($filterObject === null) {
-                continue;
-            }
-
-            $this->setFilterParameters($filter, $filterObject);
+            $this->setFilterParameters($filter, $filterCollection->enable($filter));
         }
     }
 
