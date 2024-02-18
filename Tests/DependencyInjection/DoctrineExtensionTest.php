@@ -1321,9 +1321,9 @@ class DoctrineExtensionTest extends TestCase
             $loggingMiddlewareTagAttributes = $attributes;
         }
 
-        $this->assertTrue(in_array(['connection' => 'conn1'], $loggingMiddlewareTagAttributes, true));
-        $this->assertFalse(in_array(['connection' => 'conn2'], $loggingMiddlewareTagAttributes, true));
-        $this->assertFalse(in_array(['connection' => 'conn3'], $loggingMiddlewareTagAttributes, true));
+        $this->assertTrue(in_array(['connection' => 'conn1', 'priority' => 10], $loggingMiddlewareTagAttributes, true));
+        $this->assertFalse(in_array(['connection' => 'conn2', 'priority' => 10], $loggingMiddlewareTagAttributes, true));
+        $this->assertFalse(in_array(['connection' => 'conn3', 'priority' => 10], $loggingMiddlewareTagAttributes, true));
 
         $this->assertTrue($container->hasDefinition('doctrine.dbal.debug_middleware'));
         $this->assertTrue($container->hasDefinition('doctrine.debug_data_holder'));
@@ -1338,9 +1338,9 @@ class DoctrineExtensionTest extends TestCase
             $debugMiddlewareTagAttributes = $attributes;
         }
 
-        $this->assertFalse(in_array(['connection' => 'conn1'], $debugMiddlewareTagAttributes, true));
-        $this->assertTrue(in_array(['connection' => 'conn2'], $debugMiddlewareTagAttributes, true));
-        $this->assertTrue(in_array(['connection' => 'conn3'], $debugMiddlewareTagAttributes, true));
+        $this->assertFalse(in_array(['connection' => 'conn1', 'priority' => 10], $debugMiddlewareTagAttributes, true));
+        $this->assertTrue(in_array(['connection' => 'conn2', 'priority' => 10], $debugMiddlewareTagAttributes, true));
+        $this->assertTrue(in_array(['connection' => 'conn3', 'priority' => 10], $debugMiddlewareTagAttributes, true));
 
         $arguments = $container->getDefinition('doctrine.debug_data_holder')->getArguments();
         $this->assertCount(1, $arguments);
@@ -1383,7 +1383,7 @@ class DoctrineExtensionTest extends TestCase
             $loggingMiddlewareTagAttributes = $attributes;
         }
 
-        $this->assertTrue(in_array(['connection' => 'conn1'], $loggingMiddlewareTagAttributes, true), 'Tag with connection conn1 not found for doctrine.dbal.logging_middleware');
+        $this->assertTrue(in_array(['connection' => 'conn1', 'priority' => 10], $loggingMiddlewareTagAttributes, true), 'Tag with connection conn1 not found for doctrine.dbal.logging_middleware');
         $this->assertFalse(in_array(['connection' => 'conn2'], $loggingMiddlewareTagAttributes, true), 'Tag with connection conn2 found for doctrine.dbal.logging_middleware');
 
         $abstractMiddlewareDefTags    = $container->getDefinition('doctrine.dbal.debug_middleware')->getTags();
@@ -1396,8 +1396,8 @@ class DoctrineExtensionTest extends TestCase
             $debugMiddlewareTagAttributes = $attributes;
         }
 
-        $this->assertFalse(in_array(['connection' => 'conn1'], $debugMiddlewareTagAttributes, true), 'Tag with connection conn1 found for doctrine.dbal.debug_middleware');
-        $this->assertTrue(in_array(['connection' => 'conn2'], $debugMiddlewareTagAttributes, true), 'Tag with connection conn2 not found for doctrine.dbal.debug_middleware');
+        $this->assertFalse(in_array(['connection' => 'conn1', 'priority' => 10], $debugMiddlewareTagAttributes, true), 'Tag with connection conn1 found for doctrine.dbal.debug_middleware');
+        $this->assertTrue(in_array(['connection' => 'conn2', 'priority' => 10], $debugMiddlewareTagAttributes, true), 'Tag with connection conn2 not found for doctrine.dbal.debug_middleware');
     }
 
     public function testDefinitionsToLogQueriesLoggingFalse(): void

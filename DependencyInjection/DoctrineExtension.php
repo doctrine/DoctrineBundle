@@ -1187,14 +1187,14 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $loggingMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.logging_middleware');
         foreach ($connWithLogging as $connName) {
-            $loggingMiddlewareAbstractDef->addTag('doctrine.middleware', ['connection' => $connName]);
+            $loggingMiddlewareAbstractDef->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
         }
 
         $container->getDefinition('doctrine.debug_data_holder')->replaceArgument(0, $connWithBacktrace);
         $debugMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.debug_middleware');
         foreach ($connWithProfiling as $connName) {
             $debugMiddlewareAbstractDef
-                ->addTag('doctrine.middleware', ['connection' => $connName]);
+                ->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
         }
     }
 }
