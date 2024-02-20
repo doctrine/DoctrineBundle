@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Schema\SQLiteSchemaManager;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -74,6 +75,10 @@ EOT);
 
         /** @psalm-suppress InvalidArrayOffset Need to be compatible with DBAL < 4, which still has `$params['url']` */
         unset($params['dbname'], $params['url']);
+
+        if ($connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $params['dbname'] = 'postgres';
+        }
 
         if (! $input->getOption('force')) {
             $output->writeln('<error>ATTENTION:</error> This operation should not be executed in a production environment.');
