@@ -988,7 +988,6 @@ class DoctrineExtensionTest extends TestCase
 
     public function testMessengerIntegration(): void
     {
-        /** @psalm-suppress UndefinedClass */
         if (! interface_exists(MessageBusInterface::class)) {
             $this->markTestSkipped('Symfony Messenger component is not installed');
         }
@@ -1014,7 +1013,6 @@ class DoctrineExtensionTest extends TestCase
 
     public function testMessengerIntegrationWithDoctrineTransport(): void
     {
-        /** @psalm-suppress UndefinedClass */
         if (! interface_exists(MessageBusInterface::class)) {
             $this->markTestSkipped('Symfony Messenger component is not installed');
         }
@@ -1046,7 +1044,6 @@ class DoctrineExtensionTest extends TestCase
 
     public function testMessengerIntegrationWithoutDoctrineTransport(): void
     {
-        /** @psalm-suppress UndefinedClass */
         if (! interface_exists(MessageBusInterface::class)) {
             $this->markTestSkipped('Symfony Messenger component is not installed');
         }
