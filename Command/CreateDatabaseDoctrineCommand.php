@@ -3,6 +3,7 @@
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -60,9 +61,13 @@ EOT);
             throw new InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be created.");
         }
 
-        // Need to get rid of _every_ occurrence of dbname from connection configuration and we have already extracted all relevant info from url
+        // Need to get rid of _every_ occurrence of dbname from connection configuration as we have already extracted all relevant info from url
         /** @psalm-suppress InvalidArrayOffset Need to be compatible with DBAL < 4, which still has `$params['url']` */
         unset($params['dbname'], $params['path'], $params['url']);
+
+        if ($connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $params['dbname'] = 'postgres';
+        }
 
         $tmpConnection           = DriverManager::getConnection($params, $connection->getConfiguration());
         $schemaManager           = $tmpConnection->createSchemaManager();

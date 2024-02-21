@@ -1136,7 +1136,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         // If the Messenger component is installed, wire it:
 
-        /** @psalm-suppress UndefinedClass Optional dependency */
         if (! interface_exists(MessageBusInterface::class)) {
             return;
         }
