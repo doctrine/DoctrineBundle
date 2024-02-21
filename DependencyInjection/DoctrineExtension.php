@@ -501,6 +501,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $controllerResolverDefaults['disabled'] = true;
             }
 
+            if ($config['controller_resolver']['auto_mapping'] === null) {
+                trigger_deprecation('doctrine/doctrine-bundle', '2.12', 'The default value of "doctrine.orm.controller_resolver.auto_mapping" will be changed from `true` to `false`. Explicitly configure `true` to keep existing behaviour.');
+                $config['controller_resolver']['auto_mapping'] = true;
+            }
+
             if (! $config['controller_resolver']['auto_mapping']) {
                 $controllerResolverDefaults['mapping'] = [];
             }

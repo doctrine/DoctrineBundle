@@ -515,7 +515,7 @@ class Configuration implements ConfigurationInterface
                             ->canBeDisabled()
                             ->children()
                                 ->booleanNode('auto_mapping')
-                                    ->defaultTrue()
+                                    ->defaultNull()
                                     ->info('Set to false to disable using route placeholders as lookup criteria when the primary key doesn\'t match the argument name')
                                 ->end()
                                 ->booleanNode('evict_cache')
