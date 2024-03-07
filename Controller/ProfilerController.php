@@ -2,11 +2,11 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Controller;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\Persistence\ConnectionRegistry;
 use Exception;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,10 +21,10 @@ use function assert;
 class ProfilerController
 {
     private Environment $twig;
-    private Registry $registry;
+    private ConnectionRegistry $registry;
     private Profiler $profiler;
 
-    public function __construct(Environment $twig, Registry $registry, Profiler $profiler)
+    public function __construct(Environment $twig, ConnectionRegistry $registry, Profiler $profiler)
     {
         $this->twig     = $twig;
         $this->registry = $registry;
