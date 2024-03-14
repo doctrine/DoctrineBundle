@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit colors="true" bootstrap="Tests/bootstrap.php">
+<phpunit colors="true" bootstrap="tests/bootstrap.php">
     <testsuites>
         <testsuite name="DoctrineBundle for the Symfony Framework">
-            <directory>./Tests</directory>
+            <directory>./tests</directory>
         </testsuite>
     </testsuites>
 
     <filter>
         <whitelist>
-            <directory>.</directory>
-            <exclude>
-                <directory>./Resources</directory>
-                <directory>./Tests</directory>
-                <directory>./vendor</directory>
-            </exclude>
+            <directory>src</directory>
         </whitelist>
     </filter>
 

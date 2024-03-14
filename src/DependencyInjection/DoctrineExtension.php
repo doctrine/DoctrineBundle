@@ -166,7 +166,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function dbalLoad(array $config, ContainerBuilder $container)
     {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('dbal.xml');
 
         if (empty($config['default_connection'])) {
@@ -447,7 +447,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             throw new LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
         }
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('orm.xml');
 
         if (class_exists(AbstractType::class)) {
@@ -1116,7 +1116,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     public function getXsdValidationBasePath(): string
     {
-        return __DIR__ . '/../Resources/config/schema';
+        return __DIR__ . '/../../config/schema';
     }
 
     public function getNamespace(): string
@@ -1145,7 +1145,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             return;
         }
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('messenger.xml');
 
         // available in Symfony 6.3
@@ -1186,7 +1186,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         array $connWithProfiling,
         array $connWithBacktrace
     ): void {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('middlewares.xml');
 
         $loggingMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.logging_middleware');

@@ -13,35 +13,20 @@
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
     </plugins>
     <projectFiles>
+        <directory name="src"/>
         <ignoreFiles>
             <directory name="vendor"/>
             <!-- Deprecated classes, not worth fixing -->
-            <file name="Command/ImportMappingDoctrineCommand.php"/>
-            <file name="Command/Proxy/OrmProxyCommand.php"/>
-            <file name="DependencyInjection/Compiler/WellKnownSchemaFilterPass.php"/>
+            <file name="src/Command/ImportMappingDoctrineCommand.php"/>
+            <file name="src/Command/Proxy/OrmProxyCommand.php"/>
+            <file name="src/DependencyInjection/Compiler/WellKnownSchemaFilterPass.php"/>
         </ignoreFiles>
-        <directory name="CacheWarmer"/>
-        <directory name="Command"/>
-        <directory name="Controller"/>
-        <directory name="DataCollector"/>
-        <directory name="Dbal"/>
-        <directory name="DependencyInjection"/>
-        <directory name="EventSubscriber"/>
-        <directory name="Mapping"/>
-        <directory name="Middleware"/>
-        <directory name="Repository"/>
-        <directory name="Tests"/>
-        <directory name="Twig"/>
-        <file name="ConnectionFactory.php"/>
-        <file name="DoctrineBundle.php"/>
-        <file name="ManagerConfigurator.php"/>
-        <file name="Registry.php"/>
     </projectFiles>
     <issueHandlers>
         <RedundantPropertyInitializationCheck>
             <errorLevel type="suppress">
                 <!-- Properties can be uninitialized in tests if setUp() fails. -->
-                <directory name="Tests"/>
+                <directory name="tests"/>
             </errorLevel>
         </RedundantPropertyInitializationCheck>
         <UndefinedClass>
@@ -63,14 +48,14 @@
         <DuplicateClass>
             <errorLevel type="suppress">
                 <!-- Conditional class definition-->
-                <file name="Repository/RepositoryFactoryCompatibility.php"/>
-                <file name="Repository/ServiceEntityRepository.php"/>
+                <file name="src/Repository/RepositoryFactoryCompatibility.php"/>
+                <file name="src/Repository/ServiceEntityRepository.php"/>
             </errorLevel>
         </DuplicateClass>
         <UndefinedMethod>
             <errorLevel type="suppress">
                 <!-- Too tricky to configure very nested configuration in a way Psalm understands -->
-                <file name="DependencyInjection/Configuration.php" />
+                <file name="src/DependencyInjection/Configuration.php" />
             </errorLevel>
         </UndefinedMethod>
     </issueHandlers>

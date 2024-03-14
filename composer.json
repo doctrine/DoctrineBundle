@@ -81,12 +81,13 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "Doctrine\\Bundle\\DoctrineBundle\\": ""
+            "Doctrine\\Bundle\\DoctrineBundle\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "": "Tests/DependencyInjection"
+            "": "tests/DependencyInjection",
+            "Doctrine\\Bundle\\DoctrineBundle\\Tests\\": "tests"
         }
     },
     "config": {

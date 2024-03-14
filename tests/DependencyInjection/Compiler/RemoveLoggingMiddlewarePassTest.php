@@ -39,7 +39,7 @@ final class RemoveLoggingMiddlewarePassTest extends TestCase
     {
         $container = new ContainerBuilder();
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../../Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../../config'));
         $loader->load('middlewares.xml');
 
         $container->addCompilerPass(new RemoveLoggingMiddlewarePass());

@@ -4,18 +4,20 @@ doctrine:
         connections:
             default:
                 dbname: db
+                default_table_options:
+                  charset:      utf8mb4
+                  collation:    utf8mb4_unicode_ci
+                  engine:       InnoDB
 
     orm:
-        validate_xml_mapping: true
         mappings:
             AnnotationsBundle: ~
-            AttributesBundle:
-                type: attribute
+            AttributesBundle: ~
             YamlBundle:
                 dir: Resources/config/doctrine
                 alias: yml
             manual:
                 type: xml
                 prefix: Fixtures\Bundles\XmlBundle
-                dir: "%kernel.root_dir%/Tests/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine"
+                dir: "%kernel.root_dir%/tests/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine"
                 alias: TestAlias

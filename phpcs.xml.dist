@@ -11,8 +11,7 @@
 
     <config name="php_version" value="70400"/>
 
-    <file>.</file>
-    <exclude-pattern>vendor/*</exclude-pattern>
+    <file>src</file>
 
     <rule ref="Doctrine">
         <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes"/>

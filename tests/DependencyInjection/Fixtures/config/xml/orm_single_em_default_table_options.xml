@@ -8,15 +8,19 @@
 
     <config>
         <dbal default-connection="default">
-            <connection name="default" dbname="db" />
+            <connection name="default" dbname="db">
+                <default-table-option name="charset">utf8mb4</default-table-option>
+                <default-table-option name="collation">utf8mb4_unicode_ci</default-table-option>
+                <default-table-option name="engine">InnoDB</default-table-option>
+            </connection>
         </dbal>
 
-        <orm validate-xml-mapping="true">
+        <orm>
             <mapping name="AnnotationsBundle" />
             <mapping name="AttributesBundle" type="attribute" />
             <mapping name="YamlBundle" dir="Resources/config/doctrine" alias="yml" />
             <mapping name="manual" type="xml" prefix="Fixtures\Bundles\XmlBundle"
-                dir="%kernel.root_dir%/Tests/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine"
+                dir="%kernel.root_dir%/tests/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine"
                 alias="TestAlias"
             />
         </orm>

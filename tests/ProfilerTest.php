@@ -50,7 +50,7 @@ class ProfilerTest extends BaseTestCase
         $registry->method('getManagers')->willReturn([]);
         $this->collector = new DoctrineDataCollector($registry, true, $this->debugDataHolder);
 
-        $twigLoaderFilesystem = new FilesystemLoader(__DIR__ . '/../Resources/views/Collector');
+        $twigLoaderFilesystem = new FilesystemLoader(__DIR__ . '/../templates/Collector');
         $twigLoaderFilesystem->addPath(__DIR__ . '/../vendor/symfony/web-profiler-bundle/Resources/views', 'WebProfiler');
         $this->twig = new Environment($twigLoaderFilesystem, ['debug' => true, 'strict_variables' => true]);
 

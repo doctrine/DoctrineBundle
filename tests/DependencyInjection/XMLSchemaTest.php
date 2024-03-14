@@ -43,7 +43,7 @@ class XMLSchemaTest extends TestCase
             $configNode->appendChild($dbalNode);
             $dbalDom->appendChild($configNode);
 
-            $ret = $dbalDom->schemaValidate(__DIR__ . '/../../Resources/config/schema/doctrine-1.0.xsd');
+            $ret = $dbalDom->schemaValidate(__DIR__ . '/../../config/schema/doctrine-1.0.xsd');
             $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
             $found = true;
         }
@@ -56,7 +56,7 @@ class XMLSchemaTest extends TestCase
             $configNode->appendChild($ormNode);
             $ormDom->appendChild($configNode);
 
-            $ret = $ormDom->schemaValidate(__DIR__ . '/../../Resources/config/schema/doctrine-1.0.xsd');
+            $ret = $ormDom->schemaValidate(__DIR__ . '/../../config/schema/doctrine-1.0.xsd');
             $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
             $found = true;
         }
