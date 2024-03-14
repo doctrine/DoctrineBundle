@@ -28,6 +28,7 @@
         <directory name="DependencyInjection"/>
         <directory name="EventSubscriber"/>
         <directory name="Mapping"/>
+        <directory name="Middleware"/>
         <directory name="Repository"/>
         <directory name="Tests"/>
         <directory name="Twig"/>
