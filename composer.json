@@ -86,8 +86,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "": "tests/DependencyInjection",
-            "Doctrine\\Bundle\\DoctrineBundle\\Tests\\": "tests"
+            "Doctrine\\Bundle\\DoctrineBundle\\Tests\\": "tests",
+            "Fixtures\\": "tests/DependencyInjection/Fixtures"
         }
     },
     "config": {
