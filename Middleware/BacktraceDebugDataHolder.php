@@ -17,7 +17,7 @@ class BacktraceDebugDataHolder extends DebugDataHolder
     /** @var string[] */
     private array $connWithBacktraces;
 
-    /** @var array<string, array<string, mixed>[]> */
+    /** @var array<string, array<int|string, mixed>[]> */
     private array $backtraces = [];
 
     /** @param string[] $connWithBacktraces */
