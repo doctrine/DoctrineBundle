@@ -30,6 +30,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 use function assert;
 use function class_exists;
 use function clearstatcache;
+use function dirname;
 use function spl_autoload_unregister;
 
 /** @final since 2.9 */
@@ -167,5 +168,10 @@ class DoctrineBundle extends Bundle
     /** @return void */
     public function registerCommands(Application $application)
     {
+    }
+
+    public function getPath(): string
+    {
+        return dirname(__DIR__);
     }
 }
