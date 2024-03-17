@@ -554,10 +554,14 @@ class DoctrineExtensionTest extends TestCase
             ],
         ], $container);
 
+        $isUsingDBAL3 = method_exists(Connection::class, 'getEventManager');
+
         $calls = $container->getDefinition('doctrine.dbal.default_connection')->getMethodCalls();
-        $this->assertCount(1, $calls);
-        $this->assertEquals('setNestTransactionsWithSavepoints', $calls[0][0]);
-        $this->assertTrue($calls[0][1][0]);
+        $this->assertCount((int) $isUsingDBAL3, $calls);
+        if ($isUsingDBAL3) {
+            $this->assertEquals('setNestTransactionsWithSavepoints', $calls[0][0]);
+            $this->assertTrue($calls[0][1][0]);
+        }
     }
 
     public function testAutoGenerateProxyClasses(): void
