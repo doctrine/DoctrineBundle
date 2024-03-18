@@ -10,6 +10,6 @@ branches:
 maintained_branches:
     - "2.11.x"
     - "2.12.x"
-doc_dir: "Resources/doc/"
+doc_dir: { "2.11.x": "Resources/doc/", "2.12.x": "docs/" }
 current_branch: "2.11.x"
 dev_branch: "2.12.x"
