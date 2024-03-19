@@ -2,14 +2,24 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Builder;
 
+use Doctrine\ORM\EntityManager;
+
+use function class_exists;
+
 class BundleConfigurationBuilder
 {
     /** @var array<string, mixed> */
-    private array $configuration = [ // todo: revert to empty array with 3.x release
-        'orm' => [
-            'controller_resolver' => ['auto_mapping' => false],
-        ],
-    ];
+    private array $configuration = [];
+
+    /** @todo Remove constructor with 3.x release */
+    private function __construct()
+    {
+        if (! class_exists(EntityManager::class)) {
+            return;
+        }
+
+        $this->configuration['orm'] = ['controller_resolver' => ['auto_mapping' => false]];
+    }
 
     public static function createBuilder(): self
     {
