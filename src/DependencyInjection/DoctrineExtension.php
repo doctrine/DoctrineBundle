@@ -300,8 +300,15 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $def->setClass($options['wrapperClass']);
         }
 
-        if (! empty($connection['use_savepoints'])) {
-            $def->addMethodCall('setNestTransactionsWithSavepoints', [$connection['use_savepoints']]);
+        if (isset($connection['use_savepoints'])) {
+            // DBAL >= 4 always has savepoints enabled. So we only need to call "setNestTransactionsWithSavepoints" for DBAL < 4
+            if (method_exists(Connection::class, 'getEventManager')) {
+                if ($connection['use_savepoints']) {
+                    $def->addMethodCall('setNestTransactionsWithSavepoints', [$connection['use_savepoints']]);
+                }
+            } elseif (! $connection['use_savepoints']) {
+                throw new LogicException('The "use_savepoints" option can only be set to "true" and should ideally not be set when using DBAL >= 4');
+            }
         }
 
         $container->setDefinition(

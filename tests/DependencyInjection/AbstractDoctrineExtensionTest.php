@@ -240,6 +240,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testDbalLoadSavepointsForNestedTransactions(): void
     {
+        if (!method_exists(Connection::class, 'getEventManager')) {
+            self::markTestSkipped('This test requires DBAL < 4');
+        }
+
         $container = $this->loadContainer('dbal_savepoints');
 
         $calls = $container->getDefinition('doctrine.dbal.savepoints_connection')->getMethodCalls();
