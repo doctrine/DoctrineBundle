@@ -307,7 +307,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     $def->addMethodCall('setNestTransactionsWithSavepoints', [$connection['use_savepoints']]);
                 }
             } elseif (! $connection['use_savepoints']) {
-                throw new LogicException('The "use_savepoints" option can only be set to "true" when using DBAL >= 4');
+                throw new LogicException('The "use_savepoints" option can only be set to "true" and should ideally not be set when using DBAL >= 4');
             }
         }
 
