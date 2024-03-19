@@ -332,7 +332,10 @@ class DoctrineExtensionTest extends TestCase
                             'cn2' => [],
                         ],
                     ],
-                    'orm' => ['entity_managers' => $entityManagers],
+                    'orm' => [
+                        'entity_managers' => $entityManagers,
+                        'controller_resolver' => ['auto_mapping' => false], // todo: remove this line with 3.x release
+                    ],
                 ],
             ],
             $container,
@@ -629,6 +632,8 @@ class DoctrineExtensionTest extends TestCase
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
+        $ormConfiguration['controller_resolver']['auto_mapping'] = false; // todo: remove this line with 3.x release
+
         $extension->load([
             [
                 'dbal' => [],
@@ -716,7 +721,11 @@ class DoctrineExtensionTest extends TestCase
         $config        = BundleConfigurationBuilder::createBuilder()
              ->addBaseConnection()
              ->build();
-        $config['orm'] = ['default_entity_manager' => 'default', 'entity_managers' => ['default' => ['mappings' => ['YamlBundle' => []]]]];
+        $config['orm'] = [
+            'default_entity_manager' => 'default',
+            'entity_managers' => ['default' => ['mappings' => ['YamlBundle' => []]]],
+            'controller_resolver' => ['auto_mapping' => false], // todo: remove this line with 3.x release
+        ];
         $extension->load([$config], $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
@@ -739,7 +748,11 @@ class DoctrineExtensionTest extends TestCase
         $config        = BundleConfigurationBuilder::createBuilder()
              ->addBaseConnection()
              ->build();
-        $config['orm'] = ['default_entity_manager' => 'default', 'entity_managers' => ['default' => ['mappings' => ['YamlBundle' => ['alias' => 'yml']]]]];
+        $config['orm'] = [
+            'default_entity_manager' => 'default',
+            'entity_managers' => ['default' => ['mappings' => ['YamlBundle' => ['alias' => 'yml']]]],
+            'controller_resolver' => ['auto_mapping' => false], // todo: remove this line with 3.x release
+        ];
         $extension->load([$config], $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
@@ -761,7 +774,12 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([
             ['dbal' => [], 'orm' => ['default_entity_manager' => 'app', 'entity_managers' => ['app' => ['mappings' => ['YamlBundle' => ['alias' => 'yml']]]]]],
-            ['orm' => ['metadata_cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool']]],
+            [
+                'orm' => [
+                    'metadata_cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool'],
+                    'controller_resolver' => ['auto_mapping' => false], // todo: remove this line with 3.x release
+                ],
+            ],
         ], $container);
 
         $this->assertEquals('app', $container->getParameter('doctrine.default_entity_manager'));
@@ -1442,6 +1460,8 @@ class DoctrineExtensionTest extends TestCase
         if ($simpleEntityManagerConfig) {
             $config['orm'] = [];
         }
+
+        $config['orm']['controller_resolver'] = ['auto_mapping' => true];
 
         $extension->load([$config], $container);
 

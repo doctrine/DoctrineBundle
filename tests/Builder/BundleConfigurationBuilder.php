@@ -5,7 +5,11 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Builder;
 class BundleConfigurationBuilder
 {
     /** @var array<string, mixed> */
-    private array $configuration = [];
+    private array $configuration = [ // todo: revert to empty array with 3.x release
+        'orm' => [
+            'controller_resolver' => ['auto_mapping' => false],
+        ],
+    ];
 
     public static function createBuilder(): self
     {
@@ -71,7 +75,9 @@ class BundleConfigurationBuilder
     /** @param array<string, mixed> $config */
     public function addEntityManager(array $config): self
     {
-        $this->configuration['orm'] = $config;
+        foreach ($config as $key => $value) {
+            $this->configuration['orm'][$key] = $value;
+        }
 
         return $this;
     }
