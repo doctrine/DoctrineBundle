@@ -109,6 +109,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $this->loadMessengerServices($container);
         }
 
+        if (! $container->hasParameter('kernel.runtime_mode') || ! $container->hasParameter('kernel.runtime_mode.worker')) {
+            $container->removeDefinition('doctrine.connection.keep.alive_middleware');
+        }
+
         if (empty($config['orm'])) {
             return;
         }
