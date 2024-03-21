@@ -1443,6 +1443,8 @@ class DoctrineExtensionTest extends TestCase
             $config['orm'] = [];
         }
 
+        $config['orm']['controller_resolver'] = ['auto_mapping' => true];
+
         $extension->load([$config], $container);
 
         $controllerResolver = $container->getDefinition('doctrine.orm.entity_value_resolver');
