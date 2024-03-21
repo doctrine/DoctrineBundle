@@ -4,6 +4,7 @@ doctrine:
         connections:
             default:
                 dbname: db
+                server_version: 8.0.31
 
     orm:
         enable_lazy_ghost_objects: true

@@ -8,9 +8,9 @@
 
     <config>
         <dbal default-connection="connection1">
-            <connection name="connection1" schema-filter="~^(?!t_)~" />
-            <connection name="connection2" />
-            <connection name="connection3" />
+            <connection name="connection1" schema-filter="~^(?!t_)~" server-version="8.0.31" />
+            <connection name="connection2" server-version="8.0.31" />
+            <connection name="connection3" server-version="8.0.31" />
         </dbal>
     </config>
 </srv:container>
