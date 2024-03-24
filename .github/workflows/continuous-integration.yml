@@ -24,6 +24,7 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2"
         dependencies:
           - "highest"
         stability:
@@ -46,22 +47,22 @@ jobs:
           # Test last supported minor version
           - symfony-require: "6.*"
             dependencies: "highest"
-            php-version: "8.2"
+            php-version: "8.3"
 
           # DBAL only without ORM
-          - php-version: "8.2"
+          - php-version: "8.3"
             dependencies: "highest"
             stability: "stable"
             remove-orm: true
 
           # DBAL 4
-          - php-version: "8.2"
+          - php-version: "8.3"
             dependencies: "highest"
             stability: "dev"
             remove-orm: true
 
           # Bleeding edge
-          - php-version: "8.2"
+          - php-version: "8.3"
             dependencies: "highest"
             stability: "dev"
 
