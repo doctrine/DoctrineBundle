@@ -240,7 +240,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
     public function testDbalLoadSavepointsForNestedTransactions(): void
     {
-        if (!method_exists(Connection::class, 'getEventManager')) {
+        if (! method_exists(Connection::class, 'getEventManager')) {
             self::markTestSkipped('This test requires DBAL < 4');
         }
 
