@@ -11,6 +11,6 @@ branches:
 maintained_branches:
     - "2.12.x"
     - "2.13.x"
-doc_dir: { "2.11.x": "Resources/doc/", "2.12.x": "docs/" }
+doc_dir: "docs/"
 current_branch: "2.12.x"
 dev_branch: "2.13.x"
