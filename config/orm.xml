@@ -33,8 +33,8 @@
         <parameter key="doctrine.orm.metadata.annotation.class">Doctrine\ORM\Mapping\Driver\AnnotationDriver</parameter>
         <parameter key="doctrine.orm.metadata.xml.class">Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver</parameter>
         <parameter key="doctrine.orm.metadata.yml.class">Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver</parameter>
-        <parameter key="doctrine.orm.metadata.php.class">Doctrine\ORM\Mapping\Driver\PHPDriver</parameter>
-        <parameter key="doctrine.orm.metadata.staticphp.class">Doctrine\ORM\Mapping\Driver\StaticPHPDriver</parameter>
+        <parameter key="doctrine.orm.metadata.php.class">Doctrine\Persistence\Mapping\Driver\PHPDriver</parameter>
+        <parameter key="doctrine.orm.metadata.staticphp.class">Doctrine\Persistence\Mapping\Driver\StaticPHPDriver</parameter>
         <parameter key="doctrine.orm.metadata.attribute.class">Doctrine\ORM\Mapping\Driver\AttributeDriver</parameter>
 
         <!-- cache warmer -->
