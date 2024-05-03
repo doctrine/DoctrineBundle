@@ -883,7 +883,7 @@ can configure. The following block shows all possible configuration keys:
                 logging:                  "%kernel.debug%"
                 platform_service:         MyOwnDatabasePlatformService
                 auto_commit:              false
-                schema_filter:            ^sf2_
+                schema_filter:            /^sf2_/
                 mapping_types:
                     enum: string
                 types:
