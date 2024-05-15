@@ -512,7 +512,8 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertEquals('doctrine.orm.naming_strategy.default', (string) $calls[11][1][0]);
         $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[12][1][0]);
-        $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[13][1][0]);
+        $this->assertEquals('doctrine.orm.typed_field_mapper.default', (string) $calls[13][1][0]);
+        $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[14][1][0]);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_cache_warmer');
         $this->assertSame(DoctrineMetadataCacheWarmer::class, $definition->getClass());
