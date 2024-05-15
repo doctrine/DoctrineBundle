@@ -1,0 +1,14 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        default_entity_manager: default
+        entity_managers:
+            default:
+                mappings:
+                    YamlBundle: ~
+                typed_field_mapper: doctrine.orm.typed_field_mapper.default

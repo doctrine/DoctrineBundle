@@ -725,6 +725,19 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($def2, 'setQuoteStrategy', [0 => new Reference('doctrine.orm.quote_strategy.ansi')]);
     }
 
+    public function testSetTypedFieldMapper(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_typedfieldmapper');
+
+        $definition = $container->getDefinition('doctrine.orm.default_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($definition, 'setTypedFieldMapper', [0 => new Reference('doctrine.orm.typed_field_mapper.default')]);
+    }
+
     /**
      * @dataProvider cacheConfigProvider
      * @group legacy
