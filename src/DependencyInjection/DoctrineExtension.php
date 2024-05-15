@@ -696,6 +696,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setDefaultRepositoryClassName' => $entityManager['default_repository_class'],
             'setNamingStrategy' => new Reference($entityManager['naming_strategy']),
             'setQuoteStrategy' => new Reference($entityManager['quote_strategy']),
+            'setTypedFieldMapper' => new Reference($entityManager['typed_field_mapper']),
             'setEntityListenerResolver' => new Reference(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name'])),
             'setLazyGhostObjectEnabled' => '%doctrine.orm.enable_lazy_ghost_objects%',
         ];

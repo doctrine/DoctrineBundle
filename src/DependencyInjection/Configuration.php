@@ -659,6 +659,7 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('auto_mapping')->defaultFalse()->end()
                     ->scalarNode('naming_strategy')->defaultValue('doctrine.orm.naming_strategy.default')->end()
                     ->scalarNode('quote_strategy')->defaultValue('doctrine.orm.quote_strategy.default')->end()
+                    ->scalarNode('typed_field_mapper')->defaultValue('doctrine.orm.typed_field_mapper.default')->end()
                     ->scalarNode('entity_listener_resolver')->defaultNull()->end()
                     ->scalarNode('repository_factory')->defaultValue('doctrine.orm.container_repository_factory')->end()
                     ->arrayNode('schema_ignore_classes')
