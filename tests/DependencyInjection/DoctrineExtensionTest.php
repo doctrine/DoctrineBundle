@@ -512,7 +512,8 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertEquals('doctrine.orm.naming_strategy.default', (string) $calls[11][1][0]);
         $this->assertEquals('doctrine.orm.quote_strategy.default', (string) $calls[12][1][0]);
-        $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[13][1][0]);
+        $this->assertEquals('doctrine.orm.typed_field_mapper.default', (string) $calls[13][1][0]);
+        $this->assertEquals('doctrine.orm.default_entity_listener_resolver', (string) $calls[14][1][0]);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_cache_warmer');
         $this->assertSame(DoctrineMetadataCacheWarmer::class, $definition->getClass());
@@ -558,10 +559,12 @@ class DoctrineExtensionTest extends TestCase
 
         $calls = $container->getDefinition('doctrine.dbal.default_connection')->getMethodCalls();
         $this->assertCount((int) $isUsingDBAL3, $calls);
-        if ($isUsingDBAL3) {
-            $this->assertEquals('setNestTransactionsWithSavepoints', $calls[0][0]);
-            $this->assertTrue($calls[0][1][0]);
+        if (! $isUsingDBAL3) {
+            return;
         }
+
+        $this->assertEquals('setNestTransactionsWithSavepoints', $calls[0][0]);
+        $this->assertTrue($calls[0][1][0]);
     }
 
     public function testAutoGenerateProxyClasses(): void
@@ -1493,6 +1496,8 @@ class DoctrineExtensionTest extends TestCase
         if ($simpleEntityManagerConfig) {
             $config['orm'] = [];
         }
+
+        $config['orm']['controller_resolver'] = ['auto_mapping' => true];
 
         $extension->load([$config], $container);
 

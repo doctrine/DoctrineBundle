@@ -120,7 +120,10 @@ class ConnectionFactory
             $driver     = $connection->getDriver();
             /** @psalm-suppress InvalidScalarArgument Bogus error, StaticServerVersionProvider implements Doctrine\DBAL\ServerVersionProvider  */
             $platform = $driver->getDatabasePlatform(
-                ...(class_exists(StaticServerVersionProvider::class) ? [new StaticServerVersionProvider($params['serverVersion'] ?? '')] : []),
+                ...(class_exists(StaticServerVersionProvider::class)
+                    ? [new StaticServerVersionProvider($params['serverVersion'] ?? $params['primary']['serverVersion'] ?? '')]
+                    : []
+                ),
             );
 
             if (! isset($params['charset'])) {

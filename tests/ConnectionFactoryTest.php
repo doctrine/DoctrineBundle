@@ -43,7 +43,7 @@ class ConnectionFactoryTest extends TestCase
     public function testDefaultCharsetMySql(): void
     {
         $factory = new ConnectionFactory([]);
-        $params  = ['driver' => 'pdo_mysql'];
+        $params  = ['driver' => 'pdo_mysql', 'serverVersion' => '8.0.31'];
 
         $connection = $factory->createConnection($params, $this->configuration);
 
@@ -53,7 +53,7 @@ class ConnectionFactoryTest extends TestCase
     public function testDefaultCollationMySql(): void
     {
         $factory    = new ConnectionFactory([]);
-        $connection = $factory->createConnection(['driver' => 'pdo_mysql'], $this->configuration);
+        $connection = $factory->createConnection(['driver' => 'pdo_mysql', 'serverVersion' => '8.0.31'], $this->configuration);
 
         $this->assertSame(
             'utf8mb4_unicode_ci',

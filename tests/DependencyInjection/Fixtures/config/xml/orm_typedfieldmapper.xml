@@ -8,15 +8,13 @@
 
     <config>
         <dbal default-connection="default">
-            <connection name="default" dbname="db" server-version="8.0.31" />
+            <connection name="default" dbname="db" />
         </dbal>
 
-        <orm enable-lazy-ghost-objects="true">
-            <filter name="soft_delete" enabled="true" >Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter</filter>
-            <filter name="myFilter" enabled="true" class="Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestFilter">
-                <parameter name="myParameter">myValue</parameter>
-                <parameter name="mySecondParameter">mySecondValue</parameter>
-            </filter>
+        <orm default-entity-manager="default">
+            <entity-manager name="default" typed-field-mapper="doctrine.orm.typed_field_mapper.default">
+                <mapping name="YamlBundle" />
+            </entity-manager>
         </orm>
     </config>
 </srv:container>

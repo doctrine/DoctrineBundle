@@ -262,6 +262,7 @@ Configuration Reference
                         validate_xml_mapping: false
                         naming_strategy:              doctrine.orm.naming_strategy.default
                         quote_strategy:               doctrine.orm.quote_strategy.default
+                        typed_field_mapper:           doctrine.orm.typed_field_mapper.default
                         entity_listener_resolver:     ~
                         repository_factory:           ~
                         second_level_cache:
@@ -514,6 +515,7 @@ Configuration Reference
                         report-fields-where-declared="false"
                         naming-strategy="doctrine.orm.naming_strategy.default"
                         quote-strategy="doctrine.orm.quote_strategy.default"
+                        typed-field-mapper="doctrine.orm.typed_field_mapper.default"
                         entity-listener-resolver="null"
                         repository-factory="null"
                     >
@@ -883,7 +885,7 @@ can configure. The following block shows all possible configuration keys:
                 logging:                  "%kernel.debug%"
                 platform_service:         MyOwnDatabasePlatformService
                 auto_commit:              false
-                schema_filter:            ^sf2_
+                schema_filter:            /^sf2_/
                 mapping_types:
                     enum: string
                 types:

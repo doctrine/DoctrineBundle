@@ -5,5 +5,6 @@
 phpunit.xml.dist       export-ignore
 phpcs.xml.dist         export-ignore
 psalm.xml.dist         export-ignore
-/Resources/doc         export-ignore
-/Tests                 export-ignore
+/docs                  export-ignore
+/tests                 export-ignore
+.symfony.bundle.yaml   export-ignore

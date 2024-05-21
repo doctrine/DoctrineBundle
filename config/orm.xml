@@ -62,6 +62,9 @@
         <parameter key="doctrine.orm.quote_strategy.default.class">Doctrine\ORM\Mapping\DefaultQuoteStrategy</parameter>
         <parameter key="doctrine.orm.quote_strategy.ansi.class">Doctrine\ORM\Mapping\AnsiQuoteStrategy</parameter>
 
+        <!-- typed field mapper -->
+        <parameter key="doctrine.orm.typed_field_mapper.default.class">Doctrine\ORM\Mapping\DefaultTypedFieldMapper</parameter>
+
         <!-- entity listener resolver -->
         <parameter key="doctrine.orm.entity_listener_resolver.class">Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver</parameter>
 
@@ -172,6 +175,9 @@
         <!-- quote strategy -->
         <service id="doctrine.orm.quote_strategy.default" class="%doctrine.orm.quote_strategy.default.class%" public="false" />
         <service id="doctrine.orm.quote_strategy.ansi" class="%doctrine.orm.quote_strategy.ansi.class%" public="false" />
+
+        <!-- typed field mapper -->
+        <service id="doctrine.orm.typed_field_mapper.default" class="%doctrine.orm.typed_field_mapper.default.class%" public="false" />
 
         <!-- custom id generators -->
         <service id="doctrine.ulid_generator" class="Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator">

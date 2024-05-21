@@ -24,6 +24,7 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2"
         dependencies:
           - "highest"
         stability:
@@ -46,22 +47,22 @@ jobs:
           # Test last supported minor version
           - symfony-require: "6.*"
             dependencies: "highest"
-            php-version: "8.2"
+            php-version: "8.3"
 
           # DBAL only without ORM
-          - php-version: "8.2"
+          - php-version: "8.3"
             dependencies: "highest"
             stability: "stable"
             remove-orm: true
 
           # DBAL 4
-          - php-version: "8.2"
+          - php-version: "8.3"
             dependencies: "highest"
             stability: "dev"
             remove-orm: true
 
           # Bleeding edge
-          - php-version: "8.2"
+          - php-version: "8.3"
             dependencies: "highest"
             stability: "dev"
 
@@ -93,7 +94,7 @@ jobs:
         if: "${{ matrix.remove-orm }}"
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
         with:
           dependency-versions: "${{ matrix.dependencies }}"
           composer-options: "--prefer-dist"
@@ -102,7 +103,7 @@ jobs:
         run: "vendor/bin/phpunit --coverage-clover=coverage.xml"
 
       - name: "Upload coverage file"
-        uses: "actions/upload-artifact@v3"
+        uses: "actions/upload-artifact@v4"
         with:
           name: "phpunit-${{ matrix.php-version }}-${{ matrix.dependencies }}-${{ hashFiles('composer.lock') }}.coverage"
           path: "coverage.xml"
@@ -120,11 +121,13 @@ jobs:
           fetch-depth: 2
 
       - name: "Download coverage files"
-        uses: "actions/download-artifact@v3"
+        uses: "actions/download-artifact@v4"
         with:
           path: "reports"
 
       - name: "Upload to Codecov"
-        uses: "codecov/codecov-action@v3"
+        uses: "codecov/codecov-action@v4"
         with:
           directory: reports
+        env:
+          CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"

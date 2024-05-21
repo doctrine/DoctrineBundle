@@ -23,7 +23,8 @@ use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
-use Twig\RuntimeLoader\RuntimeLoaderInterface;
+use Twig\Runtime\EscaperRuntime;
+use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 use function class_exists;
 use function html_entity_decode;
@@ -79,9 +80,10 @@ class ProfilerTest extends BaseTestCase
         $this->twig->addExtension(new WebProfilerExtension());
         $this->twig->addExtension(new DoctrineExtension());
 
-        $loader = $this->getMockBuilder(RuntimeLoaderInterface::class)->getMock();
-        $loader->method('load')->willReturn($kernelRuntime);
-        $this->twig->addRuntimeLoader($loader);
+        $this->twig->addRuntimeLoader(new FactoryRuntimeLoader([
+            HttpKernelRuntime::class => static fn () => $kernelRuntime,
+            EscaperRuntime::class => static fn () => new EscaperRuntime(),
+        ]));
     }
 
     public function testRender(): void

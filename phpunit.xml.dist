@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<phpunit colors="true" bootstrap="tests/bootstrap.php">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         colors="true"
+         bootstrap="tests/bootstrap.php"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+>
     <testsuites>
         <testsuite name="DoctrineBundle for the Symfony Framework">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>
 
-    <filter>
-        <whitelist>
+    <php>
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="ignoreFile=./tests/baseline-ignore"/>
+    </php>
+
+    <coverage>
+        <include>
             <directory>src</directory>
-        </whitelist>
-    </filter>
+        </include>
+    </coverage>
 
     <listeners>
         <listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
