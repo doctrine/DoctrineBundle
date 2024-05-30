@@ -529,6 +529,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $config['controller_resolver']['auto_mapping'] = true;
             }
 
+            if ($config['controller_resolver']['auto_mapping'] === true) {
+                trigger_deprecation('doctrine/doctrine-bundle', '2.13', 'Enabling the controller resolver automapping feature has been deprecated. Symfony Mapped Route Parameters should be used as replacement.');
+            }
+
             if (! $config['controller_resolver']['auto_mapping']) {
                 $controllerResolverDefaults['mapping'] = [];
             }
