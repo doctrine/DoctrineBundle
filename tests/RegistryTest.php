@@ -8,11 +8,11 @@ use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ObjectManager;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
 use InvalidArgumentException;
 use ProxyManager\Proxy\ProxyInterface;
-use stdClass;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 
@@ -78,7 +78,7 @@ class RegistryTest extends TestCase
 
     public function testGetDefaultEntityManager(): void
     {
-        $em        = new stdClass();
+        $em        = $this->createMock(ObjectManager::class);
         $container = new Container();
         $container->set('doctrine.orm.default_entity_manager', $em);
 
@@ -89,7 +89,7 @@ class RegistryTest extends TestCase
 
     public function testGetEntityManager(): void
     {
-        $em        = new stdClass();
+        $em        = $this->createMock(ObjectManager::class);
         $container = new Container();
         $container->set('doctrine.orm.default_entity_manager', $em);
 
