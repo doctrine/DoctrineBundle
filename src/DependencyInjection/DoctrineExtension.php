@@ -33,6 +33,7 @@ use Doctrine\Persistence\Reflection\RuntimeReflectionProperty;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
+use Symfony\Bridge\Doctrine\ArgumentResolver\UserInjector;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
@@ -533,6 +534,12 @@ class DoctrineExtension extends AbstractDoctrineExtension
                     $controllerResolverDefaults['evict_cache'] ?? null,
                     $controllerResolverDefaults['disabled'] ?? false,
                 ]));
+            } else {
+                $container->getDefinition('doctrine.orm.entity_value_resolver')->setArgument(2, (new Definition(MapEntity::class)));
+            }
+
+            if (class_exists(ExpressionLanguage::class) && class_exists(UserInjector::class)) {
+                $container->getDefinition('doctrine.orm.entity_value_resolver')->setArgument(3, new Reference('doctrine.orm.entity_value_resolver_variable_injector'));
             }
         }
 

@@ -1451,7 +1451,7 @@ class DoctrineExtensionTest extends TestCase
 
         $controllerResolver = $container->getDefinition('doctrine.orm.entity_value_resolver');
 
-        $this->assertEquals([new Reference('doctrine'), new Reference('doctrine.orm.entity_value_resolver.expression_language', $container::IGNORE_ON_INVALID_REFERENCE)], $controllerResolver->getArguments());
+        $this->assertEquals([new Reference('doctrine'), new Reference('doctrine.orm.entity_value_resolver.expression_language', $container::IGNORE_ON_INVALID_REFERENCE), new Definition(MapEntity::class)], $controllerResolver->getArguments());
 
         $container = $this->getContainer();
 
