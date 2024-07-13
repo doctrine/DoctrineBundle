@@ -188,8 +188,9 @@
             <argument type="service" id="doctrine" />
         </service>
 
-        <service id="doctrine.orm.entity_value_resolver_variable_injector" class="Symfony\Bridge\Doctrine\ArgumentResolver\UserInjector">
+        <service id="Symfony\Bridge\Doctrine\ArgumentResolver\UserInjector">
             <argument type="service" id="security.token_storage" on-invalid="ignore" />
+            <tag name="doctrine.orm.entity_value_resolver_expression_modifier_injector" key="userInjector"/>
         </service>
 
         <service id="doctrine.orm.entity_value_resolver" class="Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver">

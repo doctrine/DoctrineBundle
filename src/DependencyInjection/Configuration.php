@@ -77,7 +77,7 @@ class Configuration implements ConfigurationInterface
     private function addDbalSection(ArrayNodeDefinition $node): void
     {
         // Key that should not be rewritten to the connection config
-        $excludedKeys = ['default_connection' => true, 'driver_schemes' => true, 'driver_scheme' => true, 'types' => true, 'type' => true];
+        $excludedKeys = ['default_connection' => true, 'driver_schemes' => true, 'driver_scheme' => true, 'types' => true, 'type' => true, 'default_expression_modifier_injector' => true];
 
         $node
             ->children()
@@ -165,6 +165,11 @@ class Configuration implements ConfigurationInterface
                                 return $value;
                             })
                         ->end()
+                    ->end()
+                ->end()
+                ->children()
+                    ->arrayNode('default_expression_modifier_injector')->scalarPrototype()->end()
+                        ->beforeNormalization()->castToArray()->end()
                     ->end()
                 ->end()
                 ->fixXmlConfig('connection')

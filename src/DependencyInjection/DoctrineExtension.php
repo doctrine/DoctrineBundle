@@ -33,7 +33,7 @@ use Doctrine\Persistence\Reflection\RuntimeReflectionProperty;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
-use Symfony\Bridge\Doctrine\ArgumentResolver\UserInjector;
+use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolverExpressionModifiersInjectorInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
@@ -51,6 +51,7 @@ use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
+use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -88,6 +89,7 @@ use const PHP_VERSION_ID;
  *      driver_schemes: array<string, string>,
  *      default_connection: string,
  *      types: array<string, string>,
+ *      default_expression_modifier_injector: array<string>
  *  }
  */
 class DoctrineExtension extends AbstractDoctrineExtension
@@ -182,6 +184,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setAlias('doctrine.dbal.event_manager', new Alias(sprintf('doctrine.dbal.%s_connection.event_manager', $this->defaultConnection), false));
 
         $container->setParameter('doctrine.dbal.connection_factory.types', $config['types']);
+        $container->setParameter('doctrine.dbal.default_expression_modifier_injector', $config['default_expression_modifier_injector']);
 
         $container->getDefinition('doctrine.dbal.connection_factory.dsn_parser')->setArgument(0, array_merge(ConnectionFactory::DEFAULT_SCHEME_MAP, $config['driver_schemes']));
 
@@ -497,7 +500,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         // available in Symfony 6.2 and higher
         if (! class_exists(EntityValueResolver::class)) {
             $container->removeDefinition('doctrine.orm.entity_value_resolver');
-            $container->removeDefinition('doctrine.orm.entity_value_resolver.expression_language');
         } else {
             if (! class_exists(ExpressionLanguage::class)) {
                 $container->removeDefinition('doctrine.orm.entity_value_resolver.expression_language');
@@ -538,8 +540,11 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $container->getDefinition('doctrine.orm.entity_value_resolver')->setArgument(2, (new Definition(MapEntity::class)));
             }
 
-            if (class_exists(ExpressionLanguage::class) && class_exists(UserInjector::class)) {
-                $container->getDefinition('doctrine.orm.entity_value_resolver')->setArgument(3, new Reference('doctrine.orm.entity_value_resolver_variable_injector'));
+            if (class_exists(ExpressionLanguage::class) && interface_exists(EntityValueResolverExpressionModifiersInjectorInterface::class)) {
+                /** @psalm-suppress UndefinedClass */
+                $container->registerForAutoconfiguration(EntityValueResolverExpressionModifiersInjectorInterface::class)->addTag('doctrine.orm.entity_value_resolver_expression_modifier_injector');
+                $container->getDefinition('doctrine.orm.entity_value_resolver')->setArgument(3, new AutowireLocator('doctrine.orm.entity_value_resolver_expression_modifier_injector', 'key'));
+                $container->getDefinition('doctrine.orm.entity_value_resolver')->setArgument(4, $container->getParameter('doctrine.dbal.default_expression_modifier_injector'));
             }
         }
 
