@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Proxy\ProxyFactory;
@@ -804,13 +805,28 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
+                ->fixXmlConfig('identity_generation_preference')
+                ->children()
+                    ->arrayNode('identity_generation_preferences')
+                        ->info('Configures the preferences for identity generation when using the AUTO strategy. Valid values are "SEQUENCE" or "IDENTITY".')
+                        ->useAttributeAsKey('platform')
+                        ->prototype('scalar')
+                            ->beforeNormalization()
+                                ->ifString()
+                                ->then(static function ($v) {
+                                    return constant(ClassMetadata::class . '::GENERATOR_TYPE_' . strtoupper($v));
+                                })
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $node;
     }
 
     /**
-     * Return a ORM cache driver node for an given entity manager
+     * Return an ORM cache driver node for a given entity manager
      */
     private function getOrmCacheDriverNode(string $name): ArrayNodeDefinition
     {

@@ -13,10 +13,12 @@ use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Proxy\ProxyFactory;
@@ -712,6 +714,21 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $this->assertDICDefinitionMethodCallOnce($def1, 'setNamingStrategy', [0 => new Reference('doctrine.orm.naming_strategy.default')]);
         $this->assertDICDefinitionMethodCallOnce($def2, 'setNamingStrategy', [0 => new Reference('doctrine.orm.naming_strategy.underscore')]);
+    }
+
+    public function testSetIdentityGenerationPreferences(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_identity_generation_preferences');
+
+        $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
+        $def2 = $container->getDefinition('doctrine.orm.em2_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($def1, 'setIdentityGenerationPreferences', [0 => [PostgreSQLPlatform::class => ClassMetadata::GENERATOR_TYPE_IDENTITY]]);
+        $this->assertDICDefinitionMethodCallOnce($def2, 'setIdentityGenerationPreferences', [0 => [PostgreSQLPlatform::class => ClassMetadata::GENERATOR_TYPE_SEQUENCE]]);
     }
 
     public function testSetQuoteStrategy(): void

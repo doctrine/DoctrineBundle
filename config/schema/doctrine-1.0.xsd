@@ -218,6 +218,7 @@
             <xsd:element name="entity-listeners" type="entity_listeners" minOccurs="0" maxOccurs="1" />
             <xsd:element name="second-level-cache" type="second-level-cache" minOccurs="0" maxOccurs="1" />
             <xsd:element name="schema-ignore-class" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="identity-generation-preference" type="identity_generation_preference" minOccurs="0" maxOccurs="unbounded" />
         </xsd:choice>
     </xsd:group>
 
@@ -281,5 +282,13 @@
             <xsd:element name="numeric-function" type="named_scalar" />
             <xsd:element name="datetime-function" type="named_scalar" />
         </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="identity_generation_preference">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="platform" type="xsd:string" use="required" />
+            </xsd:extension>
+        </xsd:simpleContent>
     </xsd:complexType>
 </xsd:schema>

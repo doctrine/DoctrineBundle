@@ -719,6 +719,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setTypedFieldMapper' => new Reference($entityManager['typed_field_mapper']),
             'setEntityListenerResolver' => new Reference(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name'])),
             'setLazyGhostObjectEnabled' => '%doctrine.orm.enable_lazy_ghost_objects%',
+            'setIdentityGenerationPreferences' => $entityManager['identity_generation_preferences'],
         ];
 
         if (! method_exists(OrmConfiguration::class, 'setLazyGhostObjectEnabled')) {

@@ -1,0 +1,20 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        default_entity_manager: em1
+        entity_managers:
+            em1:
+                mappings:
+                    YamlBundle: ~
+                identity_generation_preferences:
+                    Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
+            em2:
+                mappings:
+                    YamlBundle: ~
+                identity_generation_preferences:
+                    Doctrine\DBAL\Platforms\PostgreSQLPlatform: sequence
