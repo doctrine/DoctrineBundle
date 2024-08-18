@@ -105,7 +105,6 @@ EOT);
 
         try {
             if ($shouldDropDatabase) {
-                /** @psalm-suppress TypeDoesNotContainType Bogus error, Doctrine\DBAL\Schema\AbstractSchemaManager<Doctrine\DBAL\Platforms\AbstractPlatform> does contain Doctrine\DBAL\Schema\SQLiteSchemaManager */
                 if ($schemaManager instanceof SQLiteSchemaManager) {
                     // dropDatabase() is deprecated for Sqlite
                     $connection->close();

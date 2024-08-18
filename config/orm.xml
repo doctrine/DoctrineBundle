@@ -145,11 +145,11 @@
             <tag name="doctrine.event_subscriber" />
         </service>
         <service id="doctrine.orm.listeners.doctrine_token_provider_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaSubscriber">
-            <argument type="tagged" tag="security.remember_me_handler" />
+            <argument type="tagged_iterator" tag="security.remember_me_handler" />
             <tag name="doctrine.event_subscriber" />
         </service>
         <service id="doctrine.orm.listeners.doctrine_token_provider_schema_listener" class="Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaListener">
-            <argument type="tagged" tag="security.remember_me_handler" />
+            <argument type="tagged_iterator" tag="security.remember_me_handler" />
             <tag name="doctrine.event_listener" event="postGenerateSchema" />
         </service>
         <service id="doctrine.orm.listeners.pdo_session_handler_schema_listener" class="Symfony\Bridge\Doctrine\SchemaListener\PdoSessionHandlerSchemaListener">
@@ -157,7 +157,7 @@
             <tag name="doctrine.event_listener" event="postGenerateSchema" />
         </service>
         <service id="doctrine.orm.listeners.lock_store_schema_listener" class="Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaListener">
-            <argument type="tagged" tag="lock.store" />
+            <argument type="tagged_iterator" tag="lock.store" />
             <tag name="doctrine.event_listener" event="postGenerateSchema" />
         </service>
 
