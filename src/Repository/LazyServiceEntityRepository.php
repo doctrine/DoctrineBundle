@@ -34,13 +34,7 @@ class LazyServiceEntityRepository extends EntityRepository implements ServiceEnt
 
         if ($this instanceof LazyObjectInterface) {
             $this->initialize();
-
-            return;
         }
-
-        unset($this->_em);
-        unset($this->_class);
-        unset($this->_entityName);
     }
 
     /** @return mixed */
@@ -50,9 +44,7 @@ class LazyServiceEntityRepository extends EntityRepository implements ServiceEnt
 
         $scope = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class'] ?? null;
 
-        return (function () use ($name) {
-            return $this->$name;
-        })->bindTo($this, $scope)();
+        return (fn () => $this->$name)->bindTo($this, $scope)();
     }
 
     public function __isset(string $name): bool
@@ -61,9 +53,7 @@ class LazyServiceEntityRepository extends EntityRepository implements ServiceEnt
 
         $scope = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class'] ?? null;
 
-        return (function () use ($name) {
-            return isset($this->$name);
-        })->bindTo($this, $scope)();
+        return (fn () => isset($this->$name))->bindTo($this, $scope)();
     }
 
     private function initialize(): void
