@@ -2,7 +2,7 @@ Entity Listeners
 ================
 
 Entity listeners that are services must be registered with the entity listener
-resolver. On top of the annotation in the entity class, you have to tag the
+resolver. On top of the annotation/attribute in the entity class, you have to tag the
 service with ``doctrine.orm.entity_listener`` for it to be automatically added
 to the resolver. Use the (optional) ``entity_manager`` attribute to specify
 which entity manager it should be registered with.
