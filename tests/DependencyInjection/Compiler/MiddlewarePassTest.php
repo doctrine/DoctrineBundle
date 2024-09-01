@@ -15,6 +15,7 @@ use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\Reference;
 
 use function array_map;
 use function class_exists;
@@ -306,6 +307,28 @@ class MiddlewarePassTest extends TestCase
         $this->assertMiddlewareOrdering($container, 'conn2', $expectedMiddlewares);
     }
 
+    public function testInjectedMiddlewaresPreserveParentDefinition(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container
+                ->register('middleware', PHP7Middleware::class)
+                ->setPublic(true)
+                ->setAutowired(true)
+                ->setAutoconfigured(true)
+                ->addTag('doctrine.middleware')->addTag('custom.tag');
+            $container
+                ->setAlias('conf_conn', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+        $this->assertMiddlewareInjected($container, 'conn', PHP7Middleware::class);
+        $this->assertNotNull($definition = $container->getDefinition('middleware.conn1'));
+        $this->assertCount(1, $middlewares = $this->getMiddlewaresForConn($container, 'conn', PHP7Middleware::class));
+        $this->assertSame(true, $definition->isAutowired());
+        $this->assertSame(true, $definition->isAutoconfigured());
+        $this->assertSame(['custom.tag' => [[]]], $definition->getTags());
+        $this->assertSame($middlewares[0], $definition);
+    }
+
     /** @requires PHP 8 */
     public function testAddMiddlewareOrderingWithAttributeForAutoconfiguration(): void
     {
@@ -466,6 +489,10 @@ class MiddlewarePassTest extends TestCase
             }
 
             foreach ($call[1][0] as $middlewareDef) {
+                if ($middlewareDef instanceof Reference) {
+                    $middlewareDef = $container->getDefinition($middlewareDef->__toString());
+                }
+
                 if (isset($middlewareClass) && $middlewareDef->getClass() !== $middlewareClass) {
                     continue;
                 }

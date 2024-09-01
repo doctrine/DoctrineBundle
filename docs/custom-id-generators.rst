@@ -7,7 +7,7 @@ and implement the custom logic in the ``generate(EntityManager $em, $entity)``
 method. Before Doctrine bundle 2.3, custom ID generators were always created
 without any constructor arguments.
 
-Starting with Doctrine bundle 2.3, the ``CustomIdGenerator`` annotation can be
+Starting with Doctrine bundle 2.3, the ``CustomIdGenerator`` attribute can be
 used to reference any services tagged with the ``doctrine.id_generator`` tag.
 If you enable autoconfiguration (which is the default most of the time), Symfony
 will add this tag for you automatically if you implement your own id-generators.
@@ -28,12 +28,10 @@ are provided: ``doctrine.ulid_generator`` to generate ULIDs, and
      */
     class User
     {
-        /**
-         * @Id
-         * @Column(type="uuid")
-         * @ORM\GeneratedValue(strategy="CUSTOM")
-         * @ORM\CustomIdGenerator("doctrine.uuid_generator")
-         */
+        #[ORM\Id]
+        #[ORM\Column(type: 'uuid')]
+        #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+        #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
         private $id;
 
         // ....
