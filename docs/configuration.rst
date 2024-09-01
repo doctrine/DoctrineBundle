@@ -738,7 +738,7 @@ configuration for the ORM and there are several configuration options that you
 can control. The following configuration options exist for a mapping:
 
 ``type``
-    One of ``annotation``, ``xml``, ``yml``, ``php`` or ``staticphp``.
+    One of ``attribute``, ``xml``, ``yml``, ``php`` or ``staticphp``.
     This specifies which type of metadata type your mapping uses.
 
 ``dir``
