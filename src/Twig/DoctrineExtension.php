@@ -6,12 +6,15 @@ use Doctrine\SqlFormatter\HtmlHighlighter;
 use Doctrine\SqlFormatter\NullHighlighter;
 use Doctrine\SqlFormatter\SqlFormatter;
 use Symfony\Component\VarDumper\Cloner\Data;
+use Twig\DeprecatedCallableInfo;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
 use function addslashes;
 use function array_key_exists;
+use function array_merge;
 use function bin2hex;
+use function class_exists;
 use function implode;
 use function is_array;
 use function is_bool;
@@ -41,12 +44,20 @@ class DoctrineExtension extends AbstractExtension
      */
     public function getFilters()
     {
-        return [
-            new TwigFilter('doctrine_pretty_query', [$this, 'formatQuery'], ['is_safe' => ['html'], 'deprecated' => true]),
+        $out     = [
             new TwigFilter('doctrine_prettify_sql', [$this, 'prettifySql'], ['is_safe' => ['html']]),
             new TwigFilter('doctrine_format_sql', [$this, 'formatSql'], ['is_safe' => ['html']]),
             new TwigFilter('doctrine_replace_query_parameters', [$this, 'replaceQueryParameters']),
         ];
+        $options = ['deprecated' => true];
+        // exists since twig/twig 3.15
+        if (class_exists(DeprecatedCallableInfo::class)) {
+            $options = ['deprecation_info' => new DeprecatedCallableInfo('doctrine/doctrine-bundle', '2.1')];
+        }
+
+        return array_merge($out, [
+            new TwigFilter('doctrine_pretty_query', [$this, 'formatQuery'], ['is_safe' => ['html']] + $options),
+        ]);
     }
 
     /**
