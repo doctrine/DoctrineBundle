@@ -12,7 +12,7 @@ on:
 jobs:
   phpunit:
     name: "PHPUnit"
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-latest"
     env:
       SYMFONY_REQUIRE: ${{matrix.symfony-require}}
       SYMFONY_DEPRECATIONS_HELPER: weak
@@ -110,7 +110,7 @@ jobs:
 
   upload_coverage:
     name: "Upload coverage to Codecov"
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-latest"
     needs:
       - "phpunit"
 

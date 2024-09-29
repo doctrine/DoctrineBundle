@@ -8,7 +8,7 @@ on:
 jobs:
   phpunit:
     name: "PHPUnit"
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-latest"
     env:
       SYMFONY_REQUIRE: ${{matrix.symfony-require}}
 
