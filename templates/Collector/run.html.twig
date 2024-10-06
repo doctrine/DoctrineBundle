@@ -1,0 +1,23 @@
+{% if result is not empty %}
+    <table>
+        <thead>
+        <tr>
+            {% for key, value in result[0] %}
+                <th>{{ key }}</th>
+            {% endfor %}
+        </tr>
+
+        </thead>
+        <tbody>
+        {% for row in result %}
+            <tr>
+                {% for key, value in row %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    Result is empty
+{% endif %}
