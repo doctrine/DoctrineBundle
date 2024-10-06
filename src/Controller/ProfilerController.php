@@ -87,9 +87,9 @@ class ProfilerController
     /**
      * Renders the profiler panel for the given token.
      *
-     * @param string $token The profiler token
+     * @param string $token          The profiler token
      * @param string $connectionName
-     * @param int $query
+     * @param int    $query
      *
      * @return Response A Response instance
      */
@@ -97,14 +97,14 @@ class ProfilerController
     {
         $this->profiler->disable();
 
-        $profile = $this->profiler->loadProfile($token);
+        $profile   = $this->profiler->loadProfile($token);
         $collector = $profile->getCollector('db');
 
         assert($collector instanceof DoctrineDataCollector);
 
         $queries = $collector->getQueries();
 
-        if (!isset($queries[$connectionName][$query])) {
+        if (! isset($queries[$connectionName][$query])) {
             return new Response('This query does not exist.');
         }
 
@@ -112,9 +112,9 @@ class ProfilerController
 
         $connection = $this->registry->getConnection($connectionName);
 
-        $result = $connection->executeQuery($query["sql"]);
+        $result = $connection->executeQuery($query['sql']);
 
-        return new Response($this->twig->render('@Doctrine/Collector/run.html.twig', ["result" => $result->fetchAllAssociative()]));
+        return new Response($this->twig->render('@Doctrine/Collector/run.html.twig', ['result' => $result->fetchAllAssociative()]));
     }
 
     /**
