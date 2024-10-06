@@ -83,7 +83,6 @@ class ProfilerController
         ]));
     }
 
-
     /**
      * Renders the profiler panel for the given token.
      *
