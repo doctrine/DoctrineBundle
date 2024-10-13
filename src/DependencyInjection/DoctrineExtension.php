@@ -722,6 +722,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
             'setIdentityGenerationPreferences' => $entityManager['identity_generation_preferences'],
         ];
 
+        if (isset($entityManager['fetch_mode_subselect_batch_size'])) {
+            $methods['setEagerFetchBatchSize'] = $entityManager['fetch_mode_subselect_batch_size'];
+        }
+
         if (! method_exists(OrmConfiguration::class, 'setLazyGhostObjectEnabled')) {
             unset($methods['setLazyGhostObjectEnabled']);
         }
