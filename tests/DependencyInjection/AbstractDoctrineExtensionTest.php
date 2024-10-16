@@ -1053,6 +1053,19 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($def1, 'setSchemaIgnoreClasses', [0 => ['Class\A', 'Class\B']]);
     }
 
+    public function testFetchModeSubselectBatchSize(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_fetch_mode_subselect_batch_size');
+
+        $def1 = $container->getDefinition('doctrine.orm.default_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($def1, 'setEagerFetchBatchSize', [10000]);
+    }
+
     public function testAttachEntityListeners(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {

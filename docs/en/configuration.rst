@@ -349,6 +349,7 @@ Configuration Reference
                             - Acme\AppBundle\Entity\Order
                             - Acme\AppBundle\Entity\PhoneNumber
 
+                        fetch_mode_subselect_batch_size: 2000
                 # Search for the "ResolveTargetEntityListener" class for a cookbook about this
                 resolve_target_entities:
 

@@ -663,6 +663,7 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('quote_strategy')->defaultValue('doctrine.orm.quote_strategy.default')->end()
                     ->scalarNode('typed_field_mapper')->defaultValue('doctrine.orm.typed_field_mapper.default')->end()
                     ->scalarNode('entity_listener_resolver')->defaultNull()->end()
+                    ->scalarNode('fetch_mode_subselect_batch_size')->end()
                     ->scalarNode('repository_factory')->defaultValue('doctrine.orm.container_repository_factory')->end()
                     ->arrayNode('schema_ignore_classes')
                         ->prototype('scalar')->end()

@@ -227,6 +227,7 @@
         <xsd:attribute name="connection" type="xsd:string" />
         <xsd:attribute name="default-repository-class" type="xsd:string" />
         <xsd:attribute name="class-metadata-factory-name" type="xsd:string" />
+        <xsd:attribute name="fetch-mode-subselect-batch-size" type="xsd:int" />
         <xsd:attribute name="naming-strategy" type="xsd:string" />
         <xsd:attribute name="quote-strategy" type="xsd:string" />
         <xsd:attribute name="typed-field-mapper" type="xsd:string" />
