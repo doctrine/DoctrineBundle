@@ -1497,13 +1497,29 @@ class DoctrineExtensionTest extends TestCase
             $config['orm'] = [];
         }
 
-        $config['orm']['controller_resolver'] = ['auto_mapping' => true];
+        $config['orm']['controller_resolver']     = ['auto_mapping' => true];
+        $config['orm']['resolve_target_entities'] = ['Throwable' => 'stdClass'];
 
         $extension->load([$config], $container);
 
         $controllerResolver = $container->getDefinition('doctrine.orm.entity_value_resolver');
 
-        $this->assertEquals([new Reference('doctrine'), new Reference('doctrine.orm.entity_value_resolver.expression_language', $container::IGNORE_ON_INVALID_REFERENCE)], $controllerResolver->getArguments());
+        $this->assertEquals([
+            0 => new Reference('doctrine'),
+            1 => new Reference('doctrine.orm.entity_value_resolver.expression_language', $container::IGNORE_ON_INVALID_REFERENCE),
+            2 => (new Definition(MapEntity::class))->setArguments([
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+            ]),
+            3 => ['Throwable' => 'stdClass'],
+        ], $controllerResolver->getArguments());
 
         $container = $this->getContainer();
 

@@ -541,19 +541,22 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $controllerResolverDefaults['evict_cache'] = true;
             }
 
-            if ($controllerResolverDefaults) {
-                $container->getDefinition('doctrine.orm.entity_value_resolver')->setArgument(2, (new Definition(MapEntity::class))->setArguments([
-                    null,
-                    null,
-                    null,
-                    $controllerResolverDefaults['mapping'] ?? null,
-                    null,
-                    null,
-                    null,
-                    $controllerResolverDefaults['evict_cache'] ?? null,
-                    $controllerResolverDefaults['disabled'] ?? false,
-                ]));
-            }
+            $valueResolverDefinition = $container->getDefinition('doctrine.orm.entity_value_resolver');
+
+            $valueResolverDefinition->setArgument(2, (new Definition(MapEntity::class))->setArguments([
+                null,
+                null,
+                null,
+                $controllerResolverDefaults['mapping'] ?? null,
+                null,
+                null,
+                null,
+                $controllerResolverDefaults['evict_cache'] ?? null,
+                $controllerResolverDefaults['disabled'] ?? false,
+            ]));
+
+            // Symfony 7.2 and higher expose type alias support in the EntityValueResolver
+            $valueResolverDefinition->setArgument(3, $config['resolve_target_entities']);
         }
 
         // not available in Doctrine ORM 3.0 and higher
