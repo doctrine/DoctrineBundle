@@ -90,6 +90,13 @@
             connectionName: request.query.get('connection'),
             query: request.query.get('query')
         })) }}
+        {% elseif 'run' == page %}
+        {{ render(controller('Doctrine\\Bundle\\DoctrineBundle\\Controller\\ProfilerController::runAction', {
+            token: token,
+            panel: 'db',
+            connectionName: request.query.get('connection'),
+            query: request.query.get('query')
+        })) }}
     {% else %}
         {{ block('queries') }}
     {% endif %}
@@ -100,8 +107,8 @@
         .time-container { position: relative; }
         .time-container .nowrap { position: relative; z-index: 1; text-shadow: 0 0 2px #fff; }
         .time-bar { display: block; position: absolute; top: 0; left: 0; bottom: 0; background: #e0e0e0; }
-        .sql-runnable.sf-toggle-content.sf-toggle-visible { display: flex; flex-direction: column; }
-        .sql-runnable button { align-self: end; }
+        .sql-runnable.sf-toggle-content.sf-toggle-visible { display: flex; flex-direction: row; align-items: center}
+        .sql-runnable pre { flex-grow: 1}
         {% if profiler_markup_version >= 3 %}
         .highlight .keyword   { color: var(--highlight-keyword); font-weight: bold; }
         .highlight .word      { color: var(--color-text); }
@@ -252,16 +259,21 @@
                                             </div>
 
                                             {% if query.runnable %}
-                                                <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                                <div id="original-query-{{ i }}-{{ loop.parent.loop.index }}" class="sql-runnable">
                                                     {% set runnable_sql = (query.sql ~ ';')|doctrine_replace_query_parameters(query.params) %}
                                                     {{ runnable_sql|doctrine_prettify_sql }}
-                                                    <button class="btn btn-sm hidden" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
+                                                    <div>
+                                                        <button class="btn btn-sm hidden" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
+                                                        <a class="btn btn-sm" href="{{ path('_profiler', { panel: 'db', token: token, page: 'run', connection: connection, query: i }) }}" onclick="return run(this);" data-target-id="run-{{ i }}-{{ loop.parent.loop.index }}">Run</a>
+                                                    </div>
                                                 </div>
                                             {% endif %}
 
                                             {% if query.explainable %}
                                                 <div id="explain-{{ i }}-{{ loop.parent.loop.index }}" class="sql-explain"></div>
                                             {% endif %}
+
+                                            <div id="run-{{ i }}-{{ loop.parent.loop.index }}" class="sql-explain"></div>
 
                                             {% if query.backtrace is defined %}
                                                 <div id="backtrace-{{ i }}-{{ loop.parent.loop.index }}" class="hidden">
@@ -463,6 +475,34 @@
             } else {
                 targetElement.style.display = 'none';
                 link.innerHTML = 'Explain query';
+            }
+
+            return false;
+        }
+
+        function run(link) {
+            "use strict";
+
+            var targetId = link.getAttribute('data-target-id');
+            var targetElement = document.getElementById(targetId);
+
+            if (targetElement.style.display != 'block') {
+                if (targetElement.getAttribute('data-sfurl') !== link.href) {
+                    fetch(link.href, {
+                        headers: {'X-Requested-With': 'XMLHttpRequest'}
+                    }).then(async function (response) {
+                        targetElement.innerHTML = await response.text()
+                        targetElement.setAttribute('data-sfurl', link.href)
+                    }, function () {
+                        targetElement.innerHTML = 'An error occurred while loading the query explanation.';
+                    })
+                }
+
+                targetElement.style.display = 'block';
+                link.innerHTML = 'Hide query result';
+            } else {
+                targetElement.style.display = 'none';
+                link.innerHTML = 'Run query';
             }
 
             return false;
