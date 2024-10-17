@@ -22,6 +22,7 @@ use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
+use Doctrine\ORM\Mapping\DefaultTypedFieldMapper;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Proxy\ProxyFactory;
@@ -745,6 +746,13 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if ($entityManager['repository_factory']) {
             $methods['setRepositoryFactory'] = new Reference($entityManager['repository_factory']);
+        }
+
+        if (isset($entityManager['typed_fields'])) {
+            $definition = new Definition(DefaultTypedFieldMapper::class);
+            $definition->addArgument($entityManager['typed_fields']);
+            $container->setDefinition(sprintf('doctrine.orm.%s_typed_field_mapper', $entityManager['name']), $definition);
+            $methods['setTypedFieldMapper'] = new Reference(sprintf('doctrine.orm.%s_typed_field_mapper', $entityManager['name']));
         }
 
         foreach ($methods as $method => $arg) {
