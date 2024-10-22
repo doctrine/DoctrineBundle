@@ -15,6 +15,7 @@ use Doctrine\ORM\Tools\Console\Command\InfoCommand;
 use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
+use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\CacheWarmer\ProxyCacheWarmer;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
@@ -23,6 +24,7 @@ use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 
+use function class_exists;
 use function interface_exists;
 
 class ContainerTest extends TestCase
@@ -37,6 +39,10 @@ class ContainerTest extends TestCase
 
         if (interface_exists(Reader::class)) {
             $this->assertInstanceOf(Reader::class, $container->get('doctrine.orm.metadata.annotation_reader'));
+        }
+
+        if (class_exists(EntityValueResolver::class)) {
+            $this->assertInstanceOf(EntityValueResolver::class, $container->get('doctrine.orm.entity_value_resolver'));
         }
 
         $this->assertInstanceOf(DoctrineDataCollector::class, $container->get('data_collector.doctrine'));
