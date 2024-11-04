@@ -50,7 +50,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Validator\Mapping\Loader\AnnotationLoader;
 
 use function array_values;
 use function class_exists;
@@ -820,39 +819,6 @@ class DoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', [
             new Reference('doctrine.orm.default_xml_metadata_driver'),
             'Fixtures\Bundles\XmlBundle\Entity',
-        ]);
-    }
-
-    public function testAnnotationsBundleMappingDetection(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $container = $this->getContainer(['AnnotationsBundle']);
-        $extension = new DoctrineExtension();
-
-        $config = BundleConfigurationBuilder::createBuilder()
-            ->addBaseConnection()
-            ->addEntityManager([
-                'default_entity_manager' => 'default',
-                'entity_managers' => [
-                    'default' => [
-                        'mappings' => [
-                            'AnnotationsBundle' => [],
-                        ],
-                    ],
-                ],
-            ])
-            ->build();
-        $extension->load([$config], $container);
-
-        $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', [
-            new Reference(class_exists(AnnotationLoader::class)
-                ? 'doctrine.orm.default_annotation_metadata_driver'
-                : 'doctrine.orm.default_attribute_metadata_driver'),
-            'Fixtures\Bundles\AnnotationsBundle\Entity',
         ]);
     }
 
