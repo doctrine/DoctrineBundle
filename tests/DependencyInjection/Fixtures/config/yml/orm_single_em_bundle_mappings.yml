@@ -8,7 +8,6 @@ doctrine:
     orm:
         validate_xml_mapping: true
         mappings:
-            AnnotationsBundle: ~
             AttributesBundle:
                 type: attribute
             YamlBundle:

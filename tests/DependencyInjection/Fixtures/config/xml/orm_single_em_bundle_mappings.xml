@@ -12,7 +12,6 @@
         </dbal>
 
         <orm validate-xml-mapping="true">
-            <mapping name="AnnotationsBundle" />
             <mapping name="AttributesBundle" type="attribute" />
             <mapping name="YamlBundle" dir="Resources/config/doctrine" alias="yml" />
             <mapping name="manual" type="xml" prefix="Fixtures\Bundles\XmlBundle"

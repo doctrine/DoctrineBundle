@@ -10,7 +10,6 @@ doctrine:
         entity_managers:
             em1:
                 mappings:
-                    AnnotationsBundle: ~
                     AttributesBundle:
                       type: attribute
             em2:

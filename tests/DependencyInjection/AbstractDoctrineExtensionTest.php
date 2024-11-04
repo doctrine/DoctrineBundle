@@ -40,13 +40,11 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
-use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 use function array_filter;
 use function array_intersect_key;
 use function array_keys;
-use function array_merge;
 use function array_values;
 use function assert;
 use function class_exists;
@@ -57,7 +55,6 @@ use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
 use function uniqid;
-use function version_compare;
 
 use const DIRECTORY_SEPARATOR;
 
@@ -543,40 +540,30 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
+        $container = $this->loadContainer('orm_single_em_bundle_mappings', ['YamlBundle', 'XmlBundle', 'AttributesBundle']);
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
 
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', [
-            new Reference(version_compare(Kernel::VERSION, '7.0.0', '<') ? 'doctrine.orm.default_annotation_metadata_driver' : 'doctrine.orm.default_attribute_metadata_driver'),
-            'Fixtures\Bundles\AnnotationsBundle\Entity',
-        ]);
-
-        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_attribute_metadata_driver'),
             'Fixtures\Bundles\AttributesBundle\Entity',
         ]);
 
-        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', [
+        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_yml_metadata_driver'),
             'Fixtures\Bundles\YamlBundle\Entity',
         ]);
 
-        $this->assertDICDefinitionMethodCallAt(3, $definition, 'addDriver', [
+        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_xml_metadata_driver'),
             'Fixtures\Bundles\XmlBundle',
         ]);
 
         $attrDef = $container->getDefinition('doctrine.orm.default_attribute_metadata_driver');
         $this->assertDICConstructorArguments($attrDef, [
-            array_merge(
-                ! version_compare(Kernel::VERSION, '7.0.0', '<') ? [
-                    __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
-                ] : [],
-                [
-                    __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity',
-                ],
-            ),
+            [
+                __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AttributesBundle' . DIRECTORY_SEPARATOR . 'Entity',
+            ],
             ! class_exists(AnnotationDriver::class),
         ]);
 
@@ -600,21 +587,15 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
+        $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['YamlBundle', 'XmlBundle', 'AttributesBundle']);
 
         $this->assertEquals(['em1' => 'doctrine.orm.em1_entity_manager', 'em2' => 'doctrine.orm.em2_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
 
-        $def1   = $container->getDefinition('doctrine.orm.em1_metadata_driver');
-        $def2   = $container->getDefinition('doctrine.orm.em2_metadata_driver');
-        $def1Id = version_compare(Kernel::VERSION, '7.0.0', '<') ? 'doctrine.orm.em1_annotation_metadata_driver' : 'doctrine.orm.em1_attribute_metadata_driver';
+        $def1 = $container->getDefinition('doctrine.orm.em1_metadata_driver');
+        $def2 = $container->getDefinition('doctrine.orm.em2_metadata_driver');
 
         $this->assertDICDefinitionMethodCallAt(0, $def1, 'addDriver', [
-            new Reference($def1Id),
-            'Fixtures\Bundles\AnnotationsBundle\Entity',
-        ]);
-
-        $this->assertDICDefinitionMethodCallAt(1, $def1, 'addDriver', [
             new Reference('doctrine.orm.em1_attribute_metadata_driver'),
             'Fixtures\Bundles\AttributesBundle\Entity',
         ]);
@@ -628,17 +609,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             new Reference('doctrine.orm.em2_xml_metadata_driver'),
             'Fixtures\Bundles\XmlBundle',
         ]);
-
-        if (version_compare(Kernel::VERSION, '7.0.0', '<')) {
-            $annDef = $container->getDefinition($def1Id);
-            $this->assertDICConstructorArguments($annDef, [
-                new Reference('doctrine.orm.metadata.annotation_reader'),
-                [
-                    __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'Bundles' . DIRECTORY_SEPARATOR . 'AnnotationsBundle' . DIRECTORY_SEPARATOR . 'Entity',
-                ],
-                ! class_exists(AnnotationDriver::class),
-            ]);
-        }
 
         $ymlDef = $container->getDefinition('doctrine.orm.em2_yml_metadata_driver');
         $this->assertDICConstructorArguments($ymlDef, [
@@ -659,7 +629,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->loadContainer('orm_single_em_default_table_options', ['YamlBundle', 'AnnotationsBundle', 'XmlBundle', 'AttributesBundle']);
+        $container = $this->loadContainer('orm_single_em_default_table_options', ['YamlBundle', 'XmlBundle', 'AttributesBundle']);
 
         $param = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
 

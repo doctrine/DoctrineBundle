@@ -898,7 +898,7 @@ class DoctrineExtensionTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->getContainer(['XmlBundle', 'AnnotationsBundle', 'AttributesBundle']);
+        $container = $this->getContainer(['XmlBundle', 'AttributesBundle']);
         $extension = new DoctrineExtension();
 
         $config1 = BundleConfigurationBuilder::createBuilder()
@@ -908,10 +908,7 @@ class DoctrineExtensionTest extends TestCase
                 'default_entity_manager' => 'default',
                 'entity_managers' => [
                     'default' => [
-                        'mappings' => [
-                            'AnnotationsBundle' => [],
-                            'AttributesBundle' => ['type' => 'attribute'],
-                        ],
+                        'mappings' => ['AttributesBundle' => ['type' => 'attribute']],
                     ],
                 ],
             ])
@@ -934,16 +931,10 @@ class DoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', [
-            new Reference(class_exists(AnnotationLoader::class)
-                ? 'doctrine.orm.default_annotation_metadata_driver'
-                : 'doctrine.orm.default_attribute_metadata_driver'),
-            'Fixtures\Bundles\AnnotationsBundle\Entity',
-        ]);
-        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_attribute_metadata_driver'),
             'Fixtures\Bundles\AttributesBundle\Entity',
         ]);
-        $this->assertDICDefinitionMethodCallAt(2, $definition, 'addDriver', [
+        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', [
             new Reference('doctrine.orm.default_xml_metadata_driver'),
             'Fixtures\Bundles\XmlBundle\Entity',
         ]);
