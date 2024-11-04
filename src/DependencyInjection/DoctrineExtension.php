@@ -22,13 +22,21 @@ use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
+use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
+use Doctrine\ORM\Mapping\Driver\PHPDriver as LegacyPHPDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
+use Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver;
+use Doctrine\ORM\Mapping\Driver\StaticPHPDriver as LegacyStaticPHPDriver;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Proxy\ProxyFactory;
 use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
 use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand;
 use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
 use Doctrine\ORM\UnitOfWork;
+use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
+use Doctrine\Persistence\Mapping\Driver\PHPDriver;
+use Doctrine\Persistence\Mapping\Driver\StaticPHPDriver;
 use Doctrine\Persistence\Reflection\RuntimeReflectionProperty;
 use InvalidArgumentException;
 use LogicException;
@@ -1163,7 +1171,31 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
     protected function getMetadataDriverClass(string $driverType): string
     {
-        return '%' . $this->getObjectManagerElementName('metadata.' . $driverType . '.class') . '%';
+        switch ($driverType) {
+            case 'driver_chain':
+                return MappingDriverChain::class;
+
+            case 'annotation':
+                return AnnotationDriver::class;
+
+            case 'xml':
+                return SimplifiedXmlDriver::class;
+
+            case 'yml':
+                return SimplifiedYamlDriver::class;
+
+            case 'php':
+                return class_exists(PHPDriver::class) ? PHPDriver::class : LegacyPHPDriver::class;
+
+            case 'staticphp':
+                return class_exists(StaticPHPDriver::class) ? StaticPHPDriver::class : LegacyStaticPHPDriver::class;
+
+            case 'attribute':
+                return AttributeDriver::class;
+
+            default:
+                throw new LogicException(sprintf('Unknown "%s" metadata driver type.', $driverType));
+        }
     }
 
     private function loadMessengerServices(ContainerBuilder $container): void
