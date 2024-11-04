@@ -40,6 +40,8 @@
                 <referencedClass name="Doctrine\ORM\Mapping\Driver\YamlDriver"/>
                 <referencedClass name="Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver"/>
                 <referencedClass name="Doctrine\ORM\Mapping\Driver\AnnotationDriver"/>
+                <referencedClass name="Doctrine\ORM\Mapping\Driver\PHPDriver"/>
+                <referencedClass name="Doctrine\ORM\Mapping\Driver\StaticPHPDriver"/>
                 <referencedClass name="Doctrine\ORM\ORMException"/>
                 <!-- Dropped in DBAL 4 -->
                 <referencedClass name="Doctrine\DBAL\Exception"/>
