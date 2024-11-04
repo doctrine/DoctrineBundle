@@ -1176,6 +1176,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 return MappingDriverChain::class;
 
             case 'annotation':
+                if (! class_exists(AnnotationDriver::class)) {
+                    throw new LogicException('The annotation driver is only available in doctrine/orm v2.');
+                }
+
                 return AnnotationDriver::class;
 
             case 'xml':
