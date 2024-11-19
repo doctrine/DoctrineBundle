@@ -770,10 +770,6 @@ can control. The following configuration options exist for a mapping:
     was specified and the metadata files are most likely in a directory outside
     of a bundle.
 
-.. index::
-    single: Configuration; Doctrine DBAL
-    single: Doctrine; DBAL configuration
-
 Filters Configuration
 ~~~~~~~~~~~~~~~~~~~~~
 
