@@ -1,7 +1,3 @@
-.. index::
-   single: Doctrine; ORM Configuration Reference
-   single: Configuration Reference; Doctrine ORM
-
 Configuration Reference
 =======================
 
