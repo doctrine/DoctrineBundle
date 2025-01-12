@@ -169,7 +169,7 @@ class FakeConnection extends Connection
     /**
      * {@inheritDoc}
      */
-    public function __construct(array $params, Driver $driver, ?Configuration $config = null)
+    public function __construct(array $params, Driver $driver, Configuration|null $config = null)
     {
         ++self::$creationCount;
 

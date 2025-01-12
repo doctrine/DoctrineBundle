@@ -5,6 +5,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Twig;
 use Doctrine\SqlFormatter\HtmlHighlighter;
 use Doctrine\SqlFormatter\NullHighlighter;
 use Doctrine\SqlFormatter\SqlFormatter;
+use Stringable;
 use Symfony\Component\VarDumper\Cloner\Data;
 use Twig\DeprecatedCallableInfo;
 use Twig\Extension\AbstractExtension;
@@ -18,9 +19,7 @@ use function class_exists;
 use function implode;
 use function is_array;
 use function is_bool;
-use function is_object;
 use function is_string;
-use function method_exists;
 use function preg_match;
 use function preg_replace_callback;
 use function sprintf;
@@ -66,11 +65,9 @@ class DoctrineExtension extends AbstractExtension
      *
      * @internal
      *
-     * @param mixed $parameter
-     *
      * @return string
      */
-    public static function escapeFunction($parameter)
+    public static function escapeFunction(mixed $parameter)
     {
         $result = $parameter;
 
@@ -92,8 +89,8 @@ class DoctrineExtension extends AbstractExtension
                 $result = implode(', ', $result) ?: 'NULL';
                 break;
 
-            case is_object($result) && method_exists($result, '__toString'):
-                $result = addslashes($result->__toString());
+            case $result instanceof Stringable:
+                $result = addslashes((string) $result);
                 break;
 
             case $result === null:

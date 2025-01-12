@@ -20,15 +20,11 @@ use function assert;
 /** @internal */
 class ProfilerController
 {
-    private Environment $twig;
-    private ConnectionRegistry $registry;
-    private Profiler $profiler;
-
-    public function __construct(Environment $twig, ConnectionRegistry $registry, Profiler $profiler)
-    {
-        $this->twig     = $twig;
-        $this->registry = $registry;
-        $this->profiler = $profiler;
+    public function __construct(
+        private readonly Environment $twig,
+        private readonly ConnectionRegistry $registry,
+        private readonly Profiler $profiler,
+    ) {
     }
 
     /**
@@ -73,7 +69,7 @@ class ProfilerController
             } else {
                 $results = $this->explainOtherPlatform($connection, $query);
             }
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return new Response('This query cannot be explained.');
         }
 

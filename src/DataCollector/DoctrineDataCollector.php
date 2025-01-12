@@ -49,26 +49,23 @@ use function usort;
  */
 class DoctrineDataCollector extends BaseCollector
 {
-    private ManagerRegistry $registry;
-    private ?int $invalidEntityCount = null;
+    private int|null $invalidEntityCount = null;
 
     /**
      * @var mixed[][]|null
      * @phpstan-var ?array<string, list<QueryType&array{count: int, index: int, executionPercent?: float}>>
      */
-    private ?array $groupedQueries = null;
+    private array|null $groupedQueries = null;
 
-    private bool $shouldValidateSchema;
-
-    public function __construct(ManagerRegistry $registry, bool $shouldValidateSchema = true, ?DebugDataHolder $debugDataHolder = null)
-    {
-        $this->registry             = $registry;
-        $this->shouldValidateSchema = $shouldValidateSchema;
-
+    public function __construct(
+        private readonly ManagerRegistry $registry,
+        private readonly bool $shouldValidateSchema = true,
+        DebugDataHolder|null $debugDataHolder = null,
+    ) {
         parent::__construct($registry, $debugDataHolder);
     }
 
-    public function collect(Request $request, Response $response, ?Throwable $exception = null): void
+    public function collect(Request $request, Response $response, Throwable|null $exception = null): void
     {
         parent::collect($request, $response, $exception);
 

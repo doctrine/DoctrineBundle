@@ -3,7 +3,6 @@
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
 use InvalidArgumentException;
@@ -18,8 +17,6 @@ use function file_get_contents;
 use function interface_exists;
 use function sys_get_temp_dir;
 
-use const PHP_VERSION_ID;
-
 /** @group legacy */
 class ImportMappingDoctrineCommandTest extends TestCase
 {
@@ -28,10 +25,6 @@ class ImportMappingDoctrineCommandTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        if (PHP_VERSION_ID < 80000 && ! class_exists(AnnotationReader::class)) {
-            self::markTestSkipped('This test requires Annotations when run on PHP 7');
-        }
-
         if (interface_exists(EntityManagerInterface::class) && class_exists(ClassMetadataExporter::class)) {
             return;
         }

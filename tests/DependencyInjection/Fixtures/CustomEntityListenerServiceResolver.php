@@ -6,11 +6,9 @@ use Doctrine\Bundle\DoctrineBundle\Mapping\EntityListenerServiceResolver;
 
 class CustomEntityListenerServiceResolver implements EntityListenerServiceResolver
 {
-    private EntityListenerServiceResolver $resolver;
-
-    public function __construct(EntityListenerServiceResolver $resolver)
-    {
-        $this->resolver = $resolver;
+    public function __construct(
+        private readonly EntityListenerServiceResolver $resolver,
+    ) {
     }
 
     /**

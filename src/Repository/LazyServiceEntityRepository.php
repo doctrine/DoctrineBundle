@@ -20,18 +20,14 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
  */
 class LazyServiceEntityRepository extends EntityRepository implements ServiceEntityRepositoryInterface
 {
-    private ManagerRegistry $registry;
-    private string $entityClass;
-
     /**
      * @param string $entityClass The class name of the entity this repository manages
      * @phpstan-param class-string<T> $entityClass
      */
-    public function __construct(ManagerRegistry $registry, string $entityClass)
-    {
-        $this->registry    = $registry;
-        $this->entityClass = $entityClass;
-
+    public function __construct(
+        private readonly ManagerRegistry $registry,
+        private readonly string $entityClass,
+    ) {
         if ($this instanceof LazyObjectInterface) {
             $this->initialize();
 
@@ -50,9 +46,7 @@ class LazyServiceEntityRepository extends EntityRepository implements ServiceEnt
 
         $scope = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class'] ?? null;
 
-        return (function () use ($name) {
-            return $this->$name;
-        })->bindTo($this, $scope)();
+        return (fn (): mixed => $this->$name)->bindTo($this, $scope)();
     }
 
     public function __isset(string $name): bool
@@ -61,9 +55,7 @@ class LazyServiceEntityRepository extends EntityRepository implements ServiceEnt
 
         $scope = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class'] ?? null;
 
-        return (function () use ($name) {
-            return isset($this->$name);
-        })->bindTo($this, $scope)();
+        return (fn (): bool => isset($this->$name))->bindTo($this, $scope)();
     }
 
     private function initialize(): void

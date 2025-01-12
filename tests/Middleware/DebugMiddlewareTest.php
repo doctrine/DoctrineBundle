@@ -9,25 +9,11 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 
-use function class_exists;
-use function sprintf;
 use function strpos;
 
 class DebugMiddlewareTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        if (class_exists(DebugDataHolder::class)) {
-            return;
-        }
-
-        $this->markTestSkipped(sprintf('This test needs %s to exist', DebugDataHolder::class));
-    }
-
     public function testData(): void
     {
         $configuration = new Configuration();

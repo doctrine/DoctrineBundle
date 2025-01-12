@@ -6,34 +6,23 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibili
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\CustomIdGenerator;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
-use Fixtures\Bundles\AnnotationsBundle\AnnotationsBundle;
-use Fixtures\Bundles\AnnotationsBundle\Entity\TestCustomIdGeneratorEntity as AnnotationCustomIdGeneratorEntity;
 use Fixtures\Bundles\AttributesBundle\AttributesBundle;
 use Fixtures\Bundles\AttributesBundle\Entity\TestCustomIdGeneratorEntity as AttributeCustomIdGeneratorEntity;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Symfony\Component\HttpKernel\Kernel;
 
 use function assert;
-use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 use function uniqid;
-
-use const PHP_VERSION_ID;
 
 class IdGeneratorPassTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
-        if (PHP_VERSION_ID < 80000 && ! class_exists(AnnotationReader::class)) {
-            self::markTestSkipped('This test requires Annotations when run on PHP 7');
-        }
-
         if (interface_exists(EntityManagerInterface::class)) {
             return;
         }
@@ -43,27 +32,15 @@ class IdGeneratorPassTest extends TestCase
 
     public function testRepositoryServiceWiring(): void
     {
-        if (PHP_VERSION_ID >= 80000) {
-            $bundles  = ['AttributesBundle' => AttributesBundle::class];
-            $entity   = AttributeCustomIdGeneratorEntity::class;
-            $mappings = [
-                'AttributesBundle' => [
-                    'type' => 'attribute',
-                    'dir' => __DIR__ . '/../Fixtures/Bundles/AttributesBundle/Entity',
-                    'prefix' => 'Fixtures\Bundles\AttributesBundle\Entity',
-                ],
-            ];
-        } else {
-            $bundles  = ['AnnotationsBundle' => AnnotationsBundle::class];
-            $entity   = AnnotationCustomIdGeneratorEntity::class;
-            $mappings = [
-                'AnnotationsBundle' => [
-                    'type' => 'annotation',
-                    'dir' => __DIR__ . '/../Fixtures/Bundles/AnnotationsBundle/Entity',
-                    'prefix' => 'Fixtures\Bundles\AnnotationsBundle\Entity',
-                ],
-            ];
-        }
+        $bundles  = ['AttributesBundle' => AttributesBundle::class];
+        $entity   = AttributeCustomIdGeneratorEntity::class;
+        $mappings = [
+            'AttributesBundle' => [
+                'type' => 'attribute',
+                'dir' => __DIR__ . '/../Fixtures/Bundles/AttributesBundle/Entity',
+                'prefix' => 'Fixtures\Bundles\AttributesBundle\Entity',
+            ],
+        ];
 
         $container = new ContainerBuilder(new ParameterBag([
             'kernel.debug' => false,
@@ -87,20 +64,15 @@ class IdGeneratorPassTest extends TestCase
             'debug.file_link_format' => null,
         ]));
 
-        if (class_exists(AnnotationReader::class)) {
-            $container->set('annotation_reader', new AnnotationReader());
-        }
-
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
         $extension->load([
             'framework' => [
                 'http_method_override' => false,
-                'annotations' => [
-                    'enabled' => class_exists(AnnotationReader::class) && Kernel::VERSION_ID < 60400,
-                ],
+                'annotations' => ['enabled' => false],
                 'php_errors' => ['log' => true],
-            ] + (Kernel::VERSION_ID >= 60200 ? ['handle_all_throwables' => true] : []),
+                'handle_all_throwables' => true,
+            ],
         ], $container);
 
         $extension = new DoctrineExtension();
@@ -115,7 +87,7 @@ class IdGeneratorPassTest extends TestCase
                 'orm' => [
                     'mappings' => $mappings,
                     'report_fields_where_declared' => true,
-                    'enable_lazy_ghost_objects' => PHP_VERSION_ID >= 80100,
+                    'enable_lazy_ghost_objects' => true,
                 ],
             ],
         ], $container);

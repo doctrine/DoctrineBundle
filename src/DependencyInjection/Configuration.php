@@ -53,12 +53,9 @@ use function trigger_deprecation;
  */
 class Configuration implements ConfigurationInterface
 {
-    private bool $debug;
-
     /** @param bool $debug Whether to use the debug mode */
-    public function __construct(bool $debug)
+    public function __construct(private bool $debug)
     {
-        $this->debug = $debug;
     }
 
     public function getConfigTreeBuilder(): TreeBuilder
@@ -122,9 +119,7 @@ class Configuration implements ConfigurationInterface
                         ->prototype('array')
                             ->beforeNormalization()
                                 ->ifString()
-                                ->then(static function ($v) {
-                                    return ['class' => $v];
-                                })
+                                ->then(static fn ($v) => ['class' => $v])
                             ->end()
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
@@ -398,9 +393,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
             ->beforeNormalization()
-                ->ifTrue(static function ($v) {
-                    return ! isset($v['sessionMode']) && isset($v['session_mode']);
-                })
+                ->ifTrue(static fn ($v) => ! isset($v['sessionMode']) && isset($v['session_mode']))
                 ->then(static function ($v) {
                     $v['sessionMode'] = $v['session_mode'];
                     unset($v['session_mode']);
@@ -409,9 +402,7 @@ class Configuration implements ConfigurationInterface
                 })
             ->end()
             ->beforeNormalization()
-                ->ifTrue(static function ($v) {
-                    return ! isset($v['MultipleActiveResultSets']) && isset($v['multiple_active_result_sets']);
-                })
+                ->ifTrue(static fn ($v) => ! isset($v['MultipleActiveResultSets']) && isset($v['multiple_active_result_sets']))
                 ->then(static function ($v) {
                     $v['MultipleActiveResultSets'] = $v['multiple_active_result_sets'];
                     unset($v['multiple_active_result_sets']);
@@ -502,9 +493,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->validate()
                                 ->ifString()
-                                ->then(static function ($v) {
-                                    return constant('Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_' . strtoupper($v));
-                                })
+                                ->then(static fn (string $v) => constant('Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_' . strtoupper($v)))
                             ->end()
                         ->end()
                         ->booleanNode('enable_lazy_ghost_objects')
@@ -600,9 +589,7 @@ class Configuration implements ConfigurationInterface
         $node
             ->beforeNormalization()
                 // Yaml normalization
-                ->ifTrue(static function ($v) {
-                    return is_array(reset($v)) && is_string(key(reset($v)));
-                })
+                ->ifTrue(static fn ($v) => is_array(reset($v)) && is_string(key(reset($v))))
                 ->then($normalizer)
             ->end()
             ->fixXmlConfig('entity', 'entities')
@@ -733,9 +720,7 @@ class Configuration implements ConfigurationInterface
                         ->prototype('array')
                             ->beforeNormalization()
                                 ->ifString()
-                                ->then(static function ($v) {
-                                    return ['type' => $v];
-                                })
+                                ->then(static fn ($v) => ['type' => $v])
                             ->end()
                             ->treatNullLike([])
                             ->treatFalseLike(['mapping' => false])
@@ -778,15 +763,11 @@ class Configuration implements ConfigurationInterface
                         ->prototype('array')
                             ->beforeNormalization()
                                 ->ifString()
-                                ->then(static function ($v) {
-                                    return ['class' => $v];
-                                })
+                                ->then(static fn ($v) => ['class' => $v])
                             ->end()
                             ->beforeNormalization()
                                 // The content of the XML node is returned as the "value" key so we need to rename it
-                                ->ifTrue(static function ($v) {
-                                    return is_array($v) && isset($v['value']);
-                                })
+                                ->ifTrue(static fn ($v) => is_array($v) && isset($v['value']))
                                 ->then(static function ($v) {
                                     $v['class'] = $v['value'];
                                     unset($v['value']);
@@ -814,9 +795,7 @@ class Configuration implements ConfigurationInterface
                         ->prototype('scalar')
                             ->beforeNormalization()
                                 ->ifString()
-                                ->then(static function ($v) {
-                                    return constant(ClassMetadata::class . '::GENERATOR_TYPE_' . strtoupper($v));
-                                })
+                                ->then(static fn (string $v) => constant(ClassMetadata::class . '::GENERATOR_TYPE_' . strtoupper($v)))
                             ->end()
                         ->end()
                     ->end()
@@ -837,9 +816,7 @@ class Configuration implements ConfigurationInterface
         $node
             ->beforeNormalization()
                 ->ifString()
-                ->then(static function ($v): array {
-                    return ['type' => $v];
-                })
+                ->then(static fn ($v): array => ['type' => $v])
             ->end()
             ->children()
                 ->scalarNode('type')->defaultNull()->end()

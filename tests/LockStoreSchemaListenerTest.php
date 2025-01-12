@@ -4,14 +4,11 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaListener;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Symfony\Component\HttpKernel\Kernel;
 
-use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 
@@ -25,10 +22,6 @@ class LockStoreSchemaListenerTest extends TestCase
      */
     public function testLockStoreSchemaSubscriberWiring(array $config, int $expectedCount): void
     {
-        if (! class_exists(LockStoreSchemaListener::class)) {
-            self::markTestSkipped('symfony/doctrine-bridge version not supported');
-        }
-
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
         }
@@ -58,8 +51,11 @@ class LockStoreSchemaListenerTest extends TestCase
         $container->registerExtension($extension);
         $extension->load(
             [
-                'framework' => ['http_method_override' => false, 'php_errors' => ['log' => true]]
-                + (Kernel::VERSION_ID >= 60200 ? ['handle_all_throwables' => true] : []) + $config,
+                'framework' => [
+                    'http_method_override' => false,
+                    'php_errors' => ['log' => true],
+                    'handle_all_throwables' => true,
+                ] + $config,
             ],
             $container,
         );

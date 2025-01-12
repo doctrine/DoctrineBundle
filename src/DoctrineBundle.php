@@ -28,7 +28,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 use function assert;
-use function class_exists;
 use function clearstatcache;
 use function dirname;
 use function spl_autoload_unregister;
@@ -36,7 +35,7 @@ use function spl_autoload_unregister;
 /** @final since 2.9 */
 class DoctrineBundle extends Bundle
 {
-    private ?Closure $autoloader = null;
+    private Closure|null $autoloader = null;
 
     /** @return void */
     public function build(ContainerBuilder $container)
@@ -75,11 +74,6 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new RemoveProfilerControllerPass());
         $container->addCompilerPass(new RemoveLoggingMiddlewarePass());
         $container->addCompilerPass(new MiddlewaresPass());
-
-        if (! class_exists(RegisterUidTypePass::class)) {
-            return;
-        }
-
         $container->addCompilerPass(new RegisterUidTypePass());
     }
 

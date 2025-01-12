@@ -87,7 +87,7 @@ final class CacheCompatibilityPass implements CompilerPassInterface
         }
     }
 
-    private function createCompatibilityLayerDefinition(ContainerBuilder $container, string $definitionId): ?Definition
+    private function createCompatibilityLayerDefinition(ContainerBuilder $container, string $definitionId): Definition|null
     {
         $definition = $container->getDefinition($definitionId);
 

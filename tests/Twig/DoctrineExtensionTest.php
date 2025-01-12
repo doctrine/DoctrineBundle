@@ -157,11 +157,9 @@ class DoctrineExtensionTest extends TestCase
 
 class DummyClass
 {
-    protected string $str;
-
-    public function __construct(string $str)
-    {
-        $this->str = $str;
+    public function __construct(
+        private readonly string $str,
+    ) {
     }
 
     public function __toString(): string

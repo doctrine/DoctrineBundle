@@ -6,16 +6,13 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 
 class ClassMetadataCollection
 {
-    private ?string $path      = null;
-    private ?string $namespace = null;
-
-    /** @var ClassMetadata[] */
-    private array $metadata;
+    private string|null $path      = null;
+    private string|null $namespace = null;
 
     /** @param ClassMetadata[] $metadata */
-    public function __construct(array $metadata)
-    {
-        $this->metadata = $metadata;
+    public function __construct(
+        private readonly array $metadata,
+    ) {
     }
 
     /** @return ClassMetadata[] */

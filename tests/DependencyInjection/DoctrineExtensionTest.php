@@ -38,7 +38,6 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
-use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -59,8 +58,6 @@ use function is_dir;
 use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
-
-use const PHP_VERSION_ID;
 
 class DoctrineExtensionTest extends TestCase
 {
@@ -628,7 +625,7 @@ class DoctrineExtensionTest extends TestCase
      * @testWith [[]]
      *           [null]
      */
-    public function testSingleEntityManagerWithEmptyConfiguration(?array $ormConfiguration): void
+    public function testSingleEntityManagerWithEmptyConfiguration(array|null $ormConfiguration): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -950,7 +947,7 @@ class DoctrineExtensionTest extends TestCase
 
         $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
         $this->assertEquals(
-            sprintf('doctrine.orm.default_%s_metadata_driver', PHP_VERSION_ID >= 80000 ? 'attribute' : 'annotation'),
+            sprintf('doctrine.orm.default_%s_metadata_driver', 'attribute'),
             (string) $calls[0][1][0],
         );
         $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
@@ -973,12 +970,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_transaction')->getArguments());
         $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_ping_connection')->getArguments());
         $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_close_connection')->getArguments());
-
-        if (class_exists(DoctrineClearEntityManagerWorkerSubscriber::class)) {
-            $this->assertCount(1, $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager')->getArguments());
-        } else {
-            $this->assertFalse($container->hasDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager'));
-        }
+        $this->assertCount(1, $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager')->getArguments());
     }
 
     public function testMessengerIntegrationWithDoctrineTransport(): void
@@ -1537,7 +1529,7 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /** @param list<mixed> $params */
-    private function assertDICDefinitionMethodCallAt(int $pos, Definition $definition, string $methodName, ?array $params = null): void
+    private function assertDICDefinitionMethodCallAt(int $pos, Definition $definition, string $methodName, array|null $params = null): void
     {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
@@ -1558,7 +1550,7 @@ class DoctrineExtensionTest extends TestCase
      *
      * @param list<mixed> $params
      */
-    private function assertDICDefinitionMethodCallOnce(Definition $definition, string $methodName, ?array $params = null): void
+    private function assertDICDefinitionMethodCallOnce(Definition $definition, string $methodName, array|null $params = null): void
     {
         $calls  = $definition->getMethodCalls();
         $called = false;

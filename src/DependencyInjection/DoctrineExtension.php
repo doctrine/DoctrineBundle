@@ -40,19 +40,12 @@ use Doctrine\Persistence\Mapping\Driver\StaticPHPDriver;
 use Doctrine\Persistence\Reflection\RuntimeReflectionProperty;
 use InvalidArgumentException;
 use LogicException;
-use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
-use Symfony\Bridge\Doctrine\SchemaListener\DoctrineDbalCacheAdapterSchemaListener;
-use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaListener;
-use Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaListener;
-use Symfony\Bridge\Doctrine\SchemaListener\PdoCacheAdapterDoctrineSchemaSubscriber;
-use Symfony\Bridge\Doctrine\SchemaListener\PdoSessionHandlerSchemaListener;
-use Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaListener;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
@@ -84,8 +77,6 @@ use function sprintf;
 use function str_replace;
 use function trait_exists;
 use function trigger_deprecation;
-
-use const PHP_VERSION_ID;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
@@ -489,26 +480,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->removeAlias('doctrine.orm.metadata.annotation_reader');
         }
 
-        // available in Symfony 6.3
-        $container->removeDefinition('doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_' . (class_exists(DoctrineDbalCacheAdapterSchemaListener::class) ? 'subscriber' : 'listener'));
-
-        // available in Symfony 6.3
-        $container->removeDefinition('doctrine.orm.listeners.doctrine_token_provider_schema_' . (class_exists(RememberMeTokenProviderDoctrineSchemaListener::class) ? 'subscriber' : 'listener'));
-
-        // available in Symfony 5.1 and up to Symfony 5.4 (deprecated)
-        if (! class_exists(PdoCacheAdapterDoctrineSchemaSubscriber::class)) {
-            $container->removeDefinition('doctrine.orm.listeners.pdo_cache_adapter_doctrine_schema_subscriber');
-        }
-
-        if (! class_exists(PdoSessionHandlerSchemaListener::class)) {
-            $container->removeDefinition('doctrine.orm.listeners.pdo_session_handler_schema_listener');
-        }
-
-        // available in Symfony 6.3 and higher
-        if (! class_exists(LockStoreSchemaListener::class)) {
-            $container->removeDefinition('doctrine.orm.listeners.lock_store_schema_listener');
-        }
-
         if (! class_exists(UlidGenerator::class)) {
             $container->removeDefinition('doctrine.ulid_generator');
         }
@@ -517,51 +488,45 @@ class DoctrineExtension extends AbstractDoctrineExtension
             $container->removeDefinition('doctrine.uuid_generator');
         }
 
-        // available in Symfony 6.2 and higher
-        if (! class_exists(EntityValueResolver::class)) {
-            $container->removeDefinition('doctrine.orm.entity_value_resolver');
+        if (! class_exists(ExpressionLanguage::class)) {
             $container->removeDefinition('doctrine.orm.entity_value_resolver.expression_language');
-        } else {
-            if (! class_exists(ExpressionLanguage::class)) {
-                $container->removeDefinition('doctrine.orm.entity_value_resolver.expression_language');
-            }
+        }
 
-            $controllerResolverDefaults = [];
+        $controllerResolverDefaults = [];
 
-            if (! $config['controller_resolver']['enabled']) {
-                $controllerResolverDefaults['disabled'] = true;
-            }
+        if (! $config['controller_resolver']['enabled']) {
+            $controllerResolverDefaults['disabled'] = true;
+        }
 
-            if ($config['controller_resolver']['auto_mapping'] === null) {
-                trigger_deprecation('doctrine/doctrine-bundle', '2.12', 'The default value of "doctrine.orm.controller_resolver.auto_mapping" will be changed from `true` to `false`. Explicitly configure `true` to keep existing behaviour.');
-                $config['controller_resolver']['auto_mapping'] = true;
-            }
+        if ($config['controller_resolver']['auto_mapping'] === null) {
+            trigger_deprecation('doctrine/doctrine-bundle', '2.12', 'The default value of "doctrine.orm.controller_resolver.auto_mapping" will be changed from `true` to `false`. Explicitly configure `true` to keep existing behaviour.');
+            $config['controller_resolver']['auto_mapping'] = true;
+        }
 
-            if ($config['controller_resolver']['auto_mapping'] === true) {
-                trigger_deprecation('doctrine/doctrine-bundle', '2.13', 'Enabling the controller resolver automapping feature has been deprecated. Symfony Mapped Route Parameters should be used as replacement.');
-            }
+        if ($config['controller_resolver']['auto_mapping'] === true) {
+            trigger_deprecation('doctrine/doctrine-bundle', '2.13', 'Enabling the controller resolver automapping feature has been deprecated. Symfony Mapped Route Parameters should be used as replacement.');
+        }
 
-            if (! $config['controller_resolver']['auto_mapping']) {
-                $controllerResolverDefaults['mapping'] = [];
-            }
+        if (! $config['controller_resolver']['auto_mapping']) {
+            $controllerResolverDefaults['mapping'] = [];
+        }
 
-            if ($config['controller_resolver']['evict_cache']) {
-                $controllerResolverDefaults['evict_cache'] = true;
-            }
+        if ($config['controller_resolver']['evict_cache']) {
+            $controllerResolverDefaults['evict_cache'] = true;
+        }
 
-            if ($controllerResolverDefaults) {
-                $container->getDefinition('doctrine.orm.entity_value_resolver')->setArgument(2, (new Definition(MapEntity::class))->setArguments([
-                    null,
-                    null,
-                    null,
-                    $controllerResolverDefaults['mapping'] ?? null,
-                    null,
-                    null,
-                    null,
-                    $controllerResolverDefaults['evict_cache'] ?? null,
-                    $controllerResolverDefaults['disabled'] ?? false,
-                ]));
-            }
+        if ($controllerResolverDefaults) {
+            $container->getDefinition('doctrine.orm.entity_value_resolver')->setArgument(2, (new Definition(MapEntity::class))->setArguments([
+                null,
+                null,
+                null,
+                $controllerResolverDefaults['mapping'] ?? null,
+                null,
+                null,
+                null,
+                $controllerResolverDefaults['evict_cache'] ?? null,
+                $controllerResolverDefaults['disabled'] ?? false,
+            ]));
         }
 
         // not available in Doctrine ORM 3.0 and higher
@@ -592,11 +557,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $container->setParameter('doctrine.default_entity_manager', $config['default_entity_manager']);
 
         if ($config['enable_lazy_ghost_objects'] ?? false) {
-            // available in Symfony 6.2 and higher
             if (! trait_exists(LazyGhostTrait::class)) {
                 throw new LogicException(
                     'Lazy ghost objects cannot be enabled because the "symfony/var-exporter" library'
-                    . ' version 6.2 or higher is not installed. Please run "composer require symfony/var-exporter:^6.2".',
+                    . ' is not installed. Please run "composer require symfony/var-exporter".',
                 );
             }
 
@@ -610,7 +574,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             throw new LogicException(
                 'Lazy ghost objects cannot be disabled for ORM 3.',
             );
-        } elseif (PHP_VERSION_ID >= 80100) {
+        } else {
             trigger_deprecation('doctrine/doctrine-bundle', '2.11', 'Not setting "doctrine.orm.enable_lazy_ghost_objects" to true is deprecated.');
         }
 
@@ -1045,7 +1009,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         return 'Entity';
     }
 
-    protected function getMappingResourceConfigDirectory(?string $bundleDir = null): string
+    protected function getMappingResourceConfigDirectory(string|null $bundleDir = null): string
     {
         if ($bundleDir !== null && is_dir($bundleDir . '/config/doctrine')) {
             return 'config/doctrine';
@@ -1219,9 +1183,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('messenger.xml');
 
-        // available in Symfony 6.3
-        $container->removeDefinition('doctrine.orm.messenger.doctrine_schema_' . (class_exists(MessengerTransportDoctrineSchemaListener::class) ? 'subscriber' : 'listener'));
-
         /**
          * The Doctrine transport component (symfony/doctrine-messenger) is optional.
          * Remove service definition, if it is not available
@@ -1231,7 +1192,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
         }
 
         $container->removeDefinition('messenger.transport.doctrine.factory');
-        $container->removeDefinition('doctrine.orm.messenger.doctrine_schema_subscriber');
         $container->removeDefinition('doctrine.orm.messenger.doctrine_schema_listener');
     }
 
@@ -1257,7 +1217,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         array $connWithLogging,
         array $connWithProfiling,
         array $connWithBacktrace,
-        array $connWithTtl
+        array $connWithTtl,
     ): void {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('middlewares.xml');

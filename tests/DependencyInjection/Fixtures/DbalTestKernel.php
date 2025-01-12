@@ -18,16 +18,12 @@ use function version_compare;
 
 class DbalTestKernel extends Kernel
 {
-    /** @var array<string, mixed> */
-    private array $dbalConfig;
-
-    private ?string $projectDir = null;
+    private string|null $projectDir = null;
 
     /** @param array<string, mixed> $dbalConfig */
-    public function __construct(array $dbalConfig = ['driver' => 'pdo_sqlite'])
-    {
-        $this->dbalConfig = $dbalConfig;
-
+    public function __construct(
+        private readonly array $dbalConfig = ['driver' => 'pdo_sqlite'],
+    ) {
         parent::__construct('test', true);
     }
 

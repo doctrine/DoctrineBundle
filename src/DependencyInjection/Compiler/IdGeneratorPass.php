@@ -30,9 +30,7 @@ final class IdGeneratorPass implements CompilerPassInterface
             return;
         }
 
-        $generatorRefs = array_map(static function ($id) {
-            return new Reference($id);
-        }, $generatorIds);
+        $generatorRefs = array_map(static fn (string $id): Reference => new Reference($id), $generatorIds);
 
         $ref = ServiceLocatorTagPass::register($container, array_combine($generatorIds, $generatorRefs));
         $container->setAlias('doctrine.id_generator_locator', new Alias((string) $ref, false));

@@ -44,18 +44,16 @@ class ConnectionFactory
         'sqlite3'    => 'pdo_sqlite',
     ];
 
-    /** @var mixed[][] */
-    private array $typesConfig = [];
-
-    private DsnParser $dsnParser;
+    private readonly DsnParser $dsnParser;
 
     private bool $initialized = false;
 
     /** @param mixed[][] $typesConfig */
-    public function __construct(array $typesConfig, ?DsnParser $dsnParser = null)
-    {
-        $this->typesConfig = $typesConfig;
-        $this->dsnParser   = $dsnParser ?? new DsnParser(self::DEFAULT_SCHEME_MAP);
+    public function __construct(
+        private readonly array $typesConfig = [],
+        DsnParser|null $dsnParser = null,
+    ) {
+        $this->dsnParser = $dsnParser ?? new DsnParser(self::DEFAULT_SCHEME_MAP);
     }
 
     /**
@@ -67,7 +65,7 @@ class ConnectionFactory
      *
      * @return Connection
      */
-    public function createConnection(array $params, ?Configuration $config = null, ?EventManager $eventManager = null, array $mappingTypes = [])
+    public function createConnection(array $params, Configuration|null $config = null, EventManager|null $eventManager = null, array $mappingTypes = [])
     {
         if (! method_exists(Connection::class, 'getEventManager') && $eventManager !== null) {
             throw new InvalidArgumentException('Passing an EventManager instance is not supported with DBAL > 3');

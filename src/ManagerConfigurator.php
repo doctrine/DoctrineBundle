@@ -10,24 +10,20 @@ use Doctrine\ORM\Query\Filter\SQLFilter;
  */
 class ManagerConfigurator
 {
-    /** @var string[] */
-    private array $enabledFilters = [];
-
-    /** @var array<string,array<string,string>> */
-    private array $filtersParameters = [];
-
     /**
      * @param string[]                           $enabledFilters
      * @param array<string,array<string,string>> $filtersParameters
      */
-    public function __construct(array $enabledFilters, array $filtersParameters)
-    {
-        $this->enabledFilters    = $enabledFilters;
-        $this->filtersParameters = $filtersParameters;
+    public function __construct(
+        private readonly array $enabledFilters = [],
+        private readonly array $filtersParameters = [],
+    ) {
     }
 
     /**
      * Create a connection by name.
+     *
+     * @return void
      */
     public function configure(EntityManagerInterface $entityManager)
     {

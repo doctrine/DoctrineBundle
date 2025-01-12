@@ -18,5 +18,5 @@ class TestCustomServiceRepoEntity
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
+    private int|null $id = null;
 }

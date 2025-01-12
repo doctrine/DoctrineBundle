@@ -16,13 +16,10 @@ use Symfony\Component\Console\Command\Command;
  */
 abstract class DoctrineCommand extends Command
 {
-    private ManagerRegistry $doctrine;
-
-    public function __construct(ManagerRegistry $doctrine)
-    {
+    public function __construct(
+        private readonly ManagerRegistry $doctrine,
+    ) {
         parent::__construct();
-
-        $this->doctrine = $doctrine;
     }
 
     /**

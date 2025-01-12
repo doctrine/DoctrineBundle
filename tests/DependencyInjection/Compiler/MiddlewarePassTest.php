@@ -22,8 +22,6 @@ use function class_exists;
 use function implode;
 use function sprintf;
 
-use const PHP_VERSION_ID;
-
 class MiddlewarePassTest extends TestCase
 {
     /** @return array<string, array{0: class-string, 1: bool}> */
@@ -418,7 +416,7 @@ class MiddlewarePassTest extends TestCase
         ContainerBuilder $container,
         string $connName,
         string $middlewareClass,
-        bool $connectionNameAware = false
+        bool $connectionNameAware = false,
     ): void {
         $middlewareFound = $this->getMiddlewaresForConn($container, $connName, $middlewareClass);
 
@@ -448,7 +446,7 @@ class MiddlewarePassTest extends TestCase
     private function assertMiddlewareNotInjected(
         ContainerBuilder $container,
         string $connName,
-        string $middlewareClass
+        string $middlewareClass,
     ): void {
         $middlewareFound = $this->getMiddlewaresForConn($container, $connName, $middlewareClass);
 
@@ -463,7 +461,7 @@ class MiddlewarePassTest extends TestCase
     private function assertMiddlewareOrdering(
         ContainerBuilder $container,
         string $connName,
-        array $expectedOrder
+        array $expectedOrder,
     ): void {
         $middlewareFound = $this->getMiddlewaresForConn($container, $connName);
         $classes         = array_map(
@@ -479,7 +477,7 @@ class MiddlewarePassTest extends TestCase
     }
 
     /** @return Definition[] */
-    private function getMiddlewaresForConn(ContainerBuilder $container, string $connName, ?string $middlewareClass = null): array
+    private function getMiddlewaresForConn(ContainerBuilder $container, string $connName, string|null $middlewareClass = null): array
     {
         $calls            = $container->getDefinition('conf_' . $connName)->getMethodCalls();
         $middlewaresFound = [];
@@ -524,19 +522,17 @@ class AutoconfiguredPHP7Middleware implements Middleware
     }
 }
 
-if (PHP_VERSION_ID >= 80000) {
-    #[AsMiddleware]
-    class AutoconfiguredMiddleware
-    {
-    }
+#[AsMiddleware]
+class AutoconfiguredMiddleware
+{
+}
 
-    #[AsMiddleware(connections: ['conn2'])]
-    class AutoconfiguredMiddlewareWithConnection
-    {
-    }
+#[AsMiddleware(connections: ['conn2'])]
+class AutoconfiguredMiddlewareWithConnection
+{
+}
 
-    #[AsMiddleware(priority: 2)]
-    class AutoconfiguredMiddlewareWithPriority
-    {
-    }
+#[AsMiddleware(priority: 2)]
+class AutoconfiguredMiddlewareWithPriority
+{
 }

@@ -51,10 +51,6 @@
             <tag name="messenger.transport_factory" />
         </service>
 
-        <service id="doctrine.orm.messenger.doctrine_schema_subscriber" class="Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaSubscriber">
-            <argument type="tagged_iterator" tag="messenger.receiver" />
-            <tag name="doctrine.event_subscriber" />
-        </service>
         <service id="doctrine.orm.messenger.doctrine_schema_listener" class="Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaListener">
             <argument type="tagged_iterator" tag="messenger.receiver" />
             <tag name="doctrine.event_listener" event="postGenerateSchema" />

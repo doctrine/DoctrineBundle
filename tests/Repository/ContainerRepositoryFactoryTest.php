@@ -154,9 +154,7 @@ EXCEPTION);
         $em = $this->getMockBuilder(EntityManagerInterface::class)->getMock();
         $em->expects($this->any())
             ->method('getClassMetadata')
-            ->willReturnCallback(static function ($class) use ($classMetadatas) {
-                return $classMetadatas[$class];
-            });
+            ->willReturnCallback(static fn (string $class) => $classMetadatas[$class]);
 
         $em->expects($this->any())
             ->method('getConfiguration')

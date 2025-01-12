@@ -12,8 +12,8 @@ class AsDoctrineListener
 {
     public function __construct(
         public string $event,
-        public ?int $priority = null,
-        public ?string $connection = null,
+        public int|null $priority = null,
+        public string|null $connection = null,
     ) {
     }
 }

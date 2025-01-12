@@ -4,27 +4,13 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Middleware;
 
 use Doctrine\Bundle\DoctrineBundle\Middleware\BacktraceDebugDataHolder;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
-use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 
-use function class_exists;
 use function count;
-use function sprintf;
 use function strpos;
 
 class BacktraceDebugDataHolderTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        if (class_exists(DebugDataHolder::class)) {
-            return;
-        }
-
-        $this->markTestSkipped(sprintf('This test needs %s to exist', DebugDataHolder::class));
-    }
-
     public function testAddAndRetrieveData(): void
     {
         $sut = new BacktraceDebugDataHolder([]);

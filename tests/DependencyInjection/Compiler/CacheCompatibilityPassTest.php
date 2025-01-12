@@ -4,7 +4,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Compiler;
 
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\ORM\Cache\Region;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,11 +13,8 @@ use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 
-use function class_exists;
 use function get_class;
 use function interface_exists;
-
-use const PHP_VERSION_ID;
 
 class CacheCompatibilityPassTest extends TestCase
 {
@@ -26,10 +22,6 @@ class CacheCompatibilityPassTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        if (PHP_VERSION_ID < 80000 && ! class_exists(AnnotationReader::class)) {
-            self::markTestSkipped('This test requires Annotations when run on PHP 7');
-        }
-
         if (interface_exists(EntityManagerInterface::class)) {
             return;
         }
@@ -42,12 +34,9 @@ class CacheCompatibilityPassTest extends TestCase
         $customRegionClass = get_class($this->createMock(Region::class));
 
         (new class ($customRegionClass) extends TestKernel {
-            private string $regionClass;
-
-            public function __construct(string $regionClass)
+            public function __construct(private readonly string $regionClass)
             {
                 parent::__construct(false);
-                $this->regionClass = $regionClass;
             }
 
             public function registerContainerConfiguration(LoaderInterface $loader): void

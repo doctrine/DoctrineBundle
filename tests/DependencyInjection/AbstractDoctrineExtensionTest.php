@@ -733,7 +733,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
      * @dataProvider cacheConfigProvider
      * @group legacy
      */
-    public function testCacheConfig(?string $expectedClass, string $entityManagerName, ?string $cacheGetter): void
+    public function testCacheConfig(string|null $expectedClass, string $entityManagerName, string|null $cacheGetter): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -1461,7 +1461,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     private function loadContainer(
         string $fixture,
         array $bundles = ['YamlBundle'],
-        ?CompilerPassInterface $compilerPass = null
+        CompilerPassInterface|null $compilerPass = null,
     ): ContainerBuilder {
         $container = $this->getContainer($bundles);
         $container->registerExtension(new DoctrineExtension());
@@ -1538,7 +1538,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         int $pos,
         Definition $definition,
         string $methodName,
-        ?array $params = null
+        array|null $params = null,
     ): void {
         $calls = $definition->getMethodCalls();
         if (! isset($calls[$pos][0])) {
@@ -1562,7 +1562,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
     private function assertDICDefinitionMethodCallOnce(
         Definition $definition,
         string $methodName,
-        ?array $params = null
+        array|null $params = null,
     ): void {
         $calls  = $definition->getMethodCalls();
         $called = false;
@@ -1593,7 +1593,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         Definition $definition,
         string $methodName,
         array $params = [],
-        int $nbCalls = 1
+        int $nbCalls = 1,
     ): void {
         $calls  = $definition->getMethodCalls();
         $called = 0;
@@ -1628,11 +1628,9 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
 class DummySchemaAssetsFilter
 {
-    private string $tableToIgnore;
-
-    public function __construct(string $tableToIgnore)
-    {
-        $this->tableToIgnore = $tableToIgnore;
+    public function __construct(
+        private readonly string $tableToIgnore,
+    ) {
     }
 
     public function __invoke(string $assetName): bool

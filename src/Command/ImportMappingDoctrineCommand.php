@@ -30,15 +30,12 @@ use function str_replace;
  */
 class ImportMappingDoctrineCommand extends DoctrineCommand
 {
-    /** @var string[] */
-    private array $bundles;
-
     /** @param string[] $bundles */
-    public function __construct(ManagerRegistry $doctrine, array $bundles)
-    {
+    public function __construct(
+        ManagerRegistry $doctrine,
+        private readonly array $bundles,
+    ) {
         parent::__construct($doctrine);
-
-        $this->bundles = $bundles;
     }
 
     protected function configure(): void

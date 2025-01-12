@@ -26,7 +26,7 @@ class EntityListenerPassTest extends TestCase
     }
 
     /** @dataProvider provideEvents */
-    public function testEntityListenersAreRegistered(?string $event, ?string $method, ?string $expectedMethod): void
+    public function testEntityListenersAreRegistered(string|null $event, string|null $method, string|null $expectedMethod): void
     {
         $container = new ContainerBuilder();
         $container->addCompilerPass(new EntityListenerPass());

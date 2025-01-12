@@ -59,7 +59,7 @@ class CreateDatabaseDoctrineTest extends TestCase
      *
      * @return MockObject&Container
      */
-    private function getMockContainer(string $connectionName, ?array $params = null): MockObject
+    private function getMockContainer(string $connectionName, array|null $params = null): MockObject
     {
         // Mock the container and everything you'll need here
         $mockDoctrine = $this->getMockBuilder(ManagerRegistry::class)

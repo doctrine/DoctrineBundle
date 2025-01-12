@@ -141,7 +141,7 @@ class DoctrineDataCollectorTest extends TestCase
     private function createCollector(
         array $managers,
         bool $shouldValidateSchema = true,
-        ?DebugDataHolder $debugDataHolder = null
+        DebugDataHolder|null $debugDataHolder = null,
     ): DoctrineDataCollector {
         $registry = $this->createMock(ManagerRegistry::class);
         $registry
