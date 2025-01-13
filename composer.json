@@ -56,7 +56,7 @@
         "psr/log": "^1.1.4 || ^2.0 || ^3.0",
         "symfony/phpunit-bridge": "^6.1 || ^7.0",
         "symfony/property-info": "^5.4 || ^6.0 || ^7.0",
-        "symfony/proxy-manager-bridge": "^5.4 || ^6.0 || ^7.0",
+        "symfony/proxy-manager-bridge": "^5.4 || ^6.0",
         "symfony/security-bundle": "^5.4 || ^6.0 || ^7.0",
         "symfony/stopwatch": "^5.4 || ^6.0 || ^7.0",
         "symfony/string": "^5.4 || ^6.0 || ^7.0",
