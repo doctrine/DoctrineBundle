@@ -27,6 +27,7 @@ use function sprintf;
  */
 class ServiceEntityRepositoryProxy extends EntityRepository implements ServiceEntityRepositoryInterface
 {
+    /** @var EntityRepository<T> */
     private ?EntityRepository $repository = null;
 
     /** @param class-string<T> $entityClass The class name of the entity this repository manages */
@@ -111,11 +112,13 @@ class ServiceEntityRepositoryProxy extends EntityRepository implements ServiceEn
         return ($this->repository ??= $this->resolveRepository())->getClassMetadata();
     }
 
+    /** @phpstan-return AbstractLazyCollection<int, T>&Selectable<int, T> */
     public function matching(Criteria $criteria): AbstractLazyCollection&Selectable
     {
         return ($this->repository ??= $this->resolveRepository())->matching($criteria);
     }
 
+    /** @return EntityRepository<T> */
     private function resolveRepository(): EntityRepository
     {
         $manager = $this->registry->getManagerForClass($this->entityClass);
@@ -127,6 +130,9 @@ class ServiceEntityRepositoryProxy extends EntityRepository implements ServiceEn
             ));
         }
 
-        return new EntityRepository($manager, $manager->getClassMetadata($this->entityClass));
+        /** @var ClassMetadata<T> $classMetadata */
+        $classMetadata = $manager->getClassMetadata($this->entityClass);
+
+        return new EntityRepository($manager, $classMetadata);
     }
 }

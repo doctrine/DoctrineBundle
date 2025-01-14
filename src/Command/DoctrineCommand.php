@@ -9,6 +9,8 @@ use Doctrine\Persistence\ManagerRegistry;
 use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 
+use function assert;
+
 /**
  * Base class for Doctrine console commands to extend from.
  *
@@ -58,6 +60,8 @@ abstract class DoctrineCommand extends Command
         if ($shardId !== null) {
             throw new InvalidArgumentException('Shards are not supported anymore using doctrine/dbal >= 3');
         }
+
+        assert($manager instanceof EntityManager);
 
         return $manager;
     }

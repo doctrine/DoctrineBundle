@@ -2,7 +2,7 @@
 
 namespace Fixtures\Bundles\RepositoryServiceBundle\Repository;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
 /**
@@ -11,7 +11,7 @@ use Doctrine\ORM\EntityRepository;
  */
 class TestCustomClassRepoRepository extends EntityRepository
 {
-    public function getEntityManager(): EntityManager
+    public function getEntityManager(): EntityManagerInterface
     {
         return parent::getEntityManager();
     }
