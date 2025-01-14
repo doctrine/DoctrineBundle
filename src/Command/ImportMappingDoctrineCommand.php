@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Driver\DatabaseDriver;
 use Doctrine\ORM\Tools\Console\MetadataFilter;
 use Doctrine\ORM\Tools\DisconnectedClassMetadataFactory;
@@ -13,6 +14,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use function assert;
 use function chmod;
 use function dirname;
 use function file_put_contents;
@@ -91,6 +93,7 @@ EOT);
 
         $namespaceOrBundle = $input->getArgument('name');
         if (isset($this->bundles[$namespaceOrBundle])) {
+            /** @phpstan-ignore method.notFound */
             $bundle    = $this->getApplication()->getKernel()->getBundle($namespaceOrBundle);
             $namespace = $bundle->getNamespace() . '\Entity';
 
@@ -121,13 +124,13 @@ EOT);
 
         $em = $this->getEntityManager($input->getOption('em'));
 
+        /* @phpstan-ignore method.notFound (Available in DBAL < 4) */
         $databaseDriver = new DatabaseDriver($em->getConnection()->getSchemaManager());
         $em->getConfiguration()->setMetadataDriverImpl($databaseDriver);
 
         $emName = $input->getOption('em');
         $emName = $emName ? $emName : 'default';
 
-        /* @phpstan-ignore class.notFound */
         $cmf = new DisconnectedClassMetadataFactory();
         $cmf->setEntityManager($em);
         $metadata = $cmf->getAllMetadata();
@@ -135,6 +138,7 @@ EOT);
         if ($metadata) {
             $output->writeln(sprintf('Importing mapping information from "<info>%s</info>" entity manager', $emName));
             foreach ($metadata as $class) {
+                assert($class instanceof ClassMetadata);
                 $className   = $class->name;
                 $class->name = $namespace . '\\' . $className;
                 if ($type === 'annotation') {

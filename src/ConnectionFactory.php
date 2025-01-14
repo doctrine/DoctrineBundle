@@ -119,7 +119,7 @@ class ConnectionFactory
             $connection = DriverManager::getConnection(...array_merge([$params, $config], $eventManager ? [$eventManager] : []));
             $params     = $this->addDatabaseSuffix(array_merge($connection->getParams(), $overriddenOptions));
             $driver     = $connection->getDriver();
-            /** @psalm-suppress InvalidScalarArgument Bogus error, StaticServerVersionProvider implements Doctrine\DBAL\ServerVersionProvider  */
+            /** @phpstan-ignore arguments.count (DBAL < 4.x doesn't accept an argument) */
             $platform = $driver->getDatabasePlatform(
                 ...(class_exists(StaticServerVersionProvider::class)
                     ? [new StaticServerVersionProvider($params['serverVersion'] ?? $params['primary']['serverVersion'] ?? '')]

@@ -1,5 +1,5 @@
 parameters:
-   level: 1
+   level: 2
    paths:
       - src
       - tests
@@ -7,3 +7,14 @@ parameters:
    excludePaths:
       - src/Command/Proxy/ConvertMappingDoctrineCommand.php
       - src/Command/Proxy/EnsureProductionSettingsDoctrineCommand.php
+   ignoreErrors:
+    # Available in ORM < 3 only
+    - '#Doctrine\\ORM\\Tools\\EntityGenerator.#'
+    - '#Doctrine\\ORM\\Tools\\DisconnectedClassMetadataFactory.#'
+    - '#Doctrine\\ORM\\Tools\\Export\\ClassMetadataExporter.#'
+    # phpstan has no array shape intersection support https://github.com/phpstan/phpstan/issues/12414
+    - message: '#unresolvable type.#'
+      path: src/DataCollector/DoctrineDataCollector.php
+    # Probably needs Symfony plugin
+    - message: '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\Node#'
+      path: src/DependencyInjection/Configuration.php
