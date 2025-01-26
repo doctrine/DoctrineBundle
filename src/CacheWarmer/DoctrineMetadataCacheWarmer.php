@@ -3,7 +3,6 @@
 namespace Doctrine\Bundle\DoctrineBundle\CacheWarmer;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\Mapping\AbstractClassMetadataFactory;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\CacheWarmer\AbstractPhpFileCacheWarmer;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -36,7 +35,7 @@ class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
         }
 
         $metadataFactory = $this->entityManager->getMetadataFactory();
-        if ($metadataFactory instanceof AbstractClassMetadataFactory && $metadataFactory->getLoadedMetadata()) {
+        if ($metadataFactory->getLoadedMetadata()) {
             throw new LogicException('DoctrineMetadataCacheWarmer must load metadata first, check priority of your warmers.');
         }
 

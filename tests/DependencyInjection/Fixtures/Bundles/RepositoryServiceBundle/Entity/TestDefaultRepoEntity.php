@@ -17,5 +17,5 @@ class TestDefaultRepoEntity
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: Types::INTEGER)]
-    private int|null $id = null;
+    private int|null $id = null; /** @phpstan-ignore property.unusedType, property.onlyWritten */
 }

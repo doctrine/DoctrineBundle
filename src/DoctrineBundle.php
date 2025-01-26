@@ -12,7 +12,6 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\MiddlewaresPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveLoggingMiddlewarePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveProfilerControllerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\WellKnownSchemaFilterPass;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
@@ -68,7 +67,6 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new EntityListenerPass());
         $container->addCompilerPass(new ServiceRepositoryCompilerPass());
         $container->addCompilerPass(new IdGeneratorPass());
-        $container->addCompilerPass(new WellKnownSchemaFilterPass());
         $container->addCompilerPass(new DbalSchemaFilterPass());
         $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_BEFORE_REMOVING, -10);
         $container->addCompilerPass(new RemoveProfilerControllerPass());

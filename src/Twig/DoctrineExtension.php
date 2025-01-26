@@ -115,6 +115,7 @@ class DoctrineExtension extends AbstractExtension
      */
     public function replaceQueryParameters($query, $parameters)
     {
+        /** @phpstan-ignore instanceof.alwaysTrue */
         if ($parameters instanceof Data) {
             $parameters = $parameters->getValue(true);
         }
@@ -130,7 +131,7 @@ class DoctrineExtension extends AbstractExtension
             static function ($matches) use ($parameters, &$i) {
                 $key = substr($matches[0], 1);
 
-                if (! array_key_exists($i, $parameters) && ($key === false || ! array_key_exists($key, $parameters))) {
+                if (! array_key_exists($i, $parameters) && ! array_key_exists($key, $parameters)) {
                     return $matches[0];
                 }
 

@@ -73,12 +73,11 @@ EOT);
             throw new InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
         }
 
-        /** @psalm-suppress InvalidArrayOffset Need to be compatible with DBAL < 4, which still has `$params['url']` */
-        /* @phpstan-ignore unset.offset */
+        /* @phpstan-ignore unset.offset (Need to be compatible with DBAL < 4, which still has `$params['url']`) */
         unset($params['dbname'], $params['url']);
 
         if ($connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            /** @psalm-suppress InvalidArrayOffset It's still available in DBAL 3.x that we need to support */
+            /** @phpstan-ignore nullCoalesce.offset (for DBAL < 4) */
             $params['dbname'] = $params['default_dbname'] ?? 'postgres';
         }
 

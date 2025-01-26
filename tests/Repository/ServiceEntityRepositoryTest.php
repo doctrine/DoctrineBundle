@@ -41,7 +41,7 @@ EXCEPTION);
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $this->expectException(LogicException::class);
 
-        /* @phpstan-ignore class.notFound */
+        /* @phpstan-ignore class.notFound, expr.resultUnused */
         new class ($registry, TestEntity::class) extends ServiceEntityRepository implements LazyObjectInterface {
             use LazyGhostTrait;
         };

@@ -44,6 +44,7 @@ class ConnectionFactory
         'sqlite3'    => 'pdo_sqlite',
     ];
 
+    /** @phpstan-ignore property.onlyWritten */
     private readonly DsnParser $dsnParser;
 
     private bool $initialized = false;
@@ -76,7 +77,7 @@ class ConnectionFactory
         }
 
         $overriddenOptions = [];
-        /** @psalm-suppress InvalidArrayOffset We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
+        /** @phpstan-ignore isset.offset (We should adjust when https://github.com/phpstan/phpstan/issues/12414 is fixed) */
         if (isset($params['connection_override_options'])) {
             trigger_deprecation('doctrine/doctrine-bundle', '2.4', 'The "connection_override_options" connection parameter is deprecated');
             $overriddenOptions = $params['connection_override_options'];
@@ -96,7 +97,7 @@ class ConnectionFactory
             }
         }
 
-        /** @psalm-suppress InvalidArrayOffset We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
+        /** @phpstan-ignore-next-line We should adjust when https://github.com/phpstan/phpstan/issues/12414 is fixed */
         if (! isset($params['pdo']) && (! isset($params['charset']) || $overriddenOptions || isset($params['dbname_suffix']))) {
             $wrapperClass = null;
 
@@ -251,14 +252,17 @@ class ConnectionFactory
      * @phpstan-return Params
      *
      * @throws DBALException
+     *
+     * @phpstan-ignore throws.unusedType
      */
     private function parseDatabaseUrl(array $params): array
     {
-        /** @psalm-suppress InvalidArrayOffset Need to be compatible with DBAL < 4, which still has `$params['url']` */
+        /** @phpstan-ignore isset.offset (for DBAL < 4) */
         if (! isset($params['url'])) {
             return $params;
         }
 
+        /** @phpstan-ignore deadCode.unreachable */
         try {
             $parsedParams = $this->dsnParser->parse($params['url']);
         } catch (MalformedDsnException $e) {

@@ -18,7 +18,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
 use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
-use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
@@ -695,10 +694,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (isset($entityManager['fetch_mode_subselect_batch_size'])) {
             $methods['setEagerFetchBatchSize'] = $entityManager['fetch_mode_subselect_batch_size'];
-        }
-
-        if (! method_exists(OrmConfiguration::class, 'setLazyGhostObjectEnabled')) {
-            unset($methods['setLazyGhostObjectEnabled']);
         }
 
         $listenerId        = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);

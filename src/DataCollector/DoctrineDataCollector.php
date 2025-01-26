@@ -7,10 +7,8 @@ use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Persistence\Mapping\AbstractClassMetadataFactory;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\HttpFoundation\Request;
@@ -54,6 +52,7 @@ class DoctrineDataCollector extends BaseCollector
     /**
      * @var mixed[][]|null
      * @phpstan-var ?array<string, list<QueryType&array{count: int, index: int, executionPercent?: float}>>
+     * @phpstan-ignore property.unusedType
      */
     private array|null $groupedQueries = null;
 
@@ -94,10 +93,7 @@ class DoctrineDataCollector extends BaseCollector
                 $factory   = $em->getMetadataFactory();
                 $validator = new SchemaValidator($em);
 
-                assert($factory instanceof AbstractClassMetadataFactory);
-
                 foreach ($factory->getLoadedMetadata() as $class) {
-                    assert($class instanceof ClassMetadata);
                     if (isset($entities[$name][$class->getName()])) {
                         continue;
                     }
