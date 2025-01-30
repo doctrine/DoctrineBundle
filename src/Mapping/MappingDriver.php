@@ -21,7 +21,7 @@ class MappingDriver implements MappingDriverInterface
     /**
      * {@inheritDoc}
      */
-    public function getAllClassNames()
+    public function getAllClassNames(): array
     {
         return $this->driver->getAllClassNames();
     }
