@@ -31,37 +31,46 @@ class ContainerRepositoryFactoryTest extends TestCase
 
     public function testGetRepositoryReturnsService(): void
     {
-        $em        = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
+        /* @phpstan-ignore argument.type */
+        $em = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
+        /* @phpstan-ignore argument.type */
         $repo      = new StubRepository($em, new ClassMetadata('Foo\CoolEntity'));
         $container = $this->createContainer(['my_repo' => $repo]);
 
         $factory = new ContainerRepositoryFactory($container);
+        /* @phpstan-ignore argument.type */
         $this->assertSame($repo, $factory->getRepository($em, 'Foo\CoolEntity'));
     }
 
     public function testGetRepositoryReturnsEntityRepository(): void
     {
         $container = $this->createContainer([]);
-        $em        = $this->createEntityManager(['Foo\BoringEntity' => null]);
+        /* @phpstan-ignore argument.type */
+        $em = $this->createEntityManager(['Foo\BoringEntity' => null]);
 
-        $factory    = new ContainerRepositoryFactory($container);
+        $factory = new ContainerRepositoryFactory($container);
+        /* @phpstan-ignore argument.type */
         $actualRepo = $factory->getRepository($em, 'Foo\BoringEntity');
         $this->assertInstanceOf(EntityRepository::class, $actualRepo);
         // test the same instance is returned
+        /* @phpstan-ignore argument.type */
         $this->assertSame($actualRepo, $factory->getRepository($em, 'Foo\BoringEntity'));
     }
 
     public function testCustomRepositoryIsReturned(): void
     {
         $container = $this->createContainer([]);
-        $em        = $this->createEntityManager([
+        /* @phpstan-ignore argument.type */
+        $em = $this->createEntityManager([
             'Foo\CustomNormalRepoEntity' => StubRepository::class,
         ]);
 
-        $factory    = new ContainerRepositoryFactory($container);
+        $factory = new ContainerRepositoryFactory($container);
+        /* @phpstan-ignore argument.type */
         $actualRepo = $factory->getRepository($em, 'Foo\CustomNormalRepoEntity');
         $this->assertInstanceOf(StubRepository::class, $actualRepo);
         // test the same instance is returned
+        /* @phpstan-ignore argument.type */
         $this->assertSame($actualRepo, $factory->getRepository($em, 'Foo\CustomNormalRepoEntity'));
     }
 
@@ -71,6 +80,7 @@ class ContainerRepositoryFactoryTest extends TestCase
 
         $container = $this->createContainer(['my_repo' => $repo]);
 
+        /* @phpstan-ignore argument.type */
         $em = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
 
         $factory = new ContainerRepositoryFactory($container);
@@ -81,6 +91,7 @@ class ContainerRepositoryFactoryTest extends TestCase
             $this->expectExceptionMessage('The service "my_repo" must implement ObjectRepository (or extend a base class, like ServiceEntityRepository), "stdClass" given.');
         }
 
+        /* @phpstan-ignore argument.type */
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
@@ -90,10 +101,13 @@ class ContainerRepositoryFactoryTest extends TestCase
 
         $container = $this->createContainer(['my_repo' => $repo]);
 
+        /* @phpstan-ignore argument.type */
         $em = $this->createEntityManager(['Foo\CoolEntity' => 'my_repo']);
 
         $factory = new ContainerRepositoryFactory($container);
+        /* @phpstan-ignore argument.type */
         $factory->getRepository($em, 'Foo\CoolEntity');
+        /* @phpstan-ignore argument.type */
         $actualRepo = $factory->getRepository($em, 'Foo\CoolEntity');
         $this->assertSame($repo, $actualRepo);
     }
@@ -102,6 +116,7 @@ class ContainerRepositoryFactoryTest extends TestCase
     {
         $container = $this->createContainer([]);
 
+        /* @phpstan-ignore argument.type */
         $em = $this->createEntityManager([
             'Foo\CoolEntity' => StubServiceRepository::class,
         ]);
@@ -111,6 +126,7 @@ class ContainerRepositoryFactoryTest extends TestCase
         $this->expectExceptionMessage(<<<'EXCEPTION'
 The "Doctrine\Bundle\DoctrineBundle\Tests\Repository\Fixtures\StubServiceRepository" entity repository implements "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
 EXCEPTION);
+        /* @phpstan-ignore argument.type */
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 
@@ -118,6 +134,7 @@ EXCEPTION);
     {
         $container = $this->createContainer([]);
 
+        /* @phpstan-ignore argument.type */
         $em = $this->createEntityManager(['Foo\CoolEntity' => 'not_a_real_class']);
 
         $factory = new ContainerRepositoryFactory($container);
@@ -125,6 +142,7 @@ EXCEPTION);
         $this->expectExceptionMessage(<<<'EXCEPTION'
 The "Foo\CoolEntity" entity has a repositoryClass set to "not_a_real_class", but this is not a valid class. Check your class naming. If this is meant to be a service id, make sure this service exists and is tagged with "doctrine.repository_service".
 EXCEPTION);
+        /* @phpstan-ignore argument.type */
         $factory->getRepository($em, 'Foo\CoolEntity');
     }
 

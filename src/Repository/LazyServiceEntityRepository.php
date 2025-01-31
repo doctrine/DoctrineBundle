@@ -2,6 +2,7 @@
 
 namespace Doctrine\Bundle\DoctrineBundle\Repository;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
@@ -62,7 +63,7 @@ class LazyServiceEntityRepository extends EntityRepository implements ServiceEnt
     {
         $manager = $this->registry->getManagerForClass($this->entityClass);
 
-        if ($manager === null) {
+        if (! $manager instanceof EntityManagerInterface) {
             throw new LogicException(sprintf(
                 'Could not find the entity manager for class "%s". Check your Doctrine configuration to make sure it is configured to load this entity’s metadata.',
                 $this->entityClass,

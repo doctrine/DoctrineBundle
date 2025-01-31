@@ -63,7 +63,9 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('doctrine');
         $rootNode    = $treeBuilder->getRootNode();
 
+        /* @phpstan-ignore argument.type (symfony plugin needed) */
         $this->addDbalSection($rootNode);
+        /* @phpstan-ignore argument.type (symfony plugin needed) */
         $this->addOrmSection($rootNode);
 
         return $treeBuilder;
@@ -262,6 +264,7 @@ class Configuration implements ConfigurationInterface
                     )
                     ->useAttributeAsKey('name')
                     ->prototype('array');
+        /* @phpstan-ignore argument.type (symfony plugin needed) */
         $this->configureDbalDriverNode($slaveNode);
 
         // dbal >= 2.11
@@ -270,6 +273,7 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('replicas')
                     ->useAttributeAsKey('name')
                     ->prototype('array');
+        /* @phpstan-ignore argument.type (symfony plugin needed) */
         $this->configureDbalDriverNode($replicaNode);
 
         assert($node instanceof ArrayNodeDefinition);

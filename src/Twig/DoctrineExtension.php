@@ -108,14 +108,13 @@ class DoctrineExtension extends AbstractExtension
     /**
      * Return a query with the parameters replaced
      *
-     * @param string       $query
-     * @param mixed[]|Data $parameters
+     * @param string                       $query
+     * @param array<array-key, mixed>|Data $parameters
      *
      * @return string
      */
     public function replaceQueryParameters($query, $parameters)
     {
-        /** @phpstan-ignore instanceof.alwaysTrue */
         if ($parameters instanceof Data) {
             $parameters = $parameters->getValue(true);
         }

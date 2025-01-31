@@ -31,6 +31,7 @@ trait OrmProxyCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (! $this->entityManagerProvider) {
+            /* @phpstan-ignore argument.type (ORM < 3 specific) */
             DoctrineCommandHelper::setApplicationEntityManager($this->getApplication(), $input->getOption('em'));
         }
 

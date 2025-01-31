@@ -15,6 +15,7 @@ class IdleConnectionMiddlewareTest extends TestCase
     /** @requires function Symfony\Bridge\Doctrine\Middleware\IdleConnection\Driver::__construct */
     public function testWrap()
     {
+        /** @var ArrayObject<string, int> $connectionExpiries */
         $connectionExpiries = new ArrayObject(['connectionone' => time() - 30, 'connectiontwo' => time() + 40]);
         $ttlByConnection    = ['connectionone' => 25, 'connectiontwo' => 60];
 
