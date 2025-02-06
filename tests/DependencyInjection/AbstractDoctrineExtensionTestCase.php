@@ -58,7 +58,7 @@ use function uniqid;
 
 use const DIRECTORY_SEPARATOR;
 
-abstract class AbstractDoctrineExtensionTest extends TestCase
+abstract class AbstractDoctrineExtensionTestCase extends TestCase
 {
     abstract protected function loadFromFile(ContainerBuilder $container, string $file): void;
 

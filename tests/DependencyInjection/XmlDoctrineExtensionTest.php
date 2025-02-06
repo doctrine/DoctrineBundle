@@ -6,7 +6,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
-class XmlDoctrineExtensionTest extends AbstractDoctrineExtensionTest
+class XmlDoctrineExtensionTest extends AbstractDoctrineExtensionTestCase
 {
     protected function loadFromFile(ContainerBuilder $container, string $file): void
     {
