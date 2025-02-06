@@ -825,7 +825,6 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    /** @requires PHP 8 */
     public function testAttributesBundleMappingDetection(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -1166,7 +1165,6 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
-    /** @requires PHP 8 */
     public function testAsEntityListenerAttribute()
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -1203,7 +1201,6 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
 
-    /** @requires PHP 8 */
     public function testAsDoctrineListenerAttribute()
     {
         if (! interface_exists(EntityManagerInterface::class)) {

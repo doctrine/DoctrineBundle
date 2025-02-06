@@ -109,7 +109,6 @@ class MiddlewarePassTest extends TestCase
      * @param class-string $className
      *
      * @dataProvider provideAddMiddlewareWithAttributeForAutoconfiguration
-     * @requires PHP 8
      */
     public function testAddMiddlewareWithAttributeForAutoconfiguration(string $className, bool $registeredOnConn1): void
     {
@@ -327,7 +326,6 @@ class MiddlewarePassTest extends TestCase
         $this->assertSame($middlewares[0], $definition);
     }
 
-    /** @requires PHP 8 */
     public function testAddMiddlewareOrderingWithAttributeForAutoconfiguration(): void
     {
         $container = $this->createContainer(static function (ContainerBuilder $container) {

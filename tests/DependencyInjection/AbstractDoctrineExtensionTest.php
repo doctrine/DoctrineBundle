@@ -531,7 +531,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setMetadataCache', [new Reference('doctrine.orm.default_metadata_cache')]);
     }
 
-    /** @requires PHP 8 */
     public function testSingleEntityManagerMultipleMappingBundleDefinitions(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -578,7 +577,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ]);
     }
 
-    /** @requires PHP 8 */
     public function testMultipleEntityManagersMappingBundleDefinitions(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -938,7 +936,6 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'addCustomHydrationMode', ['test_hydrator', TestHydrator::class]);
     }
 
-    /** @requires PHP 8.1 */
     public function testAddFilter(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
