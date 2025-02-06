@@ -32,6 +32,9 @@ use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver;
+use Doctrine\ORM\Mapping\Embeddable;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\MappedSuperclass;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use InvalidArgumentException;
 use LogicException;
@@ -1163,6 +1166,43 @@ class DoctrineExtensionTest extends TestCase
                 'cacheConfig' => ['type' => 'service', 'id' => 'service_target_result'],
             ],
         ];
+    }
+
+    /** @return array<array{0: class-string}> */
+    public static function provideAttributeExcludedFromContainer(): array
+    {
+        return [
+            'Embeddable' => [Embeddable::class],
+            'Entity' => [Entity::class],
+            'MappedSuperclass' => [MappedSuperclass::class],
+        ];
+    }
+
+    /** @dataProvider provideAttributeExcludedFromContainer */
+    public function testEntityAttributeExcludesFromContainer(string $class)
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addBaseEntityManager()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $attributes = $container->getAutoconfiguredAttributes();
+        $this->assertInstanceOf(Closure::class, $attributes[$class]);
+
+        $definition = new ChildDefinition('');
+        $attributes[$class]($definition);
+
+        $this->assertSame([['source' => sprintf('with #[%s] attribute', $class)]], $definition->getTag('container.excluded'));
+        $this->assertTrue($definition->isAbstract());
     }
 
     public function testAsEntityListenerAttribute()

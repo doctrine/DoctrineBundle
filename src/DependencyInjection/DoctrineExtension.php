@@ -27,6 +27,9 @@ use Doctrine\ORM\Mapping\Driver\PHPDriver as LegacyPHPDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver;
 use Doctrine\ORM\Mapping\Driver\StaticPHPDriver as LegacyStaticPHPDriver;
+use Doctrine\ORM\Mapping\Embeddable;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\MappedSuperclass;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Proxy\ProxyFactory;
 use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
@@ -642,6 +645,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 'priority'   => $attribute->priority,
                 'connection' => $attribute->connection,
             ]);
+        });
+
+        $container->registerAttributeForAutoconfiguration(Embeddable::class, static function (ChildDefinition $definition) {
+            $definition->setAbstract(true)->addTag('container.excluded', ['source' => sprintf('with #[%s] attribute', Embeddable::class)]);
+        });
+        $container->registerAttributeForAutoconfiguration(Entity::class, static function (ChildDefinition $definition) {
+            $definition->setAbstract(true)->addTag('container.excluded', ['source' => sprintf('with #[%s] attribute', Entity::class)]);
+        });
+        $container->registerAttributeForAutoconfiguration(MappedSuperclass::class, static function (ChildDefinition $definition) {
+            $definition->setAbstract(true)->addTag('container.excluded', ['source' => sprintf('with #[%s] attribute', MappedSuperclass::class)]);
         });
 
         /** @see DoctrineBundle::boot() */
