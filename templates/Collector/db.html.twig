@@ -396,7 +396,16 @@
         <div class="tab">
             <h3 class="tab-title">Managed Entities</h3>
             <div class="tab-content">
-                {{ helper.render_simple_table('Class', 'Amount of managed objects', collector.managedEntityCountByClass) }}
+                {% if not collector.managedEntityCountByClass %}
+                    <div class="empty">
+                        <p>No mapped entities.</p>
+                    </div>
+                {% else %}
+                    {% for manager, entityCounts in collector.managedEntityCountByClass %}
+                        <h3>{{ manager }} <small>entity manager</small></h3>
+                        {{ helper.render_simple_table('Class', 'Amount of managed objects', entityCounts) }}
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
 

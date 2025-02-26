@@ -43,12 +43,15 @@ use function usort;
  *    errors: array<string, array<class-string, list<string>>>,
  *    managers: list<string>,
  *    queries: array<string, list<QueryType>>,
+ *    entityCounts: array<string, array<class-string, int>>
  * }
  * @psalm-property DataType $data
  */
 class DoctrineDataCollector extends BaseCollector
 {
     private int|null $invalidEntityCount = null;
+
+    private int|null $managedEntityCount = null;
 
     /**
      * @var mixed[][]|null
@@ -117,7 +120,7 @@ class DoctrineDataCollector extends BaseCollector
             }
 
             foreach ($em->getUnitOfWork()->getIdentityMap() as $className => $entityList) {
-                $entityCounts[$className] = ($entityCounts[$className] ?? 0) + count($entityList);
+                $entityCounts[$name][$className] = ($entityCounts[$name][$className] ?? 0) + count($entityList);
             }
 
             $emConfig   = $em->getConfiguration();
@@ -240,7 +243,16 @@ class DoctrineDataCollector extends BaseCollector
 
     public function getManagedEntityCount(): int
     {
-        return array_sum($this->data['entityCounts']);
+        if ($this->managedEntityCount === null) {
+            $total = 0;
+            foreach ($this->data['entityCounts'] as $entities) {
+                $total += array_sum($entities);
+            }
+
+            $this->managedEntityCount = $total;
+        }
+
+        return $this->managedEntityCount;
     }
 
     /** @return array<class-string, int> */
