@@ -8,9 +8,11 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
+use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use stdClass;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,10 +30,11 @@ class DoctrineDataCollectorTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $manager   = $this->createMock(EntityManagerInterface::class);
-        $config    = $this->createMock(Configuration::class);
-        $factory   = $this->createMock(ClassMetadataFactory::class);
-        $collector = $this->createCollector(['default' => $manager], true, $this->createMock(DebugDataHolder::class));
+        $manager    = $this->createMock(EntityManagerInterface::class);
+        $config     = $this->createMock(Configuration::class);
+        $factory    = $this->createMock(ClassMetadataFactory::class);
+        $collector  = $this->createCollector(['default' => $manager], true, $this->createMock(DebugDataHolder::class));
+        $unitOfWork = $this->createMock(UnitOfWork::class);
 
         $manager->expects($this->any())
             ->method('getMetadataFactory')
@@ -39,6 +42,15 @@ class DoctrineDataCollectorTest extends TestCase
         $manager->expects($this->any())
             ->method('getConfiguration')
             ->will($this->returnValue($config));
+        $manager->expects($this->any())
+            ->method('getUnitOfWork')
+            ->will($this->returnValue($unitOfWork));
+        $unitOfWork->expects($this->any())
+            ->method('getIdentityMap')
+            ->will($this->returnValue([
+                self::FIRST_ENTITY => [new stdClass()],
+                self::SECOND_ENTITY => [new stdClass(), new stdClass()],
+            ]));
 
         $config->expects($this->once())
             ->method('isSecondLevelCacheEnabled')
@@ -58,6 +70,7 @@ class DoctrineDataCollectorTest extends TestCase
         $entities = $collector->getEntities();
         $this->assertArrayHasKey('default', $entities);
         $this->assertCount(2, $entities['default']);
+        $this->assertSame(3, $collector->getManagedEntityCount());
     }
 
     public function testDoesNotCollectEntities(): void
@@ -66,14 +79,21 @@ class DoctrineDataCollectorTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $manager   = $this->createMock(EntityManager::class);
-        $config    = $this->createMock(Configuration::class);
-        $collector = $this->createCollector(['default' => $manager], false, $this->createMock(DebugDataHolder::class));
+        $manager    = $this->createMock(EntityManager::class);
+        $config     = $this->createMock(Configuration::class);
+        $collector  = $this->createCollector(['default' => $manager], false, $this->createMock(DebugDataHolder::class));
+        $unitOfWork = $this->createMock(UnitOfWork::class);
 
         $manager->expects($this->never())
             ->method('getMetadataFactory');
         $manager->method('getConfiguration')
             ->will($this->returnValue($config));
+        $manager->expects($this->any())
+            ->method('getUnitOfWork')
+            ->will($this->returnValue($unitOfWork));
+        $unitOfWork->expects($this->any())
+            ->method('getIdentityMap')
+            ->will($this->returnValue([]));
 
         $collector->collect(new Request(), new Response());
 

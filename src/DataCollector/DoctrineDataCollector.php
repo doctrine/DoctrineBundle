@@ -17,6 +17,7 @@ use Throwable;
 
 use function array_map;
 use function array_sum;
+use function arsort;
 use function assert;
 use function count;
 use function usort;
@@ -68,9 +69,10 @@ class DoctrineDataCollector extends BaseCollector
     {
         parent::collect($request, $response, $exception);
 
-        $errors   = [];
-        $entities = [];
-        $caches   = [
+        $errors       = [];
+        $entities     = [];
+        $entityCounts = [];
+        $caches       = [
             'enabled' => false,
             'log_enabled' => false,
             'counts' => [
@@ -112,6 +114,10 @@ class DoctrineDataCollector extends BaseCollector
 
                     $errors[$name][$class->getName()] = $classErrors;
                 }
+            }
+
+            foreach ($em->getUnitOfWork()->getIdentityMap() as $className => $entityList) {
+                $entityCounts[$className] = ($entityCounts[$className] ?? 0) + count($entityList);
             }
 
             $emConfig   = $em->getConfiguration();
@@ -165,10 +171,14 @@ class DoctrineDataCollector extends BaseCollector
             }
         }
 
-        $this->data['entities'] = $entities;
-        $this->data['errors']   = $errors;
-        $this->data['caches']   = $caches;
-        $this->groupedQueries   = null;
+        // Sort entities by count (in descending order)
+        arsort($entityCounts);
+
+        $this->data['entities']     = $entities;
+        $this->data['errors']       = $errors;
+        $this->data['caches']       = $caches;
+        $this->data['entityCounts'] = $entityCounts;
+        $this->groupedQueries       = null;
     }
 
     /** @return array<string, array<class-string, array{class: class-string, file: false|string, line: false|int}>> */
@@ -226,6 +236,17 @@ class DoctrineDataCollector extends BaseCollector
     public function getInvalidEntityCount()
     {
         return $this->invalidEntityCount ??= array_sum(array_map('count', $this->data['errors']));
+    }
+
+    public function getManagedEntityCount(): int
+    {
+        return array_sum($this->data['entityCounts']);
+    }
+
+    /** @return array<class-string, int> */
+    public function getManagedEntityCountByClass(): array
+    {
+        return $this->data['entityCounts'];
     }
 
     /**

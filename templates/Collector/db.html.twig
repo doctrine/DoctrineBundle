@@ -44,6 +44,10 @@
                 <b>Invalid entities</b>
                 <span class="sf-toolbar-status {{ collector.invalidEntityCount > 0 ? 'sf-toolbar-status-red' : '' }}">{{ collector.invalidEntityCount }}</span>
             </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Managed entities</b>
+                <span class="sf-toolbar-status">{{ collector.managedEntityCount }}</span>
+            </div>
             {% if collector.cacheEnabled %}
                 <div class="sf-toolbar-info-piece">
                     <b>Cache hits</b>
@@ -136,6 +140,11 @@
             <div class="metric">
                 <span class="value">{{ collector.invalidEntityCount }}</span>
                 <span class="label">Invalid entities</span>
+            </div>
+
+            <div class="metric">
+                <span class="value">{{ collector.managedEntityCount }}</span>
+                <span class="label">Managed entities</span>
             </div>
         </div>
 
@@ -381,6 +390,13 @@
                         {% endif %}
                     {% endif %}
                 {% endif %}
+            </div>
+        </div>
+
+        <div class="tab">
+            <h3 class="tab-title">Managed Entities</h3>
+            <div class="tab-content">
+                {{ helper.render_simple_table('Class', 'Amount of managed objects', collector.managedEntityCountByClass) }}
             </div>
         </div>
 
