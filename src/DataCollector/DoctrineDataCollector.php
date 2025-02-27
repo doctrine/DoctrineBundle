@@ -120,7 +120,7 @@ class DoctrineDataCollector extends BaseCollector
             }
 
             foreach ($em->getUnitOfWork()->getIdentityMap() as $className => $entityList) {
-                $entityCounts[$name][$className] = ($entityCounts[$name][$className] ?? 0) + count($entityList);
+                $entityCounts[$name][$className] = count($entityList);
             }
 
             $emConfig   = $em->getConfiguration();
