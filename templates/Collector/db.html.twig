@@ -402,7 +402,7 @@
                     </div>
                 {% else %}
                     {% for manager, entityCounts in collector.managedEntityCountByClass %}
-                        <h3>{{ manager }} <small>entity manager</small></h3>
+                        <h4>{{ manager }} <small>entity manager</small></h4>
                         {{ helper.render_simple_table('Class', 'Amount of managed objects', entityCounts) }}
                     {% endfor %}
                 {% endif %}

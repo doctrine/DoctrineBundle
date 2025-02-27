@@ -119,9 +119,13 @@ class DoctrineDataCollector extends BaseCollector
                 }
             }
 
+            $entityCounts[$name] = [];
             foreach ($em->getUnitOfWork()->getIdentityMap() as $className => $entityList) {
                 $entityCounts[$name][$className] = count($entityList);
             }
+
+            // Sort entities by count (in descending order)
+            arsort($entityCounts[$name]);
 
             $emConfig   = $em->getConfiguration();
             $slcEnabled = $emConfig->isSecondLevelCacheEnabled();
@@ -173,9 +177,6 @@ class DoctrineDataCollector extends BaseCollector
                 $caches['regions']['misses'][$key] += $value;
             }
         }
-
-        // Sort entities by count (in descending order)
-        arsort($entityCounts);
 
         $this->data['entities']     = $entities;
         $this->data['errors']       = $errors;
@@ -255,7 +256,7 @@ class DoctrineDataCollector extends BaseCollector
         return $this->managedEntityCount;
     }
 
-    /** @return array<class-string, int> */
+    /** @return array<string, array<class-string, int>> */
     public function getManagedEntityCountByClass(): array
     {
         return $this->data['entityCounts'];
