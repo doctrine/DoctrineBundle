@@ -44,7 +44,6 @@ class ProfilerTest extends BaseTestCase
         $registry              = $this->getMockBuilder(ManagerRegistry::class)->getMock();
         $registry->method('getConnectionNames')->willReturn([]);
         $registry->method('getManagerNames')->willReturn([]);
-        $registry->method('getManagers')->willReturn([]);
         $this->collector = new DoctrineDataCollector($registry, true, $this->debugDataHolder);
 
         $twigLoaderFilesystem = new FilesystemLoader(__DIR__ . '/../templates/Collector');
@@ -120,5 +119,8 @@ class ProfilerTest extends BaseTestCase
             '.*',
             preg_quote('SELECT * FROM foo WHERE bar IN ( ? , ? )'),
         ) . '/', $output));
+
+        $this->assertStringContainsString('Managed entities', $output);
+        $this->assertStringContainsString('No managed entities.', $output);
     }
 }
