@@ -53,6 +53,7 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+use function array_map;
 use function array_values;
 use function class_exists;
 use function in_array;
@@ -1195,7 +1196,9 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
-        $attributes = $container->getAutoconfiguredAttributes();
+        $attributes = method_exists($container, 'getAttributeAutoconfigurators')
+            ? array_map(static fn (array $arr) => $arr[0], $container->getAttributeAutoconfigurators())
+            : $container->getAutoconfiguredAttributes();
         $this->assertInstanceOf(Closure::class, $attributes[$class]);
 
         $definition = new ChildDefinition('');
@@ -1221,7 +1224,9 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
-        $attributes = $container->getAutoconfiguredAttributes();
+        $attributes = method_exists($container, 'getAttributeAutoconfigurators')
+            ? array_map(static fn (array $arr) => $arr[0], $container->getAttributeAutoconfigurators())
+            : $container->getAutoconfiguredAttributes();
         $this->assertInstanceOf(Closure::class, $attributes[AsEntityListener::class]);
 
         $reflector  = new ReflectionClass(Php8EntityListener::class);
@@ -1257,7 +1262,9 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
-        $attributes = $container->getAutoconfiguredAttributes();
+        $attributes = method_exists($container, 'getAttributeAutoconfigurators')
+            ? array_map(static fn (array $arr) => $arr[0], $container->getAttributeAutoconfigurators())
+            : $container->getAutoconfiguredAttributes();
         $this->assertInstanceOf(Closure::class, $attributes[AsDoctrineListener::class]);
 
         $reflector  = new ReflectionClass(Php8EventListener::class);
