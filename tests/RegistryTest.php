@@ -18,6 +18,8 @@ use Symfony\Component\VarExporter\LazyObjectInterface;
 use function assert;
 use function interface_exists;
 
+use const PHP_VERSION_ID;
+
 class RegistryTest extends TestCase
 {
     public function testGetDefaultConnectionName(): void
@@ -116,7 +118,10 @@ class RegistryTest extends TestCase
         $registry->resetManager('default');
     }
 
-    /** @group legacy */
+    /**
+     * @group legacy
+     * @requires PHP < 8.4
+     */
     public function testReset(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -146,6 +151,7 @@ class RegistryTest extends TestCase
         $registry->reset();
     }
 
+    /** @requires PHP < 8.4 */
     public function testResetLazyObject(): void
     {
         if (! interface_exists(EntityManagerInterface::class) || ! interface_exists(LazyObjectInterface::class)) {
@@ -166,6 +172,11 @@ class RegistryTest extends TestCase
         (new Registry($container, [], $entityManagers, 'default', 'default'))->reset();
     }
 
+    /**
+     * The legacy group should be removed after https://github.com/doctrine/orm/pull/11853 is merged
+     *
+     * @group legacy
+     */
     public function testIdentityMapsStayConsistentAfterReset(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -178,11 +189,15 @@ class RegistryTest extends TestCase
         $container     = $kernel->getContainer();
         $registry      = $container->get('doctrine');
         $entityManager = $container->get('doctrine.orm.default_entity_manager');
-        $repository    = $entityManager->getRepository(TestCustomClassRepoEntity::class);
 
-        $this->assertInstanceOf(interface_exists(LazyObjectInterface::class) ? LazyObjectInterface::class : ProxyInterface::class, $entityManager);
+        if (PHP_VERSION_ID < 80400) {
+            $this->assertInstanceOf(interface_exists(LazyObjectInterface::class) ? LazyObjectInterface::class : ProxyInterface::class, $entityManager);
+        }
+
         assert($entityManager instanceof EntityManagerInterface);
         assert($registry instanceof Registry);
+
+        $repository = $entityManager->getRepository(TestCustomClassRepoEntity::class);
         assert($repository instanceof TestCustomClassRepoRepository);
 
         $entity = new TestCustomClassRepoEntity();
