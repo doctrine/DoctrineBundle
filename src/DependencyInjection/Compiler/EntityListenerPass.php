@@ -6,7 +6,6 @@ use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
 use Doctrine\Bundle\DoctrineBundle\Mapping\EntityListenerServiceResolver;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\Compiler\PriorityTaggedServiceTrait;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -17,6 +16,7 @@ use function is_a;
 use function method_exists;
 use function sprintf;
 use function substr;
+use function usort;
 
 /**
  * Class for Symfony bundles to register entity listeners
@@ -25,18 +25,15 @@ use function substr;
  */
 class EntityListenerPass implements CompilerPassInterface
 {
-    use PriorityTaggedServiceTrait;
-
     /** @return void */
     public function process(ContainerBuilder $container)
     {
-        $resolvers = $this->findAndSortTaggedServices('doctrine.orm.entity_listener', $container);
-
         $lazyServiceReferencesByResolver = [];
 
-        foreach ($resolvers as $reference) {
-            $id = $reference->__toString();
-            foreach ($container->getDefinition($id)->getTag('doctrine.orm.entity_listener') as $attributes) {
+        foreach ($container->findTaggedServiceIds('doctrine.orm.entity_listener') as $id => $tags) {
+            usort($tags, static fn (array $a, array $b) => ($a['priority'] ?? 0) <=> ($b['priority'] ?? 0));
+
+            foreach ($tags as $attributes) {
                 $name          = $attributes['entity_manager'] ?? $container->getParameter('doctrine.default_entity_manager');
                 $entityManager = sprintf('doctrine.orm.%s_entity_manager', $name);
 
