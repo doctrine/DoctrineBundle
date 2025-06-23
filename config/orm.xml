@@ -241,6 +241,11 @@
             <tag name="console.command" command="doctrine:mapping:info" />
         </service>
 
+        <service id="doctrine.mapping_describe_command" class="Doctrine\ORM\Tools\Console\Command\MappingDescribeCommand">
+            <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
+            <tag name="console.command" command="doctrine:mapping:describe" />
+        </service>
+
         <service id="doctrine.clear_query_region_command" class="Doctrine\ORM\Tools\Console\Command\ClearCache\QueryRegionCommand">
             <argument type="service" id="doctrine.orm.command.entity_manager_provider" />
             <tag name="console.command" command="doctrine:cache:clear-query-region" />

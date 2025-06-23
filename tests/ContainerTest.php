@@ -12,6 +12,7 @@ use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Console\Command\InfoCommand;
+use Doctrine\ORM\Tools\Console\Command\MappingDescribeCommand;
 use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
@@ -63,6 +64,7 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(ManagerRegistry::class, $container->get('doctrine'));
         $this->assertInstanceOf(UniqueEntityValidator::class, $container->get('doctrine.orm.validator.unique'));
         $this->assertInstanceOf(InfoCommand::class, $container->get('doctrine.mapping_info_command'));
+        $this->assertInstanceOf(MappingDescribeCommand::class, $container->get('doctrine.mapping_describe_command'));
         $this->assertInstanceOf(UpdateCommand::class, $container->get('doctrine.schema_update_command'));
 
         $this->assertTrue(Type::hasType('test'));
