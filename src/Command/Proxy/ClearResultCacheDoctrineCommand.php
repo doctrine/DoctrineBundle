@@ -26,6 +26,6 @@ class ClearResultCacheDoctrineCommand extends ResultCommand
             return;
         }
 
-        $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
+        $this->addOption('em', null, InputOption::VALUE_REQUIRED, 'The entity manager to use for this command');
     }
 }
