@@ -31,6 +31,7 @@ use Doctrine\ORM\Mapping\Embeddable;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\LegacyReflectionFields;
 use Doctrine\ORM\Mapping\MappedSuperclass;
+use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Proxy\ProxyFactory;
 use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
@@ -703,6 +704,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         if (PHP_VERSION_ID >= 80400 && class_exists(LegacyReflectionFields::class)) {
             $methods['enableNativeLazyObjects'] = $entityManager['enable_native_lazy_objects'];
+
+            // Do not set deprecated proxy configurations when native lazy objects are enabled with `doctrine/orm:^3.5`
+            /** @phpstan-ignore function.alreadyNarrowedType */
+            if ($entityManager['enable_native_lazy_objects'] && method_exists(ORMSetup::class, 'createAttributeMetadataConfig')) {
+                unset(
+                    $methods['setProxyDir'],
+                    $methods['setProxyNamespace'],
+                    $methods['setAutoGenerateProxyClasses'],
+                );
+            }
         }
 
         if (isset($entityManager['fetch_mode_subselect_batch_size'])) {
