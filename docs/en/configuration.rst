@@ -27,6 +27,7 @@ Configuration Reference
                         # RDBMS specific; Refer to the manual of your RDBMS for more information
                         charset:              ~
 
+                        # Adds the given suffix to the configured database name, this option has no effects for the SQLite platform
                         dbname_suffix:        ~
 
                         # SQLite specific
@@ -151,6 +152,8 @@ Configuration Reference
                                 user:                 root
                                 password:             ~
                                 charset:              ~
+
+                                # Adds the given suffix to the configured database name, this option has no effects for the SQLite platform
                                 dbname_suffix:        ~
                                 path:                 ~
                                 memory:               ~
@@ -451,6 +454,7 @@ Configuration Reference
                         <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
 
                         <!-- example -->
+                        <!-- dbname_suffix: Adds the given suffix to the configured database name, this option has no effects for the SQLite platform -->
                         <!-- unix-socket: The unix socket to use for MySQL -->
                         <!-- persistent: True to use as persistent connection for the ibm_db2 driver -->
                         <!-- protocol: The protocol to use for the ibm_db2 driver (default to TCPIP if omitted) -->
