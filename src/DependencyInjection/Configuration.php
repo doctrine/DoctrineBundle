@@ -324,7 +324,7 @@ class Configuration implements ConfigurationInterface
                     '2.4',
                     'The "doctrine.dbal.override_url" configuration key is deprecated.',
                 )->end()
-                ->scalarNode('dbname_suffix')->end()
+                ->scalarNode('dbname_suffix')->info('Adds the given suffix to the configured database name, this option has no effects for the SQLite platform')->end()
                 ->scalarNode('application_name')->end()
                 ->scalarNode('charset')->end()
                 ->scalarNode('path')->end()
