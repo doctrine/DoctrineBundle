@@ -107,6 +107,32 @@ class ConnectionFactoryTest extends TestCase
         $this->assertEquals($params, array_intersect_key($connection->getParams(), $params));
     }
 
+    public function testUrlDriverOptionsOverrideNotReplace(): void
+    {
+        $driverOptions = [
+            'defaultOnlyParam' => 'defaultOnlyValue',
+            'overridenParam' => 'defaultValue',
+        ];
+
+        /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
+        $connection = (new ConnectionFactory([]))->createConnection(
+            [
+                'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-10.5.8&driverOptions[overridenParam]=overriddenValue&driverOptions[urlOnlyParam]=urlOnlyValue',
+                'driverOptions' => $driverOptions,
+            ],
+            $this->configuration,
+        );
+
+        $this->assertEquals(
+            [
+                'defaultOnlyParam' => 'defaultOnlyValue',
+                'overridenParam' => 'overriddenValue',
+                'urlOnlyParam' => 'urlOnlyValue',
+            ],
+            $connection->getParams()['driverOptions'],
+        );
+    }
+
     public function testConnectionCharsetFromUrl()
     {
         /** @psalm-suppress InvalidArgument Need to be compatible with DBAL < 4, which still has `$params['url']` */

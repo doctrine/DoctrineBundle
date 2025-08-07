@@ -275,6 +275,13 @@ class ConnectionFactory
             unset($params['driverClass']);
         }
 
+        // If both the URL and the default parameters define driverOptions,
+        // then merge them rather than discard all defaults.
+        // Options from the URL take precedence.
+        if (isset($params['driverOptions']) && isset($parsedParams['driverOptions'])) {
+            $parsedParams['driverOptions'] = array_merge($params['driverOptions'], $parsedParams['driverOptions']);
+        }
+
         $params = array_merge($params, $parsedParams);
 
         // If a schemeless connection URL is given, we require a default driver or default custom driver
