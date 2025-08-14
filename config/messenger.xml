@@ -53,8 +53,8 @@
 
         <service id="doctrine.orm.messenger.doctrine_schema_listener" class="Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaListener">
             <argument type="tagged_iterator" tag="messenger.receiver" />
-            <tag name="doctrine.event_listener" event="postGenerateSchema" />
-            <tag name="doctrine.event_listener" event="onSchemaCreateTable" />
+            <tag name="doctrine.event_listener" event="postGenerateSchema" priority="-1" />
+            <tag name="doctrine.event_listener" event="onSchemaCreateTable" priority="-1" />
         </service>
     </services>
 </container>
