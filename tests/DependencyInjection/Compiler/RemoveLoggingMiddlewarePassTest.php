@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 
 final class RemoveLoggingMiddlewarePassTest extends TestCase
 {
@@ -39,8 +39,8 @@ final class RemoveLoggingMiddlewarePassTest extends TestCase
     {
         $container = new ContainerBuilder();
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../../config'));
-        $loader->load('middlewares.xml');
+        $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../../config'));
+        $loader->load('middlewares.php');
 
         $container->addCompilerPass(new RemoveLoggingMiddlewarePass());
         $container->addCompilerPass(new class implements CompilerPassInterface {

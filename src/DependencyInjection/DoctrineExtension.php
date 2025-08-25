@@ -58,7 +58,7 @@ use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\Form\AbstractType;
@@ -170,8 +170,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function dbalLoad(array $config, ContainerBuilder $container)
     {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
-        $loader->load('dbal.xml');
+        $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader->load('dbal.php');
 
         if (empty($config['default_connection'])) {
             $keys                         = array_keys($config['connections']);
@@ -473,8 +473,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
             throw new LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
         }
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
-        $loader->load('orm.xml');
+        $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader->load('orm.php');
 
         if (class_exists(AbstractType::class)) {
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
@@ -1199,8 +1199,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
             return;
         }
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
-        $loader->load('messenger.xml');
+        $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader->load('messenger.php');
 
         /**
          * The Doctrine transport component (symfony/doctrine-messenger) is optional.
@@ -1238,8 +1238,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
         array $connWithBacktrace,
         array $connWithTtl,
     ): void {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
-        $loader->load('middlewares.xml');
+        $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader->load('middlewares.php');
 
         $loggingMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.logging_middleware');
         foreach ($connWithLogging as $connName) {
