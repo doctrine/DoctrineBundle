@@ -287,12 +287,12 @@
                                                                 <td>{{ loop.index }}</td>
                                                                 <td>
                                                                             <span class="text-small">
-                                                                                {% set line_number = trace.line|default(1) %}
+                                                                                {% set line_number = trace.line|default(query.backtrace[loop.index].line|default(1)) %}
                                                                                 {% if trace.file is defined %}
                                                                                     <a href="{{ trace.file|file_link(line_number) }}">
                                                                                 {% endif %}
-                                                                                        {{- trace.class|default ~ (trace.class is defined ? trace.type|default('::')) -}}
-                                                                                    <span class="status-warning">{{ trace.function }}</span>
+                                                                                        {{- query.backtrace[loop.index].class|default ~ (query.backtrace[loop.index].class is defined ? trace.type|default('::')) -}}
+                                                                                    <span class="status-warning">{{ query.backtrace[loop.index].function|default(trace.function) }}</span>
                                                                                 {% if trace.file is defined %}
                                                                                     </a>
                                                                                 {% endif %}
@@ -440,8 +440,8 @@
                                     {% set contains_errors = collector.mappingErrors[manager] is defined and collector.mappingErrors[manager][class.class] is defined %}
                                     <tr class="{{ contains_errors ? 'status-error' }}">
                                         <td>
-                                <a href="{{ class.file|file_link(class.line) }}">{{ class. class}}</a>
-                            </td>
+                                            <a href="{{ class.file|file_link(class.line) }}">{{ class. class}}</a>
+                                        </td>
                                         <td class="font-normal">
                                             {% if contains_errors %}
                                                 <ul>
