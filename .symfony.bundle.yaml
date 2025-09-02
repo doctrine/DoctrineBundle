@@ -11,9 +11,10 @@ branches:
     - "2.14.x"
     - "2.15.x"
     - "2.16.x"
+    - "2.17.x"
 maintained_branches:
-    - "2.15.x"
     - "2.16.x"
+    - "2.17.x"
 doc_dir: "docs/en/"
-current_branch: "2.15.x"
-dev_branch: "2.16.x"
+current_branch: "2.16.x"
+dev_branch: "2.17.x"
