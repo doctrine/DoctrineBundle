@@ -262,7 +262,7 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
                 service('doctrine.orm.entity_value_resolver.expression_language')->ignoreOnInvalid(),
             ])
-            ->tag('controller.argument_value_resolver', ['priority' => 110])
+            ->tag('controller.argument_value_resolver', ['priority' => 110, 'name' => EntityValueResolver::class])
 
         ->set('doctrine.orm.entity_value_resolver.expression_language', ExpressionLanguage::class)
 
