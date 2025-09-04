@@ -17,7 +17,10 @@ Support for the following major versions of the following packages has been drop
 
 More details below
 
-### Support for `doctrine/dbal` 3 is dropped
+### Support for `doctrine/orm` 2 is dropped
+
+This makes `DisconnectedMetadataFactory` redundant, as it relies on code
+available only in `doctrine/orm` 2. It has been removed.
 
 Commands
 --------

@@ -5,8 +5,6 @@ parameters:
       - tests
 
    ignoreErrors:
-    # Available in ORM < 3 only
-    - '#Doctrine\\ORM\\Tools\\DisconnectedClassMetadataFactory.#'
     # phpstan has no array shape intersection support https://github.com/phpstan/phpstan/issues/12414
     - message: '#unresolvable type.#'
       path: src/DataCollector/DoctrineDataCollector.php
