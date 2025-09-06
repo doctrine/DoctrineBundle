@@ -14,10 +14,8 @@ use Symfony\Component\DependencyInjection\Reference;
 /**
  * Class for Symfony bundles to configure mappings for model classes not in the
  * auto-mapped folder.
- *
- * @final since 2.9
  */
-class DoctrineOrmMappingsPass extends RegisterMappingsPass
+final class DoctrineOrmMappingsPass extends RegisterMappingsPass
 {
     /**
      * You should not directly instantiate this class but use one of the

@@ -78,7 +78,6 @@ use function trigger_deprecation;
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
  *
- * @final since 2.9
  * @phpstan-type DBALConfig = array{
  *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, idle_connection_ttl: int}>,
  *      driver_schemes: array<string, string>,
@@ -86,7 +85,7 @@ use function trigger_deprecation;
  *      types: array<string, string>,
  *  }
  */
-class DoctrineExtension extends AbstractDoctrineExtension
+final class DoctrineExtension extends AbstractDoctrineExtension
 {
     private string $defaultConnection;
 

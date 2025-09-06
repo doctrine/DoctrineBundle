@@ -13,12 +13,8 @@ use Throwable;
 use function in_array;
 use function sprintf;
 
-/**
- * Database tool allows you to easily create your configured databases.
- *
- * @final
- */
-class CreateDatabaseDoctrineCommand extends DoctrineCommand
+/** Database tool allows you to easily create your configured databases. */
+final class CreateDatabaseDoctrineCommand extends DoctrineCommand
 {
     protected function configure(): void
     {

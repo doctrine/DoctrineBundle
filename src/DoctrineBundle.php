@@ -32,8 +32,7 @@ use function clearstatcache;
 use function dirname;
 use function spl_autoload_unregister;
 
-/** @final since 2.9 */
-class DoctrineBundle extends Bundle
+final class DoctrineBundle extends Bundle
 {
     private Closure|null $autoloader = null;
 

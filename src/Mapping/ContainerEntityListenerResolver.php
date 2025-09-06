@@ -11,8 +11,7 @@ use function is_object;
 use function sprintf;
 use function trim;
 
-/** @final */
-class ContainerEntityListenerResolver implements EntityListenerServiceResolver
+final class ContainerEntityListenerResolver implements EntityListenerServiceResolver
 {
     /** @var object[] Map to store entity listener instances. */
     private array $instances = [];

@@ -18,12 +18,8 @@ use function method_exists;
 use function sprintf;
 use function substr;
 
-/**
- * Class for Symfony bundles to register entity listeners
- *
- * @final since 2.9
- */
-class EntityListenerPass implements CompilerPassInterface
+/** Class for Symfony bundles to register entity listeners */
+final class EntityListenerPass implements CompilerPassInterface
 {
     use PriorityTaggedServiceTrait;
 

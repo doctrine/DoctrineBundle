@@ -44,10 +44,8 @@ use function trigger_deprecation;
  *
  * This information is solely responsible for how the different configuration
  * sections are normalized, and merged.
- *
- * @final since 2.9
  */
-class Configuration implements ConfigurationInterface
+final class Configuration implements ConfigurationInterface
 {
     /** @param bool $debug Whether to use the debug mode */
     public function __construct(private bool $debug)

@@ -16,12 +16,8 @@ use function in_array;
 use function sprintf;
 use function unlink;
 
-/**
- * Database tool allows you to easily drop your configured databases.
- *
- * @final
- */
-class DropDatabaseDoctrineCommand extends DoctrineCommand
+/** Database tool allows you to easily drop your configured databases. */
+final class DropDatabaseDoctrineCommand extends DoctrineCommand
 {
     public const int RETURN_CODE_NOT_DROP = 1;
 

@@ -85,6 +85,11 @@ Type declarations
 Native type declarations have been added to all constants, properties, and
 methods.
 
+Final modifier
+--------------
+
+Every `@final` annotation has been replaced with a native `final` modifier.
+
 Types
 -----
 

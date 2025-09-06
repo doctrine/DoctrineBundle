@@ -9,12 +9,8 @@ use Symfony\Component\DependencyInjection\Reference;
 
 use function sprintf;
 
-/**
- * Processes the doctrine.dbal.schema_filter
- *
- * @final since 2.9
- */
-class DbalSchemaFilterPass implements CompilerPassInterface
+/** Processes the doctrine.dbal.schema_filter */
+final class DbalSchemaFilterPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
