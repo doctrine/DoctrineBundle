@@ -61,14 +61,12 @@
         "symfony/string": "^6.4 || ^7.0",
         "symfony/twig-bridge": "^6.4 || ^7.0",
         "symfony/validator": "^6.4 || ^7.0",
-        "symfony/var-exporter": "^6.4.1 || ^7.0.1",
         "symfony/web-profiler-bundle": "^6.4 || ^7.0",
         "symfony/yaml": "^6.4 || ^7.0",
         "twig/twig": "^3.0.4"
     },
     "conflict": {
         "doctrine/orm": "<3.0 || >=4.0",
-        "symfony/var-exporter": "< 6.4.1 || 7.0.0",
         "twig/twig": "<3.0.4"
     },
     "suggest": {
