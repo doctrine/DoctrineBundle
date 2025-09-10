@@ -73,6 +73,43 @@ class EntityListenerPassTest extends TestCase
         yield 'With event and custom method' => [Events::postLoad, 'postLoadHandler', 'postLoadHandler'];
         yield 'With event and no matching method' => [Events::postLoad, null, '__invoke'];
     }
+
+    public function testMultipleAttributesOnSameClassKeepTheCorrectOrder(): void
+    {
+        $container = new ContainerBuilder();
+        $container->addCompilerPass(new EntityListenerPass());
+
+        $container->setParameter('doctrine.default_entity_manager', 'default');
+        $container->register('doctrine.orm.default_entity_manager', EntityManager::class);
+        $container->register('doctrine.orm.default_entity_listener_resolver', ContainerEntityListenerResolver::class);
+        $container->register('doctrine.orm.default_listeners.attach_entity_listeners', AttachEntityListenersListener::class)
+            ->setPublic(true);
+
+        $container->register(TestListener::class)
+            ->addTag('doctrine.orm.entity_listener', ['entity' => stdClass::class, 'event' => Events::prePersist])
+            ->addTag('doctrine.orm.entity_listener', ['entity' => stdClass::class, 'event' => Events::postPersist]);
+        $container->register(TestListener2::class)
+            ->addTag(
+                'doctrine.orm.entity_listener',
+                ['entity' => stdClass::class, 'event' => Events::prePersist, 'priority' => 1],
+            )
+            ->addTag(
+                'doctrine.orm.entity_listener',
+                ['entity' => stdClass::class, 'event' => Events::postPersist, 'priority' => -1],
+            );
+
+        $container->compile();
+
+        $this->assertSame(
+            [
+                ['addEntityListener', ['stdClass', TestListener2::class, 'prePersist']],
+                ['addEntityListener', ['stdClass', TestListener::class, 'prePersist']],
+                ['addEntityListener', ['stdClass', TestListener::class, 'postPersist']],
+                ['addEntityListener', ['stdClass', TestListener2::class, 'postPersist']],
+            ],
+            $container->getDefinition('doctrine.orm.default_listeners.attach_entity_listeners')->getMethodCalls(),
+        );
+    }
 }
 
 class TestListener
@@ -90,6 +127,18 @@ class TestListener
     }
 
     public function __invoke(): void
+    {
+    }
+}
+
+
+class TestListener2
+{
+    public function prePersist(): void
+    {
+    }
+
+    public function postPersist(): void
     {
     }
 }
