@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
+use Doctrine\Bundle\DoctrineBundle\Command\DebugEntityListenersDoctrineCommand;
+use Doctrine\Bundle\DoctrineBundle\Command\DebugEventManagerDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand;
 use Doctrine\Bundle\DoctrineBundle\ManagerConfigurator;
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
@@ -358,6 +360,18 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine.orm.command.entity_manager_provider'),
             ])
             ->tag('console.command', ['command' => 'doctrine:schema:validate'])
+
+        ->set('doctrine.event_manager_debug_command', DebugEventManagerDoctrineCommand::class)
+            ->args([
+                service('doctrine'),
+            ])
+            ->tag('console.command', ['command' => 'doctrine:debug:event-manager'])
+
+        ->set('doctrine.entity_listeners_debug_command', DebugEntityListenersDoctrineCommand::class)
+            ->args([
+                service('doctrine'),
+            ])
+            ->tag('console.command', ['command' => 'doctrine:debug:entity-listeners'])
 
         ->set('doctrine.mapping_import_command', ImportMappingDoctrineCommand::class)
             ->args([
