@@ -5,6 +5,7 @@
          displayDetailsOnTestsThatTriggerDeprecations="true"
          displayDetailsOnPhpunitDeprecations="true"
          failOnDeprecation="true"
+         failOnPhpunitDeprecation="true"
 >
     <testsuites>
         <testsuite name="DoctrineBundle for the Symfony Framework">
