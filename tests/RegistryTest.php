@@ -152,7 +152,7 @@ class RegistryTest extends TestCase
         $registry->reset();
     }
 
-    #[RequiresPhp('8.4')]
+    #[RequiresPhp('>= 8.4')]
     public function testResetLazyObject(): void
     {
         if (! interface_exists(EntityManagerInterface::class) || ! interface_exists(LazyObjectInterface::class)) {

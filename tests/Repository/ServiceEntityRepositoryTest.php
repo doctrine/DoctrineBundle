@@ -41,7 +41,7 @@ EXCEPTION);
 
     #[IgnoreDeprecations]
     #[RequiresMethod(ProxyHelper::class, 'generateLazyGhost')]
-    #[RequiresPhp('8.4')]
+    #[RequiresPhp('>= 8.4')]
     public function testConstructInitializesWhenImplementingLazyObjectInterface(): void
     {
         $registry = $this->getMockBuilder(ManagerRegistry::class)->getMock();

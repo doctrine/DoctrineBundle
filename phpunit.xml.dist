@@ -3,6 +3,7 @@
          colors="true"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnPhpunitDeprecations="true"
          failOnDeprecation="true"
 >
     <testsuites>
