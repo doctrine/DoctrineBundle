@@ -26,6 +26,6 @@ on:
 jobs:
   coding-standards:
     name: "Coding Standards"
-    uses: "doctrine/.github/.github/workflows/coding-standards.yml@7.3.0"
+    uses: "greg0ire/.github/.github/workflows/coding-standards.yml@drop-q-option"
     with:
       composer-options: "--prefer-dist --prefer-stable"
