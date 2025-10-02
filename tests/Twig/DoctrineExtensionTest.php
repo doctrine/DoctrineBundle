@@ -78,9 +78,7 @@ class DoctrineExtensionTest extends TestCase
     {
         $extension  = new DoctrineExtension();
         $query      = 'column->>field ?? ?';
-        $parameters = [
-            'foo',
-        ];
+        $parameters = ['foo'];
 
         $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals("column->>field ?? 'foo'", $result);
