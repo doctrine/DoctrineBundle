@@ -15,10 +15,14 @@ use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
 use function addslashes;
+use function array_filter;
 use function array_key_exists;
 use function array_merge;
+use function array_keys;
+use function array_values;
 use function bin2hex;
 use function class_exists;
+use function count;
 use function implode;
 use function is_array;
 use function is_bool;
@@ -121,14 +125,15 @@ class DoctrineExtension extends AbstractExtension
             $parameters = $parameters->getValue(true);
         }
 
-        $i = 0;
-
-        if (! array_key_exists(0, $parameters) && array_key_exists(1, $parameters)) {
-            $i = 1;
+        $keys = array_keys($parameters);
+        if (count(array_filter($keys, 'is_int')) === count($keys)) {
+            $parameters = array_values($parameters);
         }
 
+        $i = 0;
+
         return preg_replace_callback(
-            '/\?|((?<!:):[a-z0-9_]+)/i',
+            '/(?<!\?)\?(?!\?)|(?<!:)(:[a-z0-9_]+)/i',
             static function ($matches) use ($parameters, &$i) {
                 $key = substr($matches[0], 1);
 
@@ -136,11 +141,10 @@ class DoctrineExtension extends AbstractExtension
                     return $matches[0];
                 }
 
-                $value  = array_key_exists($i, $parameters) ? $parameters[$i] : $parameters[$key];
-                $result = DoctrineExtension::escapeFunction($value);
+                $value = array_key_exists($i, $parameters) ? $parameters[$i] : $parameters[$key];
                 $i++;
 
-                return $result;
+                return DoctrineExtension::escapeFunction($value);
             },
             $query,
         );

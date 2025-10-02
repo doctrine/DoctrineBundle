@@ -23,13 +23,13 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('a=1 OR (1)::string OR b=2', $result);
     }
 
-    public function testReplaceQueryParametersWithStartingIndexAtOne(): void
+    public function testReplaceQueryParametersWithNonSequentialNumericKeys(): void
     {
         $extension  = new DoctrineExtension();
         $query      = 'a=? OR b=?';
         $parameters = [
-            1 => 1,
-            2 => 2,
+            2 => 1,
+            5 => 2,
         ];
 
         $result = $extension->replaceQueryParameters($query, $parameters);
@@ -72,6 +72,18 @@ class DoctrineExtensionTest extends TestCase
 
         $result = $extension->replaceQueryParameters($query, $parameters);
         $this->assertEquals('IN (NULL)', $result);
+    }
+
+    public function testReplaceQueryParametersWithEscapedParameterPlaceholder(): void
+    {
+        $extension  = new DoctrineExtension();
+        $query      = 'column->>field ?? ?';
+        $parameters = [
+            'foo',
+        ];
+
+        $result = $extension->replaceQueryParameters($query, $parameters);
+        $this->assertEquals("column->>field ?? 'foo'", $result);
     }
 
     public function testEscapeBinaryParameter(): void
