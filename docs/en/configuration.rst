@@ -298,7 +298,6 @@ Configuration Reference
                                 dir:                  ~
                                 alias:                ~
                                 prefix:               ~
-                                is_bundle:            ~
 
                         dql:
                             # A collection of string functions
@@ -735,13 +734,6 @@ can control. The following configuration options exist for a mapping:
     Doctrine offers a way to alias entity namespaces to simpler, shorter names
     to be used in DQL queries or for Repository access. When using a bundle the
     alias defaults to the bundle name.
-
-``is_bundle``
-    This option is a derived value from ``dir`` and by default is set to true if
-    dir is relative proved by a ``file_exists()`` check that returns false. It
-    is false if the existence check returns true. In this case an absolute path
-    was specified and the metadata files are most likely in a directory outside
-    of a bundle.
 
 Filters Configuration
 ~~~~~~~~~~~~~~~~~~~~~

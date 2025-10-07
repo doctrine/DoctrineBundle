@@ -633,7 +633,6 @@ class Configuration implements ConfigurationInterface
                                 ->scalarNode('dir')->end()
                                 ->scalarNode('alias')->end()
                                 ->scalarNode('prefix')->end()
-                                ->booleanNode('is_bundle')->end()
                             ->end()
                         ->end()
                     ->end()

@@ -126,10 +126,7 @@ class DoctrineExtension extends Extension
                     continue;
                 }
 
-                $objectManager['mappings'][$bundle] = [
-                    'mapping' => true,
-                    'is_bundle' => true,
-                ];
+                $objectManager['mappings'][$bundle] = ['mapping' => true];
             }
         }
 
@@ -145,32 +142,8 @@ class DoctrineExtension extends Extension
             ], (array) $mappingConfig);
 
             $mappingConfig['dir'] = $container->getParameterBag()->resolveValue($mappingConfig['dir']);
-            // a bundle configuration is detected by realizing that the specified dir is not absolute and existing
-            if (! isset($mappingConfig['is_bundle'])) {
-                $mappingConfig['is_bundle'] = ! is_dir((string) $mappingConfig['dir']);
-            }
 
-            if ($mappingConfig['is_bundle']) {
-                $bundle         = null;
-                $bundleMetadata = null;
-                foreach ($container->getParameter('kernel.bundles') as $name => $class) {
-                    if ($mappingName === $name) {
-                        $bundle         = new ReflectionClass($class);
-                        $bundleMetadata = $container->getParameter('kernel.bundles_metadata')[$name];
-
-                        break;
-                    }
-                }
-
-                if ($bundle === null) {
-                    throw new InvalidArgumentException(sprintf('Bundle "%s" does not exist or it is not enabled.', $mappingName));
-                }
-
-                $mappingConfig = $this->getMappingDriverBundleConfigDefaults($mappingConfig, $bundle, $container, $bundleMetadata['path']);
-                if (! $mappingConfig) {
-                    continue;
-                }
-            } elseif (! $mappingConfig['type']) {
+            if (! $mappingConfig['type']) {
                 $mappingConfig['type'] = 'attribute';
             }
 
@@ -211,52 +184,6 @@ class DoctrineExtension extends Extension
         }
 
         $this->drivers[$mappingConfig['type']][$mappingConfig['prefix']] = realpath($mappingDirectory) ?: $mappingDirectory;
-    }
-
-    /**
-     * If this is a bundle controlled mapping all the missing information can be autodetected by this method.
-     *
-     * Returns false when autodetection failed, an array of the completed information otherwise.
-     *
-     * @param array<string, mixed> $bundleConfig
-     */
-    protected function getMappingDriverBundleConfigDefaults(
-        array $bundleConfig,
-        ReflectionClass $bundle,
-        ContainerBuilder $container,
-        string|null $bundleDir = null,
-    ): array|false {
-        $bundleClassDir = dirname($bundle->getFileName());
-        $bundleDir    ??= $bundleClassDir;
-
-        if (! $bundleConfig['type']) {
-            $bundleConfig['type'] = $this->detectMetadataDriver($bundleDir, $container);
-
-            if (! $bundleConfig['type'] && $bundleDir !== $bundleClassDir) {
-                $bundleConfig['type'] = $this->detectMetadataDriver($bundleClassDir, $container);
-            }
-        }
-
-        if (! $bundleConfig['type']) {
-            // skip this bundle, no mapping information was found.
-            return false;
-        }
-
-        if (! $bundleConfig['dir']) {
-            if (in_array($bundleConfig['type'], ['staticphp', 'attribute'])) {
-                $bundleConfig['dir'] = $bundleClassDir . '/' . $this->getMappingObjectDefaultName();
-            } else {
-                $bundleConfig['dir'] = $bundleDir . '/' . $this->getMappingResourceConfigDirectory($bundleDir);
-            }
-        } else {
-            $bundleConfig['dir'] = $bundleDir . '/' . $bundleConfig['dir'];
-        }
-
-        if (! $bundleConfig['prefix']) {
-            $bundleConfig['prefix'] = $bundle->getNamespaceName() . '\\' . $this->getMappingObjectDefaultName();
-        }
-
-        return $bundleConfig;
     }
 
     /**
@@ -383,9 +310,7 @@ class DoctrineExtension extends Extension
                     }
                 }
 
-                $managerConfigs[$autoMappedManager]['mappings'][$bundle] = [
-                    'mapping' => true,
-                    'is_bundle' => true,
+                $managerConfigs[$autoMappedManager]['mappings'][$bundle] = ['mapping' => true,
                 ];
             }
 
