@@ -16,7 +16,6 @@ use Symfony\Component\HttpKernel\Kernel;
 use function md5;
 use function mt_rand;
 use function sys_get_temp_dir;
-use function version_compare;
 
 class DbalTestKernel extends Kernel
 {
@@ -45,13 +44,6 @@ class DbalTestKernel extends Kernel
                 'secret' => 'F00',
                 'http_method_override' => false,
             ]);
-
-            /** @phpstan-ignore if.alwaysFalse */
-            if (version_compare(Kernel::VERSION, '7.0.0', '<')) {
-                $container->loadFromExtension('framework', [
-                    'annotations' => ['enabled' => true],
-                ]);
-            }
 
             $container->loadFromExtension('doctrine', [
                 'dbal' => $this->dbalConfig,
