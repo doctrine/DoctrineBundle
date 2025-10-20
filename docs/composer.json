@@ -1,0 +1,8 @@
+{
+    "require-dev": {
+        "doctrine/docs-builder": "^1.0"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
