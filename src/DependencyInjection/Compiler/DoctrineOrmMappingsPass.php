@@ -16,6 +16,8 @@ use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterMappingsPas
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
+use function method_exists;
+
 /**
  * Class for Symfony bundles to configure mappings for model classes not in the
  * auto-mapped folder.
@@ -177,7 +179,12 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
      */
     public static function createAttributeMappingDriver(array $namespaces, array $directories, array $managerParameters = [], $enabledParameter = false, array $aliasMap = [], bool $reportFieldsWhereDeclared = false)
     {
-        $driver = new Definition(AttributeDriver::class, [$directories, $reportFieldsWhereDeclared]);
+        $driverArgs = [$directories];
+        if (method_exists(AttributeDriver::class, 'getReader')) {
+            $driverArgs[] = $reportFieldsWhereDeclared;
+        }
+
+        $driver = new Definition(AttributeDriver::class, $driverArgs);
 
         return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter, $aliasMap);
     }
