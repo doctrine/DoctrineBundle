@@ -57,7 +57,7 @@ class DoctrineExtension extends AbstractExtension
      *
      * @internal
      */
-    public static function escapeFunction(mixed $parameter): string|int
+    public static function escapeFunction(mixed $parameter): string|int|float
     {
         $result = $parameter;
 

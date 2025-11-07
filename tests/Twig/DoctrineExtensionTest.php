@@ -113,6 +113,11 @@ class DoctrineExtensionTest extends TestCase
     {
         $this->assertEquals('1', DoctrineExtension::escapeFunction(true));
     }
+
+    public function testNoEscapeFloatParameter(): void
+    {
+        $this->assertEquals(1.1, DoctrineExtension::escapeFunction(1.1));
+    }
 }
 
 class DummyClass
