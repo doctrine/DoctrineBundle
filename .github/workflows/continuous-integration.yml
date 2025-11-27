@@ -59,6 +59,15 @@ jobs:
             dependencies: "highest"
             php-version: "8.4"
 
+          - symfony-require: "7.4.*"
+            dependencies: "highest"
+            php-version: "8.4"
+
+          # Test non-LTS
+          - symfony-require: "8.0.*"
+            dependencies: "highest"
+            php-version: "8.4"
+
           # DBAL only without ORM
           - php-version: "8.4"
             dependencies: "highest"
