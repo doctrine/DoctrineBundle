@@ -54,7 +54,7 @@ jobs:
             stability: "stable"
             php-version: "8.4"
 
-          # Test LTS
+          # Test legacy LTS
           - symfony-require: "6.4.*"
             dependencies: "highest"
             php-version: "8.4"
