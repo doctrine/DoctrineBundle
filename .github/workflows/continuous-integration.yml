@@ -59,6 +59,7 @@ jobs:
             dependencies: "highest"
             php-version: "8.4"
 
+          # Test LTS
           - symfony-require: "7.4.*"
             dependencies: "highest"
             php-version: "8.4"
