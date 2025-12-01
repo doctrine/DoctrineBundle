@@ -775,7 +775,7 @@ You can easily define `doctrine filters`_ in your configuration file:
 ``myParameter: myValue``
     Bind the value ``myValue`` to the parameter ``myParameter`` (Optional)
 
-.. _doctrine filters: http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/filters.html
+.. _doctrine filters: https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/filters.html
 
 .. _`reference-dbal-configuration`:
 
@@ -988,4 +988,4 @@ For example, to inject a connection with the name ``purchase_logs`` use this:
             $this->connection = $purchaseLogsConnection;
         }
 
-.. _DBAL documentation: https://www.doctrine-project.org/projects/doctrine-dbal/en/2.10/index.html
+.. _DBAL documentation: https://www.doctrine-project.org/projects/doctrine-dbal/en/current/index.html
