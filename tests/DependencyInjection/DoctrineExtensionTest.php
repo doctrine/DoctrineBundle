@@ -1064,6 +1064,8 @@ class DoctrineExtensionTest extends TestCase
     public function testRegistrationsWithMiddlewaresAndSfDebugMiddleware(): void
     {
         $container = $this->getContainer();
+        // Register a dummy logger service to enable logging middleware registration
+        $container->setDefinition('logger', (new Definition('\stdClass'))->setPublic(true));
         $extension = new DoctrineExtension();
 
         $config = BundleConfigurationBuilder::createBuilder()
@@ -1133,6 +1135,8 @@ class DoctrineExtensionTest extends TestCase
     public function testDefinitionsToLogAndProfile(): void
     {
         $container = $this->getContainer();
+        // Register a dummy logger service to enable logging middleware registration
+        $container->setDefinition('logger', (new Definition('\stdClass'))->setPublic(true));
         $extension = new DoctrineExtension();
 
         $config = BundleConfigurationBuilder::createBuilder()
