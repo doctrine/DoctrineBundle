@@ -36,6 +36,9 @@ class Registry extends ManagerRegistry implements ResetInterface
         foreach ($this->getManagerNames() as $managerName => $serviceId) {
             $this->resetOrClearManager($managerName, $serviceId);
         }
+        foreach ($this->getConnectionNames() as $connectionName => $serviceId) {
+            $this->resetPrimaryReadReplicaConnection($connectionName, $serviceId);
+        }
     }
 
     private function resetOrClearManager(string $managerName, string $serviceId): void
@@ -72,5 +75,25 @@ class Registry extends ManagerRegistry implements ResetInterface
         }
 
         $this->resetManager($managerName);
+    }
+
+    private function resetPrimaryReadReplicaConnection(string $connectionName, string $serviceId): void
+    {
+        if (! $this->container->initialized($serviceId)) {
+            return;
+        }
+
+        $connection = $this->container->get($serviceId);
+
+        assert($connection instanceof Connection);
+
+
+        if (! $connection instanceof PrimaryReadReplicaConnection) {
+            return;
+        }
+
+        if (true === $connection->isConnectedToPrimary()) {
+            $connection->ensureConnectedToReplica();
+        }
     }
 }
