@@ -1206,6 +1206,86 @@ class DoctrineExtensionTest extends TestCase
         $this->assertArrayNotHasKey('doctrine.middleware', $abstractMiddlewareDefTags);
     }
 
+    public function testLoggingMiddlewarePerConnectionWithLoggerPresent(): void
+    {
+        $container = $this->getContainer();
+        // Register a dummy logger service to enable logging middleware registration
+        $container->setDefinition('logger', (new Definition('\stdClass'))->setPublic(true));
+
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => [
+                        'password' => 'foo',
+                        'logging' => true,
+                        'profiling' => false,
+                    ],
+                    'conn2' => [
+                        'password' => 'bar',
+                        'logging' => true,
+                        'profiling' => false,
+                    ],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        // Abstract definition should be present and tagged per connection
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
+        $abstractTags = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
+        $this->assertArrayHasKey('doctrine.middleware', $abstractTags);
+        $this->assertContains(['connection' => 'conn1', 'priority' => 10], $abstractTags['doctrine.middleware']);
+        $this->assertContains(['connection' => 'conn2', 'priority' => 10], $abstractTags['doctrine.middleware']);
+
+        // Child services should be created per connection with proper tags
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware.conn1'));
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware.conn2'));
+
+        $child1Tags = $container->getDefinition('doctrine.dbal.logging_middleware.conn1')->getTags();
+        $child2Tags = $container->getDefinition('doctrine.dbal.logging_middleware.conn2')->getTags();
+
+        $this->assertArrayHasKey('doctrine.middleware', $child1Tags);
+        $this->assertContains(['connection' => 'conn1', 'priority' => 10], $child1Tags['doctrine.middleware']);
+        $this->assertArrayHasKey('monolog.logger', $child1Tags);
+        $this->assertContains(['channel' => 'doctrine.conn1'], $child1Tags['monolog.logger']);
+
+        $this->assertArrayHasKey('doctrine.middleware', $child2Tags);
+        $this->assertContains(['connection' => 'conn2', 'priority' => 10], $child2Tags['doctrine.middleware']);
+        $this->assertArrayHasKey('monolog.logger', $child2Tags);
+        $this->assertContains(['channel' => 'doctrine.conn2'], $child2Tags['monolog.logger']);
+    }
+
+    public function testLoggingMiddlewareNotRegisteredWithoutLogger(): void
+    {
+        $container = $this->getContainer();
+        // No logger service defined here
+
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => [
+                        'password' => 'foo',
+                        'logging' => true,
+                        'profiling' => false,
+                    ],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        // Abstract definition exists by default, but should not be tagged nor should child definitions exist
+        $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
+        $abstractTags = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
+        $this->assertArrayNotHasKey('doctrine.middleware', $abstractTags);
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.logging_middleware.conn1'));
+    }
+
     #[RequiresMethod(Driver::class, '__construct')]
     public function testDefinitionsIdleConnection(): void
     {

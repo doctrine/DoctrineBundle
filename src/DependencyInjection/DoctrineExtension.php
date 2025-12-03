@@ -1451,8 +1451,20 @@ final class DoctrineExtension extends Extension
         $loader->load('middlewares.php');
 
         $loggingMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.logging_middleware');
+        
         foreach ($connWithLogging as $connName) {
+            // Preserve legacy behavior: also tag the abstract definition per-connection
             $loggingMiddlewareAbstractDef->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
+                
+            // Register logging middlewares only when a logger service is available
+            if ($container->has('logger')) {
+                // Create a child service with a dedicated Monolog channel
+                $id = sprintf('doctrine.dbal.logging_middleware.%s', $connName);
+                $child = new ChildDefinition('doctrine.dbal.logging_middleware');
+                $child->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
+                $child->addTag('monolog.logger', ['channel' => sprintf('doctrine.%s', $connName)]);
+                $container->setDefinition($id, $child);
+            }
         }
 
         $container->getDefinition('doctrine.debug_data_holder')->replaceArgument(0, $connWithBacktrace);
