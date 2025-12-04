@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeParentInterface;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
@@ -63,6 +64,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Add DBAL section to configuration tree
      */
+
     /** @param ArrayNodeDefinition<TreeBuilder<'array'>> $node */
     private function addDbalSection(ArrayNodeDefinition $node): void
     {
@@ -156,6 +158,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return the dbal connections node
      */
+
     /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getDbalConnectionsNode(): ArrayNodeDefinition
     {
@@ -230,8 +233,9 @@ final class Configuration implements ConfigurationInterface
      *
      * These keys are available for replica configurations too.
      *
-     * @template TP of \Symfony\Component\Config\Definition\Builder\NodeParentInterface|null
      * @param ArrayNodeDefinition<TP> $node
+     *
+     * @template TP of NodeParentInterface|null
      **/
     private function configureDbalDriverNode(ArrayNodeDefinition $node): void
     {
@@ -361,6 +365,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Add the ORM section to configuration tree
      */
+
     /** @param ArrayNodeDefinition<TreeBuilder<'array'>> $node */
     private function addOrmSection(ArrayNodeDefinition $node): void
     {
@@ -457,6 +462,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return ORM target entity resolver node
      */
+
     /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getOrmTargetEntityResolverNode(): NodeDefinition
     {
@@ -475,6 +481,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return ORM entity listener node
      */
+
     /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getOrmEntityListenersNode(): NodeDefinition
     {
@@ -558,6 +565,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return ORM entity manager node
      */
+
     /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getOrmEntityManagersNode(): ArrayNodeDefinition
     {
@@ -733,6 +741,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return an ORM cache driver node for a given entity manager
      */
+
     /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getOrmCacheDriverNode(string $name): ArrayNodeDefinition
     {

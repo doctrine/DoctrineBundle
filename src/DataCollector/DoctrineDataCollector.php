@@ -42,7 +42,7 @@ use function usort;
  *       sql: string,
  *       params: ?array<array-key, mixed>,
  *       runnable: bool,
- *       types: ?array<array-key, \Doctrine\DBAL\Types\Type|int|string|null>
+ *       types: ?array<array-key, Type|int|string|null>
  *    }>>,
  *    entityCounts: array<string, array<class-string, int>>
  * }
@@ -62,7 +62,7 @@ class DoctrineDataCollector extends BaseCollector
      *    sql: string,
      *    params: ?array<array-key, mixed>,
      *    runnable: bool,
-     *    types: ?array<array-key, \Doctrine\DBAL\Types\Type|int|string|null>,
+     *    types: ?array<array-key, Type|int|string|null>,
      *    count: int,
      *    index: int,
      *    executionPercent?: float
@@ -275,7 +275,7 @@ class DoctrineDataCollector extends BaseCollector
      *    sql: string,
      *    params: ?array<array-key, mixed>,
      *    runnable: bool,
-     *    types: ?array<array-key, \Doctrine\DBAL\Types\Type|int|string|null>,
+     *    types: ?array<array-key, Type|int|string|null>,
      *    count: int,
      *    index: int,
      *    executionPercent?: float

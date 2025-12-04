@@ -14,6 +14,7 @@ class ClassMetadataFactory extends BaseClassMetadataFactory
 {
     /**
      * {@inheritDoc}
+     *
      * @param ClassMetadata<object> $class
      * @param ClassMetadata<object> $parent
      */
