@@ -11,6 +11,7 @@ class CustomIdGenerator extends AbstractIdGenerator
 {
     /**
      * {@inheritDoc}
+     *
      * @param object $entity
      */
     public function generateId(EntityManagerInterface $em, $entity): int

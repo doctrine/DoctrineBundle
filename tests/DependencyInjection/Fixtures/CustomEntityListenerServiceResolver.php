@@ -31,6 +31,7 @@ class CustomEntityListenerServiceResolver implements EntityListenerServiceResolv
 
     /**
      * {@inheritDoc}
+     *
      * @param object $object
      */
     public function register($object): void
