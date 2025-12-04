@@ -1253,13 +1253,11 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertArrayHasKey('doctrine.middleware', $child1Tags);
         $this->assertContains(['connection' => 'conn1', 'priority' => 10], $child1Tags['doctrine.middleware']);
-        $this->assertArrayHasKey('monolog.logger', $child1Tags);
-        $this->assertContains(['channel' => 'doctrine.conn1'], $child1Tags['monolog.logger']);
+        $this->assertArrayNotHasKey('monolog.logger', $child1Tags);
 
         $this->assertArrayHasKey('doctrine.middleware', $child2Tags);
         $this->assertContains(['connection' => 'conn2', 'priority' => 10], $child2Tags['doctrine.middleware']);
-        $this->assertArrayHasKey('monolog.logger', $child2Tags);
-        $this->assertContains(['channel' => 'doctrine.conn2'], $child2Tags['monolog.logger']);
+        $this->assertArrayNotHasKey('monolog.logger', $child2Tags);
     }
 
     public function testLoggingMiddlewareNotRegisteredWithoutLogger(): void
