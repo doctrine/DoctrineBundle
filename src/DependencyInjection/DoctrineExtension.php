@@ -1475,10 +1475,9 @@ final class DoctrineExtension extends Extension
             $loggingMiddlewareAbstractDef->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
 
             // Create a child service for the connection
-            $id    = sprintf('doctrine.dbal.logging_middleware.%s', $connName);
             $child = new ChildDefinition('doctrine.dbal.logging_middleware');
             $child->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
-            $container->setDefinition($id, $child);
+            $container->setDefinition(sprintf('doctrine.dbal.logging_middleware.%s', $connName), $child);
         }
     }
 }
