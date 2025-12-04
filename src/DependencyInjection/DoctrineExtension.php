@@ -1450,25 +1450,6 @@ final class DoctrineExtension extends Extension
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('middlewares.php');
 
-        $loggingMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.logging_middleware');
-
-        foreach ($connWithLogging as $connName) {
-            // Register logging middlewares only when a logger service is available
-            if (! $container->has('logger')) {
-                continue;
-            }
-
-            // Preserve legacy behavior: also tag the abstract definition per-connection
-            $loggingMiddlewareAbstractDef->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
-
-            // Create a child service with a dedicated Monolog channel
-            $id    = sprintf('doctrine.dbal.logging_middleware.%s', $connName);
-            $child = new ChildDefinition('doctrine.dbal.logging_middleware');
-            $child->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
-            $child->addTag('monolog.logger', ['channel' => sprintf('doctrine.%s', $connName)]);
-            $container->setDefinition($id, $child);
-        }
-
         $container->getDefinition('doctrine.debug_data_holder')->replaceArgument(0, $connWithBacktrace);
         $debugMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.debug_middleware');
         foreach ($connWithProfiling as $connName) {
@@ -1480,6 +1461,24 @@ final class DoctrineExtension extends Extension
         foreach ($connWithTtl as $connName) {
             $idleConnectionMiddlewareAbstractDef
                 ->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
+        }
+
+        $loggingMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.logging_middleware');
+
+        foreach ($connWithLogging as $connName) {
+            // Register logging middlewares only when a logger service is available
+            if (! $container->has('logger')) {
+                continue;
+            }
+
+            // Preserve legacy behavior: also tag the abstract definition per-connection
+            $loggingMiddlewareAbstractDef->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
+
+            // Create a child service for the connection
+            $id    = sprintf('doctrine.dbal.logging_middleware.%s', $connName);
+            $child = new ChildDefinition('doctrine.dbal.logging_middleware');
+            $child->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
+            $container->setDefinition($id, $child);
         }
     }
 }
