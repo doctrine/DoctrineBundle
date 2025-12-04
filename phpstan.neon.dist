@@ -1,10 +1,8 @@
 parameters:
-   level: 5
+   level: 6
+   reportUnmatchedIgnoredErrors: true
    paths:
       - config
       - src
       - tests
    ignoreErrors:
-    # phpstan has no array shape intersection support https://github.com/phpstan/phpstan/issues/12414
-    - message: '#unresolvable type.#'
-      path: src/DataCollector/DoctrineDataCollector.php

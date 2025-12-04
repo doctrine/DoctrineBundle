@@ -48,6 +48,7 @@ final class Configuration implements ConfigurationInterface
     {
     }
 
+    /** @return TreeBuilder<'array'> */
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('doctrine');
@@ -62,6 +63,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Add DBAL section to configuration tree
      */
+    /** @param ArrayNodeDefinition<TreeBuilder<'array'>> $node */
     private function addDbalSection(ArrayNodeDefinition $node): void
     {
         // Key that should not be rewritten to the connection config
@@ -154,6 +156,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return the dbal connections node
      */
+    /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getDbalConnectionsNode(): ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder('connections');
@@ -226,7 +229,10 @@ final class Configuration implements ConfigurationInterface
      * Adds config keys related to params processed by the DBAL drivers
      *
      * These keys are available for replica configurations too.
-     */
+     *
+     * @template TP of \Symfony\Component\Config\Definition\Builder\NodeParentInterface|null
+     * @param ArrayNodeDefinition<TP> $node
+     **/
     private function configureDbalDriverNode(ArrayNodeDefinition $node): void
     {
         $node
@@ -355,6 +361,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Add the ORM section to configuration tree
      */
+    /** @param ArrayNodeDefinition<TreeBuilder<'array'>> $node */
     private function addOrmSection(ArrayNodeDefinition $node): void
     {
         // Key that should not be rewritten to the entity-manager config
@@ -450,6 +457,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return ORM target entity resolver node
      */
+    /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getOrmTargetEntityResolverNode(): NodeDefinition
     {
         $treeBuilder = new TreeBuilder('resolve_target_entities');
@@ -467,6 +475,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return ORM entity listener node
      */
+    /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getOrmEntityListenersNode(): NodeDefinition
     {
         $treeBuilder = new TreeBuilder('entity_listeners');
@@ -549,6 +558,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return ORM entity manager node
      */
+    /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getOrmEntityManagersNode(): ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder('entity_managers');
@@ -723,6 +733,7 @@ final class Configuration implements ConfigurationInterface
     /**
      * Return an ORM cache driver node for a given entity manager
      */
+    /** @return ArrayNodeDefinition<TreeBuilder<'array'>> */
     private function getOrmCacheDriverNode(string $name): ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder($name);

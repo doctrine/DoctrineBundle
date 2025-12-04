@@ -501,8 +501,10 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
+    /** @phpstan-ignore missingType.iterableValue */
     #[TestWith([[]])]
     #[TestWith([null])]
+    /** @param array<mixed>|null $ormConfiguration */
     public function testSingleEntityManagerWithEmptyConfiguration(array|null $ormConfiguration): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {

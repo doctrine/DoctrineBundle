@@ -17,6 +17,7 @@ class SchemaAssetsFilterManager
     ) {
     }
 
+    /** @param string|AbstractAsset<\Doctrine\DBAL\Schema\Name> $assetName */
     public function __invoke(string|AbstractAsset $assetName): bool
     {
         foreach ($this->schemaAssetFilters as $schemaAssetFilter) {

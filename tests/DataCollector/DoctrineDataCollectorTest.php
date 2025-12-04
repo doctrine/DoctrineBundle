@@ -136,6 +136,7 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame(1, $groupedQueries['default'][1]['count']);
     }
 
+    /** @return ClassMetadata<object> */
     private function createEntityMetadata(string $entityFQCN): ClassMetadata
     {
         $metadata            = new ClassMetadata($entityFQCN);

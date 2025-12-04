@@ -15,6 +15,7 @@ class RegexSchemaAssetFilter
     ) {
     }
 
+    /** @param string|AbstractAsset<\Doctrine\DBAL\Schema\Name> $assetName */
     public function __invoke(string|AbstractAsset $assetName): bool
     {
         if ($assetName instanceof AbstractAsset) {
