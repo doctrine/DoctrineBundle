@@ -15,6 +15,13 @@ on:
       - ".doctrine-project.json"
       - ".github/workflows/website-schema.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   json-validate:
     name: "Validate JSON schema"

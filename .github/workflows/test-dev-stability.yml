@@ -5,10 +5,18 @@ on:
   schedule:
     - cron: "0 0 * * 0"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   phpunit:
     name: "PHPUnit"
     runs-on: "ubuntu-latest"
+    timeout-minutes: 10
     env:
       SYMFONY_REQUIRE: ${{matrix.symfony-require}}
 

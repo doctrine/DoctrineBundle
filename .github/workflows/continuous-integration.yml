@@ -25,10 +25,20 @@ on:
       - templates/**
       - tests/**
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   phpunit:
     name: "PHPUnit"
     runs-on: "ubuntu-latest"
+    timeout-minutes: 10
     env:
       SYMFONY_REQUIRE: ${{matrix.symfony-require}}
       SYMFONY_DEPRECATIONS_HELPER: weak
@@ -131,6 +141,7 @@ jobs:
   upload_coverage:
     name: "Upload coverage to Codecov"
     runs-on: "ubuntu-latest"
+    timeout-minutes: 5
     # Only run on PRs from forks or PRs from branches that do not match `*.x`
     if: "github.event.pull_request.head.repo.full_name != github.repository || !contains(github.event.pull_request.head.ref, '.x')"
     needs:
@@ -151,5 +162,6 @@ jobs:
         uses: "codecov/codecov-action@v5"
         with:
           directory: reports
+          fail_ci_if_error: false
         env:
           CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"

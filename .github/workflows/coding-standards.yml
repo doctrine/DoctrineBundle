@@ -23,6 +23,14 @@ on:
       - src/**
       - tests/**
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   coding-standards:
     name: "Coding Standards"
