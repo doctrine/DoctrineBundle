@@ -501,8 +501,6 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
-    /** @phpstan-ignore missingType.iterableValue */
-
     /** @param array<mixed>|null $ormConfiguration */
     #[TestWith([[]])]
     #[TestWith([null])]
