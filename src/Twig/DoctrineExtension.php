@@ -106,6 +106,7 @@ class DoctrineExtension extends AbstractExtension
             $parameters = $parameters->getValue(true);
         }
 
+        /** @var array<string, mixed> $parameters */
         $keys = array_keys($parameters);
         if (count(array_filter($keys, 'is_int')) === count($keys)) {
             $parameters = array_values($parameters);
@@ -115,7 +116,7 @@ class DoctrineExtension extends AbstractExtension
 
         return preg_replace_callback(
             '/(?<!\?)\?(?!\?)|(?<!:)(:[a-z0-9_]+)/i',
-            static function ($matches) use ($parameters, &$i) {
+            static function (array $matches) use ($parameters, &$i): string {
                 $key = substr($matches[0], 1);
 
                 if (! array_key_exists($i, $parameters) && ! array_key_exists($key, $parameters)) {
@@ -123,9 +124,10 @@ class DoctrineExtension extends AbstractExtension
                 }
 
                 $value = array_key_exists($i, $parameters) ? $parameters[$i] : $parameters[$key];
+
                 $i++;
 
-                return DoctrineExtension::escapeFunction($value);
+                return (string) DoctrineExtension::escapeFunction($value);
             },
             $query,
         );

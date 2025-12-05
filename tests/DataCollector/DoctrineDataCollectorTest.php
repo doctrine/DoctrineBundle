@@ -139,6 +139,7 @@ class DoctrineDataCollectorTest extends TestCase
     /** @return ClassMetadata<object> */
     private function createEntityMetadata(string $entityFQCN): ClassMetadata
     {
+        /** @var class-string $entityFQCN */
         $metadata            = new ClassMetadata($entityFQCN);
         $metadata->name      = $entityFQCN;
         $metadata->reflClass = new ReflectionClass('stdClass');

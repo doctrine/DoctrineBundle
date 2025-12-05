@@ -21,6 +21,7 @@ final class SymfonyApp extends Application
             return parent::addCommand($command);
         }
 
+        /** @var Command $command */
         return $this->add($command);
     }
 

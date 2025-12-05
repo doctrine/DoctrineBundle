@@ -20,6 +20,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
 
 use function array_merge;
+use function assert;
 use function sprintf;
 use function sys_get_temp_dir;
 
@@ -42,7 +43,9 @@ class DropDatabaseDoctrineTest extends TestCase
         $container = $this->getMockContainer($connectionName, $params);
 
         $application = new SymfonyApp();
-        $application->addCommand(new DropDatabaseDoctrineCommand($container->get('doctrine')));
+        $doctrine    = $container->get('doctrine');
+        assert($doctrine instanceof ManagerRegistry);
+        $application->addCommand(new DropDatabaseDoctrineCommand($doctrine));
 
         $command = $application->find('doctrine:database:drop');
 
@@ -82,7 +85,9 @@ class DropDatabaseDoctrineTest extends TestCase
         $container = $this->getMockContainer($connectionName, $params);
 
         $application = new SymfonyApp();
-        $application->addCommand(new DropDatabaseDoctrineCommand($container->get('doctrine')));
+        $doctrine    = $container->get('doctrine');
+        assert($doctrine instanceof ManagerRegistry);
+        $application->addCommand(new DropDatabaseDoctrineCommand($doctrine));
 
         $command = $application->find('doctrine:database:drop');
 

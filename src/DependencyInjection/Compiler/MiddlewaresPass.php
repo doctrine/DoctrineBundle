@@ -47,7 +47,10 @@ final class MiddlewaresPass implements CompilerPassInterface
             }
         }
 
-        foreach (array_keys($container->getParameter('doctrine.connections')) as $name) {
+        /** @var array<string, mixed> $connections */
+        $connections = $container->getParameter('doctrine.connections');
+
+        foreach (array_keys($connections) as $name) {
             $middlewareRefs = [];
             $i              = 0;
             foreach ($middlewareAbstractDefs as $id => $abstractDef) {

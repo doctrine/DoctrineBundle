@@ -1,8 +1,24 @@
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
 parameters:
-   level: 6
+   level: 7
    reportUnmatchedIgnoredErrors: true
+   bootstrapFiles:
+      - vendor/autoload.php
+   scanDirectories:
+      - vendor/symfony/config
    paths:
       - config
       - src
       - tests
    ignoreErrors:
+      - identifier: 'argument.type'
+        path: src/DependencyInjection/DoctrineExtension.php
+      - identifier: 'offsetAccess.nonOffsetAccessible'
+        path: src/DependencyInjection/DoctrineExtension.php
+      - identifier: 'class.notFound'
+        path: src/DependencyInjection/Configuration.php
+      - identifier: 'assign.propertyType'
+        path: src/DependencyInjection/DoctrineExtension.php
+      - identifier: 'foreach.nonIterable'
+        path: src/DependencyInjection/DoctrineExtension.php

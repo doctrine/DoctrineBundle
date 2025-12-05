@@ -20,6 +20,7 @@ use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function assert;
 use function interface_exists;
 use function sys_get_temp_dir;
 use function uniqid;
@@ -104,6 +105,7 @@ class ServiceRepositoryTest extends TestCase
         $container->compile();
 
         $em = $container->get('doctrine.orm.default_entity_manager');
+        assert($em instanceof EntityManagerInterface);
 
         // traditional custom class repository
         $customClassRepo = $em->getRepository(TestCustomClassRepoEntity::class);

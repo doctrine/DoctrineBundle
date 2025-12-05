@@ -27,6 +27,7 @@ use function sprintf;
 final class ContainerRepositoryFactory implements RepositoryFactory
 {
     /** @var array<string, ObjectRepository<object>> */
+    /** @var array<string, EntityRepository<object>> */
     private array $managedRepositories = [];
 
     /** @param ContainerInterface $container A service locator containing the repositories */
@@ -85,23 +86,23 @@ final class ContainerRepositoryFactory implements RepositoryFactory
     /**
      * @param ClassMetadata<TEntity> $metadata
      *
-     * @return ObjectRepository<TEntity>
+     * @return EntityRepository<TEntity>
      *
      * @template TEntity of object
      */
     private function getOrCreateRepository(
         EntityManagerInterface $entityManager,
         ClassMetadata $metadata,
-    ): ObjectRepository {
+    ): EntityRepository {
         $repositoryHash = $metadata->getName() . spl_object_hash($entityManager);
         if (isset($this->managedRepositories[$repositoryHash])) {
-            /** @phpstan-var ObjectRepository<TEntity> */
+            /** @phpstan-var EntityRepository<TEntity> */
             return $this->managedRepositories[$repositoryHash];
         }
 
         $repositoryClassName = $metadata->customRepositoryClassName ?: $entityManager->getConfiguration()->getDefaultRepositoryClassName();
 
-        /** @phpstan-var ObjectRepository<TEntity> */
+        /** @phpstan-var EntityRepository<TEntity> */
         return $this->managedRepositories[$repositoryHash] = new $repositoryClassName($entityManager, $metadata);
     }
 }

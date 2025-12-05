@@ -12,6 +12,8 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\MiddlewaresPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveLoggingMiddlewarePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RemoveProfilerControllerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterDatePointTypePass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
@@ -24,6 +26,7 @@ use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
+use function assert;
 use function class_exists;
 use function dirname;
 
@@ -77,12 +80,17 @@ class DoctrineBundle extends Bundle
     {
         // Clear all entity managers to clear references to entities for GC
         if ($this->container->hasParameter('doctrine.entity_managers')) {
-            foreach ($this->container->getParameter('doctrine.entity_managers') as $id) {
+            /** @var array<string, mixed> $entityManagers */
+            $entityManagers = $this->container->getParameter('doctrine.entity_managers');
+
+            foreach ($entityManagers as $id) {
                 if (! $this->container->initialized($id)) {
                     continue;
                 }
 
-                $this->container->get($id)->clear();
+                $entityManager = $this->container->get($id);
+                assert($entityManager instanceof EntityManagerInterface);
+                $entityManager->clear();
             }
         }
 
@@ -91,12 +99,17 @@ class DoctrineBundle extends Bundle
             return;
         }
 
-        foreach ($this->container->getParameter('doctrine.connections') as $id) {
+        /** @var array<string, mixed> $connections */
+        $connections = $this->container->getParameter('doctrine.connections');
+
+        foreach ($connections as $id) {
             if (! $this->container->initialized($id)) {
                 continue;
             }
 
-            $this->container->get($id)->close();
+            $connection = $this->container->get($id);
+            assert($connection instanceof Connection);
+            $connection->close();
         }
     }
 

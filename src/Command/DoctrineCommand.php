@@ -8,6 +8,8 @@ use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Command\Command;
 
+use function assert;
+
 /**
  * Base class for Doctrine console commands to extend from.
  *
@@ -26,7 +28,10 @@ abstract class DoctrineCommand extends Command
      */
     protected function getDoctrineConnection(string $name): Connection
     {
-        return $this->getDoctrine()->getConnection($name);
+        $connection = $this->getDoctrine()->getConnection($name);
+        assert($connection instanceof Connection);
+
+        return $connection;
     }
 
     protected function getDoctrine(): ManagerRegistry
