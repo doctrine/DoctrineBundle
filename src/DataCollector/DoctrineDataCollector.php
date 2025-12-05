@@ -304,6 +304,7 @@ class DoctrineDataCollector extends BaseCollector
                 return $a['executionMS'] < $b['executionMS'] ? 1 : -1;
             });
             /** @var list<array{executionMS: float, explainable: bool, sql: string, params: array<mixed>|null, runnable: bool, types: array<mixed>|null, count: int, index: int, executionPercent?: float}> $connectionGroupedQueries */
+            $connectionGroupedQueries          = $connectionGroupedQueries;
             $this->groupedQueries[$connection] = $connectionGroupedQueries;
         }
 

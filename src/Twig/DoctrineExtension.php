@@ -107,7 +107,8 @@ class DoctrineExtension extends AbstractExtension
         }
 
         /** @var array<string, mixed> $parameters */
-        $keys = array_keys($parameters);
+        $parameters = $parameters;
+        $keys       = array_keys($parameters);
         if (count(array_filter($keys, 'is_int')) === count($keys)) {
             $parameters = array_values($parameters);
         }

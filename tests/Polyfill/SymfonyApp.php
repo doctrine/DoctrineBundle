@@ -7,6 +7,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Polyfill;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 
+use function assert;
 use function method_exists;
 
 /**
@@ -21,7 +22,8 @@ final class SymfonyApp extends Application
             return parent::addCommand($command);
         }
 
-        /** @var Command $command */
+        assert($command instanceof Command);
+
         return $this->add($command);
     }
 

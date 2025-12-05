@@ -632,6 +632,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
             $this->assertNull($cache);
         } else {
             /** @var class-string $expectedClass */
+            $expectedClass = $expectedClass;
             $this->assertInstanceOf($expectedClass, $cache);
         }
     }
