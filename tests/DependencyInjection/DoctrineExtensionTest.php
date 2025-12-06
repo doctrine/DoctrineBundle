@@ -1281,10 +1281,10 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
-        // Abstract definition exists by default, but should not be tagged nor should child definitions exist
+        // Abstract definition exists by default, and is tagged for legacy behavior, but no child definitions exist
         $this->assertTrue($container->hasDefinition('doctrine.dbal.logging_middleware'));
         $abstractTags = $container->getDefinition('doctrine.dbal.logging_middleware')->getTags();
-        $this->assertArrayNotHasKey('doctrine.middleware', $abstractTags);
+        $this->assertArrayHasKey('doctrine.middleware', $abstractTags);
         $this->assertFalse($container->hasDefinition('doctrine.dbal.logging_middleware.conn1'));
     }
 
