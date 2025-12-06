@@ -3,8 +3,6 @@ includes:
 parameters:
    level: 7
    reportUnmatchedIgnoredErrors: true
-   scanDirectories:
-      - vendor/symfony/config
    paths:
       - config
       - src
