@@ -165,8 +165,8 @@ EXCEPTION);
     {
         $classMetadatas = [];
         foreach ($entityRepositoryClasses as $entityClass => $entityRepositoryClass) {
-            /** @var class-string<EntityRepository<object>>|null $entityRepositoryClass */
-            $metadata                            = new ClassMetadata($entityClass);
+            $metadata = new ClassMetadata($entityClass);
+            /** @phpstan-ignore assign.propertyType */
             $metadata->customRepositoryClassName = $entityRepositoryClass;
 
             $classMetadatas[$entityClass] = $metadata;
