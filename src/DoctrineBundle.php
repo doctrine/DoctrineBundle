@@ -80,7 +80,7 @@ class DoctrineBundle extends Bundle
     {
         // Clear all entity managers to clear references to entities for GC
         if ($this->container->hasParameter('doctrine.entity_managers')) {
-            /** @var array<string, mixed> $entityManagers */
+            /** @var array<string, string> $entityManagers */
             $entityManagers = $this->container->getParameter('doctrine.entity_managers');
 
             foreach ($entityManagers as $id) {
@@ -99,7 +99,7 @@ class DoctrineBundle extends Bundle
             return;
         }
 
-        /** @var array<string, mixed> $connections */
+        /** @var array<string, string> $connections */
         $connections = $this->container->getParameter('doctrine.connections');
 
         foreach ($connections as $id) {
