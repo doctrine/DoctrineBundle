@@ -116,24 +116,16 @@ class ConnectionFactoryTest extends TestCase
             $this->configuration,
         );
 
+        /** @var array{primary: array{dbname: string}, replica: array{replica1: array{dbname: string}}} $parsedParams */
         $parsedParams = $connection->getParams();
-        /** @var array<string, mixed> $parsedParams */
         $this->assertArrayHasKey('primary', $parsedParams);
         $this->assertArrayHasKey('replica', $parsedParams);
         $this->assertArrayHasKey('replica1', $parsedParams['replica']);
 
         $this->assertArrayHasKey('dbname', $parsedParams['primary']);
         $this->assertArrayHasKey('dbname', $parsedParams['replica']['replica1']);
-
-        $primary = $parsedParams['primary'];
-        /** @var array<string, mixed> $primary */
-        $replica = $parsedParams['replica'];
-        /** @var array<string, mixed> $replica */
-        $replica1 = $replica['replica1'];
-        /** @var array<string, mixed> $replica1 */
-
-        $this->assertSame('primary_test', $primary['dbname']);
-        $this->assertSame('replica_test', $replica1['dbname']);
+        $this->assertSame('primary_test', $parsedParams['primary']['dbname']);
+        $this->assertSame('replica_test', $parsedParams['replica']['replica1']['dbname']); 
     }
 }
 
@@ -143,6 +135,8 @@ class FakeConnection extends Connection
 
     /**
      * {@inheritDoc}
+     *
+     * @param array<string, mixed> $params
      */
     public function __construct(array $params, Driver $driver, Configuration|null $config = null)
     {
