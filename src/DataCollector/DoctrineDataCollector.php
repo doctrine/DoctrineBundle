@@ -69,7 +69,6 @@ class DoctrineDataCollector extends BaseCollector
      *    executionPercent?: float
      * }>>
      */
-    /** @var array<string, list<array{executionMS: float, explainable: bool, sql: string, params: ?array<array-key, mixed>, runnable: bool, types: ?array<array-key, Type|int|string|null>, count: int, index: int, executionPercent?: float}>>|null $groupedQueries */
     private array|null $groupedQueries = null;
 
     public function __construct(
@@ -307,8 +306,6 @@ class DoctrineDataCollector extends BaseCollector
                 $totalExecutionMS += $query['executionMS'];
             }
 
-            $connectionGroupedQueries = array_values($connectionGroupedQueries);
-
             usort($connectionGroupedQueries, static function ($a, $b) {
                 if ($a['executionMS'] === $b['executionMS']) {
                     return 0;
@@ -316,8 +313,6 @@ class DoctrineDataCollector extends BaseCollector
 
                 return $a['executionMS'] < $b['executionMS'] ? 1 : -1;
             });
-            /** @var list<array{executionMS: float, explainable: bool, sql: string, params: array<mixed>|null, runnable: bool, types: ?array<array-key, Type|int|string|null>, count: int, index: int, executionPercent?: float}> $connectionGroupedQueries */
-            $connectionGroupedQueries          = $connectionGroupedQueries;
             $this->groupedQueries[$connection] = $connectionGroupedQueries;
         }
 
