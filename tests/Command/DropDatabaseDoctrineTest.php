@@ -139,7 +139,7 @@ class DropDatabaseDoctrineTest extends TestCase
     }
 
     /**
-     * @param list<mixed> $params Connection parameters
+     * @param array<string, mixed> $params Connection parameters
      * @psalm-param Params $params
      *
      * @return Stub&Container
