@@ -160,13 +160,12 @@ EXCEPTION);
         return $container;
     }
 
-    /** @param array<class-string, ?string> $entityRepositoryClasses */
+    /** @param array<class-string, class-string<EntityRepository<object>>> $entityRepositoryClasses */
     private function createEntityManager(array $entityRepositoryClasses): EntityManagerInterface
     {
         $classMetadatas = [];
         foreach ($entityRepositoryClasses as $entityClass => $entityRepositoryClass) {
             $metadata = new ClassMetadata($entityClass);
-            /** @phpstan-ignore assign.propertyType */
             $metadata->customRepositoryClassName = $entityRepositoryClass;
 
             $classMetadatas[$entityClass] = $metadata;
