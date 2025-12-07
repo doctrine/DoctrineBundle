@@ -165,7 +165,7 @@ EXCEPTION);
     {
         $classMetadatas = [];
         foreach ($entityRepositoryClasses as $entityClass => $entityRepositoryClass) {
-            $metadata = new ClassMetadata($entityClass);
+            $metadata                            = new ClassMetadata($entityClass);
             $metadata->customRepositoryClassName = $entityRepositoryClass;
 
             $classMetadatas[$entityClass] = $metadata;
