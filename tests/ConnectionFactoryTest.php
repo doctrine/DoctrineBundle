@@ -47,7 +47,7 @@ class ConnectionFactoryTest extends TestCase
         $connection = $factory->createConnection($params, $this->configuration);
 
         $params = $connection->getParams();
-        /** @var array<string, mixed> $params */
+        /** @var array{charset: string} $params */
         $this->assertSame('utf8mb4', $params['charset']);
     }
 
@@ -57,7 +57,7 @@ class ConnectionFactoryTest extends TestCase
         $connection = $factory->createConnection(['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'], $this->configuration);
 
         $params = $connection->getParams();
-        /** @var array<string, mixed> $params */
+        /** @var array{charset: string} $params */
         $defaultTableOptions = $params['defaultTableOptions'];
         $this->assertIsArray($defaultTableOptions);
         $this->assertSame(
@@ -75,7 +75,7 @@ class ConnectionFactoryTest extends TestCase
         );
 
         $params = $connection->getParams();
-        /** @var array<string, mixed> $params */
+        /** @var array{charset: string} $params */
         $this->assertEquals('utf8mb4_unicode_ci', $params['charset']);
     }
 
@@ -91,7 +91,7 @@ class ConnectionFactoryTest extends TestCase
         );
 
         $params = $connection->getParams();
-        /** @var array<string, mixed> $params */
+        /** @var array{charset: string} $params */
         $this->assertSame('main_test', $params['dbname']);
     }
 
