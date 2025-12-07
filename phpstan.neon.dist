@@ -8,8 +8,6 @@ parameters:
       - src
       - tests
    ignoreErrors:
-      - identifier: 'argument.type'
-        path: src/DependencyInjection/DoctrineExtension.php
       - identifier: 'offsetAccess.nonOffsetAccessible'
         path: src/DependencyInjection/DoctrineExtension.php
       - identifier: 'class.notFound'
