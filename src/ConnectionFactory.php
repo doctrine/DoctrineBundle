@@ -27,7 +27,7 @@ use const PHP_EOL;
 /**
  * @internal This class is not meant to be used outside this bundle
  *
- * @phpstan-import-type Params from DriverManager
+ * @phpstan-type Params = array<string, mixed>
  */
 final class ConnectionFactory
 {
@@ -44,7 +44,6 @@ final class ConnectionFactory
         'sqlite3'    => 'pdo_sqlite',
     ];
 
-    /** @phpstan-ignore property.onlyWritten */
     private readonly DsnParser $dsnParser;
 
     private bool $initialized = false;
@@ -60,7 +59,6 @@ final class ConnectionFactory
     /**
      * Create a connection by name.
      *
-     * @param mixed[]               $params
      * @param array<string, string> $mappingTypes
      * @phpstan-param Params $params
      */
@@ -86,7 +84,6 @@ final class ConnectionFactory
             }
         }
 
-        /** @phpstan-ignore-next-line We should adjust when https://github.com/phpstan/phpstan/issues/12414 is fixed */
         if (! isset($params['pdo']) && (! isset($params['charset']) || isset($params['dbname_suffix']))) {
             $wrapperClass = null;
 
@@ -213,22 +210,18 @@ final class ConnectionFactory
      * @param mixed[] $params The list of parameters.
      * @phpstan-param Params $params
      *
-     * @return mixed[] A modified list of parameters with info from a database
+     * @return Params params A modified list of parameters with info from a database
      *                 URL extracted into individual parameter parts.
      * @phpstan-return Params
      *
      * @throws DBALException
-     *
-     * @phpstan-ignore throws.unusedType
      */
     private function parseDatabaseUrl(array $params): array
     {
-        /** @phpstan-ignore isset.offset (for DBAL < 4) */
         if (! isset($params['url'])) {
             return $params;
         }
 
-        /** @phpstan-ignore deadCode.unreachable */
         try {
             $parsedParams = $this->dsnParser->parse($params['url']);
         } catch (MalformedDsnException $e) {

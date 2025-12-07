@@ -488,7 +488,7 @@ final class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('entity_listeners');
         $node        = $treeBuilder->getRootNode();
 
-        $normalizer = static function ($mappings) {
+        $normalizer = static function (array $mappings) {
             $entities = [];
 
             foreach ($mappings as $entityClass => $mapping) {
