@@ -33,8 +33,8 @@ class ConnectionFactoryTest extends TestCase
         $connection    = $factory->createConnection($params, $this->configuration);
 
         $this->assertInstanceof(FakeConnection::class, $connection);
+        /** @var array{charset: string} $params */
         $params = $connection->getParams();
-        /** @var array<string, mixed> $params */
         $this->assertSame('utf8', $params['charset']);
         $this->assertSame(1 + $creationCount, FakeConnection::$creationCount);
     }
