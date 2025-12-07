@@ -19,7 +19,6 @@ use Throwable;
 
 use function array_map;
 use function array_sum;
-use function array_values;
 use function arsort;
 use function assert;
 use function count;
