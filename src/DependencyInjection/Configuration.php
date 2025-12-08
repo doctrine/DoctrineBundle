@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\ExprBuilder;
+use Symfony\Component\Config\Definition\Builder\NodeBuilder;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeParentInterface;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -71,9 +73,9 @@ final class Configuration implements ConfigurationInterface
         // Key that should not be rewritten to the connection config
         $excludedKeys = ['default_connection' => true, 'driver_schemes' => true, 'driver_scheme' => true, 'types' => true, 'type' => true];
 
-        $node
-            ->children()
-            ->arrayNode('dbal')
+        $children = $node->children();
+        /** @var NodeBuilder<ArrayNodeDefinition<NodeParentInterface>> $children */
+        $children->arrayNode('dbal')
                 ->beforeNormalization()
                     ->ifTrue(static function ($v) use ($excludedKeys) {
                         if (! is_array($v)) {
@@ -218,8 +220,9 @@ final class Configuration implements ConfigurationInterface
                 ->scalarNode('result_cache')->end()
             ->end();
 
-        $replicaNode = $connectionNode
-            ->children()
+        $children = $connectionNode->children();
+        /** @var NodeBuilder<ArrayNodeDefinition<NodeParentInterface>> $children */
+        $replicaNode = $children
                 ->arrayNode('replicas')
                     ->useAttributeAsKey('name')
                     ->prototype('array');
@@ -239,8 +242,9 @@ final class Configuration implements ConfigurationInterface
      **/
     private function configureDbalDriverNode(ArrayNodeDefinition $node): void
     {
-        $node
-            ->validate()
+        $validate = $node->validate();
+        /** @var ExprBuilder<ArrayNodeDefinition<NodeParentInterface>> $validate */
+        $validate
             ->always(static function (array $values) {
                 if (! isset($values['url'])) {
                     return $values;
@@ -261,7 +265,8 @@ final class Configuration implements ConfigurationInterface
 
                 return $values;
             })
-            ->end()
+            ->end();
+        $node
             ->children()
                 ->scalarNode('url')->info('A URL with connection information; any parameter value parsed from this string will override explicitly set parameters')->end()
                 ->scalarNode('dbname')->end()
@@ -378,8 +383,9 @@ final class Configuration implements ConfigurationInterface
             'controller_resolver' => true,
         ];
 
-        $node
-            ->children()
+        $children = $node->children();
+        /** @var NodeBuilder<ArrayNodeDefinition<NodeParentInterface>> $children */
+        $children
                 ->arrayNode('orm')
                     ->beforeNormalization()
                         ->ifTrue(static function ($v) use ($excludedKeys) {
@@ -525,12 +531,14 @@ final class Configuration implements ConfigurationInterface
             return ['entities' => $entities];
         };
 
-        $node
-            ->beforeNormalization()
+        $before = $node->beforeNormalization();
+        /** @var ExprBuilder<ArrayNodeDefinition<NodeParentInterface>> $before */
+        $before
                 // Yaml normalization
                 ->ifTrue(static fn ($v) => is_array(reset($v)) && is_string(key(reset($v))))
                 ->then($normalizer)
-            ->end()
+            ->end();
+        $node
             ->fixXmlConfig('entity', 'entities')
             ->children()
                 ->arrayNode('entities')
@@ -748,11 +756,13 @@ final class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder($name);
         $node        = $treeBuilder->getRootNode();
 
-        $node
-            ->beforeNormalization()
+        $before = $node->beforeNormalization();
+        /** @var ExprBuilder<ArrayNodeDefinition<NodeParentInterface>> $before */
+        $before
                 ->ifString()
                 ->then(static fn ($v): array => ['type' => $v])
-            ->end()
+            ->end();
+        $node
             ->children()
                 ->scalarNode('type')->defaultNull()->end()
                 ->scalarNode('id')->end()
