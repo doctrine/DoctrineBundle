@@ -8,8 +8,6 @@ parameters:
       - src
       - tests
    ignoreErrors:
-      - identifier: 'offsetAccess.nonOffsetAccessible'
-        path: src/DependencyInjection/DoctrineExtension.php
       - identifier: 'class.notFound'
         path: src/DependencyInjection/Configuration.php
       - identifier: 'assign.propertyType'
@@ -17,6 +15,4 @@ parameters:
       - identifier: 'return.type'
         path: src/DataCollector/DoctrineDataCollector.php
       - identifier: 'assign.propertyType'
-        path: src/DependencyInjection/DoctrineExtension.php
-      - identifier: 'foreach.nonIterable'
         path: src/DependencyInjection/DoctrineExtension.php

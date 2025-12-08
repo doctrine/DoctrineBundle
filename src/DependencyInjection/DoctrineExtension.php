@@ -158,10 +158,14 @@ final class DoctrineExtension extends Extension
             if ($mappingConfig['is_bundle']) {
                 $bundle         = null;
                 $bundleMetadata = null;
-                foreach ($container->getParameter('kernel.bundles') as $name => $class) {
+                $kernelBundles  = $container->getParameter('kernel.bundles');
+                assert(is_array($kernelBundles));
+                $kernelBundlesMetadata = $container->getParameter('kernel.bundles_metadata');
+                assert(is_array($kernelBundlesMetadata));
+                foreach ($kernelBundles as $name => $class) {
                     if ($mappingName === $name) {
                         $bundle         = new ReflectionClass($class);
-                        $bundleMetadata = $container->getParameter('kernel.bundles_metadata')[$name];
+                        $bundleMetadata = $kernelBundlesMetadata[$name];
 
                         break;
                     }
