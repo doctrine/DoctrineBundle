@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 use function array_map;
+use function array_merge;
 use function array_sum;
 use function arsort;
 use function assert;
@@ -317,10 +318,7 @@ class DoctrineDataCollector extends BaseCollector
             }
         }
 
-        $groupedQueries = $this->groupedQueries;
-        /** @var GroupedQueriesType $groupedQueries */
-
-        return $groupedQueries;
+        return $this->groupedQueries;
     }
 
     private function executionTimePercentage(float $executionTimeMS, float $totalExecutionTimeMS): float
