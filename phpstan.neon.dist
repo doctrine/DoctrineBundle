@@ -8,7 +8,5 @@ parameters:
       - src
       - tests
    ignoreErrors:
-      - identifier: 'assign.propertyType'
-        path: src/DataCollector/DoctrineDataCollector.php
       - identifier: 'class.notFound'
         path: src/DependencyInjection/Configuration.php

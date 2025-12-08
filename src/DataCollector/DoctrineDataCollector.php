@@ -46,7 +46,7 @@ use function usort;
  *    }>>,
  *    entityCounts: array<string, array<class-string, int>>
  * }
- * @phpstan-type GroupedQueriesType = array<string, list<array{
+ * @phpstan-type GroupedQueryItemType = array{
  *    executionMS: float,
  *    explainable: bool,
  *    sql: string,
@@ -56,7 +56,8 @@ use function usort;
  *    count: int,
  *    index: int,
  *    executionPercent?: float
- * }>>
+ * }
+ * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
  * @psalm-property DataType $data
  */
 class DoctrineDataCollector extends BaseCollector
@@ -285,10 +286,11 @@ class DoctrineDataCollector extends BaseCollector
             foreach ($queries as $i => $query) {
                 $key = $query['sql'];
                 if (! isset($connectionGroupedQueries[$key])) {
-                    $connectionGroupedQueries[$key]                = $query;
-                    $connectionGroupedQueries[$key]['executionMS'] = 0;
-                    $connectionGroupedQueries[$key]['count']       = 0;
-                    $connectionGroupedQueries[$key]['index']       = $i; // "Explain query" relies on query index in 'queries'.
+                    $connectionGroupedQueries[$key] = array_merge($query, [
+                        'executionMS' => 0,
+                        'count'       => 0,
+                        'index'       => $i, // "Explain query" relies on query index in 'queries'.
+                    ]);
                 }
 
                 $connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
@@ -303,7 +305,9 @@ class DoctrineDataCollector extends BaseCollector
 
                 return $a['executionMS'] < $b['executionMS'] ? 1 : -1;
             });
-            $this->groupedQueries[$connection] = $connectionGroupedQueries;
+            $sortedQueries = $connectionGroupedQueries;
+            /** @var array<int, GroupedQueryItemType> $sortedQueries */
+            $this->groupedQueries[$connection] = $sortedQueries;
         }
 
         foreach ($this->groupedQueries as $connection => $queries) {
