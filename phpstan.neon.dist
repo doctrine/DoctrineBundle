@@ -12,7 +12,5 @@ parameters:
         path: src/DataCollector/DoctrineDataCollector.php
       - identifier: 'return.type'
         path: src/DataCollector/DoctrineDataCollector.php
-      - identifier: 'assign.propertyType'
-        path: src/DependencyInjection/DoctrineExtension.php
-      - message: '#Call to method .* on an unknown class Symfony\\Component\\Config\\Definition\\Builder\\.*#'
+      - identifier: 'class.notFound'
         path: src/DependencyInjection/Configuration.php
