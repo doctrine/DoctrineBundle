@@ -8,5 +8,4 @@ parameters:
       - src
       - tests
    ignoreErrors:
-      - identifier: 'class.notFound'
-        path: src/DependencyInjection/Configuration.php
+      - '#Call to method .* on an unknown class Symfony\\Component\\Config\\Definition\\Builder\\.*#'
