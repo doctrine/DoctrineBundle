@@ -121,8 +121,6 @@ class ConnectionFactoryTest extends TestCase
         $this->assertArrayHasKey('replica', $parsedParams);
         $this->assertArrayHasKey('replica1', $parsedParams['replica']);
 
-        $this->assertArrayHasKey('dbname', $parsedParams['primary']);
-        $this->assertArrayHasKey('dbname', $parsedParams['replica']['replica1']);
         $this->assertSame('primary_test', $parsedParams['primary']['dbname']);
         $this->assertSame('replica_test', $parsedParams['replica']['replica1']['dbname']);
     }

@@ -76,7 +76,6 @@ use function dirname;
 use function glob;
 use function in_array;
 use function interface_exists;
-use function is_array;
 use function is_dir;
 use function is_string;
 use function realpath;
@@ -124,7 +123,6 @@ final class DoctrineExtension extends Extension
         if ($objectManager['auto_mapping']) {
             // automatically register bundle mappings
             $bundles = $container->getParameter('kernel.bundles');
-            assert(is_array($bundles));
             foreach (array_keys($bundles) as $bundle) {
                 if (isset($objectManager['mappings'][$bundle])) {
                     continue;
@@ -157,10 +155,9 @@ final class DoctrineExtension extends Extension
             if ($mappingConfig['is_bundle']) {
                 $bundle         = null;
                 $bundleMetadata = null;
-                $kernelBundles  = $container->getParameter('kernel.bundles');
-                assert(is_array($kernelBundles));
+                /** @var array<string, class-string> $kernelBundles */
+                $kernelBundles         = $container->getParameter('kernel.bundles');
                 $kernelBundlesMetadata = $container->getParameter('kernel.bundles_metadata');
-                assert(is_array($kernelBundlesMetadata));
                 foreach ($kernelBundles as $name => $class) {
                     if ($mappingName === $name) {
                         $bundle         = new ReflectionClass($class);
@@ -822,8 +819,7 @@ final class DoctrineExtension extends Extension
         $container->setAlias('doctrine.orm.entity_manager', $defaultEntityManagerDefinitionId = sprintf('doctrine.orm.%s_entity_manager', $config['default_entity_manager']));
         $container->getAlias('doctrine.orm.entity_manager')->setPublic(true);
 
-        $bundles = $container->getParameter('kernel.bundles');
-        assert(is_array($bundles));
+        $bundles                   = $container->getParameter('kernel.bundles');
         $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $bundles);
 
         foreach ($config['entity_managers'] as $name => $entityManager) {

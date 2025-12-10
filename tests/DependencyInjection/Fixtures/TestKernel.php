@@ -18,9 +18,7 @@ use function sys_get_temp_dir;
 
 class TestKernel extends Kernel
 {
-    private string|null $projectDir = null;
-
-    public function __construct(bool $debug = true)
+    public function __construct(bool $debug = true, private string|null $projectDir = null)
     {
         parent::__construct('test', $debug);
     }

@@ -17,7 +17,6 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
 
 use function array_merge;
-use function assert;
 use function sys_get_temp_dir;
 use function unlink;
 
@@ -41,9 +40,7 @@ class CreateDatabaseDoctrineTest extends TestCase
         $container = $this->getMockContainer($connectionName, $params);
 
         $application = new SymfonyApp();
-        $doctrine    = $container->get('doctrine');
-        assert($doctrine instanceof ManagerRegistry);
-        $application->addCommand(new CreateDatabaseDoctrineCommand($doctrine));
+        $application->addCommand(new CreateDatabaseDoctrineCommand($container->get('doctrine')));
 
         $command = $application->find('doctrine:database:create');
 

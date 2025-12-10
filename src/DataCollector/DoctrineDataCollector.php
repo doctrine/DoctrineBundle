@@ -18,7 +18,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 use function array_map;
-use function array_merge;
 use function array_sum;
 use function arsort;
 use function assert;
@@ -59,7 +58,7 @@ use function usort;
  *    executionPercent?: float
  * }
  * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
- * @psalm-property DataType $data
+ * @phpstan-property DataType $data
  */
 class DoctrineDataCollector extends BaseCollector
 {
@@ -287,11 +286,10 @@ class DoctrineDataCollector extends BaseCollector
             foreach ($queries as $i => $query) {
                 $key = $query['sql'];
                 if (! isset($connectionGroupedQueries[$key])) {
-                    $connectionGroupedQueries[$key] = array_merge($query, [
-                        'executionMS' => 0,
-                        'count'       => 0,
-                        'index'       => $i, // "Explain query" relies on query index in 'queries'.
-                    ]);
+                    $connectionGroupedQueries[$key]                = $query;
+                    $connectionGroupedQueries[$key]['executionMS'] = 0;
+                    $connectionGroupedQueries[$key]['count']       = 0;
+                    $connectionGroupedQueries[$key]['index']       = $i; // "Explain query" relies on query index in 'queries'.
                 }
 
                 $connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
@@ -306,9 +304,7 @@ class DoctrineDataCollector extends BaseCollector
 
                 return $a['executionMS'] < $b['executionMS'] ? 1 : -1;
             });
-            $sortedQueries = $connectionGroupedQueries;
-            /** @var array<int, GroupedQueryItemType> $sortedQueries */
-            $this->groupedQueries[$connection] = $sortedQueries;
+            $this->groupedQueries[$connection] = $connectionGroupedQueries;
         }
 
         foreach ($this->groupedQueries as $connection => $queries) {

@@ -782,9 +782,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $definition = $container->getDefinition('doctrine.orm.default_manager_configurator');
         $this->assertDICConstructorArguments($definition, [['soft_delete', 'myFilter'], ['myFilter' => ['myParameter' => 'myValue', 'mySecondParameter' => 'mySecondValue']]]);
 
-        $entityManager = $container->get('doctrine.orm.entity_manager');
-        assert($entityManager instanceof EntityManagerInterface);
-        $this->assertCount(2, $entityManager->getFilters()->getEnabledFilters());
+        $this->assertCount(2, $container->get('doctrine.orm.entity_manager')->getFilters()->getEnabledFilters());
     }
 
     public function testResolveTargetEntity(): void
@@ -1199,11 +1197,10 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container     = $this->loadContainer('orm_filters');
-        $entityManager = $container->get('doctrine.orm.entity_manager');
-        assert($entityManager instanceof EntityManagerInterface);
-
-        $this->assertTrue($entityManager->getConfiguration()->isNativeLazyObjectsEnabled());
+        $this->assertTrue(
+            $this->loadContainer('orm_filters')->get('doctrine.orm.entity_manager')
+                ->getConfiguration()->isNativeLazyObjectsEnabled(),
+        );
     }
 
     public function testNativeLazyObjectsWithConfigTrue(): void
@@ -1212,11 +1209,10 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container     = $this->loadContainer('orm_native_lazy_objects_enable');
-        $entityManager = $container->get('doctrine.orm.entity_manager');
-        assert($entityManager instanceof EntityManagerInterface);
-
-        $this->assertTrue($entityManager->getConfiguration()->isNativeLazyObjectsEnabled());
+        $this->assertTrue(
+            $this->loadContainer('orm_native_lazy_objects_enable')->get('doctrine.orm.entity_manager')
+            ->getConfiguration()->isNativeLazyObjectsEnabled(),
+        );
     }
 
     #[RequiresMethod(ProxyHelper::class, 'generateLazyGhost')]

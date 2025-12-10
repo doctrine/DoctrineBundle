@@ -24,6 +24,25 @@ on:
       - tests/**
 
 jobs:
-  static-analysis:
-    name: "Static Analysis"
-    uses: "doctrine/.github/.github/workflows/phpstan.yml@v12.2.0"
+  phpstan:
+    name: "PHPStan"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout code"
+        uses: "actions/checkout@v5"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.4"
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v3"
+
+      - name: "Warm up Symfony cache"
+        run: "php tests/console-application.php"
+
+      - name: "Run a static analysis with phpstan/phpstan"
+        run: "vendor/bin/phpstan analyse -v"

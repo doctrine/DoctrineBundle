@@ -15,7 +15,6 @@ use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
-use function assert;
 use function interface_exists;
 use function sys_get_temp_dir;
 use function uniqid;
@@ -97,10 +96,7 @@ class IdGeneratorPassTest extends TestCase
         $container->addCompilerPass(new IdGeneratorPass());
         $container->compile();
 
-        $em = $container->get('doctrine.orm.default_entity_manager');
-        assert($em instanceof EntityManagerInterface);
-
-        $metadata = $em->getClassMetadata($entity);
+        $metadata = $container->get('doctrine.orm.default_entity_manager')->getClassMetadata($entity);
         $this->assertInstanceOf(CustomIdGenerator::class, $metadata->idGenerator);
     }
 }

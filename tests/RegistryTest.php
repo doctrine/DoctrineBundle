@@ -129,9 +129,6 @@ class RegistryTest extends TestCase
         $registry      = $container->get('doctrine');
         $entityManager = $container->get('doctrine.orm.default_entity_manager');
 
-        assert($entityManager instanceof EntityManagerInterface);
-        assert($registry instanceof Registry);
-
         $repository = $entityManager->getRepository(TestCustomClassRepoEntity::class);
         assert($repository instanceof TestCustomClassRepoRepository);
 

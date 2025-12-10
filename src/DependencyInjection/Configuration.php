@@ -11,10 +11,7 @@ use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
-use Symfony\Component\Config\Definition\Builder\ExprBuilder;
-use Symfony\Component\Config\Definition\Builder\NodeBuilder;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
-use Symfony\Component\Config\Definition\Builder\NodeParentInterface;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
@@ -51,7 +48,6 @@ final class Configuration implements ConfigurationInterface
     {
     }
 
-    /** @return TreeBuilder<'array'> */
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('doctrine');
@@ -65,17 +61,16 @@ final class Configuration implements ConfigurationInterface
 
     /**
      * Add DBAL section to configuration tree
-     *
-     * @param ArrayNodeDefinition<TreeBuilder<'array'>> $node
      */
     private function addDbalSection(ArrayNodeDefinition $node): void
     {
         // Key that should not be rewritten to the connection config
         $excludedKeys = ['default_connection' => true, 'driver_schemes' => true, 'driver_scheme' => true, 'types' => true, 'type' => true];
 
-        $children = $node->children();
-        /** @var NodeBuilder<ArrayNodeDefinition<NodeParentInterface>> $children */
-        $children->arrayNode('dbal')
+        /** @phpstan-ignore class.notFound (Phpstan Symfony extension does not know yet how to deal with these) */
+        $node
+            ->children()
+            ->arrayNode('dbal')
                 ->beforeNormalization()
                     ->ifTrue(static function ($v) use ($excludedKeys) {
                         if (! is_array($v)) {
@@ -159,8 +154,6 @@ final class Configuration implements ConfigurationInterface
 
     /**
      * Return the dbal connections node
-     *
-     * @return ArrayNodeDefinition<TreeBuilder<'array'>>
      */
     private function getDbalConnectionsNode(): ArrayNodeDefinition
     {
@@ -174,6 +167,7 @@ final class Configuration implements ConfigurationInterface
 
         $this->configureDbalDriverNode($connectionNode);
 
+        /** @phpstan-ignore class.notFound (Phpstan Symfony extension does not know yet how to deal with these) */
         $connectionNode
             ->fixXmlConfig('option')
             ->fixXmlConfig('mapping_type')
@@ -220,9 +214,9 @@ final class Configuration implements ConfigurationInterface
                 ->scalarNode('result_cache')->end()
             ->end();
 
-        $children = $connectionNode->children();
-        /** @var NodeBuilder<ArrayNodeDefinition<NodeParentInterface>> $children */
-        $replicaNode = $children
+        /** @phpstan-ignore class.notFound (Phpstan Symfony extension does not know yet how to deal with these) */
+        $replicaNode = $connectionNode
+            ->children()
                 ->arrayNode('replicas')
                     ->useAttributeAsKey('name')
                     ->prototype('array');
@@ -235,16 +229,12 @@ final class Configuration implements ConfigurationInterface
      * Adds config keys related to params processed by the DBAL drivers
      *
      * These keys are available for replica configurations too.
-     *
-     * @param ArrayNodeDefinition<TP> $node
-     *
-     * @template TP of NodeParentInterface|null
-     **/
+     */
     private function configureDbalDriverNode(ArrayNodeDefinition $node): void
     {
-        $validate = $node->validate();
-        /** @var ExprBuilder<ArrayNodeDefinition<NodeParentInterface>> $validate */
-        $validate
+        /** @phpstan-ignore class.notFound (Phpstan Symfony extension does not know yet how to deal with these) */
+        $node
+            ->validate()
             ->always(static function (array $values) {
                 if (! isset($values['url'])) {
                     return $values;
@@ -265,8 +255,7 @@ final class Configuration implements ConfigurationInterface
 
                 return $values;
             })
-            ->end();
-        $node
+            ->end()
             ->children()
                 ->scalarNode('url')->info('A URL with connection information; any parameter value parsed from this string will override explicitly set parameters')->end()
                 ->scalarNode('dbname')->end()
@@ -369,8 +358,6 @@ final class Configuration implements ConfigurationInterface
 
     /**
      * Add the ORM section to configuration tree
-     *
-     * @param ArrayNodeDefinition<TreeBuilder<'array'>> $node
      */
     private function addOrmSection(ArrayNodeDefinition $node): void
     {
@@ -383,9 +370,9 @@ final class Configuration implements ConfigurationInterface
             'controller_resolver' => true,
         ];
 
-        $children = $node->children();
-        /** @var NodeBuilder<ArrayNodeDefinition<NodeParentInterface>> $children */
-        $children
+        /** @phpstan-ignore class.notFound (Phpstan Symfony extension does not know yet how to deal with these) */
+        $node
+            ->children()
                 ->arrayNode('orm')
                     ->beforeNormalization()
                         ->ifTrue(static function ($v) use ($excludedKeys) {
@@ -494,7 +481,7 @@ final class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('entity_listeners');
         $node        = $treeBuilder->getRootNode();
 
-        $normalizer = static function (array $mappings) {
+        $normalizer = static function ($mappings) {
             $entities = [];
 
             foreach ($mappings as $entityClass => $mapping) {
@@ -531,14 +518,13 @@ final class Configuration implements ConfigurationInterface
             return ['entities' => $entities];
         };
 
-        $before = $node->beforeNormalization();
-        /** @var ExprBuilder<ArrayNodeDefinition<NodeParentInterface>> $before */
-        $before
+        /** @phpstan-ignore class.notFound (Phpstan Symfony extension does not know yet how to deal with these) */
+        $node
+            ->beforeNormalization()
                 // Yaml normalization
                 ->ifTrue(static fn ($v) => is_array(reset($v)) && is_string(key(reset($v))))
                 ->then($normalizer)
-            ->end();
-        $node
+            ->end()
             ->fixXmlConfig('entity', 'entities')
             ->children()
                 ->arrayNode('entities')
@@ -572,14 +558,13 @@ final class Configuration implements ConfigurationInterface
 
     /**
      * Return ORM entity manager node
-     *
-     * @return ArrayNodeDefinition<TreeBuilder<'array'>>
      */
     private function getOrmEntityManagersNode(): ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder('entity_managers');
         $node        = $treeBuilder->getRootNode();
 
+        /** @phpstan-ignore class.notFound (Phpstan Symfony extension does not know yet how to deal with these) */
         $node
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
@@ -748,21 +733,18 @@ final class Configuration implements ConfigurationInterface
 
     /**
      * Return an ORM cache driver node for a given entity manager
-     *
-     * @return ArrayNodeDefinition<TreeBuilder<'array'>>
      */
     private function getOrmCacheDriverNode(string $name): ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder($name);
         $node        = $treeBuilder->getRootNode();
 
-        $before = $node->beforeNormalization();
-        /** @var ExprBuilder<ArrayNodeDefinition<NodeParentInterface>> $before */
-        $before
+        /** @phpstan-ignore class.notFound (Phpstan Symfony extension does not know yet how to deal with these) */
+        $node
+            ->beforeNormalization()
                 ->ifString()
                 ->then(static fn ($v): array => ['type' => $v])
-            ->end();
-        $node
+            ->end()
             ->children()
                 ->scalarNode('type')->defaultNull()->end()
                 ->scalarNode('id')->end()
