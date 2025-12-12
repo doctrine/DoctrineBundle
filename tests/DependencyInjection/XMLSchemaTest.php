@@ -41,7 +41,7 @@ class XMLSchemaTest extends TestCase
 
         $dbalElements = $dom->getElementsByTagNameNS($xmlns, 'dbal');
         if ($dbalElements->length) {
-            $dbalDom    = new DOMDocument('1.0', 'UTF-8');
+            $dbalDom     = new DOMDocument('1.0', 'UTF-8');
             $dbalElement = $dbalElements->item(0);
             if ($dbalElement !== null) {
                 $dbalNode   = $dbalDom->importNode($dbalElement);
