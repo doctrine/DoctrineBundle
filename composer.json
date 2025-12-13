@@ -45,10 +45,10 @@
     "require-dev": {
         "doctrine/coding-standard": "^14",
         "doctrine/orm": "^3.4.4",
-        "phpstan/phpstan": "2.1.1",
+        "phpstan/phpstan": "2.1.13",
         "phpstan/phpstan-phpunit": "2.0.3",
         "phpstan/phpstan-strict-rules": "^2",
-        "phpstan/phpstan-symfony": "^2.0",
+        "phpstan/phpstan-symfony": "2.0.9",
         "phpunit/phpunit": "^12.3.10",
         "psr/log": "^3.0",
         "symfony/doctrine-messenger": "^6.4 || ^7.0 || ^8.0",
