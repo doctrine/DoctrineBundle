@@ -40,7 +40,11 @@ class ProfilerController
     {
         $this->profiler->disable();
 
-        $profile   = $this->profiler->loadProfile($token);
+        $profile = $this->profiler->loadProfile($token);
+        if ($profile === null) {
+            return new Response('Profile not found.', 404);
+        }
+
         $collector = $profile->getCollector('db');
 
         assert($collector instanceof DoctrineDataCollector);

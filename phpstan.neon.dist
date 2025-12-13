@@ -1,7 +1,7 @@
 includes:
     - vendor/phpstan/phpstan-symfony/extension.neon
 parameters:
-   level: 7
+   level: 8
    reportUnmatchedIgnoredErrors: true
    paths:
       - config

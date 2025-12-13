@@ -77,6 +77,10 @@ class DoctrineDataCollector extends BaseCollector
         private readonly bool $shouldValidateSchema = true,
         DebugDataHolder|null $debugDataHolder = null,
     ) {
+        if ($debugDataHolder === null) {
+            $debugDataHolder = new DebugDataHolder();
+        }
+
         parent::__construct($registry, $debugDataHolder);
     }
 

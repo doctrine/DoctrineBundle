@@ -116,7 +116,7 @@ class DoctrineExtension extends AbstractExtension
 
         $i = 0;
 
-        return preg_replace_callback(
+        return (string) preg_replace_callback(
             '/(?<!\?)\?(?!\?)|(?<!:)(:[a-z0-9_]+)/i',
             static function (array $matches) use ($parameters, &$i): string {
                 $key = substr($matches[0], 1);

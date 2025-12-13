@@ -64,7 +64,8 @@ final class MiddlewaresPass implements CompilerPassInterface
                 );
                 $middlewareRefs[$id] = [new Reference($childId), ++$i];
 
-                if (! is_subclass_of($abstractDef->getClass(), ConnectionNameAwareInterface::class)) {
+                $class = $abstractDef->getClass();
+                if ($class === null || ! is_subclass_of($class, ConnectionNameAwareInterface::class)) {
                     continue;
                 }
 

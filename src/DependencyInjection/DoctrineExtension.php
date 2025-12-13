@@ -171,9 +171,11 @@ final class DoctrineExtension extends Extension
                     throw new InvalidArgumentException(sprintf('Bundle "%s" does not exist or it is not enabled.', $mappingName));
                 }
 
-                $mappingConfig = $this->getMappingDriverBundleConfigDefaults($mappingConfig, $bundle, $container, $bundleMetadata['path']);
-                if (! $mappingConfig) {
-                    continue;
+                if ($bundleMetadata !== null) {
+                    $mappingConfig = $this->getMappingDriverBundleConfigDefaults($mappingConfig, $bundle, $container, $bundleMetadata['path']);
+                    if (! $mappingConfig) {
+                        continue;
+                    }
                 }
             } elseif (! $mappingConfig['type']) {
                 $mappingConfig['type'] = 'attribute';

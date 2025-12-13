@@ -78,6 +78,10 @@ class DoctrineBundle extends Bundle
 
     public function shutdown(): void
     {
+        if ($this->container === null) {
+            return;
+        }
+
         // Clear all entity managers to clear references to entities for GC
         if ($this->container->hasParameter('doctrine.entity_managers')) {
             foreach ($this->container->getParameter('doctrine.entity_managers') as $id) {
