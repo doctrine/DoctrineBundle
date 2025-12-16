@@ -32,9 +32,8 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
      * @param string|false         $enabledParameter  If specified, the compiler pass only executes
      *                                                if this parameter is defined in the service
      *                                                container.
-     * @param string[]             $aliasMap          Map of alias to namespace.
      */
-    public function __construct(Definition|Reference $driver, array $namespaces, array $managerParameters, string|false $enabledParameter = false, array $aliasMap = [])
+    public function __construct(Definition|Reference $driver, array $namespaces, array $managerParameters, string|false $enabledParameter = false)
     {
         $managerParameters[] = 'doctrine.default_entity_manager';
 
@@ -44,9 +43,6 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
             $managerParameters,
             'doctrine.orm.%s_metadata_driver',
             $enabledParameter,
-            'doctrine.orm.%s_configuration',
-            'addEntityNamespace',
-            $aliasMap,
         );
     }
 
@@ -59,14 +55,13 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
      * @param string|false $enabledParameter  Service container parameter that must be present to
      *                                        enable the mapping. Set to false to not do any check,
      *                                        optional.
-     * @param string[]     $aliasMap          Map of alias to namespace.
      */
-    public static function createXmlMappingDriver(array $namespaces, array $managerParameters = [], string|false $enabledParameter = false, array $aliasMap = [], bool $enableXsdValidation = false): self
+    public static function createXmlMappingDriver(array $namespaces, array $managerParameters = [], string|false $enabledParameter = false, bool $enableXsdValidation = false): self
     {
         $locator = new Definition(SymfonyFileLocator::class, [$namespaces, '.orm.xml']);
         $driver  = new Definition(XmlDriver::class, [$locator, XmlDriver::DEFAULT_FILE_EXTENSION, $enableXsdValidation]);
 
-        return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter, $aliasMap);
+        return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter);
     }
 
     /**
@@ -78,14 +73,13 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
      * @param string|false $enabledParameter  Service container parameter that must be present to
      *                                        enable the mapping. Set to false to not do any check,
      *                                        optional.
-     * @param string[]     $aliasMap          Map of alias to namespace.
      */
-    public static function createPhpMappingDriver(array $namespaces, array $managerParameters = [], string|false $enabledParameter = false, array $aliasMap = []): self
+    public static function createPhpMappingDriver(array $namespaces, array $managerParameters = [], string|false $enabledParameter = false): self
     {
         $locator = new Definition(SymfonyFileLocator::class, [$namespaces, '.php']);
         $driver  = new Definition(PHPDriver::class, [$locator]);
 
-        return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter, $aliasMap);
+        return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter);
     }
 
     /**
@@ -98,13 +92,12 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
      * @param string|false $enabledParameter  Service container parameter that must be present to
      *                                        enable the mapping. Set to false to not do any check,
      *                                        optional.
-     * @param string[]     $aliasMap          Map of alias to namespace.
      */
-    public static function createAttributeMappingDriver(array $namespaces, array $directories, array $managerParameters = [], string|false $enabledParameter = false, array $aliasMap = []): self
+    public static function createAttributeMappingDriver(array $namespaces, array $directories, array $managerParameters = [], string|false $enabledParameter = false): self
     {
         $driver = new Definition(AttributeDriver::class, [$directories]);
 
-        return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter, $aliasMap);
+        return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter);
     }
 
     /**
@@ -117,12 +110,11 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
      * @param string|false $enabledParameter  Service container parameter that must be present to
      *                                        enable the mapping. Set to false to not do any check,
      *                                        optional.
-     * @param string[]     $aliasMap          Map of alias to namespace.
      */
-    public static function createStaticPhpMappingDriver(array $namespaces, array $directories, array $managerParameters = [], string|false $enabledParameter = false, array $aliasMap = []): self
+    public static function createStaticPhpMappingDriver(array $namespaces, array $directories, array $managerParameters = [], string|false $enabledParameter = false): self
     {
         $driver = new Definition(StaticPHPDriver::class, [$directories]);
 
-        return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter, $aliasMap);
+        return new DoctrineOrmMappingsPass($driver, $namespaces, $managerParameters, $enabledParameter);
     }
 }
