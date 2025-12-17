@@ -422,6 +422,7 @@ class DoctrineExtension extends Extension
             if (
                 preg_match('/^#\[.*' . $quotedMappingObjectName . '\b/m', $content)
                 || preg_match('/^#\[.*Embeddable\b/m', $content)
+                || preg_match('/^#\[.*MappedSuperclass\b/m', $content)
             ) {
                 break;
             }
@@ -429,6 +430,7 @@ class DoctrineExtension extends Extension
             if (
                 self::textContainsAnnotation($quotedMappingObjectName, $content)
                 || self::textContainsAnnotation('Embeddable', $content)
+                || self::textContainsAnnotation('MappedSuperclass', $content)
             ) {
                 $type = 'annotation';
                 break;

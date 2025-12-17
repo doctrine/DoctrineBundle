@@ -1511,6 +1511,7 @@ class DoctrineExtensionTest extends TestCase
     #[TestWith(['AttributesBundle', 'attribute'], 'Bundle with attributes')]
     #[TestWith(['RepositoryServiceBundle', 'attribute'], 'Bundle with both')]
     #[TestWith(['AnnotationsBundle', 'annotation'], 'Bundle with annotations')]
+    #[TestWith(['MappedSuperclassBundle', 'annotation'], 'Bundle with annotations containing only MappedSuperclass')]
     #[TestWith(['AttributesWithPackageBundle', 'attribute'], 'Bundle with attributes and @package')]
     public function testDetectMappingType(string $bundle, string $expectedType, string $vendor = '')
     {
