@@ -21,6 +21,8 @@ use Doctrine\ORM\Tools\Console\Command\ClearCache\MetadataCommand;
 use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryCommand;
 use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryRegionCommand;
 use Doctrine\ORM\Tools\Console\Command\ClearCache\ResultCommand;
+use Doctrine\ORM\Tools\Console\Command\Debug\DebugEntityListenersDoctrineCommand;
+use Doctrine\ORM\Tools\Console\Command\Debug\DebugEventManagerDoctrineCommand;
 use Doctrine\ORM\Tools\Console\Command\InfoCommand;
 use Doctrine\ORM\Tools\Console\Command\MappingDescribeCommand;
 use Doctrine\ORM\Tools\Console\Command\RunDqlCommand;
@@ -245,5 +247,17 @@ return static function (ContainerConfigurator $container): void {
             ->args([
                 service('doctrine.orm.command.entity_manager_provider'),
             ])
-            ->tag('console.command', ['command' => 'doctrine:schema:validate']);
+            ->tag('console.command', ['command' => 'doctrine:schema:validate'])
+
+        ->set('doctrine.event_manager_debug_command', DebugEventManagerDoctrineCommand::class)
+            ->args([
+                service('doctrine'),
+            ])
+            ->tag('console.command', ['command' => 'doctrine:debug:event-manager'])
+
+        ->set('doctrine.entity_listeners_debug_command', DebugEntityListenersDoctrineCommand::class)
+            ->args([
+                service('doctrine'),
+            ])
+            ->tag('console.command', ['command' => 'doctrine:debug:entity-listeners']);
 };

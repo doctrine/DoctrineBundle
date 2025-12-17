@@ -35,6 +35,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\MappedSuperclass;
 use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Tools\AttachEntityListenersListener;
+use Doctrine\ORM\Tools\Console\Command\Debug\DebugEventManagerDoctrineCommand;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\Persistence\Mapping\Driver\PHPDriver;
@@ -774,6 +775,11 @@ final class DoctrineExtension extends Extension
 
         if (! class_exists(ExpressionLanguage::class)) {
             $container->removeDefinition('doctrine.orm.entity_value_resolver.expression_language');
+        }
+
+        if (! class_exists(DebugEventManagerDoctrineCommand::class)) {
+            $container->removeDefinition('doctrine.event_manager_debug_command');
+            $container->removeDefinition('doctrine.entity_listeners_debug_command');
         }
 
         $controllerResolverDefaults = [];
