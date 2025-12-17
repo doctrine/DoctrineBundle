@@ -7,6 +7,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Twig;
 use Doctrine\SqlFormatter\HtmlHighlighter;
 use Doctrine\SqlFormatter\NullHighlighter;
 use Doctrine\SqlFormatter\SqlFormatter;
+use RuntimeException;
 use Stringable;
 use Symfony\Component\VarDumper\Cloner\Data;
 use Twig\Extension\AbstractExtension;
@@ -24,10 +25,14 @@ use function implode;
 use function is_array;
 use function is_bool;
 use function is_string;
+use function preg_last_error;
 use function preg_match;
 use function preg_replace_callback;
+use function sprintf;
 use function strtoupper;
 use function substr;
+
+use const PREG_NO_ERROR;
 
 /**
  * This class contains the needed functions in order to do the query highlighting
@@ -116,7 +121,7 @@ class DoctrineExtension extends AbstractExtension
 
         $i = 0;
 
-        return (string) preg_replace_callback(
+        $result = preg_replace_callback(
             '/(?<!\?)\?(?!\?)|(?<!:)(:[a-z0-9_]+)/i',
             static function (array $matches) use ($parameters, &$i): string {
                 $key = substr($matches[0], 1);
@@ -133,6 +138,17 @@ class DoctrineExtension extends AbstractExtension
             },
             $query,
         );
+
+        $pregError = preg_last_error();
+        if ($pregError !== PREG_NO_ERROR) {
+            throw new RuntimeException(sprintf('Failed to replace query parameters: PCRE error %d', $pregError));
+        }
+
+        if ($result === null) {
+            throw new RuntimeException('Failed to replace query parameters: unexpected null result');
+        }
+
+        return $result;
     }
 
     public function prettifySql(string $sql): string
