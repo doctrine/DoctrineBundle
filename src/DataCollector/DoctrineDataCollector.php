@@ -55,7 +55,7 @@ use function usort;
  *    types: ?array<array-key, Type|int|string|null>,
  *    count: int,
  *    index: int,
- *    executionPercent?: float
+ *    executionPercent: float
  * }
  * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
  * @phpstan-property DataType $data
@@ -308,14 +308,13 @@ class DoctrineDataCollector extends BaseCollector
 
                 return $a['executionMS'] < $b['executionMS'] ? 1 : -1;
             });
-            $this->groupedQueries[$connection] = $connectionGroupedQueries;
-        }
 
-        foreach ($this->groupedQueries as $connection => $queries) {
-            foreach ($queries as $i => $query) {
-                $this->groupedQueries[$connection][$i]['executionPercent'] =
+            foreach ($connectionGroupedQueries as $i => $query) {
+                $connectionGroupedQueries[$i]['executionPercent'] =
                     $this->executionTimePercentage($query['executionMS'], $totalExecutionMS);
             }
+
+            $this->groupedQueries[$connection] = $connectionGroupedQueries;
         }
 
         return $this->groupedQueries;
