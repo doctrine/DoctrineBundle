@@ -7,12 +7,14 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Compiler;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DoctrineOrmMappingsPass;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 use function assert;
+use function interface_exists;
 use function realpath;
 
 class DoctrineOrmMappingsPassTest extends TestCase
@@ -40,6 +42,10 @@ class DoctrineOrmMappingsPassTest extends TestCase
 
     public function testAttributeDriverIsRegistered(): void
     {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
         $driverNamespace = 'DoctrineBundle\Entity';
         $container       = $this->createXmlBundleTestContainer(
             static function (ContainerBuilder $containerBuilder) use ($driverNamespace): void {
