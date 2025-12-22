@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Mapping\Driver\XmlDriver;
 use Doctrine\Persistence\Mapping\Driver\PHPDriver;
@@ -12,6 +13,10 @@ use Doctrine\Persistence\Mapping\Driver\SymfonyFileLocator;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterMappingsPass;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+
+use function func_get_arg;
+use function func_num_args;
+use function is_array;
 
 /**
  * Class for Symfony bundles to configure mappings for model classes not in the
@@ -46,18 +51,33 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
         );
     }
 
+    // @phpstan-ignore missingType.iterableValue
     /**
-     * @param string[]     $namespaces        Hashmap of directory path to namespace.
-     * @param string[]     $managerParameters List of parameters that could which object manager name
-     *                                        your bundle uses. This compiler pass will automatically
-     *                                        append the parameter name for the default entity manager
-     *                                        to this list.
-     * @param string|false $enabledParameter  Service container parameter that must be present to
-     *                                        enable the mapping. Set to false to not do any check,
-     *                                        optional.
+     * @param string[]     $namespaces          Hashmap of directory path to namespace.
+     * @param string[]     $managerParameters   List of parameters that could which object manager name
+     *                                          your bundle uses. This compiler pass will automatically
+     *                                          append the parameter name for the default entity manager
+     *                                          to this list.
+     * @param string|false $enabledParameter    Service container parameter that must be present to
+     *                                          enable the mapping. Set to false to not do any check,
+     *                                          optional.
+     * @param bool         $enableXsdValidation
      */
-    public static function createXmlMappingDriver(array $namespaces, array $managerParameters = [], string|false $enabledParameter = false, bool $enableXsdValidation = false): self
+    public static function createXmlMappingDriver(array $namespaces, array $managerParameters = [], string|false $enabledParameter = false, bool|array $enableXsdValidation = false): self
     {
+        if (is_array($enableXsdValidation)) {
+            Deprecation::trigger(
+                'doctrine/doctrine-bundle',
+                'https://github.com/doctrine/DoctrineBundle/pull/2190',
+                'Providing a $aliasMap to createXmlMappingDriver is deprecated and has no effect.',
+            );
+            $enableXsdValidation = false;
+
+            if (func_num_args() === 5) {
+                $enableXsdValidation = func_get_arg(4);
+            }
+        }
+
         $locator = new Definition(SymfonyFileLocator::class, [$namespaces, '.orm.xml']);
         $driver  = new Definition(XmlDriver::class, [$locator, XmlDriver::DEFAULT_FILE_EXTENSION, $enableXsdValidation]);
 
