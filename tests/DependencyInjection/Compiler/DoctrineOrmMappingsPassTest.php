@@ -7,7 +7,13 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Compiler;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DoctrineOrmMappingsPass;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
+use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+
+use function assert;
+use function realpath;
 
 class DoctrineOrmMappingsPassTest extends TestCase
 {
@@ -30,5 +36,25 @@ class DoctrineOrmMappingsPassTest extends TestCase
             ['App\\Entity'],
             ['/path/to/entities'],
         );
+    }
+
+    public function testAttributeDriverIsRegistered(): void
+    {
+        $driverNamespace = 'DoctrineBundle\Entity';
+        $container       = $this->createXmlBundleTestContainer(
+            static function (ContainerBuilder $containerBuilder) use ($driverNamespace): void {
+                $containerBuilder->addCompilerPass(DoctrineOrmMappingsPass::createAttributeMappingDriver(
+                    [$driverNamespace],
+                    [realpath(__DIR__ . '/Entity')],
+                    reportFieldsWhereDeclared: true,
+                ));
+            },
+        );
+
+        $metadataDriver = $container->get('doctrine.orm.default_metadata_driver');
+        assert($metadataDriver instanceof MappingDriverChain);
+
+        $driver = $metadataDriver->getDrivers()[$driverNamespace];
+        $this->assertTrue($driver instanceof AttributeDriver);
     }
 }
