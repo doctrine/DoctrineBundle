@@ -51,7 +51,6 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
         );
     }
 
-    // @phpstan-ignore missingType.iterableValue
     /**
      * @param string[]     $namespaces          Hashmap of directory path to namespace.
      * @param string[]     $managerParameters   List of parameters that could which object manager name
@@ -62,6 +61,8 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                          enable the mapping. Set to false to not do any check,
      *                                          optional.
      * @param bool         $enableXsdValidation
+     *
+     * @phpstan-ignore     missingType.iterableValue
      */
     public static function createXmlMappingDriver(array $namespaces, array $managerParameters = [], string|false $enabledParameter = false, bool|array $enableXsdValidation = false): self
     {
