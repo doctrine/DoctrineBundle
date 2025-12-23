@@ -62,7 +62,7 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
      *                                          optional.
      * @param bool         $enableXsdValidation
      *
-     * @phpstan-ignore     missingType.iterableValue
+     * @phpstan-ignore missingType.iterableValue
      */
     public static function createXmlMappingDriver(array $namespaces, array $managerParameters = [], string|false $enabledParameter = false, bool|array $enableXsdValidation = false): self
     {
