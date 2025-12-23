@@ -70,7 +70,8 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
             Deprecation::trigger(
                 'doctrine/doctrine-bundle',
                 'https://github.com/doctrine/DoctrineBundle/pull/2190',
-                'Providing a $aliasMap argument to createXmlMappingDriver() is deprecated and has no effect.',
+                'Providing a $aliasMap argument to %s is deprecated and has no effect.',
+                __METHOD__,
             );
             $enableXsdValidation = false;
 
