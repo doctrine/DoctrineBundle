@@ -13,10 +13,14 @@ use Doctrine\Persistence\Mapping\Driver\SymfonyFileLocator;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterMappingsPass;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+use TypeError;
 
 use function func_get_arg;
 use function func_num_args;
+use function gettype;
 use function is_array;
+use function is_bool;
+use function sprintf;
 
 /**
  * Class for Symfony bundles to configure mappings for model classes not in the
@@ -76,7 +80,12 @@ final class DoctrineOrmMappingsPass extends RegisterMappingsPass
             $enableXsdValidation = false;
 
             if (func_num_args() === 5) {
-                $enableXsdValidation = func_get_arg(4);
+                $enableXsdValidationArg = func_get_arg(4);
+                if (! is_bool($enableXsdValidationArg)) {
+                    throw new TypeError(sprintf('$enableXsdValidation is expected to be boolean, %s provided', gettype($enableXsdValidationArg)));
+                }
+
+                $enableXsdValidation = $enableXsdValidationArg;
             }
         }
 
