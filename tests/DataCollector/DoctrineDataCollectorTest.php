@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +21,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function interface_exists;
+
+/**
+ * @phpstan-type GroupedQueryItemType = array{
+ *    executionMS: float,
+ *    explainable: bool,
+ *    sql: string,
+ *    params: ?array<array-key, mixed>,
+ *    runnable: bool,
+ *    types: ?array<array-key, Type|int|string|null>,
+ *    count: int,
+ *    index: int,
+ *    executionPercent?: float
+ * }
+ * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
+ */
 
 class DoctrineDataCollectorTest extends TestCase
 {
@@ -137,6 +153,47 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertCount(2, $groupedQueries['default']);
         $this->assertSame('SELECT * FROM bar', $groupedQueries['default'][1]['sql']);
         $this->assertSame(1, $groupedQueries['default'][1]['count']);
+    }
+
+    public function testGetGroupedQueriesExecutionPercent(): void
+    {
+        $debugDataHolder = $this->createStub(DebugDataHolder::class);
+
+        $queries = [
+            'default' => [
+                [
+                    'sql' => 'SELECT * FROM foo',
+                    'params' => [],
+                    'types' => null,
+                    'executionMS' => 100.0,
+                ],
+                [
+                    'sql' => 'SELECT * FROM bar',
+                    'params' => [],
+                    'types' => null,
+                    'executionMS' => 200.0,
+                ],
+            ],
+        ];
+
+        $debugDataHolder->method('getData')
+            ->willReturnCallback(static function () use (&$queries) {
+                return $queries;
+            });
+
+        $collector = $this->createCollector([], true, $debugDataHolder);
+        $collector->collect(new Request(), new Response());
+
+        $groupedQueries = $collector->getGroupedQueries();
+
+        $this->assertCount(2, $groupedQueries['default']);
+
+        $firstItem = $groupedQueries['default'][0];
+        $this->assertEqualsWithDelta(66.667, $firstItem['executionPercent'], 0.001); // @phpstan-ignore-line
+        $this->assertSame('SELECT * FROM bar', $firstItem['sql']);
+        $secondItem = $groupedQueries['default'][1];
+        $this->assertEqualsWithDelta(33.333, $secondItem['executionPercent'], 0.001); // @phpstan-ignore-line
+        $this->assertSame('SELECT * FROM foo', $secondItem['sql']);
     }
 
     /**

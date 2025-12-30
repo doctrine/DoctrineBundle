@@ -55,7 +55,7 @@ use function usort;
  *    types: ?array<array-key, Type|int|string|null>,
  *    count: int,
  *    index: int,
- *    executionPercent: float
+ *    executionPercent?: float
  * }
  * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
  * @phpstan-property DataType $data
@@ -66,10 +66,7 @@ class DoctrineDataCollector extends BaseCollector
 
     private int|null $managedEntityCount = null;
 
-    /**
-     * @var mixed[][]|null
-     * @phpstan-var ?GroupedQueriesType
-     */
+    /** @var GroupedQueriesType|null */
     private array|null $groupedQueries = null;
 
     public function __construct(
@@ -308,16 +305,17 @@ class DoctrineDataCollector extends BaseCollector
 
                 return $a['executionMS'] < $b['executionMS'] ? 1 : -1;
             });
-
-            foreach ($connectionGroupedQueries as $i => $query) {
-                $connectionGroupedQueries[$i]['executionPercent'] =
-                    $this->executionTimePercentage($query['executionMS'], $totalExecutionMS);
-            }
-
             $this->groupedQueries[$connection] = $connectionGroupedQueries;
         }
 
-        return $this->groupedQueries;
+        foreach ($this->groupedQueries as $connection => $queries) {
+            foreach ($queries as $i => $query) {
+                $this->groupedQueries[$connection][$i]['executionPercent'] = // @phpstan-ignore-line
+                    $this->executionTimePercentage($query['executionMS'], $totalExecutionMS);
+            }
+        }
+
+        return $this->groupedQueries; // @phpstan-ignore-line
     }
 
     private function executionTimePercentage(float $executionTimeMS, float $totalExecutionTimeMS): float
