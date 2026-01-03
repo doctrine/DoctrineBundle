@@ -17,6 +17,7 @@ use Doctrine\ORM\Tools\Console\Command\MappingDescribeCommand;
 use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
+use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as ConsoleEntityValueResolver;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
@@ -40,6 +41,10 @@ class ContainerTest extends TestCase
 
         if (class_exists(EntityValueResolver::class)) {
             $this->assertInstanceOf(EntityValueResolver::class, $container->get('doctrine.orm.entity_value_resolver'));
+        }
+
+        if (class_exists(ConsoleEntityValueResolver::class)) {
+            $this->assertInstanceOf(ConsoleEntityValueResolver::class, $container->get('doctrine.orm.entity_value_resolver.console'));
         }
 
         $this->assertInstanceOf(DoctrineDataCollector::class, $container->get('data_collector.doctrine'));

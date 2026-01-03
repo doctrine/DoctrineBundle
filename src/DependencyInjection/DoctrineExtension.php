@@ -44,6 +44,7 @@ use Doctrine\Persistence\Mapping\Driver\StaticPHPDriver;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
+use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -803,21 +804,27 @@ final class DoctrineExtension extends Extension
             $controllerResolverDefaults['evict_cache'] = true;
         }
 
-        $valueResolverDefinition = $container->getDefinition('doctrine.orm.entity_value_resolver');
-        $valueResolverDefinition->setArgument(2, (new Definition(MapEntity::class))->setArguments([
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            $controllerResolverDefaults['evict_cache'] ?? null,
-            $controllerResolverDefaults['disabled'] ?? false,
+        $controllerValueResolverDefinition = $container->getDefinition('doctrine.orm.entity_value_resolver');
+        $controllerValueResolverDefinition->setArgument(2, (new Definition(MapEntity::class))->setArguments([
+            '$evictCache' => $controllerResolverDefaults['evict_cache'] ?? null,
+            '$disabled' => $controllerResolverDefaults['disabled'] ?? false,
         ]));
 
         // Symfony 7.3 and higher expose type alias support in the EntityValueResolver
-        $valueResolverDefinition->setArgument(3, $config['resolve_target_entities']);
+        $controllerValueResolverDefinition->setArgument(3, $config['resolve_target_entities']);
+
+        // The Console EntityValueResolver is available in Symfony 8.1 and higher
+        if (class_exists(EntityValueResolver::class)) {
+            $consoleValueResolverDefinition = $container->getDefinition('doctrine.orm.entity_value_resolver.console');
+            $consoleValueResolverDefinition->setArgument(2, (new Definition(MapEntity::class))->setArguments([
+                '$evictCache' => $controllerResolverDefaults['evict_cache'] ?? null,
+                '$disabled' => $controllerResolverDefaults['disabled'] ?? false,
+            ]));
+
+            $consoleValueResolverDefinition->setArgument(3, $config['resolve_target_entities']);
+        } else {
+            $container->removeDefinition('doctrine.orm.entity_value_resolver.console');
+        }
 
         $entityManagers = [];
         foreach (array_keys($config['entity_managers']) as $name) {
