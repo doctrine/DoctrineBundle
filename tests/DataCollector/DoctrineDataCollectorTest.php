@@ -189,10 +189,10 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertCount(2, $groupedQueries['default']);
 
         $firstItem = $groupedQueries['default'][0];
-        $this->assertEqualsWithDelta(66.667, $firstItem['executionPercent'], 0.001); // @phpstan-ignore-line
+        $this->assertEqualsWithDelta(66.667, $firstItem['executionPercent'] ?? null, 0.001);
         $this->assertSame('SELECT * FROM bar', $firstItem['sql']);
         $secondItem = $groupedQueries['default'][1];
-        $this->assertEqualsWithDelta(33.333, $secondItem['executionPercent'], 0.001); // @phpstan-ignore-line
+        $this->assertEqualsWithDelta(33.333, $secondItem['executionPercent'] ?? null, 0.001);
         $this->assertSame('SELECT * FROM foo', $secondItem['sql']);
     }
 

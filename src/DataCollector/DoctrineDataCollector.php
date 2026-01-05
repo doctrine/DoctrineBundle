@@ -308,14 +308,13 @@ class DoctrineDataCollector extends BaseCollector
             $this->groupedQueries[$connection] = $connectionGroupedQueries;
         }
 
-        foreach ($this->groupedQueries as $connection => $queries) {
-            foreach ($queries as $i => $query) {
-                $this->groupedQueries[$connection][$i]['executionPercent'] = // @phpstan-ignore-line
-                    $this->executionTimePercentage($query['executionMS'], $totalExecutionMS);
+        foreach ($this->groupedQueries as &$queries) {
+            foreach ($queries as &$query) {
+                $query['executionPercent'] = $this->executionTimePercentage($query['executionMS'], $totalExecutionMS);
             }
         }
 
-        return $this->groupedQueries; // @phpstan-ignore-line
+        return $this->groupedQueries;
     }
 
     private function executionTimePercentage(float $executionTimeMS, float $totalExecutionTimeMS): float
