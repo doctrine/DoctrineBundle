@@ -180,6 +180,8 @@ class DoctrineOrmMappingsPass extends RegisterMappingsPass
     public static function createAttributeMappingDriver(array $namespaces, array $directories, array $managerParameters = [], $enabledParameter = false, array $aliasMap = [], bool $reportFieldsWhereDeclared = false)
     {
         $driverArgs = [$directories];
+
+        // Add additional args for ORM <3.0
         if (method_exists(AttributeDriver::class, 'getReader')) {
             $driverArgs[] = $reportFieldsWhereDeclared;
         }
