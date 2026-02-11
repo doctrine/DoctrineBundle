@@ -77,7 +77,7 @@ class CreateDatabaseDoctrineTest extends TestCase
 
         $mockContainer = $this->createStub(Container::class);
 
-        $mockContainer->method('get')->with('doctrine')->willReturn($mockDoctrine);
+        $mockContainer->method('get')->willReturnMap([['doctrine', $mockDoctrine]]);
 
         return $mockContainer;
     }
