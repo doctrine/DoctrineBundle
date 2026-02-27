@@ -632,8 +632,7 @@ final class DoctrineExtension extends Extension
             ]);
 
         $container
-            ->registerAliasForArgument($connectionId, Connection::class, sprintf('%s.connection', $name))
-            ->setPublic(false);
+            ->registerAliasForArgument($connectionId, Connection::class, sprintf('%s.connection', $name), $name);
 
         // Set class in case "wrapper_class" option was used to assist IDEs
         if (isset($options['wrapperClass'])) {
@@ -1022,8 +1021,7 @@ final class DoctrineExtension extends Extension
             ->setConfigurator([new Reference($managerConfiguratorName), 'configure']);
 
         $container
-            ->registerAliasForArgument($entityManagerId, EntityManagerInterface::class, sprintf('%s.entity_manager', $entityManager['name']))
-            ->setPublic(false);
+            ->registerAliasForArgument($entityManagerId, EntityManagerInterface::class, sprintf('%s.entity_manager', $entityManager['name']), $entityManager['name']);
 
         $container->setAlias(
             sprintf('doctrine.orm.%s_entity_manager.event_manager', $entityManager['name']),
