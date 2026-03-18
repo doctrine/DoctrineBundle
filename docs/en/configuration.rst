@@ -988,4 +988,99 @@ For example, to inject a connection with the name ``purchase_logs`` use this:
             $this->connection = $purchaseLogsConnection;
         }
 
+Server Version
+~~~~~~~~~~~~~~
+
+The ``server_version`` option tells Doctrine which version of the database
+server you are running. This is used to determine which SQL features are
+available, which can affect schema generation, column types, and more.
+
+.. note::
+
+    If you are running a MariaDB database, you must prefix the
+    ``server_version`` value with ``mariadb-`` (e.g.
+    ``server_version: mariadb-10.4.14``).
+
+    Always wrap the server version number with quotes to parse it as a string
+    instead of a float number. Otherwise, the floating-point representation
+    issues can make your version be considered a different number (e.g.
+    ``5.7`` will be rounded as
+    ``5.6999999999999996447286321199499070644378662109375``).
+
+    If you don't define this option and you haven't created your database
+    yet, you may get ``PDOException`` errors because Doctrine will try to
+    guess the database server version automatically and none is available.
+
+Disable Autocommit Mode
+~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, `autocommit`_ is enabled when using Doctrine DBAL. This means that
+each ``INSERT``, ``UPDATE``, or ``DELETE`` statement is immediately committed
+after it runs. You don't need to call ``commit()`` or ``rollback()`` because
+there's no open transaction.
+
+You can disable autocommit to keep the connection inside a transaction until
+you explicitly call ``$connection->commit()`` or ``$connection->rollBack()``.
+Here's how to disable autocommit mode in DBAL:
+
+.. code-block:: yaml
+
+    # config/packages/doctrine.yaml
+    doctrine:
+        dbal:
+            connections:
+                default:
+                    options:
+                        # add this only if you're using DBAL with PDO:
+                        !php/const PDO::ATTR_AUTOCOMMIT: false
+
+                # this option disables auto-commit at the DBAL level:
+                auto_commit: false
+
+When using the `Doctrine Migrations Bundle`_, you need to register an additional
+listener to ensure that the final migration is committed properly:
+
+.. code-block:: yaml
+
+    # config/services.yaml
+    services:
+        Doctrine\Migrations\Event\Listeners\AutoCommitListener:
+            tags:
+                - name: doctrine.event_listener
+                  event: onMigrationsMigrated
+
+SSL Connection with MySQL
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To securely configure an SSL connection to MySQL in your Symfony application
+with Doctrine, you need to specify the SSL certificate options. Here's how to
+set up the connection using environment variables for the certificate paths:
+
+.. code-block:: yaml
+
+    # config/packages/doctrine.yaml
+    doctrine:
+        dbal:
+            url: '%env(resolve:DATABASE_URL)%'
+            server_version: '8.0.31'
+            driver: 'pdo_mysql'
+            options:
+                # SSL private key
+                !php/const 'PDO::MYSQL_ATTR_SSL_KEY': '%env(MYSQL_SSL_KEY)%'
+                # SSL certificate
+                !php/const 'PDO::MYSQL_ATTR_SSL_CERT': '%env(MYSQL_SSL_CERT)%'
+                # SSL CA authority
+                !php/const 'PDO::MYSQL_ATTR_SSL_CA': '%env(MYSQL_SSL_CA)%'
+
+Ensure your environment variables are correctly set in the ``.env.local`` or
+``.env.local.php`` file as follows:
+
+.. code-block:: bash
+
+    MYSQL_SSL_KEY=/path/to/your/server-key.pem
+    MYSQL_SSL_CERT=/path/to/your/server-cert.pem
+    MYSQL_SSL_CA=/path/to/your/ca-cert.pem
+
+.. _`autocommit`: https://en.wikipedia.org/wiki/Autocommit
+.. _`Doctrine Migrations Bundle`: https://github.com/doctrine/DoctrineMigrationsBundle
 .. _DBAL documentation: https://www.doctrine-project.org/projects/doctrine-dbal/en/current/index.html
