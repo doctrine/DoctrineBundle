@@ -946,6 +946,32 @@ can configure. The following block shows all possible configuration keys:
             </doctrine:config>
         </container>
 
+Database Name Suffix
+~~~~~~~~~~~~~~~~~~~~
+
+The ``dbname_suffix`` option appends a suffix to the database name resolved from
+the connection URL or the ``dbname`` option. This is especially useful for test
+environments: it allows you to reuse the same ``DATABASE_URL`` while targeting a
+different database per environment.
+
+For example, if your ``.env`` file defines ``DATABASE_URL`` with a database name
+of ``myapp``, you can add the following in ``config/packages/test/doctrine.yaml``:
+
+.. code-block:: yaml
+
+    doctrine:
+        dbal:
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+With this configuration, running tests will use the ``myapp_test`` database (or
+``myapp_test_1``, ``myapp_test_2``, etc. when using parallel testing with a
+``TEST_TOKEN`` environment variable), while the production environment keeps
+using ``myapp``.
+
+.. note::
+
+    This option has no effect when using the SQLite platform.
+
 If you want to configure multiple connections in YAML, put them under the
 ``connections`` key and give them a unique name:
 
