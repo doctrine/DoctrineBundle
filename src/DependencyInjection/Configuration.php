@@ -604,7 +604,7 @@ final class Configuration implements ConfigurationInterface
                                         ->scalarNode('lock_path')->defaultValue('%kernel.cache_dir%/doctrine/orm/slc/filelock')->end()
                                         ->scalarNode('lock_lifetime')->defaultValue(60)->end()
                                         ->scalarNode('type')->defaultValue('default')->end()
-                                        ->scalarNode('lifetime')->defaultValue(0)->end()
+                                        ->scalarNode('lifetime')->defaultNull()->end()
                                         ->scalarNode('service')->end()
                                         ->scalarNode('name')->end()
                                     ->end()

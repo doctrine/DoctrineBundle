@@ -1191,7 +1191,7 @@ final class DoctrineExtension extends Extension
 
                     $container
                         ->setDefinition($regionId, new Definition(DefaultRegion::class))
-                        ->setArguments([$name, new Reference($driverId), $region['lifetime']]);
+                        ->setArguments([$name, new Reference($driverId), $region['lifetime'] ?? $entityManager['second_level_cache']['region_lifetime']]);
                 }
 
                 if ($regionType === 'filelock') {
@@ -1205,7 +1205,10 @@ final class DoctrineExtension extends Extension
                     $regionsDef->addMethodCall('getLockLifetime', [$name, $region['lock_lifetime']]);
                 }
 
-                $regionsDef->addMethodCall('setLifetime', [$name, $region['lifetime']]);
+                if ($region['lifetime'] !== null) {
+                    $regionsDef->addMethodCall('setLifetime', [$name, $region['lifetime']]);
+                }
+
                 $slcFactoryDef->addMethodCall('setRegion', [$regionRef]);
             }
         }
