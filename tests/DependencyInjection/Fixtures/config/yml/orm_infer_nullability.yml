@@ -1,0 +1,15 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                dbname: db
+
+    orm:
+        mappings:
+            AttributesBundle:
+                type: attribute
+                infer_nullability_from_php_type: true
+            XmlBundle:
+                dir: Resources/config/doctrine
+                alias: xml

@@ -456,6 +456,28 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         ]);
     }
 
+    public function testInferNullabilityFromPHPType(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_infer_nullability', ['XmlBundle', 'AttributesBundle']);
+
+        $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
+
+        $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', [
+            new Reference('doctrine.orm.default_attribute_infer_nullability_metadata_driver'),
+            'Fixtures\Bundles\AttributesBundle\Entity',
+        ]);
+
+        $attrDef = $container->getDefinition('doctrine.orm.default_attribute_infer_nullability_metadata_driver');
+        $this->assertEquals(true, $attrDef->getArgument('$inferNullabilityFromPHPType'));
+
+        $xmlDef = $container->getDefinition('doctrine.orm.default_xml_metadata_driver');
+        $this->assertCount(3, $xmlDef->getArguments());
+    }
+
     /** Remove the attribute and keep the test in 3.0.x */
     #[IgnoreDeprecations]
     public function testMultipleEntityManagersMappingBundleDefinitions(): void
