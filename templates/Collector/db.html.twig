@@ -168,7 +168,7 @@
 
     <div class="sf-tabs" style="margin-top: 20px;">
         <div class="tab {{ collector.queries is empty ? 'disabled' }}">
-            {% set group_queries = request.query.getBoolean('group') %}
+            {% set group_queries = request.query.getBoolean('group', collector.querycount > 100) %}
             <h3 class="tab-title">
                 {% if group_queries %}
                     Grouped Statements
@@ -184,7 +184,7 @@
                     </div>
                 {% else %}
                     {% if group_queries %}
-                        <p><a href="{{ path('_profiler', { panel: 'db', token: token }) }}">Show all queries</a></p>
+                        <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: false }) }}">Show all queries</a></p>
                     {% else %}
                         <p><a href="{{ path('_profiler', { panel: 'db', token: token, group: true }) }}">Group similar statements</a></p>
                     {% endif %}
