@@ -68,6 +68,7 @@ use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormTypeGuesserInterface;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
@@ -913,6 +914,14 @@ class DoctrineExtension extends Extension
 
         if (! class_exists(ExpressionLanguage::class)) {
             $container->removeDefinition('doctrine.orm.entity_value_resolver.expression_language');
+        }
+
+        if (! interface_exists(FormTypeGuesserInterface::class)) {
+            $container->removeDefinition('form.type_guesser.doctrine');
+        }
+
+        if (! class_exists(AbstractType::class)) {
+            $container->removeDefinition('form.type.entity');
         }
 
         $controllerResolverDefaults = [];
