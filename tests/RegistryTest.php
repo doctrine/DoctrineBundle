@@ -124,7 +124,7 @@ class RegistryTest extends TestCase
     }
 
     #[IgnoreDeprecations]
-    #[RequiresPhp('<8.4')]
+    #[RequiresPhp('<8.4.0')]
     public function testReset(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -154,7 +154,7 @@ class RegistryTest extends TestCase
         $registry->reset();
     }
 
-    #[RequiresPhp('>= 8.4')]
+    #[RequiresPhp('>= 8.4.0')]
     public function testResetLazyObject(): void
     {
         if (! interface_exists(EntityManagerInterface::class) || ! interface_exists(LazyObjectInterface::class)) {

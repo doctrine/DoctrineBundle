@@ -43,7 +43,7 @@ EXCEPTION);
 
     #[IgnoreDeprecations]
     #[RequiresMethod(ProxyHelper::class, 'generateLazyGhost')]
-    #[RequiresPhp('>= 8.4')]
+    #[RequiresPhp('>= 8.4.0')]
     public function testConstructInitializesWhenImplementingLazyObjectInterface(): void
     {
         $registry = $this->createStub(ManagerRegistry::class);
