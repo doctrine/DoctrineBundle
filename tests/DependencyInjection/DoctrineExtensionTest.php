@@ -1507,6 +1507,30 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals(new MapEntity(null, null, null, [], null, null, null, true, true), $container->get('controller_resolver_defaults'));
     }
 
+    #[RequiresMethod(EntityValueResolver::class, '__construct')]
+    public function testEntityValueResolverPriorityIsBelowRequestAndSessionResolvers(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+        $config    = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+
+        $extension->load([DeprecationFreeConfig::get(), $config], $container);
+
+        $tags = $container->getDefinition('doctrine.orm.entity_value_resolver')->getTag('controller.argument_value_resolver');
+
+        $this->assertCount(1, $tags);
+        $this->assertArrayHasKey('priority', $tags[0]);
+        $this->assertLessThan(
+            50,
+            $tags[0]['priority'],
+            'EntityValueResolver must be tagged below FrameworkBundle Request/Session value resolvers (priority 50) so it does not bootstrap an entity manager on controllers that only declare Request or Session arguments. See symfony/symfony#54337.',
+        );
+    }
+
     #[TestWith(['AnnotationsBundle', 'attribute', 'Vendor'], 'Bundle without anything')]
     #[TestWith(['AttributesBundle', 'attribute'], 'Bundle with attributes')]
     #[TestWith(['RepositoryServiceBundle', 'attribute'], 'Bundle with both')]
