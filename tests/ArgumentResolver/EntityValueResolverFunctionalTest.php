@@ -8,10 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\EntityValueRe
 use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\Post;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
-use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Component\HttpFoundation\Request;
 
 use function assert;
@@ -26,10 +23,8 @@ use function restore_exception_handler;
  * value resolvers) must stay compatible so that the entity argument is still
  * populated from the route placeholder.
  */
-#[RequiresMethod(EntityValueResolver::class, '__construct')]
 class EntityValueResolverFunctionalTest extends TestCase
 {
-    #[IgnoreDeprecations]
     public function testEntityArgumentResolvedFromRoutePlaceholder(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -39,26 +34,28 @@ class EntityValueResolverFunctionalTest extends TestCase
         $kernel = new EntityValueResolverFunctionalKernel();
         $kernel->boot();
 
-        $container = $kernel->getContainer();
-        $em        = $container->get('doctrine.orm.default_entity_manager');
-        assert($em instanceof EntityManagerInterface);
+        try {
+            $container = $kernel->getContainer();
+            $em        = $container->get('doctrine.orm.default_entity_manager');
+            assert($em instanceof EntityManagerInterface);
 
-        (new SchemaTool($em))->createSchema([$em->getClassMetadata(Post::class)]);
+            (new SchemaTool($em))->createSchema([$em->getClassMetadata(Post::class)]);
 
-        $post = new Post('Hello world');
-        $em->persist($post);
-        $em->flush();
-        $em->clear();
+            $post = new Post('Hello world');
+            $em->persist($post);
+            $em->flush();
+            $em->clear();
 
-        $response = $kernel->handle(Request::create('/posts/' . $post->id, 'GET'));
+            $response = $kernel->handle(Request::create('/posts/' . $post->id, 'GET'));
 
-        self::assertSame(200, $response->getStatusCode());
-        self::assertSame(
-            ['id' => $post->id, 'title' => 'Hello world'],
-            json_decode((string) $response->getContent(), true),
-        );
-
-        $kernel->shutdown();
-        restore_exception_handler();
+            self::assertSame(200, $response->getStatusCode());
+            self::assertSame(
+                ['id' => $post->id, 'title' => 'Hello world'],
+                json_decode((string) $response->getContent(), true),
+            );
+        } finally {
+            $kernel->shutdown();
+            restore_exception_handler();
+        }
     }
 }
