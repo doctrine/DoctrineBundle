@@ -60,7 +60,7 @@ class EntityValueResolverFunctionalKernel extends Kernel
                 'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
             ],
             'orm' => [
-                'controller_resolver' => ['auto_mapping' => true],
+                'controller_resolver' => ['auto_mapping' => false],
                 'enable_lazy_ghost_objects' => true,
                 /** @phpstan-ignore function.alreadyNarrowedType */
                 'enable_native_lazy_objects' => PHP_VERSION_ID >= 80400 && method_exists(Configuration::class, 'enableNativeLazyObjects'),
