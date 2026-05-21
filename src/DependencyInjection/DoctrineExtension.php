@@ -50,6 +50,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -445,6 +446,8 @@ final class DoctrineExtension extends Extension
         if (empty($config['orm'])) {
             return;
         }
+
+        $this->loadSecurityServices($container);
 
         if (empty($config['dbal'])) {
             throw new LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
@@ -1446,6 +1449,20 @@ final class DoctrineExtension extends Extension
 
         $container->removeDefinition('messenger.transport.doctrine.factory');
         $container->removeDefinition('doctrine.orm.messenger.doctrine_schema_listener');
+    }
+
+    private function loadSecurityServices(ContainerBuilder $container): void
+    {
+        if (! class_exists(Security::class)) {
+            return;
+        }
+
+        if (! $container->getParameter('kernel.debug')) {
+            return;
+        }
+
+        $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader->load('security_debug.php');
     }
 
     private function createArrayAdapterCachePool(ContainerBuilder $container, string $objectManagerName, string $cacheName): string
