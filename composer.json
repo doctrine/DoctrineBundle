@@ -98,7 +98,8 @@
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "symfony/flex": true
+            "symfony/flex": true,
+            "symfony/runtime": false
         },
         "sort-packages": true
     },
