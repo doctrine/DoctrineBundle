@@ -6,11 +6,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver;
 
 use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\EntityValueResolverFunctionalKernel;
 use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\Post;
-use Doctrine\DBAL\Schema\Column;
-use Doctrine\DBAL\Schema\Name\UnqualifiedName;
-use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
-use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,32 +37,15 @@ class EntityValueResolverFunctionalTest extends TestCase
             $em        = $container->get('doctrine.orm.default_entity_manager');
             assert($em instanceof EntityManagerInterface);
 
-            $table = Table::editor()
-                ->setUnquotedName('posts')
-                ->addColumn(
-                    Column::editor()
-                        ->setUnquotedName('id')
-                        ->setTypeName(Types::INTEGER)
-                        ->setNotNull(true)
-                        ->setAutoincrement(true)
-                        ->create(),
-                )
-                ->addColumn(
-                    Column::editor()
-                        ->setUnquotedName('title')
-                        ->setTypeName(Types::STRING)
-                        ->setNotNull(true)
-                        ->create(),
-                )
-                ->setPrimaryKeyConstraint(
-                    new PrimaryKeyConstraint(null, [UnqualifiedName::unquoted('id')], false),
-                )
-                ->create();
-
-            $connection = $em->getConnection();
-            foreach ($connection->getDatabasePlatform()->getCreateTablesSQL([$table]) as $sql) {
-                $connection->executeStatement($sql);
-            }
+            // SchemaTool::createSchema triggers Schema::createTable, deprecated in
+            // DBAL 4 (https://github.com/doctrine/dbal/pull/7373); the DBAL 4 fluent
+            // replacement (Table::editor() / Column::editor()) is unavailable on
+            // DBAL 3 which this branch must still support, so a raw CREATE TABLE is
+            // emitted directly through the connection. The test kernel is SQLite-
+            // only, so a SQLite literal is safe here.
+            $em->getConnection()->executeStatement(
+                'CREATE TABLE posts (id INTEGER NOT NULL, title VARCHAR(255) NOT NULL, PRIMARY KEY(id))',
+            );
 
             $post = new Post('Hello world');
             $em->persist($post);
