@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 use function assert;
 use function interface_exists;
 use function json_decode;
-use function restore_exception_handler;
 
 /**
  * Regression coverage for the /posts/{post} + Post $post happy path resolved by
@@ -55,7 +54,6 @@ class EntityValueResolverFunctionalTest extends TestCase
             );
         } finally {
             $kernel->shutdown();
-            restore_exception_handler();
         }
     }
 }
