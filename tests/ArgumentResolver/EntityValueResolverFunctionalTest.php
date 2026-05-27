@@ -7,7 +7,6 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver;
 use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\EntityValueResolverFunctionalKernel;
 use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\Post;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -38,7 +37,9 @@ class EntityValueResolverFunctionalTest extends TestCase
             $em        = $container->get('doctrine.orm.default_entity_manager');
             assert($em instanceof EntityManagerInterface);
 
-            (new SchemaTool($em))->createSchema([$em->getClassMetadata(Post::class)]);
+            $em->getConnection()->executeStatement(
+                'CREATE TABLE posts (id INTEGER NOT NULL, title VARCHAR(255) NOT NULL, PRIMARY KEY(id))',
+            );
 
             $post = new Post('Hello world');
             $em->persist($post);
