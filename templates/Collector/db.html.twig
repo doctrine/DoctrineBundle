@@ -101,9 +101,15 @@
 
 {% block queries %}
     <style>
+        :root {
+            --query-time-bar-color: var(--gray-200);
+        }
+        .theme-dark {
+            --query-time-bar-color: var(--gray-700);
+        }
         .time-container { position: relative; }
-        .time-container .nowrap { position: relative; z-index: 1; text-shadow: 0 0 2px #fff; }
-        .time-bar { display: block; position: absolute; top: 0; left: 0; bottom: 0; background: #e0e0e0; }
+        .time-container .nowrap { position: relative; z-index: 1; text-shadow: 0 0 2px var(--page-background); }
+        .time-bar { display: block; position: absolute; top: 0; left: 0; bottom: 0; background: var(--query-time-bar-color); }
         .sql-runnable.sf-toggle-content.sf-toggle-visible { display: flex; flex-direction: column; }
         .sql-runnable button { align-self: end; }
         {% if profiler_markup_version >= 3 %}
