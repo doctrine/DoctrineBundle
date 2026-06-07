@@ -227,7 +227,13 @@
                                             <td class="nowrap">{{ query.count }}</td>
                                         {% else %}
                                             <td class="nowrap">{{ loop.index }}</td>
-                                            <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                                            <td>
+                                                <span class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</span>
+                                                {% if query.ranOnPrimary is defined and query.ranOnPrimary is not null %}
+                                                    <br />
+                                                    <span class="badge">{{ query.ranOnPrimary ? 'Primary' : 'Replica' }}</span>
+                                                {% endif %}
+                                            </td>
                                         {% endif %}
                                         <td>
                                             {{ query.sql|doctrine_prettify_sql }}
