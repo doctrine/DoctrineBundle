@@ -73,6 +73,7 @@ EOT);
         } catch (Throwable) {
             $platform = null;
         }
+
         if ($platform instanceof PostgreSQLPlatform) {
             /** @phpstan-ignore nullCoalesce.offset (needed for DBAL < 4) */
             $params['dbname'] = $params['default_dbname'] ?? 'postgres';
