@@ -68,7 +68,12 @@ EOT);
         /** @phpstan-ignore unset.offset */
         unset($params['dbname'], $params['path'], $params['url']);
 
-        if ($connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+        try {
+            $platform = $connection->getDatabasePlatform();
+        } catch (Exception) {
+            $platform = null;
+        }
+        if ($platform instanceof PostgreSQLPlatform) {
             /** @phpstan-ignore nullCoalesce.offset (needed for DBAL < 4) */
             $params['dbname'] = $params['default_dbname'] ?? 'postgres';
         }
