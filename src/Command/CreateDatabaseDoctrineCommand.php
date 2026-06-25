@@ -70,7 +70,7 @@ EOT);
 
         try {
             $platform = $connection->getDatabasePlatform();
-        } catch (Exception) {
+        } catch (Throwable) {
             $platform = null;
         }
         if ($platform instanceof PostgreSQLPlatform) {
