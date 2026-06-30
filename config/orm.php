@@ -31,6 +31,7 @@ use Doctrine\ORM\Tools\Console\Command\SchemaTool\DropCommand;
 use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
 use Doctrine\ORM\Tools\Console\Command\ValidateSchemaCommand;
 use Doctrine\ORM\Tools\ResolveTargetEntityListener;
+use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as ConsoleEntityValueResolver;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Form\DoctrineOrmTypeGuesser;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -170,6 +171,13 @@ return static function (ContainerConfigurator $container): void {
             ->tag('controller.argument_value_resolver', ['priority' => 110, 'name' => EntityValueResolver::class])
 
         ->set('doctrine.orm.entity_value_resolver.expression_language', ExpressionLanguage::class)
+
+        ->set('doctrine.orm.console_entity_value_resolver', ConsoleEntityValueResolver::class)
+            ->args([
+                service('doctrine'),
+                service('doctrine.orm.entity_value_resolver.expression_language')->ignoreOnInvalid(),
+            ])
+            ->tag('console.argument_value_resolver', ['priority' => 110, 'name' => ConsoleEntityValueResolver::class])
 
         ->set('doctrine.cache_clear_metadata_command', MetadataCommand::class)
             ->args([

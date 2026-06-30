@@ -43,6 +43,7 @@ use Doctrine\Persistence\Mapping\Driver\StaticPHPDriver;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
+use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as ConsoleEntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -792,6 +793,10 @@ final class DoctrineExtension extends Extension
 
         if (! class_exists(AbstractType::class)) {
             $container->removeDefinition('form.type.entity');
+        }
+
+        if (! class_exists(ConsoleEntityValueResolver::class)) {
+            $container->removeDefinition('doctrine.orm.console_entity_value_resolver');
         }
 
         $controllerResolverDefaults = [];
