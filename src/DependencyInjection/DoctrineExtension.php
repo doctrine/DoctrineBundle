@@ -815,9 +815,7 @@ final class DoctrineExtension extends Extension
         $controllerValueResolverDefinition->setArgument(3, $config['resolve_target_entities']);
 
         // The Console EntityValueResolver is available in Symfony 8.1 and higher
-        if (class_exists(EntityValueResolver::class)
-           && class_exists(ValueResolverInterface::class)
-        ) {
+        if (class_exists(ValueResolverInterface::class) && class_exists(EntityValueResolver::class)) {
             $consoleValueResolverDefinition = $container->getDefinition('doctrine.orm.entity_value_resolver.console');
             $consoleValueResolverDefinition->setArgument(2, (new Definition(MapEntity::class))->setArguments([
                 '$evictCache' => $controllerResolverDefaults['evict_cache'] ?? null,
