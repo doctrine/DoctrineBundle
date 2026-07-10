@@ -55,6 +55,7 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Console\ArgumentResolver\ValueResolver\ValueResolverInterface;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -814,7 +815,9 @@ final class DoctrineExtension extends Extension
         $controllerValueResolverDefinition->setArgument(3, $config['resolve_target_entities']);
 
         // The Console EntityValueResolver is available in Symfony 8.1 and higher
-        if (class_exists(EntityValueResolver::class)) {
+        if (class_exists(EntityValueResolver::class)
+           && class_exists(ValueResolverInterface::class)
+        ) {
             $consoleValueResolverDefinition = $container->getDefinition('doctrine.orm.entity_value_resolver.console');
             $consoleValueResolverDefinition->setArgument(2, (new Definition(MapEntity::class))->setArguments([
                 '$evictCache' => $controllerResolverDefaults['evict_cache'] ?? null,
