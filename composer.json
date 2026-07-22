@@ -53,7 +53,6 @@
         "phpunit/phpunit": "^12.3.10",
         "psr/log": "^3.0",
         "symfony/doctrine-messenger": "^6.4 || ^7.0 || ^8.0",
-        "symfony/event-dispatcher": "^6.4 || ^7.0",
         "symfony/expression-language": "^6.4 || ^7.0 || ^8.0",
         "symfony/http-kernel": "^6.4 || ^7.0 || ^8.0",
         "symfony/messenger": "^6.4 || ^7.0 || ^8.0",
