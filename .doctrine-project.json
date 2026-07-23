@@ -45,9 +45,8 @@
     },
     {
       "name": "2.18",
-      "branchName": "2.18.x",
       "slug": "2.18",
-      "maintained": true
+      "maintained": false
     },
     {
       "name": "2.16",
