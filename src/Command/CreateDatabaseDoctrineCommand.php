@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Command;
 
-use Doctrine\DBAL\Driver\AbstractPostgreSQLDriver;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -68,7 +68,7 @@ EOT);
         /** @phpstan-ignore unset.offset */
         unset($params['dbname'], $params['path'], $params['url']);
 
-        if ($connection->getDriver() instanceof AbstractPostgreSQLDriver) {
+        if ($connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             /** @phpstan-ignore nullCoalesce.offset (needed for DBAL < 4) */
             $params['dbname'] = $params['default_dbname'] ?? 'postgres';
         }
