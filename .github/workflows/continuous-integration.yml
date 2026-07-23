@@ -47,6 +47,7 @@ jobs:
           - "8.1"
           - "8.2"
           - "8.3"
+          - "8.4"
         dependencies:
           - "highest"
         stability:
@@ -63,25 +64,30 @@ jobs:
             stability: "stable"
             php-version: "8.1"
 
-          # Test LTS
+          # Test old LTS
           - symfony-require: "6.4.*"
             dependencies: "highest"
-            php-version: "8.4"
+            php-version: "8.5"
+
+          # Test LTS
+          - symfony-require: "7.4.*"
+            dependencies: "highest"
+            php-version: "8.5"
 
           # DBAL only without ORM
-          - php-version: "8.4"
+          - php-version: "8.5"
             dependencies: "highest"
             stability: "stable"
             remove-orm: true
 
           # No Messenger integration
-          - php-version: "8.4"
+          - php-version: "8.5"
             dependencies: "highest"
             stability: "stable"
             remove-doctrine-messenger: true
 
           # Bleeding edge
-          - php-version: "8.4"
+          - php-version: "8.5"
             dependencies: "highest"
             stability: "dev"
 
