@@ -28,6 +28,10 @@
         <exclude-pattern>tests/*</exclude-pattern>
         <exclude-pattern>src/Repository/RepositoryFactoryCompatibility.php</exclude-pattern>
         <exclude-pattern>src/Repository/ServiceEntityRepository.php</exclude-pattern>
+        <exclude-pattern>src/Twig/AbstractExtensionCompatibility.php</exclude-pattern>
+    </rule>
+    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint">
+        <exclude-pattern>src/Twig/AbstractExtensionCompatibility.php</exclude-pattern>
     </rule>
     <rule ref="Squiz.Classes.ClassFileName.NoMatch">
         <exclude-pattern>tests/*</exclude-pattern>

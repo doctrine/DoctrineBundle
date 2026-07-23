@@ -40,6 +40,8 @@ use function substr;
  */
 class DoctrineExtension extends AbstractExtension
 {
+    use AbstractExtensionCompatibility;
+
     private SqlFormatter $sqlFormatter;
 
     /**
@@ -47,7 +49,7 @@ class DoctrineExtension extends AbstractExtension
      *
      * @return TwigFilter[]
      */
-    public function getFilters()
+    private function doGetFilters(): array
     {
         $out     = [
             new TwigFilter('doctrine_prettify_sql', [$this, 'prettifySql'], ['is_safe' => ['html']]),
