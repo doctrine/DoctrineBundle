@@ -4,6 +4,13 @@ UPGRADE FROM 2.18 to 2.19
 Configuration
 -------------
 
+### BC Break: Native return type on Twig extension
+
+A native return type `array` has been added to
+`Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension`. That class is not
+meant to be extended, but if a downstream project did that, the return type
+needs to be added there as well.
+
 ### Proxy-related configuration settings are conditionally deprecated
 
 When using PHP 8.4 or higher in combination with Doctrine ORM 3.4 or

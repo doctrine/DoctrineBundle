@@ -68,14 +68,14 @@
         "symfony/var-exporter": "^6.4.1 || ^7.0.1",
         "symfony/web-profiler-bundle": "^6.4 || ^7.0",
         "symfony/yaml": "^6.4 || ^7.0",
-        "twig/twig": "^2.14.7 || ^3.0.4"
+        "twig/twig": "^2.14.7 || ^3.0.4 || ^4"
     },
     "conflict": {
         "doctrine/annotations": ">=3.0",
         "doctrine/cache": "< 1.11",
         "doctrine/orm": "<2.17 || >=4.0",
         "symfony/var-exporter": "< 6.4.1 || 7.0.0",
-        "twig/twig": "<2.13 || >=3.0 <3.0.4"
+        "twig/twig": "<2.13 || >=3.0 <3.0.4 || >=5"
     },
     "suggest": {
         "ext-pdo": "*",
