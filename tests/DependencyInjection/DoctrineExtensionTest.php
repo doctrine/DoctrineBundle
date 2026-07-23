@@ -577,7 +577,7 @@ class DoctrineExtensionTest extends TestCase
 
     /** @param array<string, mixed> $settings */
     #[IgnoreDeprecations]
-    #[RequiresPhp('>=8.4')]
+    #[RequiresPhp('>=8.4.0')]
     #[RequiresMethod(Configuration::class, 'enableNativeLazyObjects')]
     #[DataProvider('proxySettingsProvider')]
     public function testProxySettingsAreConditionallyDeprecated(array $settings): void
