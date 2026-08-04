@@ -7,20 +7,33 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Compiler;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\MoneyEntity;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\MoneyType as MoneyTypeFixture;
+use Doctrine\Bundle\DoctrineBundle\Tests\TestCaseAllPublicCompilerPass;
 use Doctrine\DBAL\Configuration as DbalConfiguration;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
+use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Component\HttpKernel\Kernel;
 
 use function array_filter;
 use function array_values;
+use function interface_exists;
+use function md5;
 use function method_exists;
+use function set_exception_handler;
 use function sprintf;
 use function sys_get_temp_dir;
 
@@ -28,21 +41,21 @@ class RegisterDbalTypePassTest extends TestCase
 {
     private static function requiresTypeRegistry(): void
     {
-        if (! method_exists(DbalConfiguration::class, 'setTypeRegistry')) {
-            self::markTestSkipped('This test requires DBAL >= 4.5 with TypeRegistry injection support.');
+        if (method_exists(DbalConfiguration::class, 'setTypeRegistry')) {
+            return;
         }
+
+        self::markTestSkipped('This test requires DBAL >= 4.5 with TypeRegistry injection support.');
     }
 
     private static function requiresNoTypeRegistry(): void
     {
-        if (method_exists(DbalConfiguration::class, 'setTypeRegistry')) {
-            self::markTestSkipped('This test covers the fallback path for DBAL < 4.5 without TypeRegistry support.');
+        if (! method_exists(DbalConfiguration::class, 'setTypeRegistry')) {
+            return;
         }
-    }
 
-    // -----------------------------------------------------------------------
-    // Tests for the TypeRegistry path (DBAL >= 4.5)
-    // -----------------------------------------------------------------------
+        self::markTestSkipped('This test covers the fallback path for DBAL < 4.5 without TypeRegistry support.');
+    }
 
     public function testNoTaggedTypesSkipsTypeRegistrySetup(): void
     {
@@ -232,9 +245,37 @@ class RegisterDbalTypePassTest extends TestCase
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Tests for the fallback path (DBAL < 4.5, no TypeRegistry injection)
-    // -----------------------------------------------------------------------
+    public function testCustomTypeIsAvailableForOrmEntityMapping(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $exceptionHandler = set_exception_handler(null);
+
+        $kernel = new RegisterDbalTypePassTestKernel();
+        $kernel->boot();
+
+        try {
+            $em = $kernel->getContainer()->get('doctrine.orm.default_entity_manager');
+
+            $metadata = $em->getClassMetadata(MoneyEntity::class);
+            self::assertSame('money', $metadata->fieldMappings['amount']['type']);
+
+            if (method_exists(DbalConfiguration::class, 'setTypeRegistry')) {
+                $typeRegistry = $em->getConnection()->getConfiguration()->getTypeRegistry();
+                self::assertInstanceOf(MoneyTypeFixture::class, $typeRegistry->get('money'));
+            } else {
+                self::assertTrue(Type::hasType('money'));
+                self::assertInstanceOf(MoneyTypeFixture::class, Type::getType('money'));
+            }
+        } finally {
+            $kernel->shutdown();
+            // The kernel registers Symfony's debug exception handler on boot but does
+            // not restore it on shutdown, so restore it here to avoid a risky test.
+            set_exception_handler($exceptionHandler);
+        }
+    }
 
     public function testTaggedTypeAreAddedToConfig(): void
     {
@@ -415,4 +456,52 @@ class RegisterDbalTypePassBarType extends Type
 
 class RegisterDbalTypePassNotAType
 {
+}
+
+class RegisterDbalTypePassTestKernel extends Kernel
+{
+    public function __construct()
+    {
+        parent::__construct('test', true);
+    }
+
+    /** @return iterable<Bundle> */
+    public function registerBundles(): iterable
+    {
+        return [new FrameworkBundle(), new DoctrineBundle()];
+    }
+
+    public function registerContainerConfiguration(LoaderInterface $loader): void
+    {
+        $loader->load(static function (ContainerBuilder $container): void {
+            $container->loadFromExtension('framework', [
+                'secret' => 'F00',
+                'http_method_override' => false,
+                'php_errors' => ['log' => true],
+                'handle_all_throwables' => true,
+            ]);
+            $container->loadFromExtension('doctrine', [
+                'dbal' => ['driver' => 'pdo_sqlite'],
+                'orm' => [
+                    'mappings' => [
+                        'Fixtures' => [
+                            'type' => 'attribute',
+                            'dir' => __DIR__ . '/../Fixtures',
+                            'prefix' => 'Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures',
+                            'is_bundle' => false,
+                        ],
+                    ],
+                ],
+            ]);
+            $container->register(MoneyTypeFixture::class)
+                ->setAutoconfigured(true);
+            $container->register('logger', NullLogger::class);
+            $container->getCompilerPassConfig()->addPass(new TestCaseAllPublicCompilerPass());
+        });
+    }
+
+    public function getProjectDir(): string
+    {
+        return sys_get_temp_dir() . '/sf_kernel_' . md5(static::class);
+    }
 }
