@@ -8,7 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Type;
-use Doctrine\DBAL\Types\TypeRegistry;
+use Doctrine\DBAL\Types\TypeProvider;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -60,9 +60,10 @@ class DoctrineDataCollectorTest extends TestCase
 
         $manager->method('getMetadataFactory')->willReturn($factory);
         $manager->method('getConfiguration')->willReturn($config);
-        if (method_exists(DBALConfiguration::class, 'getTypeRegistry')) {
+        if (method_exists(DBALConfiguration::class, 'getTypeProvider')) {
             $dbalConfig = $this->createStub(DBALConfiguration::class);
-            $dbalConfig->method('getTypeRegistry')->willReturn(new TypeRegistry());
+            // TypeProvider is an interface, so it can simply be stubbed.
+            $dbalConfig->method('getTypeProvider')->willReturn($this->createStub(TypeProvider::class));
             $connection = $this->createStub(Connection::class);
             $connection->method('getConfiguration')->willReturn($dbalConfig);
             $manager->method('getConnection')->willReturn($connection);

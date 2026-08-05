@@ -41,7 +41,7 @@ class RegisterDbalTypePassTest extends TestCase
 {
     private static function requiresTypeRegistry(): void
     {
-        if (method_exists(DbalConfiguration::class, 'setTypeRegistry')) {
+        if (method_exists(DbalConfiguration::class, 'setTypeProvider')) {
             return;
         }
 
@@ -50,7 +50,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     private static function requiresNoTypeRegistry(): void
     {
-        if (! method_exists(DbalConfiguration::class, 'setTypeRegistry')) {
+        if (! method_exists(DbalConfiguration::class, 'setTypeProvider')) {
             return;
         }
 
@@ -67,7 +67,7 @@ class RegisterDbalTypePassTest extends TestCase
         });
 
         foreach ($container->getDefinition('conf_conn1')->getMethodCalls() as [$method]) {
-            self::assertNotSame('setTypeRegistry', $method);
+            self::assertNotSame('setTypeProvider', $method);
         }
     }
 
@@ -222,13 +222,13 @@ class RegisterDbalTypePassTest extends TestCase
             $container->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')->setPublic(true);
         });
 
-        $setTypeRegistryCalls = array_filter(
+        $setTypeProviderCalls = array_filter(
             $container->getDefinition('conf_conn1')->getMethodCalls(),
-            static fn (array $call): bool => $call[0] === 'setTypeRegistry',
+            static fn (array $call): bool => $call[0] === 'setTypeProvider',
         );
 
-        self::assertCount(1, $setTypeRegistryCalls);
-        $registryArg = array_values($setTypeRegistryCalls)[0][1][0];
+        self::assertCount(1, $setTypeProviderCalls);
+        $registryArg = array_values($setTypeProviderCalls)[0][1][0];
 
         if ($registryArg instanceof Reference) {
             $registryArg = $container->getDefinition((string) $registryArg);
@@ -254,12 +254,12 @@ class RegisterDbalTypePassTest extends TestCase
         );
 
         foreach (['orm_conf_conn1', 'orm_conf_conn2'] as $alias) {
-            $setTypeRegistryCalls = array_filter(
+            $setTypeProviderCalls = array_filter(
                 $container->getDefinition($alias)->getMethodCalls(),
-                static fn (array $call): bool => $call[0] === 'setTypeRegistry',
+                static fn (array $call): bool => $call[0] === 'setTypeProvider',
             );
 
-            self::assertCount(1, $setTypeRegistryCalls, sprintf('setTypeRegistry not called on %s', $alias));
+            self::assertCount(1, $setTypeProviderCalls, sprintf('setTypeProvider not called on %s', $alias));
         }
     }
 
@@ -280,8 +280,8 @@ class RegisterDbalTypePassTest extends TestCase
             $metadata = $em->getClassMetadata(MoneyEntity::class);
             self::assertSame('money', $metadata->fieldMappings['amount']['type']);
 
-            if (method_exists(DbalConfiguration::class, 'setTypeRegistry')) {
-                $typeRegistry = $em->getConnection()->getConfiguration()->getTypeRegistry();
+            if (method_exists(DbalConfiguration::class, 'setTypeProvider')) {
+                $typeRegistry = $em->getConnection()->getConfiguration()->getTypeProvider();
                 self::assertInstanceOf(MoneyTypeFixture::class, $typeRegistry->get('money'));
             } else {
                 self::assertTrue(Type::hasType('money'));

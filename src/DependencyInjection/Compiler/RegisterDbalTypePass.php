@@ -40,7 +40,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
 
     public function process(ContainerBuilder $container): void
     {
-        if (method_exists(DbalConfiguration::class, 'setTypeRegistry')) {
+        if (method_exists(DbalConfiguration::class, 'setTypeProvider')) {
             $this->registerInTypeRegistry($container);
         } else {
             $this->registerInConfig($container);
@@ -115,10 +115,10 @@ final class RegisterDbalTypePass implements CompilerPassInterface
 
             $container
                 ->getDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name))
-                ->addMethodCall('setTypeRegistry', [$registryRef]);
+                ->addMethodCall('setTypeProvider', [$registryRef]);
 
             foreach ($connectionToOrmConfigs[$name] ?? [] as $ormConfigId) {
-                $container->getDefinition($ormConfigId)->addMethodCall('setTypeRegistry', [$registryRef]);
+                $container->getDefinition($ormConfigId)->addMethodCall('setTypeProvider', [$registryRef]);
             }
         }
     }
