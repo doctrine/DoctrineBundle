@@ -89,6 +89,24 @@ class RegisterDbalTypePassTest extends TestCase
         $this->assertTypeRegistered($container, 'conn2', 'money', RegisterDbalTypePassMoneyType::class);
     }
 
+    public function testTypeServiceReceivesInjectedDependencies(): void
+    {
+        self::requiresTypeRegistry();
+
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassTypeWithRequiredArg::class)
+                ->addArgument('injected value')
+                ->addTag('doctrine.dbal.type', ['type_name' => 'with_dependency']);
+
+            $container->setAlias('registry_conn1', 'doctrine.dbal.conn1_connection.type_registry')->setPublic(true);
+        });
+
+        $type = $this->getRegistry($container, 'conn1')->get('with_dependency');
+
+        self::assertInstanceOf(RegisterDbalTypePassTypeWithRequiredArg::class, $type);
+        self::assertSame('injected value', $type->dependency);
+    }
+
     public function testTypeRestrictedToOneConnection(): void
     {
         self::requiresTypeRegistry();
@@ -294,6 +312,47 @@ class RegisterDbalTypePassTest extends TestCase
         self::assertSame(['bar' => ['class' => RegisterDbalTypePassBarType::class]], $container->getParameter('doctrine.dbal.connection_factory.types'));
     }
 
+    public function testTaggedTypeDefinitionIsExcludedFromContainer(): void
+    {
+        self::requiresNoTypeRegistry();
+
+        $container = new ContainerBuilder();
+        $container->addCompilerPass(new RegisterDbalTypePass());
+
+        $container->setParameter('doctrine.dbal.connection_factory.types', []);
+
+        $definition = $container->register(RegisterDbalTypePassBarType::class, RegisterDbalTypePassBarType::class)
+            ->addTag('doctrine.dbal.type', ['type_name' => 'bar']);
+
+        (new RegisterDbalTypePass())->process($container);
+
+        self::assertSame(
+            [['source' => 'by tag "doctrine.dbal.type"']],
+            $definition->getTag('container.excluded'),
+        );
+    }
+
+    public function testTaggedTypeWithRequiredConstructorArgumentIsRejected(): void
+    {
+        self::requiresNoTypeRegistry();
+
+        $container = new ContainerBuilder();
+        $container->addCompilerPass(new RegisterDbalTypePass());
+
+        $container->setParameter('doctrine.dbal.connection_factory.types', []);
+
+        $container->register(RegisterDbalTypePassTypeWithRequiredArg::class)
+            ->addTag('doctrine.dbal.type', ['type_name' => 'with_required_arg']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            'The "%s" DBAL type cannot have required constructor arguments',
+            RegisterDbalTypePassTypeWithRequiredArg::class,
+        ));
+
+        $container->compile();
+    }
+
     public function testTypeMustBeASubclassOfTheDbalBaseType(): void
     {
         self::requiresNoTypeRegistry();
@@ -451,6 +510,19 @@ class RegisterDbalTypePassBarType extends Type
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
         return 'bar';
+    }
+}
+
+class RegisterDbalTypePassTypeWithRequiredArg extends Type
+{
+    public function __construct(public string $dependency)
+    {
+    }
+
+    /** @param array<string, mixed> $column */
+    public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
+    {
+        return 'VARCHAR(255)';
     }
 }
 
