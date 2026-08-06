@@ -63,6 +63,7 @@ class DoctrineDataCollectorTest extends TestCase
         if (method_exists(DBALConfiguration::class, 'getTypeProvider')) {
             $dbalConfig = $this->createStub(DBALConfiguration::class);
             // TypeProvider is an interface, so it can simply be stubbed.
+            /** @phpstan-ignore class.notFound (TypeProvider only exists on DBAL >= 4.5) */
             $dbalConfig->method('getTypeProvider')->willReturn($this->createStub(TypeProvider::class));
             $connection = $this->createStub(Connection::class);
             $connection->method('getConfiguration')->willReturn($dbalConfig);

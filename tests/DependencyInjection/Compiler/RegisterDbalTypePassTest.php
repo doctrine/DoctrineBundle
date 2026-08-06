@@ -281,6 +281,7 @@ class RegisterDbalTypePassTest extends TestCase
             self::assertSame('money', $metadata->fieldMappings['amount']['type']);
 
             if (method_exists(DbalConfiguration::class, 'setTypeProvider')) {
+                /** @phpstan-ignore method.notFound (getTypeProvider() only exists on DBAL >= 4.5) */
                 $typeRegistry = $em->getConnection()->getConfiguration()->getTypeProvider();
                 self::assertInstanceOf(MoneyTypeFixture::class, $typeRegistry->get('money'));
             } else {
@@ -330,27 +331,6 @@ class RegisterDbalTypePassTest extends TestCase
             [['source' => 'by tag "doctrine.dbal.type"']],
             $definition->getTag('container.excluded'),
         );
-    }
-
-    public function testTaggedTypeWithRequiredConstructorArgumentIsRejected(): void
-    {
-        self::requiresNoTypeRegistry();
-
-        $container = new ContainerBuilder();
-        $container->addCompilerPass(new RegisterDbalTypePass());
-
-        $container->setParameter('doctrine.dbal.connection_factory.types', []);
-
-        $container->register(RegisterDbalTypePassTypeWithRequiredArg::class)
-            ->addTag('doctrine.dbal.type', ['type_name' => 'with_required_arg']);
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf(
-            'The "%s" DBAL type cannot have required constructor arguments',
-            RegisterDbalTypePassTypeWithRequiredArg::class,
-        ));
-
-        $container->compile();
     }
 
     public function testTypeMustBeASubclassOfTheDbalBaseType(): void
@@ -420,6 +400,7 @@ class RegisterDbalTypePassTest extends TestCase
         return $container;
     }
 
+    /** @param class-string $typeClass */
     private function assertTypeRegistered(
         ContainerBuilder $container,
         string $connName,
@@ -456,7 +437,10 @@ class RegisterDbalTypePassTest extends TestCase
 
     private function getRegistry(ContainerBuilder $container, string $connName): TypeRegistry
     {
-        return $container->get(sprintf('registry_%s', $connName));
+        $registry = $container->get(sprintf('registry_%s', $connName));
+        self::assertInstanceOf(TypeRegistry::class, $registry);
+
+        return $registry;
     }
 }
 
@@ -513,16 +497,21 @@ class RegisterDbalTypePassBarType extends Type
     }
 }
 
-class RegisterDbalTypePassTypeWithRequiredArg extends Type
-{
-    public function __construct(public string $dependency)
+// Doctrine\DBAL\Types\Type::__construct() is final before DBAL 4.5, so a type declaring
+// its own constructor can only be defined when the TypeProvider API is available. The
+// tests using this fixture are skipped on older DBAL versions.
+if (method_exists(DbalConfiguration::class, 'setTypeProvider')) {
+    class RegisterDbalTypePassTypeWithRequiredArg extends Type
     {
-    }
+        public function __construct(public string $dependency)
+        {
+        }
 
-    /** @param array<string, mixed> $column */
-    public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
-    {
-        return 'VARCHAR(255)';
+        /** @param array<string, mixed> $column */
+        public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
+        {
+            return 'VARCHAR(255)';
+        }
     }
 }
 

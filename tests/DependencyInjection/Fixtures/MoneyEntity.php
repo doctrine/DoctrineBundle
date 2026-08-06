@@ -12,8 +12,8 @@ class MoneyEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: Types::INTEGER)]
-    private int $id = 1;
+    public int $id = 1;
 
     #[ORM\Column(type: 'money')]
-    private string $amount = '0.00';
+    public string $amount = '0.00';
 }

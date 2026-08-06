@@ -144,17 +144,6 @@ final class RegisterDbalTypePass implements CompilerPassInterface
                 throw new InvalidArgumentException(sprintf('The "%s" class must extends "%s".', $class, Type::class));
             }
 
-            // On this DBAL version, types are instantiated by the connection factory with
-            // "new $class()", so dependency injection is not available. Reject types whose
-            // constructor has mandatory arguments, as they could never be instantiated.
-            $constructor = (new ReflectionClass($class))->getConstructor();
-            if ($constructor !== null && $constructor->getNumberOfRequiredParameters() > 0) {
-                throw new InvalidArgumentException(sprintf(
-                    'The "%s" DBAL type cannot have required constructor arguments because dependency injection of types requires DBAL >= 4.5. Upgrade DBAL or remove the mandatory arguments.',
-                    $class,
-                ));
-            }
-
             // The type is instantiated by DBAL, not used as a service, so exclude its
             // definition from the container.
             $definition->addTag('container.excluded', ['source' => sprintf('by tag "%s"', self::TAG)]);
