@@ -9,8 +9,8 @@ use Attribute;
 /**
  * Registers the tagged class as a Doctrine DBAL type on the connection.
  *
- * With DBAL >= 4.5 and ORM >= 3.7 when the ORM are used, the type is registered
- * per connection and enables constructor dependency injection.
+ * With DBAL >= 4.5 and ORM >= 3.7, the type is registered per connection and
+ * enables constructor dependency injection.
  *
  * With DBAL < 4.5, the type is registered globally instead.
  */

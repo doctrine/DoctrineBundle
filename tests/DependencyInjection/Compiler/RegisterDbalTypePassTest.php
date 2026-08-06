@@ -77,7 +77,7 @@ class RegisterDbalTypePassTest extends TestCase
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
-                ->addTag('doctrine.dbal.type', ['type' => 'money']);
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
 
             $container->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')->setPublic(true);
             $container->setAlias('conf_conn2', 'doctrine.dbal.conn2_connection.configuration')->setPublic(true);
@@ -113,7 +113,7 @@ class RegisterDbalTypePassTest extends TestCase
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
-                ->addTag('doctrine.dbal.type', ['type' => 'money', 'connection' => 'conn1']);
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money', 'connection' => 'conn1']);
 
             $container->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')->setPublic(true);
             $container->setAlias('conf_conn2', 'doctrine.dbal.conn2_connection.configuration')->setPublic(true);
@@ -200,7 +200,7 @@ class RegisterDbalTypePassTest extends TestCase
         $container = $this->createContainer(
             static function (ContainerBuilder $container): void {
                 $container->register('my_type', RegisterDbalTypePassMoneyType::class)
-                    ->addTag('doctrine.dbal.type', ['type' => 'money']);
+                    ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
 
                 $container->setAlias('registry_conn1', 'doctrine.dbal.conn1_connection.type_registry')->setPublic(true);
             },
@@ -217,7 +217,7 @@ class RegisterDbalTypePassTest extends TestCase
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
-                ->addTag('doctrine.dbal.type', ['type' => 'money']);
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
 
             $container->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')->setPublic(true);
         });

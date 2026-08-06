@@ -80,7 +80,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
                         continue;
                     }
 
-                    $services[$tag['type_name'] ?? $tag['type'] ?? $id] = new Reference($id);
+                    $services[$tag['type_name'] ?? $id] = new Reference($id);
                 }
             }
 
@@ -129,7 +129,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
             $definition->addTag('container.excluded', ['source' => sprintf('by tag "%s"', self::TAG)]);
 
             foreach ($tags as $tag) {
-                $types[$tag['type_name'] ?? $tag['type'] ?? $id] = ['class' => $class];
+                $types[$tag['type_name'] ?? $id] = ['class' => $class];
             }
         }
 
