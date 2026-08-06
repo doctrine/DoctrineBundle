@@ -18,7 +18,6 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
 use function array_combine;
-use function array_flip;
 use function array_keys;
 use function is_subclass_of;
 use function method_exists;
@@ -29,7 +28,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
 {
     private const string TAG = 'doctrine.dbal.type';
 
-    /** @param ReflectionClass<object> $reflector */
+    /** @param ReflectionClass<*> $reflector */
     public static function autoconfigureFromAttribute(ChildDefinition $definition, AsDbalType $type, ReflectionClass $reflector): void
     {
         $definition->addTag(self::TAG, [
@@ -64,21 +63,6 @@ final class RegisterDbalTypePass implements CompilerPassInterface
 
         if ($configTypes === [] && $taggedServiceIds === []) {
             return;
-        }
-
-        // Map connection name → ORM configuration service IDs (when ORM is installed)
-        $connectionToOrmConfigs = [];
-        if ($container->hasParameter('doctrine.entity_managers')) {
-            $connectionServiceToName = array_flip($container->getParameter('doctrine.connections'));
-            foreach (array_keys($container->getParameter('doctrine.entity_managers')) as $emName) {
-                $emDef    = $container->getDefinition(sprintf('doctrine.orm.%s_entity_manager', $emName));
-                $connName = $connectionServiceToName[(string) $emDef->getArgument(0)] ?? null;
-                if ($connName === null) {
-                    continue;
-                }
-
-                $connectionToOrmConfigs[$connName][] = (string) $emDef->getArgument(1);
-            }
         }
 
         foreach (array_keys($container->getParameter('doctrine.connections')) as $name) {
@@ -116,10 +100,6 @@ final class RegisterDbalTypePass implements CompilerPassInterface
             $container
                 ->getDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name))
                 ->addMethodCall('setTypeProvider', [$registryRef]);
-
-            foreach ($connectionToOrmConfigs[$name] ?? [] as $ormConfigId) {
-                $container->getDefinition($ormConfigId)->addMethodCall('setTypeProvider', [$registryRef]);
-            }
         }
     }
 

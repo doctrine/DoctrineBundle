@@ -238,31 +238,6 @@ class RegisterDbalTypePassTest extends TestCase
         self::assertSame(TypeRegistry::class, $registryArg->getClass());
     }
 
-    public function testTypeRegistryIsSetOnOrmConfiguration(): void
-    {
-        self::requiresTypeRegistry();
-
-        $container = $this->createContainer(
-            static function (ContainerBuilder $container): void {
-                $container->register('my_type', RegisterDbalTypePassMoneyType::class)
-                    ->addTag('doctrine.dbal.type', ['type' => 'money']);
-
-                $container->setAlias('orm_conf_conn1', 'doctrine.orm.em_conn1_configuration')->setPublic(true);
-                $container->setAlias('orm_conf_conn2', 'doctrine.orm.em_conn2_configuration')->setPublic(true);
-            },
-            withOrm: true,
-        );
-
-        foreach (['orm_conf_conn1', 'orm_conf_conn2'] as $alias) {
-            $setTypeProviderCalls = array_filter(
-                $container->getDefinition($alias)->getMethodCalls(),
-                static fn (array $call): bool => $call[0] === 'setTypeProvider',
-            );
-
-            self::assertCount(1, $setTypeProviderCalls, sprintf('setTypeProvider not called on %s', $alias));
-        }
-    }
-
     public function testCustomTypeIsAvailableForOrmEntityMapping(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
