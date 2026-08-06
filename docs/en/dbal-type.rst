@@ -1,23 +1,26 @@
 DBAL Types
 ==========
 
-Custom DBAL types can be registered using the ``AsDbalType`` attribute. This
-attribute allows you to define a name for your custom type directly in the class
-definition. If the name is not provided, it defaults to the service id, which is
-the fully-qualified class name of the type when using the attribute.
+`Custom DBAL types`_ let you map a database column to a PHP value of your choice.
+The recommended way to register one is the ``#[AsDbalType]`` attribute, which
+declares the type directly on its class.
 
-To register a custom DBAL type, create a class that extends
-``Doctrine\DBAL\Types\Type`` and add the ``#[AsDbalType]`` attribute to it:
+Registering a Type with the Attribute
+-------------------------------------
+
+Create a class that extends ``Doctrine\DBAL\Types\Type`` and add the
+``#[AsDbalType]`` attribute to it:
 
 .. code-block:: php
 
+    // src/Doctrine/Type/MoneyType.php
     namespace App\Doctrine\Type;
 
     use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
     use Doctrine\DBAL\Platforms\AbstractPlatform;
     use Doctrine\DBAL\Types\Type;
 
-    #[AsDbalType(name: 'money')]
+    #[AsDbalType]
     class MoneyType extends Type
     {
         public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
@@ -36,55 +39,130 @@ To register a custom DBAL type, create a class that extends
         }
     }
 
-When using the ``AsDbalType`` attribute, the type will be automatically
-registered. As the type is registered as a service, its constructor can declare
-dependencies that are resolved by the container. This requires DBAL >= 4.5 and
-ORM >= 3.7; on older versions the type is registered globally, without
-dependency injection.
-
-The attribute is autoconfigured to the ``doctrine.dbal.type`` tag, so it is
-equivalent to tagging the service in the configuration. The ``type_name``
-parameter defines the type name; when omitted, the service id is used:
-
-.. code-block:: yaml
-
-    # config/services.yaml
-    services:
-        App\Doctrine\Type\MoneyType:
-            tags:
-                - name: doctrine.dbal.type
-                  type_name: money
-
-By default the type is registered on every connection. To restrict it to a
-single connection, set the ``connection`` on the attribute (which is repeatable,
-so a type can be registered on several connections) or on the tag:
+The type is then available in your mappings. When no name is given, it defaults
+to the fully-qualified class name, so you can reference the type by its class:
 
 .. code-block:: php
 
+    // src/Entity/Product.php
+    namespace App\Entity;
+
+    use App\Doctrine\Type\MoneyType;
+    use Doctrine\ORM\Mapping as ORM;
+
+    #[ORM\Entity]
+    class Product
+    {
+        #[ORM\Column(type: MoneyType::class)]
+        private Money $price;
+    }
+
+To use a shorter, explicit name instead, pass it to the attribute and reference
+that name in the mapping:
+
+.. code-block:: php
+
+    #[AsDbalType(name: 'money')]
+    class MoneyType extends Type
+    {
+        // ...
+    }
+
+.. code-block:: php
+
+    #[ORM\Column(type: 'money')]
+    private Money $price;
+
+.. note::
+
+    The ``#[AsDbalType]`` attribute and the ``doctrine.dbal.type`` tag require
+    DoctrineBundle >= 3.3.
+
+Dependency Injection
+~~~~~~~~~~~~~~~~~~~~~
+
+The type is registered as a service, so its constructor can declare dependencies
+that are resolved by the container:
+
+.. code-block:: php
+
+    #[AsDbalType]
+    class MoneyType extends Type
+    {
+        public function __construct(private readonly ExchangeRateProvider $rates)
+        {
+        }
+
+        // ...
+    }
+
+.. note::
+
+    Dependency injection requires DBAL >= 4.5 and ORM >= 3.7, where the type is
+    resolved lazily from a per-connection registry. On
+    older versions the type is registered in the global registry and instantiated
+    without dependencies.
+
+Restricting a Type to a Connection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default the type is registered on every connection. Use the ``connection``
+parameter to restrict it to a single connection. The attribute is repeatable, so
+a type can be registered on several connections with different names:
+
+.. code-block:: php
+
+    #[AsDbalType(name: 'money', connection: 'default')]
     #[AsDbalType(name: 'money', connection: 'reporting')]
     class MoneyType extends Type
     {
         // ...
     }
 
-.. code-block:: yaml
+.. note::
 
-    # config/services.yaml
-    services:
-        App\Doctrine\Type\MoneyType:
-            tags:
-                - name: doctrine.dbal.type
-                  type_name: money
-                  connection: reporting
+    Restricting a type to a connection requires DBAL >= 4.5 and ORM >= 3.7.
+    On older versions the ``connection`` is ignored and the type is registered
+    globally.
 
-Restricting a type to a connection requires DBAL >= 4.5 (and ORM >= 3.7 when the
-ORM is used); on older versions the ``connection`` is ignored and the type is
-registered globally.
+Registering a Type as a Service
+-------------------------------
 
-Manual Registration
--------------------
+The attribute is autoconfigured to the ``doctrine.dbal.type`` tag, so tagging a
+service is equivalent to using the attribute. This is useful when
+autoconfiguration is disabled, or to register the same class several times with
+different dependencies. The ``type_name`` attribute sets the type name; when
+omitted, the service id is used:
 
-Alternatively, you can register custom types in your configuration:
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        # config/services.yaml
+        services:
+            App\Doctrine\Type\MoneyType:
+                tags:
+                    - { name: doctrine.dbal.type, type_name: money, connection: reporting }
+
+    .. code-block:: php
+
+        // config/services.php
+        namespace Symfony\Component\DependencyInjection\Loader\Configurator;
+
+        use App\Doctrine\Type\MoneyType;
+
+        return static function (ContainerConfigurator $container): void {
+            $container->services()
+                ->set(MoneyType::class)
+                ->tag('doctrine.dbal.type', ['type_name' => 'money', 'connection' => 'reporting']);
+        };
+
+Registering a Type with the Configuration
+-----------------------------------------
+
+When you do not need dependency injection, a type can be registered by mapping a
+name to its class name under ``doctrine.dbal.types``. This is supported on all
+DBAL versions and does not turn the type into a service:
 
 .. configuration-block::
 
@@ -96,36 +174,21 @@ Alternatively, you can register custom types in your configuration:
                 types:
                     money: App\Doctrine\Type\MoneyType
 
-    .. code-block:: xml
-
-        <!-- config/packages/doctrine.xml -->
-        <container xmlns="http://symfony.com/schema/dic/services"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns:doctrine="http://symfony.com/schema/dic/doctrine"
-            xsi:schemaLocation="http://symfony.com/schema/dic/services
-                http://symfony.com/schema/dic/services/services-1.0.xsd
-                http://symfony.com/schema/dic/doctrine
-                http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
-
-            <doctrine:config>
-                <doctrine:dbal>
-                    <doctrine:type name="money">App\Doctrine\Type\MoneyType</doctrine:type>
-                </doctrine:dbal>
-            </doctrine:config>
-        </container>
-
     .. code-block:: php
 
         // config/packages/doctrine.php
-        use App\Doctrine\Type\MoneyType;
-        use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+        namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-        return static function (ContainerConfigurator $containerConfigurator): void {
-            $containerConfigurator->extension('doctrine', [
+        use App\Doctrine\Type\MoneyType;
+
+        return App::config([
+            'doctrine' => [
                 'dbal' => [
                     'types' => [
                         'money' => MoneyType::class,
                     ],
                 ],
-            ]);
-        };
+            ],
+        ]);
+
+.. _`Custom DBAL types`: https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/types.html#custom-mapping-types
