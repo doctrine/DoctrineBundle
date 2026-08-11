@@ -52,30 +52,6 @@ attribute to tag the service.
                         # you can also restrict listeners to a specific Doctrine connection
                         connection: 'default'
 
-    .. code-block:: xml
-
-        <!-- config/services.xml -->
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <container xmlns="http://symfony.com/schema/dic/services"
-            xmlns:doctrine="http://symfony.com/schema/dic/doctrine">
-            <services>
-                <!-- ... -->
-
-                <!--
-                    * 'event' is the only required option that defines the lifecycle listener
-                    * 'priority': used when multiple subscribers or listeners are associated to the same event
-                    *             (default priority = 0; higher numbers = listener is run earlier)
-                    * 'connection': restricts the listener to a specific Doctrine connection
-                -->
-                <service id="App\EventListener\SearchIndexer">
-                    <tag name="doctrine.event_listener"
-                        event="postPersist"
-                        priority="500"
-                        connection="default"/>
-                </service>
-            </services>
-        </container>
-
     .. code-block:: php
 
         // config/services.php
