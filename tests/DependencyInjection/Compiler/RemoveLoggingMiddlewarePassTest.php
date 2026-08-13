@@ -64,7 +64,7 @@ final class RemoveLoggingMiddlewarePassTest extends TestCase
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../../config'));
         $loader->load('middlewares.php');
 
-        $container->addCompilerPass(new RemoveLoggingMiddlewarePass());
+        $container->addCompilerPass(new RemoveLoggingMiddlewarePass(), PassConfig::TYPE_OPTIMIZE);
         $container->addCompilerPass(new class implements CompilerPassInterface {
             public function process(ContainerBuilder $container): void
             {
@@ -76,7 +76,7 @@ final class RemoveLoggingMiddlewarePassTest extends TestCase
                     ->setPublic(true);
                 $container->setDefinition('logging_middleware_child', $loggingMiddlewareChild);
             }
-        });
+        }, PassConfig::TYPE_OPTIMIZE);
 
         return $container;
     }

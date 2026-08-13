@@ -65,7 +65,7 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new DbalSchemaFilterPass());
         $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_BEFORE_REMOVING, -10);
         $container->addCompilerPass(new RemoveProfilerControllerPass());
-        $container->addCompilerPass(new RemoveLoggingMiddlewarePass());
+        $container->addCompilerPass(new RemoveLoggingMiddlewarePass(), PassConfig::TYPE_OPTIMIZE);
         $container->addCompilerPass(new MiddlewaresPass());
         $container->addCompilerPass(new RegisterUidTypePass());
         $container->addCompilerPass(new RegisterDbalTypePass());
