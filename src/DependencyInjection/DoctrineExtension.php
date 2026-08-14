@@ -48,6 +48,10 @@ use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalCloseConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalOpenTransactionLoggerMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalPingConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalTransactionMiddleware;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
@@ -1451,6 +1455,22 @@ final class DoctrineExtension extends Extension
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('messenger.php');
+
+        // The DBAL middlewares exist since symfony/doctrine-bridge 8.2
+        $dbalMiddlewares = [
+            'messenger.middleware.doctrine_dbal_transaction' => DoctrineDbalTransactionMiddleware::class,
+            'messenger.middleware.doctrine_dbal_ping_connection' => DoctrineDbalPingConnectionMiddleware::class,
+            'messenger.middleware.doctrine_dbal_close_connection' => DoctrineDbalCloseConnectionMiddleware::class,
+            'messenger.middleware.doctrine_dbal_open_transaction_logger' => DoctrineDbalOpenTransactionLoggerMiddleware::class,
+        ];
+
+        foreach ($dbalMiddlewares as $middlewareId => $middlewareClass) {
+            if (class_exists($middlewareClass)) {
+                continue;
+            }
+
+            $container->removeDefinition($middlewareId);
+        }
 
         if (! class_exists(PostgreSqlNotifyOnIdleListener::class)) {
             $container->removeDefinition('messenger.transport.doctrine.pg_notify_on_idle_listener');
