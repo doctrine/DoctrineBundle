@@ -3,6 +3,12 @@ includes:
 parameters:
    level: 8
    reportUnmatchedIgnoredErrors: true
+   ignoreErrors:
+      # The DBAL messenger middlewares exist since symfony/doctrine-bridge 8.2, which is not released yet
+      -
+         message: '~^Class Symfony\\Bridge\\Doctrine\\Messenger\\DoctrineDbal\w+Middleware not found\.$~'
+         identifier: class.notFound
+         reportUnmatched: false
    paths:
       - config
       - src

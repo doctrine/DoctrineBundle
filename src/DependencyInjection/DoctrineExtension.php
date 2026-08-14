@@ -1452,6 +1452,22 @@ final class DoctrineExtension extends Extension
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('messenger.php');
 
+        // The DBAL middlewares exist since symfony/doctrine-bridge 8.2
+        $dbalMiddlewares = [
+            'messenger.middleware.doctrine_dbal_transaction',
+            'messenger.middleware.doctrine_dbal_ping_connection',
+            'messenger.middleware.doctrine_dbal_close_connection',
+            'messenger.middleware.doctrine_dbal_open_transaction_logger',
+        ];
+
+        foreach ($dbalMiddlewares as $middlewareId) {
+            if (class_exists((string) $container->getDefinition($middlewareId)->getClass())) {
+                continue;
+            }
+
+            $container->removeDefinition($middlewareId);
+        }
+
         if (! class_exists(PostgreSqlNotifyOnIdleListener::class)) {
             $container->removeDefinition('messenger.transport.doctrine.pg_notify_on_idle_listener');
         }
