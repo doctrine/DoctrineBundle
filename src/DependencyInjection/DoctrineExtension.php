@@ -53,6 +53,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
+use Symfony\Bridge\Doctrine\Validator\Constraints\EntityExistsValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
@@ -772,6 +773,11 @@ final class DoctrineExtension extends Extension
 
         if (class_exists(AbstractType::class)) {
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
+        }
+
+        // EntityExistsValidator exists since symfony/doctrine-bridge 8.2
+        if (! class_exists(EntityExistsValidator::class)) {
+            $container->removeDefinition('doctrine.orm.validator.entity_exists');
         }
 
         if (! class_exists(UlidGenerator::class)) {
