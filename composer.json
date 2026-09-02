@@ -74,6 +74,8 @@
     "suggest": {
         "ext-pdo": "*",
         "doctrine/orm": "The Doctrine ORM integration is optional in the bundle.",
+        "symfony/expression-language": "To use expressions with the #[MapEntity] attribute.",
+        "symfony/security-bundle": "To use the current_user(), is_granted() and other security functions in #[MapEntity] expressions.",
         "symfony/web-profiler-bundle": "To use the data collector."
     },
     "minimum-stability": "dev",
