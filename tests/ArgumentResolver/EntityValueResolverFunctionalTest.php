@@ -8,8 +8,10 @@ use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\EntityValueRe
 use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\Post;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\HttpFoundation\Request;
 
+use function class_exists;
 use function interface_exists;
 use function json_decode;
 
@@ -51,6 +53,45 @@ class EntityValueResolverFunctionalTest extends TestCase
             $em->clear();
 
             $response = $kernel->handle(Request::create('/posts/' . $post->id, 'GET'));
+
+            self::assertSame(200, $response->getStatusCode());
+            self::assertSame(
+                ['id' => $post->id, 'title' => 'Hello world'],
+                json_decode((string) $response->getContent(), true),
+            );
+        } finally {
+            $kernel->shutdown();
+        }
+    }
+
+    public function testEntityArgumentResolvedFromTaggedExpressionLanguageProvider(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        if (! class_exists(ExpressionLanguage::class)) {
+            self::markTestSkipped('This test requires the ExpressionLanguage component');
+        }
+
+        $kernel = new EntityValueResolverFunctionalKernel();
+        $kernel->boot();
+
+        try {
+            $container = $kernel->getContainer();
+            $em        = $container->get('doctrine.orm.default_entity_manager');
+
+            $em->getConnection()->executeStatement(
+                'CREATE TABLE posts (id INTEGER NOT NULL, title VARCHAR(255) NOT NULL, PRIMARY KEY(id))',
+            );
+
+            $em->persist(new Post('Another post'));
+            $post = new Post('Hello world');
+            $em->persist($post);
+            $em->flush();
+            $em->clear();
+
+            $response = $kernel->handle(Request::create('/posts/tagged', 'GET'));
 
             self::assertSame(200, $response->getStatusCode());
             self::assertSame(
