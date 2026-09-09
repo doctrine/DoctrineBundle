@@ -120,6 +120,9 @@ final class DoctrineExtension extends Extension
      */
     private array $drivers = [];
 
+    /** @var array<string, bool> List of prefix => inferNullabilityFromPHPType */
+    private array $inferNullabilityFromPHPType = [];
+
     /**
      * @param array<string, mixed> $objectManager A configured object manager
      *
@@ -225,6 +228,12 @@ final class DoctrineExtension extends Extension
         }
 
         $this->drivers[$mappingConfig['type']][$mappingConfig['prefix']] = realpath($mappingDirectory) ?: $mappingDirectory;
+
+        if (empty($mappingConfig['infer_nullability_from_php_type'])) {
+            return;
+        }
+
+        $this->inferNullabilityFromPHPType[$mappingConfig['prefix']] = true;
     }
 
     /**
@@ -293,20 +302,41 @@ final class DoctrineExtension extends Extension
         }
 
         foreach ($this->drivers as $driverType => $driverPaths) {
-            $mappingService   = $this->getObjectManagerElementName($objectManager['name'] . '_' . $driverType . '_metadata_driver');
-            $mappingDriverDef = new Definition($this->getMetadataDriverClass($driverType), [
-                array_values($driverPaths),
-            ]);
-
-            if ($mappingDriverDef->getClass() === SimplifiedXmlDriver::class) {
-                $mappingDriverDef->setArguments([array_flip($driverPaths)]);
-                $mappingDriverDef->addMethodCall('setGlobalBasename', ['mapping']);
+            // split paths by inferNullabilityFromPHPType to create separate driver instances
+            $groups = [false => [], true => []];
+            foreach ($driverPaths as $prefix => $driverPath) {
+                $infer                   = $this->inferNullabilityFromPHPType[$prefix] ?? false;
+                $groups[$infer][$prefix] = $driverPath;
             }
 
-            $container->setDefinition($mappingService, $mappingDriverDef);
+            foreach ($groups as $inferNullability => $paths) {
+                if ($paths === []) {
+                    continue;
+                }
 
-            foreach ($driverPaths as $prefix => $driverPath) {
-                $chainDriverDef->addMethodCall('addDriver', [new Reference($mappingService), $prefix]);
+                $suffix           = $inferNullability ? '_infer_nullability' : '';
+                $mappingService   = $this->getObjectManagerElementName($objectManager['name'] . '_' . $driverType . $suffix . '_metadata_driver');
+                $mappingDriverDef = new Definition($this->getMetadataDriverClass($driverType), [
+                    array_values($paths),
+                ]);
+
+                if ($mappingDriverDef->getClass() === SimplifiedXmlDriver::class) {
+                    $args = [array_flip($paths), SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION, true];
+                    if ($inferNullability) {
+                        $args[] = true;
+                    }
+
+                    $mappingDriverDef->setArguments($args);
+                    $mappingDriverDef->addMethodCall('setGlobalBasename', ['mapping']);
+                } elseif ($inferNullability) {
+                    $mappingDriverDef->setArgument('$inferNullabilityFromPHPType', true);
+                }
+
+                $container->setDefinition($mappingService, $mappingDriverDef);
+
+                foreach ($paths as $prefix => $driverPath) {
+                    $chainDriverDef->addMethodCall('addDriver', [new Reference($mappingService), $prefix]);
+                }
             }
         }
 
@@ -1103,8 +1133,9 @@ final class DoctrineExtension extends Extension
     private function loadOrmEntityManagerMappingInformation(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container): void
     {
         // reset state of drivers and alias map. They are only used by this methods and children.
-        $this->drivers  = [];
-        $this->aliasMap = [];
+        $this->drivers                     = [];
+        $this->aliasMap                    = [];
+        $this->inferNullabilityFromPHPType = [];
 
         $this->loadMappingInformation($entityManager, $container);
         $this->registerMappingDrivers($entityManager, $container);
@@ -1112,17 +1143,24 @@ final class DoctrineExtension extends Extension
         $container->getDefinition($this->getObjectManagerElementName($entityManager['name'] . '_metadata_driver'));
         /** @psalm-suppress NoValue $this->drivers is set by $this->loadMappingInformation() call  */
         foreach (array_keys($this->drivers) as $driverType) {
-            $mappingService   = $this->getObjectManagerElementName($entityManager['name'] . '_' . $driverType . '_metadata_driver');
-            $mappingDriverDef = $container->getDefinition($mappingService);
-            $args             = $mappingDriverDef->getArguments();
             if ($driverType !== 'xml') {
                 continue;
             }
 
-            $args[1] ??= SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION;
-            $args[2]   = $entityManager['validate_xml_mapping'];
+            foreach (['', '_infer_nullability'] as $suffix) {
+                $mappingService = $this->getObjectManagerElementName($entityManager['name'] . '_' . $driverType . $suffix . '_metadata_driver');
+                if (! $container->hasDefinition($mappingService)) {
+                    continue;
+                }
 
-            $mappingDriverDef->setArguments($args);
+                $mappingDriverDef = $container->getDefinition($mappingService);
+                $args             = $mappingDriverDef->getArguments();
+
+                $args[1] ??= SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION;
+                $args[2]   = $entityManager['validate_xml_mapping'];
+
+                $mappingDriverDef->setArguments($args);
+            }
         }
 
         $ormConfigDef->addMethodCall('setEntityNamespaces', [$this->aliasMap]);

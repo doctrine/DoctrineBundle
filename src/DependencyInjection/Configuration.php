@@ -651,6 +651,7 @@ final class Configuration implements ConfigurationInterface
                                 ->scalarNode('alias')->end()
                                 ->scalarNode('prefix')->end()
                                 ->booleanNode('is_bundle')->end()
+                                ->booleanNode('infer_nullability_from_php_type')->defaultFalse()->end()
                             ->end()
                         ->end()
                     ->end()
