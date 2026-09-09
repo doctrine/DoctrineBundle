@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
+use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +17,8 @@ use function interface_exists;
 
 class ServiceEntityRepositoryTest extends TestCase
 {
+    use VerifyDeprecations;
+
     public static function setUpBeforeClass(): void
     {
         if (interface_exists(EntityManagerInterface::class)) {
@@ -33,5 +38,40 @@ EXCEPTION);
         /* @phpstan-ignore class.notFound */
         $repo = new ServiceEntityRepository($registry, TestEntity::class);
         $repo->getClassName();
+    }
+
+    public function testFindTriggersDeprecationWhenPassingNullAsLockMode(): void
+    {
+        $this->expectDeprecationWithIdentifier('https://github.com/doctrine/DoctrineBundle/pull/2284');
+
+        /* @phpstan-ignore class.notFound */
+        $repo = new ServiceEntityRepository($this->createRegistry(), TestEntity::class);
+
+        self::assertNull($repo->find(1, null));
+    }
+
+    public function testFindDoesNotTriggerDeprecationWhenOmittingLockMode(): void
+    {
+        $this->expectNoDeprecationWithIdentifier('https://github.com/doctrine/DoctrineBundle/pull/2284');
+
+        /* @phpstan-ignore class.notFound */
+        $repo = new ServiceEntityRepository($this->createRegistry(), TestEntity::class);
+
+        self::assertNull($repo->find(1));
+        self::assertNull($repo->find(1, LockMode::NONE));
+    }
+
+    private function createRegistry(): ManagerRegistry
+    {
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('getClassMetadata')
+            /* @phpstan-ignore class.notFound */
+            ->willReturn(new ClassMetadata(TestEntity::class));
+
+        $registry = $this->createStub(ManagerRegistry::class);
+        $registry->method('getManagerForClass')
+            ->willReturn($em);
+
+        return $registry;
     }
 }
