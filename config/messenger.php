@@ -6,6 +6,10 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineCloseConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalCloseConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalOpenTransactionLoggerMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalPingConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalTransactionMiddleware;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineOpenTransactionLoggerMiddleware;
 use Symfony\Bridge\Doctrine\Messenger\DoctrinePingConnectionMiddleware;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
@@ -22,7 +26,19 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
             ])
 
+        ->set('messenger.middleware.doctrine_dbal_transaction', DoctrineDbalTransactionMiddleware::class)
+            ->abstract()
+            ->args([
+                service('doctrine'),
+            ])
+
         ->set('messenger.middleware.doctrine_ping_connection', DoctrinePingConnectionMiddleware::class)
+            ->abstract()
+            ->args([
+                service('doctrine'),
+            ])
+
+        ->set('messenger.middleware.doctrine_dbal_ping_connection', DoctrineDbalPingConnectionMiddleware::class)
             ->abstract()
             ->args([
                 service('doctrine'),
@@ -34,11 +50,24 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
             ])
 
+        ->set('messenger.middleware.doctrine_dbal_close_connection', DoctrineDbalCloseConnectionMiddleware::class)
+            ->abstract()
+            ->args([
+                service('doctrine'),
+            ])
+
         ->set('messenger.middleware.doctrine_open_transaction_logger', DoctrineOpenTransactionLoggerMiddleware::class)
             ->abstract()
             ->args([
                 service('doctrine'),
                 null,
+                service('logger'),
+            ])
+
+        ->set('messenger.middleware.doctrine_dbal_open_transaction_logger', DoctrineDbalOpenTransactionLoggerMiddleware::class)
+            ->abstract()
+            ->args([
+                service('doctrine'),
                 service('logger'),
             ])
 

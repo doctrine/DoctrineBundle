@@ -36,6 +36,10 @@ use ReflectionClass;
 use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as ConsoleEntityValueResolver;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalCloseConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalOpenTransactionLoggerMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalPingConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalTransactionMiddleware;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Driver;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
@@ -789,6 +793,21 @@ class DoctrineExtensionTest extends TestCase
         $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_ping_connection')->getArguments());
         $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_close_connection')->getArguments());
         $this->assertCount(1, $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager')->getArguments());
+
+        $dbalMiddlewares = [
+            'messenger.middleware.doctrine_dbal_transaction' => [DoctrineDbalTransactionMiddleware::class, 1],
+            'messenger.middleware.doctrine_dbal_ping_connection' => [DoctrineDbalPingConnectionMiddleware::class, 1],
+            'messenger.middleware.doctrine_dbal_close_connection' => [DoctrineDbalCloseConnectionMiddleware::class, 1],
+            'messenger.middleware.doctrine_dbal_open_transaction_logger' => [DoctrineDbalOpenTransactionLoggerMiddleware::class, 2],
+        ];
+
+        foreach ($dbalMiddlewares as $middlewareId => [$middlewareClass, $argumentCount]) {
+            if (class_exists($middlewareClass)) {
+                $this->assertCount($argumentCount, $container->getDefinition($middlewareId)->getArguments());
+            } else {
+                $this->assertFalse($container->hasDefinition($middlewareId));
+            }
+        }
     }
 
     public function testMessengerIntegrationWithDoctrineTransport(): void
