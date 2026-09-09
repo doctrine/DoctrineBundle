@@ -573,6 +573,7 @@ final class Configuration implements ConfigurationInterface
                     ->scalarNode('class_metadata_factory_name')->defaultValue(ClassMetadataFactory::class)->end()
                     ->scalarNode('default_repository_class')->defaultValue(EntityRepository::class)->end()
                     ->scalarNode('auto_mapping')->defaultFalse()->end()
+                    ->booleanNode('auto_discover_entities')->defaultNull()->info('Registers all entity classes discovered by the container scan, removing the need for explicit "mappings". When not set, enabled if neither "mappings" nor "auto_mapping" is configured and Symfony 8.2 and doctrine/orm 3.6 are available.')->end()
                     ->scalarNode('naming_strategy')->defaultValue('doctrine.orm.naming_strategy.default')->end()
                     ->scalarNode('quote_strategy')->defaultValue('doctrine.orm.quote_strategy.default')->end()
                     ->scalarNode('typed_field_mapper')->defaultValue('doctrine.orm.typed_field_mapper.default')->end()

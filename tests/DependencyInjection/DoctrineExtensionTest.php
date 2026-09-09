@@ -9,6 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityAutoDiscoveryPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalType;
@@ -33,6 +34,8 @@ use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionParameter;
+use ReflectionUnionType;
 use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as ConsoleEntityValueResolver;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -249,6 +252,78 @@ class DoctrineExtensionTest extends TestCase
             'Configuring the ORM layer requires to configure the DBAL layer as well.',
         );
         $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
+    }
+
+    public function testAutoDiscoverEntities(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $extension = new DoctrineExtension();
+        $container = $this->getContainer();
+        $config    = [
+            'dbal' => [],
+            'orm' => ['auto_discover_entities' => true],
+        ];
+
+        if (! self::supportsAutoDiscovery()) {
+            $this->expectException(LogicException::class);
+            $this->expectExceptionMessage('The "auto_discover_entities" option requires');
+
+            $extension->load([$config], $container);
+
+            return;
+        }
+
+        $extension->load([$config], $container);
+
+        $locatorId = 'doctrine.orm.default_auto_discover_class_locator';
+        self::assertTrue($container->getDefinition($locatorId)->hasTag(EntityAutoDiscoveryPass::TAG));
+
+        $driverDef = $container->getDefinition('doctrine.orm.default_auto_discover_metadata_driver');
+        self::assertSame(AttributeDriver::class, $driverDef->getClass());
+        self::assertEquals([new Reference($locatorId)], $driverDef->getArguments());
+
+        self::assertContainsEquals(
+            ['setDefaultDriver', [new Reference('doctrine.orm.default_auto_discover_metadata_driver')]],
+            $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls(),
+        );
+    }
+
+    public function testAutoDiscoverEntitiesIsEnabledWhenNoMappingIsConfigured(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        (new DoctrineExtension())->load([['dbal' => [], 'orm' => []]], $container);
+
+        self::assertSame(self::supportsAutoDiscovery(), $container->hasDefinition('doctrine.orm.default_auto_discover_class_locator'));
+    }
+
+    /** @param array<string, mixed> $ormConfig */
+    #[TestWith([['auto_mapping' => true]])]
+    #[TestWith([['mappings' => ['XmlBundle' => null]]])]
+    #[TestWith([['auto_discover_entities' => false]])]
+    public function testAutoDiscoverEntitiesStaysOff(array $ormConfig): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer(['XmlBundle']);
+        (new DoctrineExtension())->load([['dbal' => [], 'orm' => $ormConfig]], $container);
+
+        self::assertFalse($container->hasDefinition('doctrine.orm.default_auto_discover_class_locator'));
+    }
+
+    private static function supportsAutoDiscovery(): bool
+    {
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        return method_exists(ContainerBuilder::class, 'findTaggedResourceIds')
+            && (new ReflectionParameter([AttributeDriver::class, '__construct'], 'paths'))->getType() instanceof ReflectionUnionType;
     }
 
     /** @return mixed[][][][] */

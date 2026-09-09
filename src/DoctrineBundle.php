@@ -6,6 +6,7 @@ namespace Doctrine\Bundle\DoctrineBundle;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubscriberPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityAutoDiscoveryPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\MiddlewaresPass;
@@ -49,6 +50,7 @@ class DoctrineBundle extends Bundle
         }, PassConfig::TYPE_BEFORE_OPTIMIZATION);
 
         $container->addCompilerPass(new RegisterEventListenersAndSubscribersPass('doctrine.connections', 'doctrine.dbal.%s_connection.event_manager', 'doctrine'), PassConfig::TYPE_BEFORE_OPTIMIZATION);
+        $container->addCompilerPass(new EntityAutoDiscoveryPass(), PassConfig::TYPE_BEFORE_REMOVING);
 
         if ($container->hasExtension('security')) {
             $security = $container->getExtension('security');

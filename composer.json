@@ -33,7 +33,7 @@
         "ext-mbstring": "*",
         "doctrine/dbal": "^4.0",
         "doctrine/deprecations": "^1.0",
-        "doctrine/persistence": "^4",
+        "doctrine/persistence": "^4.2",
         "doctrine/sql-formatter": "^1.0.1",
         "symfony/cache": "^6.4 || ^7.0 || ^8.0",
         "symfony/config": "^6.4 || ^7.0 || ^8.0",
