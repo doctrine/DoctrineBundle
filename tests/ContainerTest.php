@@ -21,6 +21,7 @@ use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as Cons
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
+use Symfony\Bridge\Doctrine\Validator\Constraints\EntityExistsValidator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -63,6 +64,13 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(EventManager::class, $container->get('doctrine.dbal.event_manager'));
         $this->assertInstanceOf(ManagerRegistry::class, $container->get('doctrine'));
         $this->assertInstanceOf(UniqueEntityValidator::class, $container->get('doctrine.orm.validator.unique'));
+
+        if (class_exists(EntityExistsValidator::class)) {
+            $this->assertInstanceOf(EntityExistsValidator::class, $container->get('doctrine.orm.validator.entity_exists'));
+        } else {
+            $this->assertFalse($container->has('doctrine.orm.validator.entity_exists'));
+        }
+
         $this->assertInstanceOf(InfoCommand::class, $container->get('doctrine.mapping_info_command'));
         $this->assertInstanceOf(MappingDescribeCommand::class, $container->get('doctrine.mapping_describe_command'));
         $this->assertInstanceOf(UpdateCommand::class, $container->get('doctrine.schema_update_command'));
