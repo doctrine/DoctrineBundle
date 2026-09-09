@@ -59,11 +59,11 @@ class ServiceEntityRepository extends EntityRepository implements ServiceEntityR
             ->createResultSetMappingBuilder($alias);
     }
 
-    public function find(mixed $id, LockMode|int|null $lockMode = null, int|null $lockVersion = null): object|null
+    public function find(mixed $id, LockMode|int|null $lockMode = LockMode::NONE, int|null $lockVersion = null): object|null
     {
         /** @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class */
         return ($this->repository ??= $this->resolveRepository())
-            ->find($id, $lockMode, $lockVersion);
+            ->find($id, $lockMode ?? LockMode::NONE, $lockVersion);
     }
 
     /**
