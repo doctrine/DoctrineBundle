@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
+use Doctrine\DBAL\Configuration as DBALConfiguration;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\TypeProvider;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +24,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function interface_exists;
+use function method_exists;
 
 /**
  * @phpstan-type GroupedQueryItemType = array{
@@ -56,6 +60,16 @@ class DoctrineDataCollectorTest extends TestCase
 
         $manager->method('getMetadataFactory')->willReturn($factory);
         $manager->method('getConfiguration')->willReturn($config);
+        if (method_exists(DBALConfiguration::class, 'getTypeProvider')) {
+            $dbalConfig = $this->createStub(DBALConfiguration::class);
+            // TypeProvider is an interface, so it can simply be stubbed.
+            /** @phpstan-ignore class.notFound (TypeProvider only exists on DBAL >= 4.5) */
+            $dbalConfig->method('getTypeProvider')->willReturn($this->createStub(TypeProvider::class));
+            $connection = $this->createStub(Connection::class);
+            $connection->method('getConfiguration')->willReturn($dbalConfig);
+            $manager->method('getConnection')->willReturn($connection);
+        }
+
         $manager->method('getUnitOfWork')->willReturn($unitOfWork);
         $unitOfWork->method('getIdentityMap')->willReturn([
             self::FIRST_ENTITY => [new stdClass()],

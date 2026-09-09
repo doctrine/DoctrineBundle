@@ -953,8 +953,8 @@ class DoctrineExtensionTest extends TestCase
     }
 
     /** @param class-string $typeClassname */
-    #[DataProvider('provideDatabaseTypeAttribute')]
-    public function testAsDatabaseTypeAttribute(string $typeClassname, string $expectedTypeName): void
+    #[DataProvider('provideDbalTypeAttribute')]
+    public function testAsDbalTypeAttribute(string $typeClassname, string $expectedTypeName): void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -978,13 +978,13 @@ class DoctrineExtensionTest extends TestCase
 
         $attributes[AsDbalType::class]($definition, $attribute, $reflector);
 
-        $expected = ['type_name' => $expectedTypeName];
+        $expected = ['type_name' => $expectedTypeName, 'connection' => null];
         $this->assertSame([$expected], $definition->getTag('doctrine.dbal.type'));
-        $this->assertSame([['source' => 'by tag "doctrine.dbal.type"']], $definition->getTag('container.excluded'));
+        $this->assertSame([], $definition->getTag('container.excluded'), 'The type is a service, not excluded');
     }
 
     /** @return array<array{0: class-string, 1: string}> */
-    public static function provideDatabaseTypeAttribute(): array
+    public static function provideDbalTypeAttribute(): array
     {
         return [
             'with type name' => [DbalType::class, 'dbal_type'],
