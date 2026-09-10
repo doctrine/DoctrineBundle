@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\DBAL\LockMode;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -61,9 +62,20 @@ class ServiceEntityRepository extends EntityRepository implements ServiceEntityR
 
     public function find(mixed $id, LockMode|int|null $lockMode = LockMode::NONE, int|null $lockVersion = null): object|null
     {
+        if ($lockMode === null) {
+            Deprecation::trigger(
+                'doctrine/doctrine-bundle',
+                'https://github.com/doctrine/DoctrineBundle/pull/2284',
+                'Passing null as $lockMode to %s() is deprecated and will not be possible in DoctrineBundle 4.0, pass LockMode::NONE instead.',
+                __METHOD__,
+            );
+
+            $lockMode = LockMode::NONE;
+        }
+
         /** @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class */
         return ($this->repository ??= $this->resolveRepository())
-            ->find($id, $lockMode ?? LockMode::NONE, $lockVersion);
+            ->find($id, $lockMode, $lockVersion);
     }
 
     /**
