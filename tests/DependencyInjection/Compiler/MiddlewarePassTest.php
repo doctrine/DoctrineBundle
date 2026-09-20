@@ -140,6 +140,33 @@ class MiddlewarePassTest extends TestCase
         $this->assertMiddlewareOrdering($container, 'conn1', $expectedMiddlewares);
     }
 
+    public function testListingAMiddlewareDoesNotRemoveItFromTheOtherConnections(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container
+                ->register('middleware', PHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware');
+
+            $container->loadFromExtension('doctrine', [
+                'dbal' => ['connections' => ['conn1' => ['middlewares' => [['service' => 'middleware', 'priority' => 20]]]]],
+            ]);
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+
+            $container
+                ->setAlias('conf_conn2', 'doctrine.dbal.conn2_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        // The tag carries no connection, so the middleware stays on every connection and the
+        // configuration only gives it a priority on conn1
+        $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
+        $this->assertMiddlewareInjected($container, 'conn2', PHP7Middleware::class);
+    }
+
     public function testAMiddlewareServiceThatDoesNotExistIsReported(): void
     {
         $this->expectException(InvalidArgumentException::class);

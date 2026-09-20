@@ -31,12 +31,15 @@ final class MiddlewaresPass implements CompilerPassInterface
         $middlewareAbstractDefs = [];
         $middlewareConnections  = [];
         $middlewarePriorities   = [];
+        $everyConnection        = [];
         foreach ($container->findTaggedServiceIds('doctrine.middleware') as $id => $tags) {
             $middlewareAbstractDefs[$id] = $container->getDefinition($id);
             // When a def has doctrine.middleware tags with connection attributes equal to connection names
             // registration of this middleware is limited to the connections with these names
             foreach ($tags as $tag) {
                 if (! isset($tag['connection'])) {
+                    $everyConnection[$id] = true;
+
                     if (isset($tag['priority']) && ! isset($middlewarePriorities[$id])) {
                         $middlewarePriorities[$id] = $tag['priority'];
                     }
@@ -48,8 +51,9 @@ final class MiddlewaresPass implements CompilerPassInterface
             }
         }
 
-        // Middlewares listed per connection in the configuration land in the same maps, so they go
+        // Middlewares listed per connection in the configuration join the maps above, so they go
         // through the priority handling and the ConnectionNameAwareInterface support below.
+        $configuredPriorities = [];
         foreach ($this->configuredMiddlewares($container) as $name => $entries) {
             foreach ($entries as $entry) {
                 $id = $entry['service'];
@@ -62,8 +66,16 @@ final class MiddlewaresPass implements CompilerPassInterface
                     ));
                 }
 
-                $middlewareAbstractDefs[$id]     ??= $container->findDefinition($id);
-                $middlewareConnections[$id][$name] = $entry['priority'];
+                $middlewareAbstractDefs[$id]  ??= $container->findDefinition($id);
+                $configuredPriorities[$id][$name] = $entry['priority'];
+
+                // A middleware tagged without a connection applies everywhere, and listing it here
+                // must not take it away from the other ones: only the priority above is kept.
+                if (isset($everyConnection[$id])) {
+                    continue;
+                }
+
+                $middlewareConnections[$id][$name] ??= null;
             }
         }
 
@@ -94,7 +106,7 @@ final class MiddlewaresPass implements CompilerPassInterface
 
             $middlewareRefs = array_map(
                 static fn (string $id, array $ref) => [
-                    $middlewareConnections[$id][$name] ?? $middlewarePriorities[$id] ?? 0,
+                    $configuredPriorities[$id][$name] ?? $middlewareConnections[$id][$name] ?? $middlewarePriorities[$id] ?? 0,
                     $ref[1],
                     $ref[0],
                 ],
