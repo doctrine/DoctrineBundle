@@ -17,6 +17,7 @@ use Psr\Log\NullLogger;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 
@@ -77,6 +78,78 @@ class MiddlewarePassTest extends TestCase
 
         $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
         $this->assertMiddlewareNotInjected($container, 'conn2', PHP7Middleware::class);
+    }
+
+    public function testAddMiddlewareFromTheConnectionConfiguration(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('middleware', PHP7Middleware::class)->setAbstract(true);
+
+            $container->loadFromExtension('doctrine', [
+                'dbal' => ['connections' => ['conn1' => ['middlewares' => ['middleware']]]],
+            ]);
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+
+            $container
+                ->setAlias('conf_conn2', 'doctrine.dbal.conn2_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        $this->assertMiddlewareInjected($container, 'conn1', PHP7Middleware::class);
+        $this->assertMiddlewareNotInjected($container, 'conn2', PHP7Middleware::class);
+    }
+
+    public function testTheConfiguredPriorityWinsOverTheAttributeOne(): void
+    {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container
+                ->register('middleware1', PHP7Middleware::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.middleware', ['priority' => 10]);
+
+            $container->register('middleware2', ConnectionAwarePHP7Middleware::class)->setAbstract(true);
+
+            $container->loadFromExtension('doctrine', [
+                'dbal' => [
+                    'connections' => [
+                        'conn1' => [
+                            'middlewares' => [
+                                'middleware1',
+                                ['service' => 'middleware2', 'priority' => 20],
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+            $container
+                ->setAlias('conf_conn1', 'doctrine.dbal.conn1_connection.configuration')
+                ->setPublic(true); // Avoid removal and inlining
+        });
+
+        // middleware2 takes the priority given in the configuration, while middleware1, listed
+        // without one, falls back to the priority of its tag
+        $expectedMiddlewares = [ConnectionAwarePHP7Middleware::class, PHP7Middleware::class];
+        if (class_exists(Listener::class)) {
+            $expectedMiddlewares[] = IdleConnectionMiddleware::class;
+        }
+
+        $this->assertMiddlewareOrdering($container, 'conn1', $expectedMiddlewares);
+    }
+
+    public function testAMiddlewareServiceThatDoesNotExistIsReported(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The service "not_a_service" listed in the middlewares of the "conn1" connection does not exist.');
+
+        $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->loadFromExtension('doctrine', [
+                'dbal' => ['connections' => ['conn1' => ['middlewares' => ['not_a_service']]]],
+            ]);
+        });
     }
 
     public function testAddMiddlewareWithAutoconfigure(): void

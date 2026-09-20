@@ -8,6 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Middleware\ConnectionNameAwareInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
 use function array_key_exists;
@@ -44,6 +45,25 @@ final class MiddlewaresPass implements CompilerPassInterface
                 }
 
                 $middlewareConnections[$id][$tag['connection']] = $tag['priority'] ?? null;
+            }
+        }
+
+        // Middlewares listed per connection in the configuration land in the same maps, so they go
+        // through the priority handling and the ConnectionNameAwareInterface support below.
+        foreach ($this->configuredMiddlewares($container) as $name => $entries) {
+            foreach ($entries as $entry) {
+                $id = $entry['service'];
+
+                if (! $container->hasDefinition($id) && ! $container->hasAlias($id)) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The service "%s" listed in the middlewares of the "%s" connection does not exist.',
+                        $id,
+                        $name,
+                    ));
+                }
+
+                $middlewareAbstractDefs[$id]     ??= $container->findDefinition($id);
+                $middlewareConnections[$id][$name] = $entry['priority'];
             }
         }
 
@@ -88,5 +108,18 @@ final class MiddlewaresPass implements CompilerPassInterface
                 ->getDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name))
                 ->addMethodCall('setMiddlewares', [$middlewareRefs]);
         }
+    }
+
+    /** @return array<string, list<array{service: string, priority: int|null}>> */
+    private function configuredMiddlewares(ContainerBuilder $container): array
+    {
+        if (! $container->hasParameter('doctrine.dbal.connection_middlewares')) {
+            return [];
+        }
+
+        /** @var array<string, list<array{service: string, priority: int|null}>> $middlewares */
+        $middlewares = $container->getParameter('doctrine.dbal.connection_middlewares');
+
+        return $middlewares;
     }
 }
