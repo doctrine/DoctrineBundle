@@ -108,6 +108,7 @@ Configuration Reference
                         profiling_collect_schema_errors: true
 
                         server_version:       ~
+                        idle_connection_ttl:  600
                         driver_class:         ~
                         # Allows to specify a custom wrapper implementation to use.
                         # Must be a subclass of Doctrine\DBAL\Connection
