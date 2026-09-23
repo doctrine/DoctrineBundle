@@ -66,7 +66,7 @@ final class MiddlewaresPass implements CompilerPassInterface
                     ));
                 }
 
-                $middlewareAbstractDefs[$id]  ??= $container->findDefinition($id);
+                $middlewareAbstractDefs[$id]    ??= $container->findDefinition($id);
                 $configuredPriorities[$id][$name] = $entry['priority'];
 
                 // A middleware tagged without a connection applies everywhere, and listing it here
