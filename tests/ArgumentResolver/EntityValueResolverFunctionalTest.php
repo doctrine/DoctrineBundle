@@ -8,7 +8,9 @@ use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\EntityValueRe
 use Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures\Post;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\VarExporter\LazyObjectInterface;
 
 use function interface_exists;
 use function json_decode;
@@ -57,6 +59,29 @@ class EntityValueResolverFunctionalTest extends TestCase
                 ['id' => $post->id, 'title' => 'Hello world'],
                 json_decode((string) $response->getContent(), true),
             );
+        } finally {
+            $kernel->shutdown();
+        }
+    }
+
+    public function testServiceArgumentDoesNotInitializeTheEntityManager(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $kernel = new EntityValueResolverFunctionalKernel();
+        $kernel->boot();
+
+        try {
+            $response = $kernel->handle(Request::create('/service-argument', 'GET'));
+
+            self::assertSame(200, $response->getStatusCode());
+            self::assertSame('/service-argument', $response->getContent());
+
+            $em = $kernel->getContainer()->get('doctrine.orm.default_entity_manager');
+
+            self::assertTrue($em instanceof LazyObjectInterface ? ! $em->isLazyObjectInitialized() : (new ReflectionClass($em))->isUninitializedLazyObject($em));
         } finally {
             $kernel->shutdown();
         }

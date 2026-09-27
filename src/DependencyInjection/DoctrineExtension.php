@@ -14,6 +14,7 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
+use Doctrine\Bundle\DoctrineBundle\Mapping\ClassMetadataFactory;
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\DBAL\Connection;
@@ -29,6 +30,7 @@ use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
+use Doctrine\ORM\Mapping\ClassMetadataFactory as ORMClassMetadataFactory;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Mapping\Embeddable;
@@ -57,6 +59,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\ArgumentResolver\ValueResolver\ValueResolverInterface;
 use Symfony\Component\DependencyInjection\Alias;
+use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -847,9 +850,16 @@ final class DoctrineExtension extends Extension
         $bundles                   = $container->getParameter('kernel.bundles');
         $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $bundles);
 
+        $metadataDrivers = [];
+
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
+
+            // A custom metadata factory might not use the metadata driver to decide which classes are transient
+            if (in_array($entityManager['class_metadata_factory_name'], [ORMClassMetadataFactory::class, ClassMetadataFactory::class], true)) {
+                $metadataDrivers[$name] = new Reference(sprintf('doctrine.orm.%s_metadata_driver', $name));
+            }
 
             if (interface_exists(PropertyInfoExtractorInterface::class)) {
                 $this->loadPropertyInfoExtractor($name, $container);
@@ -861,6 +871,8 @@ final class DoctrineExtension extends Extension
 
             $this->loadValidatorLoader($name, $container);
         }
+
+        $container->getDefinition('doctrine')->setArgument(5, new ServiceLocatorArgument($metadataDrivers));
 
         if ($config['resolve_target_entities']) {
             $def = $container->findDefinition('doctrine.orm.listeners.resolve_target_entity');
