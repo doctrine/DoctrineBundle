@@ -37,6 +37,7 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
                 true,
                 service('doctrine.debug_data_holder')->nullOnInvalid(),
+                [],
             ])
             ->tag('data_collector', ['template' => '@Doctrine/Collector/db.html.twig', 'id' => 'db', 'priority' => 250])
 

@@ -1250,6 +1250,13 @@ final class DoctrineExtension extends Extension
         $configDef->addMethodCall('setRegionsConfiguration', [$regionsDef]);
         $ormConfigDef->addMethodCall('setSecondLevelCacheEnabled', [$enabled]);
         $ormConfigDef->addMethodCall('setSecondLevelCacheConfiguration', [$configDef]);
+
+        if (! $enabled) {
+            return;
+        }
+
+        $dataCollectorDefinition = $container->getDefinition('data_collector.doctrine');
+        $dataCollectorDefinition->replaceArgument(3, [...$dataCollectorDefinition->getArgument(3), $entityManager['name']]);
     }
 
     /**

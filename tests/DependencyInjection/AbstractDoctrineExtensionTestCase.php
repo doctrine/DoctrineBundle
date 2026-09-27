@@ -735,6 +735,8 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
 
         $this->assertEquals('doctrine.orm.default_second_level_cache.regions_configuration', $slcFactoryArgs[0]);
         $this->assertEquals('doctrine.orm.default_second_level_cache.region_cache_driver', $slcFactoryArgs[1]);
+
+        $this->assertSame(['custom_slc_factory', 'default'], $container->getDefinition('data_collector.doctrine')->getArgument(3));
     }
 
     public function testSingleEMSetCustomFunctions(): void
