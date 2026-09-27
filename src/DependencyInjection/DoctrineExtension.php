@@ -14,7 +14,9 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
+use Doctrine\Bundle\DoctrineBundle\Mapping\ClassMetadataFactory;
 use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
+use Doctrine\Bundle\DoctrineBundle\PropertyInfo\DoctrineExtractor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
@@ -29,6 +31,7 @@ use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
+use Doctrine\ORM\Mapping\ClassMetadataFactory as ORMClassMetadataFactory;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Mapping\Embeddable;
@@ -49,7 +52,6 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
-use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
@@ -852,7 +854,7 @@ final class DoctrineExtension extends Extension
             $this->loadOrmEntityManager($entityManager, $container);
 
             if (interface_exists(PropertyInfoExtractorInterface::class)) {
-                $this->loadPropertyInfoExtractor($name, $container);
+                $this->loadPropertyInfoExtractor($name, $entityManager['class_metadata_factory_name'], $container);
             }
 
             if (! interface_exists(LoaderInterface::class)) {
@@ -1372,12 +1374,18 @@ final class DoctrineExtension extends Extension
     /**
      * Loads a property info extractor for each defined entity manager.
      */
-    private function loadPropertyInfoExtractor(string $entityManagerName, ContainerBuilder $container): void
+    private function loadPropertyInfoExtractor(string $entityManagerName, string $classMetadataFactoryName, ContainerBuilder $container): void
     {
         $propertyExtractorDefinition = $container->register(sprintf('doctrine.orm.%s_entity_manager.property_info_extractor', $entityManagerName), DoctrineExtractor::class);
         $argumentId                  = sprintf('doctrine.orm.%s_entity_manager', $entityManagerName);
 
         $propertyExtractorDefinition->addArgument(new Reference($argumentId));
+        $propertyExtractorDefinition->addArgument(new Reference($argumentId . '.event_manager'));
+
+        // A custom metadata factory might not use the metadata driver to decide which classes are mapped
+        if (in_array($classMetadataFactoryName, [ORMClassMetadataFactory::class, ClassMetadataFactory::class], true)) {
+            $propertyExtractorDefinition->addArgument(new Reference(sprintf('doctrine.orm.%s_metadata_driver', $entityManagerName)));
+        }
 
         $propertyExtractorDefinition->addTag('property_info.list_extractor', ['priority' => -1001]);
         $propertyExtractorDefinition->addTag('property_info.type_extractor', ['priority' => -999]);
