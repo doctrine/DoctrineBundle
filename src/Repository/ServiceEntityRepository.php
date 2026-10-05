@@ -11,6 +11,7 @@ use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -108,6 +109,11 @@ class ServiceEntityRepository extends EntityRepository implements ServiceEntityR
     protected function getEntityManager(): EntityManagerInterface
     {
         return ($this->repository ??= $this->resolveRepository())->getEntityManager();
+    }
+
+    protected function expr(): Expr
+    {
+        return ($this->repository ??= $this->resolveRepository())->expr();
     }
 
     /** @psalm-suppress InvalidReturnType This proxy is used only in combination with newer parent class */
