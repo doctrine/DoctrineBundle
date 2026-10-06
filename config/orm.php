@@ -185,6 +185,9 @@ return static function (ContainerConfigurator $container): void {
             ->tag('console.argument_value_resolver', ['priority' => 110, 'name' => ConsoleEntityValueResolver::class])
 
         ->set('doctrine.orm.entity_value_resolver.expression_language', ExpressionLanguage::class)
+            ->args([
+                service('cache.doctrine.orm.entity_value_resolver.expression_language')->nullOnInvalid(),
+            ])
 
         ->set('doctrine.cache_clear_metadata_command', MetadataCommand::class)
             ->args([
