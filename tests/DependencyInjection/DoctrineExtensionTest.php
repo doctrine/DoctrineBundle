@@ -46,6 +46,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\ExpressionLanguage\CompiledExpressionLanguage;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -1304,6 +1305,27 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertTrue(in_array(['connection' => 'conn1', 'priority' => 10], $idleConnectionMiddlewareTagAttributes, true), 'Tag with connection conn1 not found for doctrine.dbal.idle_connection_middleware');
         $this->assertTrue(in_array(['connection' => 'conn2', 'priority' => 10], $idleConnectionMiddlewareTagAttributes, true), 'Tag with connection conn2 found for doctrine.dbal.idle_connection_middleware');
+    }
+
+    public function testEntityValueResolverExpressionLanguageIsCompiled(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        (new DoctrineExtension())->load([BundleConfigurationBuilder::createBuilderWithBaseValues()->build()], $container);
+
+        $expressionLanguage = $container->getDefinition('doctrine.orm.entity_value_resolver.expression_language');
+
+        // CompiledExpressionLanguage exists since symfony/expression-language 8.2
+        if (! class_exists(CompiledExpressionLanguage::class)) {
+            $this->assertFalse($expressionLanguage->hasTag('expression_language.compiled'));
+
+            return;
+        }
+
+        $this->assertSame([['string_expressions' => [MapEntity::class => ['expr']]]], $expressionLanguage->getTag('expression_language.compiled'));
     }
 
     #[IgnoreDeprecations]
