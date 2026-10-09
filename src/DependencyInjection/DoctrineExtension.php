@@ -48,6 +48,7 @@ use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
@@ -85,6 +86,7 @@ use function in_array;
 use function interface_exists;
 use function is_dir;
 use function is_string;
+use function method_exists;
 use function realpath;
 use function reset;
 use function sprintf;
@@ -893,11 +895,22 @@ final class DoctrineExtension extends Extension
                 'priority'       => $attribute->priority,
             ]);
         });
-        $container->registerAttributeForAutoconfiguration(AsDoctrineListener::class, static function (ChildDefinition $definition, AsDoctrineListener $attribute): void {
+        // symfony/doctrine-bridge 8.2 added the "before" and "after" options of the tag, and Query::ranOnPrimary() in the same version
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        $bridgeOrdersListeners = method_exists(Query::class, 'ranOnPrimary');
+
+        /** @phpstan-ignore argument.type (Needed for the $reflector parameter) */
+        $container->registerAttributeForAutoconfiguration(AsDoctrineListener::class, static function (ChildDefinition $definition, AsDoctrineListener $attribute, ReflectionClass $reflector) use ($bridgeOrdersListeners): void {
+            if (! $bridgeOrdersListeners && ($attribute->before !== null || $attribute->after !== null)) {
+                throw new LogicException(sprintf('Using "before" or "after" in #[AsDoctrineListener] on "%s" requires symfony/doctrine-bridge 8.2 or higher.', $reflector->getName()));
+            }
+
             $definition->addTag('doctrine.event_listener', [
                 'event'      => $attribute->event,
                 'priority'   => $attribute->priority,
                 'connection' => $attribute->connection,
+                'before'     => $attribute->before,
+                'after'      => $attribute->after,
             ]);
         });
 

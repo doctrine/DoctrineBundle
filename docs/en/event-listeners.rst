@@ -77,3 +77,26 @@ attribute to tag the service.
                 ])
             ;
         };
+
+Ordering Listeners
+------------------
+
+With ``symfony/doctrine-bridge`` 8.2 or higher, a listener can specify which
+other listeners of the same event it should run ``before`` or ``after``, as
+service ids or classes, instead of relying on the ``priority`` option:
+
+.. code-block:: php
+
+    #[AsDoctrineListener('postPersist', after: AuditLogger::class)]
+    class SearchIndexer
+
+The ``doctrine.event_listener`` tag accepts the same ``before`` and ``after``
+options. With older versions of ``symfony/doctrine-bridge``, the tag ignores
+them, and the attribute throws an exception.
+
+When declared, ``priority`` is kept: ``before`` and ``after`` only change the
+order of listeners that have the same priority. The container fails to compile
+when they contradict the priorities, for example when a listener should run
+before another one that has a higher priority. A listener without a
+``priority`` is placed according to its ``before`` and ``after`` options.
+``before`` and ``after`` ignore the listeners of other events and connections.
