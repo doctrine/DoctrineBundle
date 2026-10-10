@@ -16,10 +16,12 @@ use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepos
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomServiceRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
+use Symfony\Component\Cache\CacheBundle;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 use function uniqid;
@@ -60,6 +62,10 @@ class ServiceRepositoryTest extends TestCase
             'env(default::SYMFONY_TRUSTED_HEADERS)' => '',
             'debug.file_link_format' => null,
         ]));
+
+        if (class_exists(CacheBundle::class)) {
+            (new CacheBundle())->getContainerExtension()?->load([], $container);
+        }
 
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
