@@ -55,6 +55,7 @@
         "symfony/doctrine-messenger": "^6.4 || ^7.0 || ^8.0",
         "symfony/expression-language": "^6.4 || ^7.0 || ^8.0",
         "symfony/http-kernel": "^6.4 || ^7.0 || ^8.0",
+        "symfony/lock": "^6.4 || ^7.0 || ^8.0",
         "symfony/messenger": "^6.4 || ^7.0 || ^8.0",
         "symfony/property-info": "^6.4 || ^7.0 || ^8.0",
         "symfony/runtime": "^6.4 || ^7.0 || ^8.0",

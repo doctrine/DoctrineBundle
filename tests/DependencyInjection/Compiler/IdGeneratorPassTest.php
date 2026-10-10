@@ -12,9 +12,11 @@ use Fixtures\Bundles\AttributesBundle\AttributesBundle;
 use Fixtures\Bundles\AttributesBundle\Entity\TestCustomIdGeneratorEntity as AttributeCustomIdGeneratorEntity;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
+use Symfony\Component\Cache\CacheBundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 use function uniqid;
@@ -65,6 +67,10 @@ class IdGeneratorPassTest extends TestCase
             'env(default::SYMFONY_TRUSTED_HEADERS)' => '',
             'debug.file_link_format' => null,
         ]));
+
+        if (class_exists(CacheBundle::class)) {
+            (new CacheBundle())->getContainerExtension()?->load([], $container);
+        }
 
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
