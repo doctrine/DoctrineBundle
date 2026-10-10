@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Closure;
+use Composer\InstalledVersions;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
@@ -58,6 +59,7 @@ use function is_dir;
 use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
+use function version_compare;
 
 class DoctrineExtensionTest extends TestCase
 {
@@ -789,6 +791,23 @@ class DoctrineExtensionTest extends TestCase
         $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_ping_connection')->getArguments());
         $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_close_connection')->getArguments());
         $this->assertCount(1, $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager')->getArguments());
+
+        $dbalMiddlewares = [
+            'messenger.middleware.doctrine_dbal_transaction' => 1,
+            'messenger.middleware.doctrine_dbal_ping_connection' => 1,
+            'messenger.middleware.doctrine_dbal_close_connection' => 1,
+            'messenger.middleware.doctrine_dbal_open_transaction_logger' => 2,
+        ];
+
+        $hasDbalMiddlewares = version_compare((string) InstalledVersions::getVersion('symfony/doctrine-bridge'), '8.2', '>=');
+
+        foreach ($dbalMiddlewares as $middlewareId => $argumentCount) {
+            if ($hasDbalMiddlewares) {
+                $this->assertCount($argumentCount, $container->getDefinition($middlewareId)->getArguments());
+            } else {
+                $this->assertFalse($container->hasDefinition($middlewareId));
+            }
+        }
     }
 
     public function testMessengerIntegrationWithDoctrineTransport(): void
