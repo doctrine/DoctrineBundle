@@ -37,6 +37,7 @@ use ReflectionClass;
 use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as ConsoleEntityValueResolver;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Driver;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
@@ -1119,12 +1120,35 @@ class DoctrineExtensionTest extends TestCase
         $definition = new ChildDefinition('');
         $attribute  = $reflector->getAttributes(AsDoctrineListener::class)[0]->newInstance();
 
-        $attributes[AsDoctrineListener::class]($definition, $attribute);
+        $attributes[AsDoctrineListener::class]($definition, $attribute, $reflector);
 
         $expected = [
             'event'      => Events::postFlush,
             'priority'   => null,
             'connection' => null,
+            'before'     => null,
+            'after'      => null,
+        ];
+        $this->assertSame([$expected], $definition->getTag('doctrine.event_listener'));
+
+        $definition = new ChildDefinition('');
+        $attribute  = new AsDoctrineListener(Events::postFlush, before: 'app.indexer', after: ['app.audit', 'App\Listener']);
+
+        // Query::ranOnPrimary() exists since symfony/doctrine-bridge 8.2, like the "before" and "after" options of the tag
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        if (! method_exists(Query::class, 'ranOnPrimary')) {
+            $this->expectException(LogicException::class);
+            $this->expectExceptionMessage(sprintf('Using "before" or "after" in #[AsDoctrineListener] on "%s" requires symfony/doctrine-bridge 8.2 or higher.', Php8EventListener::class));
+        }
+
+        $attributes[AsDoctrineListener::class]($definition, $attribute, $reflector);
+
+        $expected = [
+            'event'      => Events::postFlush,
+            'priority'   => null,
+            'connection' => null,
+            'before'     => 'app.indexer',
+            'after'      => ['app.audit', 'App\Listener'],
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.event_listener'));
     }
