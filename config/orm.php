@@ -42,6 +42,7 @@ use Symfony\Bridge\Doctrine\SchemaListener\LockStoreSchemaListener;
 use Symfony\Bridge\Doctrine\SchemaListener\PdoSessionHandlerSchemaListener;
 use Symfony\Bridge\Doctrine\SchemaListener\RememberMeTokenProviderDoctrineSchemaListener;
 use Symfony\Bridge\Doctrine\Security\User\EntityUserProvider;
+use Symfony\Bridge\Doctrine\Validator\Constraints\EntityExistsValidator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineInitializer;
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -88,6 +89,12 @@ return static function (ContainerConfigurator $container): void {
 
         ->set('doctrine.orm.validator.unique', UniqueEntityValidator::class)
             ->tag('validator.constraint_validator', ['alias' => 'doctrine.orm.validator.unique'])
+            ->args([
+                service('doctrine'),
+            ])
+
+        ->set('doctrine.orm.validator.entity_exists', EntityExistsValidator::class)
+            ->tag('validator.constraint_validator')
             ->args([
                 service('doctrine'),
             ])
