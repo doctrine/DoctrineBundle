@@ -9,6 +9,6 @@ use Symfony\Bridge\Doctrine\Serializer\Normalizer\CollectionDenormalizer;
 return static function (ContainerConfigurator $container): void {
     $container->services()
 
-        ->set('doctrine.orm.collection_denormalizer', CollectionDenormalizer::class)
+        ->set('doctrine.collection.denormalizer', CollectionDenormalizer::class)
             ->tag('serializer.normalizer');
 };

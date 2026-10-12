@@ -95,9 +95,9 @@ class ContainerTest extends TestCase
             $container::willBeAvailable('symfony/serializer', DenormalizerInterface::class, ['doctrine/doctrine-bundle'])
             && $container::willBeAvailable('symfony/doctrine-bridge', CollectionDenormalizer::class, ['doctrine/doctrine-bundle'])
         ) {
-            $this->assertInstanceOf(CollectionDenormalizer::class, $container->get('doctrine.orm.collection_denormalizer'));
+            $this->assertInstanceOf(CollectionDenormalizer::class, $container->get('doctrine.collection.denormalizer'));
         } else {
-            $this->assertFalse($container->has('doctrine.orm.collection_denormalizer'));
+            $this->assertFalse($container->has('doctrine.collection.denormalizer'));
         }
 
         $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
