@@ -15,6 +15,13 @@ parameters:
          identifier: class.notFound
          path: config/serializer.php
          reportUnmatched: false
+      # The method_exists() check is always true when symfony/config provides the method, and the
+      # method is added in Symfony 8.2. The entry is unmatched with a version that does not have it.
+      -
+         message: '#^Call to function method_exists\(\) with .* and .*acceptElementsAtPar.* will always evaluate to true\.$#'
+         identifier: function.alreadyNarrowedType
+         path: src/DependencyInjection/Configuration.php
+         reportUnmatched: false
    paths:
       - config
       - src
