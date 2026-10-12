@@ -5,21 +5,24 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
+use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
+use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\ManagerRegistry;
-use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use stdClass;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\VarExporter\LazyObjectInterface;
 
+use function array_keys;
 use function interface_exists;
 
 /**
@@ -106,6 +109,109 @@ class DoctrineDataCollectorTest extends TestCase
 
         $this->assertEmpty($collector->getMappingErrors());
         $this->assertEmpty($collector->getEntities());
+    }
+
+    public function testCollectDoesNotInitializeUnusedLazyManagers(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->createXmlBundleTestContainer();
+        $em        = $container->get('doctrine.orm.default_entity_manager');
+        $collector = $container->get('data_collector.doctrine');
+        $this->assertInstanceOf(DoctrineDataCollector::class, $collector);
+        $this->assertTrue(self::isUninitializedLazyObject($em));
+
+        $collector->collect(new Request(), new Response());
+        $this->assertTrue(self::isUninitializedLazyObject($em));
+
+        $collector->lateCollect();
+        $this->assertTrue(self::isUninitializedLazyObject($em));
+
+        $this->assertSame(['default' => []], $collector->getEntities());
+        $this->assertSame([], $collector->getMappingErrors());
+        $this->assertSame(['default' => []], $collector->getManagedEntityCountByClass());
+        $this->assertFalse($collector->getCacheEnabled());
+    }
+
+    public function testCollectReportsSecondLevelCacheOfUnusedLazyManagers(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $manager   = (new ReflectionClass(EntityManager::class))->newLazyGhost(static function (): never {
+            self::fail('The entity manager should not be initialized.');
+        });
+        $collector = $this->createCollector(['default' => $manager], true, null, ['default']);
+
+        $collector->collect(new Request(), new Response());
+
+        $this->assertTrue($collector->getCacheEnabled());
+        $this->assertSame(['puts' => 0, 'hits' => 0, 'misses' => 0], $collector->getCacheCounts());
+    }
+
+    public function testLateCollectValidatesMapping(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $manager    = $this->createStub(EntityManagerInterface::class);
+        $config     = $this->createStub(Configuration::class);
+        $factory    = $this->createStub(ClassMetadataFactory::class);
+        $unitOfWork = $this->createStub(UnitOfWork::class);
+        $collector  = $this->createCollector(['default' => $manager]);
+
+        /** @phpstan-ignore argument.type */
+        $metadata = $this->createEntityMetadata(self::FIRST_ENTITY);
+        $metadata->mapManyToOne(['fieldName' => 'missing', 'targetEntity' => 'TestBundle\Test\Entity\Missing']);
+
+        $manager->method('getMetadataFactory')->willReturn($factory);
+        $manager->method('getConfiguration')->willReturn($config);
+        $manager->method('getUnitOfWork')->willReturn($unitOfWork);
+        $factory->method('getLoadedMetadata')->willReturn([$metadata]);
+        $unitOfWork->method('getIdentityMap')->willReturn([]);
+
+        $collector->collect(new Request(), new Response());
+        $collector->lateCollect();
+
+        $this->assertSame([self::FIRST_ENTITY], array_keys($collector->getEntities()['default']));
+        $this->assertSame(1, $collector->getInvalidEntityCount());
+        $this->assertSame(
+            ['default' => [self::FIRST_ENTITY => ["The target entity 'TestBundle\Test\Entity\Missing' specified on TestBundle\Test\Entity\Test1#missing is unknown or not an entity."]]],
+            $collector->getMappingErrors(),
+        );
+    }
+
+    public function testLateCollectReportsMappingExceptions(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $manager    = $this->createStub(EntityManagerInterface::class);
+        $config     = $this->createStub(Configuration::class);
+        $factory    = $this->createStub(ClassMetadataFactory::class);
+        $unitOfWork = $this->createStub(UnitOfWork::class);
+        $collector  = $this->createCollector(['default' => $manager]);
+
+        /** @phpstan-ignore argument.type */
+        $metadata = $this->createEntityMetadata(self::FIRST_ENTITY);
+        $metadata->mapManyToOne(['fieldName' => 'broken', 'targetEntity' => stdClass::class]);
+
+        $manager->method('getMetadataFactory')->willReturn($factory);
+        $manager->method('getConfiguration')->willReturn($config);
+        $manager->method('getUnitOfWork')->willReturn($unitOfWork);
+        $factory->method('getLoadedMetadata')->willReturn([$metadata]);
+        $factory->method('getMetadataFor')->willThrowException(new MappingException('Broken mapping.'));
+        $unitOfWork->method('getIdentityMap')->willReturn([]);
+
+        $collector->collect(new Request(), new Response());
+        $collector->lateCollect();
+
+        $this->assertSame(['default' => [self::FIRST_ENTITY => ['Broken mapping.']]], $collector->getMappingErrors());
     }
 
     public function testGetGroupedQueries(): void
@@ -212,11 +318,15 @@ class DoctrineDataCollectorTest extends TestCase
         return $metadata;
     }
 
-    /** @param array<string, object> $managers */
+    /**
+     * @param array<string, object> $managers
+     * @param list<string>          $secondLevelCacheManagers
+     */
     private function createCollector(
         array $managers,
         bool $shouldValidateSchema = true,
         DebugDataHolder|null $debugDataHolder = null,
+        array $secondLevelCacheManagers = [],
     ): DoctrineDataCollector {
         $registry = $this->createStub(ManagerRegistry::class);
         $registry->method('getConnectionNames')
@@ -225,6 +335,15 @@ class DoctrineDataCollectorTest extends TestCase
             ->willReturn(['default' => 'doctrine.orm.default_entity_manager']);
         $registry->method('getManagers')->willReturn($managers);
 
-        return new DoctrineDataCollector($registry, $shouldValidateSchema, $debugDataHolder);
+        return new DoctrineDataCollector($registry, $shouldValidateSchema, $debugDataHolder, $secondLevelCacheManagers);
+    }
+
+    private static function isUninitializedLazyObject(object $object): bool
+    {
+        if ($object instanceof LazyObjectInterface) {
+            return ! $object->isLazyObjectInitialized();
+        }
+
+        return (new ReflectionClass($object))->isUninitializedLazyObject($object);
     }
 }
