@@ -81,11 +81,17 @@ class EntityValueResolverFunctionalKernel extends Kernel
             ->autoconfigure()
             ->public()
             ->tag('controller.service_arguments');
+        $services->set(ServiceArgumentController::class)
+            ->autowire()
+            ->autoconfigure()
+            ->public()
+            ->tag('controller.service_arguments');
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
         $routes->add('post_show', '/posts/{post}')->controller(PostController::class);
+        $routes->add('service_argument', '/service-argument')->controller(ServiceArgumentController::class);
     }
 
     public function getProjectDir(): string
