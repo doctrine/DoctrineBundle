@@ -84,13 +84,16 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new RemoveLoggingMiddlewarePass(), PassConfig::TYPE_OPTIMIZE);
         $container->addCompilerPass(new MiddlewaresPass());
         $container->addCompilerPass(new RegisterUidTypePass());
-        $container->addCompilerPass(new RegisterDbalTypePass());
 
-        if (! class_exists(RegisterDatePointTypePass::class)) {
-            return;
+        if (class_exists(RegisterDatePointTypePass::class)) {
+            $container->addCompilerPass(new RegisterDatePointTypePass());
         }
 
-        $container->addCompilerPass(new RegisterDatePointTypePass());
+        // Runs after the passes that add types to the connection factory, so that the types they
+        // declare, such as date_point, are part of the type provider of each connection. The
+        // negative priority also places it after the passes that other bundles add with the default
+        // priority, because those passes can declare types too.
+        $container->addCompilerPass(new RegisterDbalTypePass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, -10);
     }
 
     public function shutdown(): void

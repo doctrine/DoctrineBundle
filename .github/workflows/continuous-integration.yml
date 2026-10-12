@@ -47,8 +47,10 @@ jobs:
           - "8.4"
         dependencies:
           - "highest"
+        # TODO: restore "stable" once doctrine/orm 3.8 is released. This bundle requires
+        # doctrine/orm >= 3.8, and a stable dependency set cannot resolve it yet.
         stability:
-          - "stable"
+          - "dev"
         symfony-require:
           - ""
         remove-orm:
@@ -58,7 +60,6 @@ jobs:
         include:
           # Tests the lowest set of dependencies
           - dependencies: "lowest"
-            stability: "stable"
             php-version: "8.4"
 
           # Test legacy LTS
@@ -72,7 +73,7 @@ jobs:
             php-version: "8.5"
 
           # Test non-LTS
-          - symfony-require: "8.0.*"
+          - symfony-require: "8.1.*"
             dependencies: "highest"
             php-version: "8.5"
 
@@ -85,7 +86,6 @@ jobs:
           # No Messenger integration
           - php-version: "8.5"
             dependencies: "highest"
-            stability: "stable"
             remove-doctrine-messenger: true
 
           # Bleeding edge
