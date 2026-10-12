@@ -21,6 +21,7 @@ use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListen
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterUidTypePass;
 use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFactory;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\SecurityExtension;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -47,6 +48,19 @@ class DoctrineBundle extends Bundle
                 $container->removeDefinition('doctrine.orm.listeners.pdo_session_handler_schema_listener');
             }
         }, PassConfig::TYPE_BEFORE_OPTIMIZATION);
+
+        // runs before CachePoolPass, so that the pool gets its own namespace
+        $container->addCompilerPass(new class () implements CompilerPassInterface {
+            public function process(ContainerBuilder $container): void
+            {
+                if (! $container->has('cache.system') || ! $container->hasDefinition('doctrine.orm.entity_value_resolver.expression_language')) {
+                    return;
+                }
+
+                $container->setDefinition('cache.doctrine.orm.entity_value_resolver.expression_language', new ChildDefinition('cache.system'))
+                    ->addTag('cache.pool');
+            }
+        }, PassConfig::TYPE_BEFORE_OPTIMIZATION, 33);
 
         $container->addCompilerPass(new RegisterEventListenersAndSubscribersPass('doctrine.connections', 'doctrine.dbal.%s_connection.event_manager', 'doctrine'), PassConfig::TYPE_BEFORE_OPTIMIZATION);
 
