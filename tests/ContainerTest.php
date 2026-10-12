@@ -21,11 +21,13 @@ use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as Cons
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
+use Symfony\Bridge\Doctrine\Serializer\Normalizer\CollectionDenormalizer;
 use Symfony\Bridge\Doctrine\Validator\Constraints\EntityExistsValidator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 use function class_exists;
 use function interface_exists;
@@ -80,6 +82,16 @@ class ContainerTest extends TestCase
         $this->assertFalse($container->has('doctrine.dbal.default_connection.events.mysqlsessioninit'));
 
         $this->assertInstanceOf(DoctrineExtractor::class, $container->get('doctrine.orm.default_entity_manager.property_info_extractor'));
+
+        // CollectionDenormalizer exists since symfony/doctrine-bridge 8.2
+        if (
+            $container::willBeAvailable('symfony/serializer', DenormalizerInterface::class, ['doctrine/doctrine-bundle'])
+            && $container::willBeAvailable('symfony/doctrine-bridge', CollectionDenormalizer::class, ['doctrine/doctrine-bundle'])
+        ) {
+            $this->assertInstanceOf(CollectionDenormalizer::class, $container->get('doctrine.orm.collection_denormalizer'));
+        } else {
+            $this->assertFalse($container->has('doctrine.orm.collection_denormalizer'));
+        }
 
         $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
         $this->assertInstanceOf(ManagerRegistryAwareEntityManagerProvider::class, $container->get('doctrine.orm.command.entity_manager_provider'));
