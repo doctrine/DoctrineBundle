@@ -29,6 +29,7 @@ use function in_array;
 use function is_array;
 use function is_string;
 use function key;
+use function method_exists;
 use function reset;
 use function sprintf;
 use function strtoupper;
@@ -158,6 +159,12 @@ final class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('connections');
         $node        = $treeBuilder->getRootNode();
+
+        // a single connection given directly under "dbal" is the one named by "default_connection"
+        // requires symfony/config 8.2
+        if (method_exists($node, 'acceptElementsAtParentLevel')) {
+            $node->acceptElementsAtParentLevel();
+        }
 
         $connectionNode = $node
             ->requiresAtLeastOneElement()
@@ -557,6 +564,12 @@ final class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('entity_managers');
         $node        = $treeBuilder->getRootNode();
+
+        // a single entity manager given directly under "orm" is the one named by "default_entity_manager"
+        // requires symfony/config 8.2
+        if (method_exists($node, 'acceptElementsAtParentLevel')) {
+            $node->acceptElementsAtParentLevel();
+        }
 
         $node
             ->requiresAtLeastOneElement()
