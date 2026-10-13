@@ -53,7 +53,6 @@ use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
-use Symfony\Bridge\Doctrine\Serializer\Normalizer\CollectionDenormalizer;
 use Symfony\Bridge\Doctrine\Validator\Constraints\EntityExistsValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -77,7 +76,6 @@ use Symfony\Component\Messenger\Bridge\Doctrine\EventListener\PostgreSqlNotifyOn
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
 
 use function array_flip;
@@ -811,16 +809,6 @@ final class DoctrineExtension extends Extension
 
         if (! class_exists(AbstractType::class)) {
             $container->removeDefinition('form.type.entity');
-        }
-
-        // The Serializer delegates a collection interface to a denormalizer, so register the one
-        // that builds the Doctrine collections declared on entity properties. Both the Serializer
-        // and the denormalizer, added in symfony/doctrine-bridge 8.2, are optional.
-        if (
-            ContainerBuilder::willBeAvailable('symfony/serializer', DenormalizerInterface::class, ['doctrine/doctrine-bundle'])
-            && ContainerBuilder::willBeAvailable('symfony/doctrine-bridge', CollectionDenormalizer::class, ['doctrine/doctrine-bundle'])
-        ) {
-            $loader->load('serializer.php');
         }
 
         $controllerResolverDefaults = [];
