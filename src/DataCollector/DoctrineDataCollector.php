@@ -462,6 +462,27 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         return $count;
     }
 
+    /**
+     * Whether any group looks like an N+1.
+     *
+     * The flag lives on the grouped statements, and the panel only groups by
+     * itself past a hundred queries, so without this a page with thirty
+     * queries -- twenty of them one lazy-loaded association -- would hide the
+     * very thing worth seeing until someone thought to group it by hand.
+     */
+    public function hasSuspectedNPlusOne(): bool
+    {
+        foreach ($this->getGroupedQueries() as $connectionGroupedQueries) {
+            foreach ($connectionGroupedQueries as $groupedQuery) {
+                if ($groupedQuery['suspectedNPlusOne']) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static function isUninitializedLazyObject(object $object): bool
     {
         if ($object instanceof LazyObjectInterface) {

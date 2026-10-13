@@ -505,6 +505,32 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame(1, $groupedQueries['default'][0]['paramSetCount']);
     }
 
+    public function testHasSuspectedNPlusOne(): void
+    {
+        $repeated = [];
+        foreach ([1, 2, 3, 4, 5] as $authorId) {
+            $repeated[] = [
+                'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                'params' => [':id' => $authorId],
+                'types' => null,
+                'executionMS' => 1.0,
+            ];
+        }
+
+        $this->assertTrue($this->createCollectorFor($repeated)->hasSuspectedNPlusOne());
+
+        $plain = [
+            [
+                'sql' => 'SELECT * FROM post',
+                'params' => [],
+                'types' => null,
+                'executionMS' => 1.0,
+            ],
+        ];
+
+        $this->assertFalse($this->createCollectorFor($plain)->hasSuspectedNPlusOne());
+    }
+
     /**
      * @param list<array<string, mixed>> $queries
      *
@@ -512,13 +538,19 @@ class DoctrineDataCollectorTest extends TestCase
      */
     private function collectGroupedQueries(array $queries): array
     {
+        return $this->createCollectorFor($queries)->getGroupedQueries();
+    }
+
+    /** @param list<array<string, mixed>> $queries */
+    private function createCollectorFor(array $queries): DoctrineDataCollector
+    {
         $debugDataHolder = $this->createStub(DebugDataHolder::class);
         $debugDataHolder->method('getData')->willReturn(['default' => $queries]);
 
         $collector = $this->createCollector([], true, $debugDataHolder);
         $collector->collect(new Request(), new Response());
 
-        return $collector->getGroupedQueries();
+        return $collector;
     }
 
     /**

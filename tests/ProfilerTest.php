@@ -178,4 +178,46 @@ class ProfilerTest extends BaseTestCase
         $this->assertStringContainsString('Ran 5 times with 5 different parameter sets', $output);
         $this->assertStringContainsString('JOIN FETCH', $output);
     }
+
+    public function testASuspectedNPlusOneGroupsThePanelByItself(): void
+    {
+        foreach ([1, 2, 3, 4, 5] as $authorId) {
+            $query = new Query('SELECT * FROM post WHERE author_id = ?');
+            $query->setValue(1, $authorId, ParameterType::INTEGER);
+            $this->debugDataHolder->addQuery('foo', $query);
+        }
+
+        // No "group" in the query string, and far fewer than a hundred queries.
+        $this->assertStringContainsString('N+1?', $this->renderPanel(new Request()));
+
+        // An explicit choice still wins over it.
+        $this->assertStringNotContainsString('N+1?', $this->renderPanel(new Request(['group' => '0'])));
+    }
+
+    private function renderPanel(Request $request): string
+    {
+        $this->collector->collect($request, new Response());
+
+        $profile = new Profile('foo');
+        $profile->setMethod('GET');
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
+
+        $requestDataCollector = new RequestDataCollector($requestStack);
+        $requestDataCollector->collect($request, new Response());
+        $requestDataCollector->lateCollect();
+
+        $profile->addCollector($requestDataCollector);
+
+        return $this->twig->render('db.html.twig', [
+            'request' => $request,
+            'token' => 'foo',
+            'page' => 'foo',
+            'profile' => $profile,
+            'collector' => $this->collector,
+            'queries' => $this->debugDataHolder->getData(),
+            'profiler_markup_version' => 3,
+            'profile_type' => 'request',
+        ]);
+    }
 }

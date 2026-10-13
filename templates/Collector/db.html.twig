@@ -174,7 +174,7 @@
 
     <div class="sf-tabs" style="margin-top: 20px;">
         <div class="tab {{ collector.queries is empty ? 'disabled' }}">
-            {% set group_queries = request.query.getBoolean('group', collector.querycount > 100) %}
+            {% set group_queries = request.query.getBoolean('group', collector.querycount > 100 or collector.hasSuspectedNPlusOne) %}
             <h3 class="tab-title">
                 {% if group_queries %}
                     Grouped Statements
