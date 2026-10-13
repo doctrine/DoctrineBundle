@@ -29,7 +29,7 @@ use function assert;
 use function count;
 use function hash;
 use function in_array;
-use function ltrim;
+use function preg_replace;
 use function serialize;
 use function strncasecmp;
 use function usort;
@@ -400,10 +400,16 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
      * A write replayed with varying parameters is a batch, not an N+1: one
      * flush() inserting 50 rows is the same statement with 50 different
      * parameter sets, and no amount of eager fetching changes that.
+     *
+     * Statements do not always start with their verb, though: a CTE opens with
+     * WITH, a compound select can be parenthesised, and tracing middlewares
+     * prepend a comment. Step over all of that before looking.
      */
     private static function readsRows(string $sql): bool
     {
-        return strncasecmp(ltrim($sql), 'SELECT', 6) === 0;
+        $sql = preg_replace('{^(?:\s|/\*.*?\*/|--[^\n]*(?:\n|$)|\()+}s', '', $sql) ?? $sql;
+
+        return strncasecmp($sql, 'SELECT', 6) === 0 || strncasecmp($sql, 'WITH', 4) === 0;
     }
 
     /**

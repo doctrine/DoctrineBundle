@@ -378,6 +378,49 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertTrue($groupedQueries['default'][0]['suspectedNPlusOne']);
     }
 
+    public function testGetGroupedQueriesFlagsReadsThatDoNotStartWithSelect(): void
+    {
+        $reads = [
+            'WITH recent AS (SELECT * FROM post) SELECT * FROM recent WHERE author_id = :id',
+            '(SELECT * FROM post WHERE author_id = :id) UNION (SELECT * FROM draft)',
+            '/* app:PostRepository */ SELECT * FROM post WHERE author_id = :id',
+        ];
+
+        foreach ($reads as $sql) {
+            $queries = [];
+            foreach ([1, 2, 3, 4, 5] as $authorId) {
+                $queries[] = [
+                    'sql' => $sql,
+                    'params' => [':id' => $authorId],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ];
+            }
+
+            $groupedQueries = $this->collectGroupedQueries($queries);
+
+            $this->assertTrue($groupedQueries['default'][0]['suspectedNPlusOne'], $sql);
+        }
+    }
+
+    public function testGetGroupedQueriesDoesNotFlagAWriteBehindAComment(): void
+    {
+        $queries = [];
+        foreach ([1, 2, 3, 4, 5] as $postId) {
+            $queries[] = [
+                'sql' => '/* app:PostRepository */ INSERT INTO post (id) VALUES (:id)',
+                'params' => [':id' => $postId],
+                'types' => null,
+                'executionMS' => 1.0,
+            ];
+        }
+
+        $groupedQueries = $this->collectGroupedQueries($queries);
+
+        $this->assertSame(5, $groupedQueries['default'][0]['paramSetCount']);
+        $this->assertFalse($groupedQueries['default'][0]['suspectedNPlusOne']);
+    }
+
     public function testGetGroupedQueriesDoesNotFlagWritesReplayedInABatch(): void
     {
         $queries = [];
