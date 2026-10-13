@@ -215,6 +215,7 @@
     </xsd:group>
 
     <xsd:attributeGroup name="entity-manager-config">
+        <xsd:attribute name="auto-discover-entities" type="xsd:boolean" />
         <xsd:attribute name="auto-mapping" type="xsd:string" />
         <xsd:attribute name="connection" type="xsd:string" />
         <xsd:attribute name="default-repository-class" type="xsd:string" />
