@@ -9,12 +9,6 @@ parameters:
          message: '~^Class Symfony\\Bridge\\Doctrine\\Messenger\\DoctrineDbal\w+Middleware not found\.$~'
          identifier: class.notFound
          reportUnmatched: false
-      # CollectionDenormalizer is added in symfony/doctrine-bridge 8.2. The service is declared
-      # only when the class is available, so this entry can be dropped once 8.2 is required.
-      -
-         identifier: class.notFound
-         path: config/serializer.php
-         reportUnmatched: false
       # The method_exists() check is always true when symfony/config provides the method, and the
       # method is added in Symfony 8.2. The entry is unmatched with a version that does not have it.
       -
