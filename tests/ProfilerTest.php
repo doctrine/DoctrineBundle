@@ -129,16 +129,23 @@ class ProfilerTest extends BaseTestCase
 
     public function testRenderGroupedFlagsStatementsReplayedWithDifferentParameters(): void
     {
-        foreach ([1, 2] as $authorId) {
+        foreach ([1, 2, 3, 4, 5] as $authorId) {
             $query = new Query('SELECT * FROM post WHERE author_id = ?');
             $query->setValue(1, $authorId, ParameterType::INTEGER);
             $this->debugDataHolder->addQuery('foo', $query);
         }
 
         // Same statement, same parameters: repeated, but not an N+1 signature.
-        foreach ([1, 1] as $authorId) {
+        foreach ([1, 1, 1, 1, 1] as $authorId) {
             $query = new Query('SELECT * FROM author WHERE id = ?');
             $query->setValue(1, $authorId, ParameterType::INTEGER);
+            $this->debugDataHolder->addQuery('foo', $query);
+        }
+
+        // A batch of writes is not an N+1 either.
+        foreach ([1, 2, 3, 4, 5] as $postId) {
+            $query = new Query('INSERT INTO post (id) VALUES (?)');
+            $query->setValue(1, $postId, ParameterType::INTEGER);
             $this->debugDataHolder->addQuery('foo', $query);
         }
 
@@ -167,7 +174,8 @@ class ProfilerTest extends BaseTestCase
         ]);
 
         $this->assertSame(1, substr_count($output, 'N+1?'));
-        $this->assertStringContainsString('Ran 2 times with 2 different parameter sets', $output);
+        $this->assertStringContainsString('badge badge-warning', $output);
+        $this->assertStringContainsString('Ran 5 times with 5 different parameter sets', $output);
         $this->assertStringContainsString('JOIN FETCH', $output);
     }
 }

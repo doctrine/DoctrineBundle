@@ -29,7 +29,9 @@ use function assert;
 use function count;
 use function hash;
 use function in_array;
+use function ltrim;
 use function serialize;
+use function strncasecmp;
 use function usort;
 
 /**
@@ -64,6 +66,7 @@ use function usort;
  *    count: int,
  *    index: int,
  *    paramSetCount: int,
+ *    suspectedNPlusOne: bool,
  *    executionPercent?: float
  * }
  * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
@@ -71,6 +74,14 @@ use function usort;
  */
 class DoctrineDataCollector extends BaseCollector implements LateDataCollectorInterface
 {
+    /**
+     * How many different parameter sets one SELECT has to be replayed with
+     * before it is worth pointing at. Two is the shape of an N+1, but it is
+     * also the shape of two unrelated lookups, so it would flag ordinary
+     * pages.
+     */
+    private const int SUSPECTED_N_PLUS_ONE_THRESHOLD = 5;
+
     private int|null $invalidEntityCount = null;
 
     private int|null $managedEntityCount = null;
@@ -359,7 +370,11 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
             }
 
             foreach ($connectionGroupedQueries as $key => $groupedQuery) {
-                $connectionGroupedQueries[$key]['paramSetCount'] = count($paramSets[$key]);
+                $paramSetCount = count($paramSets[$key]);
+
+                $connectionGroupedQueries[$key]['paramSetCount']     = $paramSetCount;
+                $connectionGroupedQueries[$key]['suspectedNPlusOne'] = $paramSetCount >= self::SUSPECTED_N_PLUS_ONE_THRESHOLD
+                    && self::readsRows($groupedQuery['sql']);
             }
 
             usort($connectionGroupedQueries, static function ($a, $b) {
@@ -382,12 +397,27 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
     }
 
     /**
+     * A write replayed with varying parameters is a batch, not an N+1: one
+     * flush() inserting 50 rows is the same statement with 50 different
+     * parameter sets, and no amount of eager fetching changes that.
+     */
+    private static function readsRows(string $sql): bool
+    {
+        return strncasecmp(ltrim($sql), 'SELECT', 6) === 0;
+    }
+
+    /**
      * Returns a fixed-size identity for a set of query parameters.
      *
      * Counting the distinct identities of a group tells apart the same
      * statement repeated as is from the same statement replayed with varying
      * parameters, which is the typical signature of N+1 queries caused by ORM
      * lazy loading.
+     *
+     * Parameters are read after sanitization, where an object that has no
+     * string form is rendered as a notice rather than a value. Such objects
+     * are indistinguishable from each other here, so a statement bound with
+     * one counts as a single parameter set and goes unreported.
      */
     private function hashParams(mixed $params): string
     {
