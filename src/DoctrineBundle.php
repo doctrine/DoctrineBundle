@@ -8,6 +8,7 @@ use Closure;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubscriberPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DecoratedEntityManagersPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\MiddlewaresPass;
@@ -72,6 +73,7 @@ class DoctrineBundle extends Bundle
         $container->addCompilerPass(new IdGeneratorPass());
         $container->addCompilerPass(new DbalSchemaFilterPass());
         $container->addCompilerPass(new CacheSchemaSubscriberPass(), PassConfig::TYPE_BEFORE_REMOVING, -10);
+        $container->addCompilerPass(new DecoratedEntityManagersPass(), PassConfig::TYPE_BEFORE_REMOVING);
         $container->addCompilerPass(new RemoveProfilerControllerPass());
         $container->addCompilerPass(new RemoveLoggingMiddlewarePass());
         $container->addCompilerPass(new MiddlewaresPass());
