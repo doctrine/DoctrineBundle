@@ -21,6 +21,7 @@ class BacktraceDebugDataHolder extends DebugDataHolder
     /** @param string[] $connWithBacktraces */
     public function __construct(
         private readonly array $connWithBacktraces,
+        private readonly NPlusOneGuard|null $nPlusOneGuard = null,
     ) {
     }
 
@@ -34,6 +35,8 @@ class BacktraceDebugDataHolder extends DebugDataHolder
     public function addQuery(string $connectionName, Query $query): void
     {
         parent::addQuery($connectionName, $query);
+
+        $this->nPlusOneGuard?->track($connectionName, $query->getSql(), $query->getParams());
 
         if (! in_array($connectionName, $this->connWithBacktraces, true)) {
             return;

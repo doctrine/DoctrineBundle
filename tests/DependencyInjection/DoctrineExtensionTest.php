@@ -1219,8 +1219,48 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue(in_array(['connection' => 'conn3', 'priority' => 10], $debugMiddlewareTagAttributes, true));
 
         $arguments = $container->getDefinition('doctrine.debug_data_holder')->getArguments();
-        $this->assertCount(1, $arguments);
+        $this->assertCount(2, $arguments);
         $this->assertSame(['conn3'], $arguments[0]);
+        $this->assertSame('doctrine.dbal.n_plus_one_guard', (string) $arguments[1]);
+    }
+
+    public function testNPlusOneGuardIsWiredForProfiledConnectionsWithAThreshold(): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => [
+                        'password' => 'foo',
+                        'profiling' => true,
+                        'profiling_n_plus_one_threshold' => 20,
+                    ],
+                    'conn2' => [
+                        'password' => 'bar',
+                        'profiling' => true,
+                        'profiling_n_plus_one_threshold' => 5,
+                        'profiling_n_plus_one_strict' => true,
+                    ],
+                    'conn3' => [
+                        'password' => 'baz',
+                        'profiling' => true,
+                    ],
+                    'conn4' => [
+                        'password' => 'qux',
+                        'profiling' => false,
+                        'profiling_n_plus_one_threshold' => 5,
+                    ],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $arguments = $container->getDefinition('doctrine.dbal.n_plus_one_guard')->getArguments();
+        $this->assertSame(['conn1' => 20, 'conn2' => 5], $arguments[0]);
+        $this->assertSame(['conn1' => false, 'conn2' => true], $arguments[1]);
     }
 
     public function testDefinitionsToLogAndProfile(): void

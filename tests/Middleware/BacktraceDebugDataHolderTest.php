@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Middleware;
 
+use Doctrine\Bundle\DoctrineBundle\Exception\NPlusOneQueriesDetected;
 use Doctrine\Bundle\DoctrineBundle\Middleware\BacktraceDebugDataHolder;
+use Doctrine\Bundle\DoctrineBundle\Middleware\NPlusOneGuard;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
+use Doctrine\DBAL\ParameterType;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 
 use function count;
@@ -35,6 +38,35 @@ class BacktraceDebugDataHolderTest extends TestCase
         $this->assertCount(1, $sut->getData()['myconn'] ?? []);
         $sut->reset();
         $this->assertCount(0, $sut->getData()['myconn'] ?? []);
+    }
+
+    public function testQueriesAreHandedToTheNPlusOneGuard(): void
+    {
+        $sut = new BacktraceDebugDataHolder([], new NPlusOneGuard(['myconn' => 2], ['myconn' => true]));
+
+        $sut->addQuery('myconn', $this->createQuery('SELECT * FROM product WHERE category_id = ?', 1));
+
+        $this->expectException(NPlusOneQueriesDetected::class);
+
+        $sut->addQuery('myconn', $this->createQuery('SELECT * FROM product WHERE category_id = ?', 2));
+    }
+
+    public function testWithoutAGuardQueriesAreOnlyRecorded(): void
+    {
+        $sut = new BacktraceDebugDataHolder([]);
+
+        $sut->addQuery('myconn', $this->createQuery('SELECT * FROM product WHERE category_id = ?', 1));
+        $sut->addQuery('myconn', $this->createQuery('SELECT * FROM product WHERE category_id = ?', 2));
+
+        $this->assertCount(2, $sut->getData()['myconn'] ?? []);
+    }
+
+    private function createQuery(string $sql, int $param): Query
+    {
+        $query = new Query($sql);
+        $query->setValue(1, $param, ParameterType::INTEGER);
+
+        return $query;
     }
 
     public function testBacktracesEnabled(): void

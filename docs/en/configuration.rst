@@ -106,6 +106,11 @@ Configuration Reference
                         profiling_collect_backtrace: false
                         # When true, profiling also collects schema errors for each query
                         profiling_collect_schema_errors: true
+                        # Reports a statement replayed with that many different parameter
+                        # sets as N+1 queries; 0 disables the check
+                        profiling_n_plus_one_threshold: 0
+                        # When true, reaching the threshold throws instead of logging
+                        profiling_n_plus_one_strict: false
 
                         server_version:       ~
                         driver_class:         ~
@@ -453,6 +458,11 @@ Configuration Reference
                             'profiling_collect_backtrace' => false,
                             // When true, profiling also collects schema errors for each query
                             'profiling_collect_schema_errors' => true,
+                            // Reports a statement replayed with that many different parameter
+                            // sets as N+1 queries; 0 disables the check
+                            'profiling_n_plus_one_threshold' => 0,
+                            // When true, reaching the threshold throws instead of logging
+                            'profiling_n_plus_one_strict' => false,
 
                             'server_version' => null,
                             'driver_class' => null,

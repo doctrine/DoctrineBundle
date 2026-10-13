@@ -105,7 +105,7 @@ use const GLOB_NOSORT;
  * @internal
  *
  * @phpstan-type DBALConfig = array{
- *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, idle_connection_ttl: int}>,
+ *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, profiling_n_plus_one_threshold: int, profiling_n_plus_one_strict: bool, idle_connection_ttl: int}>,
  *      driver_schemes: array<string, string>,
  *      default_connection: string,
  *      types: array<string, string>,
@@ -537,10 +537,12 @@ final class DoctrineExtension extends Extension
         $container->setParameter('doctrine.connections', $connections);
         $container->setParameter('doctrine.default_connection', $this->defaultConnection);
 
-        $connWithLogging   = [];
-        $connWithProfiling = [];
-        $connWithBacktrace = [];
-        $ttlByConnection   = [];
+        $connWithLogging    = [];
+        $connWithProfiling  = [];
+        $connWithBacktrace  = [];
+        $ttlByConnection    = [];
+        $nPlusOneThresholds = [];
+        $nPlusOneStrict     = [];
 
         foreach ($config['connections'] as $name => $connection) {
             if ($connection['logging']) {
@@ -552,6 +554,11 @@ final class DoctrineExtension extends Extension
 
                 if ($connection['profiling_collect_backtrace']) {
                     $connWithBacktrace[] = $name;
+                }
+
+                if ($connection['profiling_n_plus_one_threshold'] > 1) {
+                    $nPlusOneThresholds[$name] = $connection['profiling_n_plus_one_threshold'];
+                    $nPlusOneStrict[$name]     = $connection['profiling_n_plus_one_strict'];
                 }
             }
 
@@ -581,7 +588,7 @@ final class DoctrineExtension extends Extension
             }
         });
 
-        $this->registerDbalMiddlewares($container, $connWithLogging, $connWithProfiling, $connWithBacktrace, array_keys($ttlByConnection));
+        $this->registerDbalMiddlewares($container, $connWithLogging, $connWithProfiling, $connWithBacktrace, array_keys($ttlByConnection), $nPlusOneThresholds, $nPlusOneStrict);
 
         $container->getDefinition('doctrine.dbal.idle_connection_middleware')->setArgument(1, $ttlByConnection);
 
@@ -612,6 +619,8 @@ final class DoctrineExtension extends Extension
             $connection['profiling'],
             $connection['profiling_collect_backtrace'],
             $connection['profiling_collect_schema_errors'],
+            $connection['profiling_n_plus_one_threshold'],
+            $connection['profiling_n_plus_one_strict'],
         );
 
         if (isset($connection['auto_commit'])) {
@@ -1545,10 +1554,12 @@ final class DoctrineExtension extends Extension
     }
 
     /**
-     * @param string[] $connWithLogging
-     * @param string[] $connWithProfiling
-     * @param string[] $connWithBacktrace
-     * @param string[] $connWithTtl
+     * @param string[]            $connWithLogging
+     * @param string[]            $connWithProfiling
+     * @param string[]            $connWithBacktrace
+     * @param string[]            $connWithTtl
+     * @param array<string, int>  $nPlusOneThresholds
+     * @param array<string, bool> $nPlusOneStrict
      */
     private function registerDbalMiddlewares(
         ContainerBuilder $container,
@@ -1556,6 +1567,8 @@ final class DoctrineExtension extends Extension
         array $connWithProfiling,
         array $connWithBacktrace,
         array $connWithTtl,
+        array $nPlusOneThresholds,
+        array $nPlusOneStrict,
     ): void {
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('middlewares.php');
@@ -1566,6 +1579,11 @@ final class DoctrineExtension extends Extension
         }
 
         $container->getDefinition('doctrine.debug_data_holder')->replaceArgument(0, $connWithBacktrace);
+
+        $nPlusOneGuardDef = $container->getDefinition('doctrine.dbal.n_plus_one_guard');
+        $nPlusOneGuardDef->replaceArgument(0, $nPlusOneThresholds);
+        $nPlusOneGuardDef->replaceArgument(1, $nPlusOneStrict);
+
         $debugMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.debug_middleware');
         foreach ($connWithProfiling as $connName) {
             $debugMiddlewareAbstractDef
