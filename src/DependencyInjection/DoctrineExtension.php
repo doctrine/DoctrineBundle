@@ -105,7 +105,7 @@ use const GLOB_NOSORT;
  * @internal
  *
  * @phpstan-type DBALConfig = array{
- *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, idle_connection_ttl: int}>,
+ *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, idle_connection_ttl: int, middlewares: list<array{service: string, priority: int|null}>}>,
  *      driver_schemes: array<string, string>,
  *      default_connection: string,
  *      types: array<string, string>,
@@ -529,12 +529,22 @@ final class DoctrineExtension extends Extension
         $container->getDefinition('doctrine.dbal.connection_factory.dsn_parser')->setArgument(0, array_merge(ConnectionFactory::DEFAULT_SCHEME_MAP, $config['driver_schemes']));
 
         $connections = [];
+        $middlewares = [];
 
-        foreach (array_keys($config['connections']) as $name) {
+        foreach ($config['connections'] as $name => $connection) {
             $connections[$name] = sprintf('doctrine.dbal.%s_connection', $name);
+
+            if (! $connection['middlewares']) {
+                continue;
+            }
+
+            // The services are tagged by MiddlewaresPass rather than here: an extension may only
+            // touch the definitions it declares itself, and these belong to the application.
+            $middlewares[$name] = $connection['middlewares'];
         }
 
         $container->setParameter('doctrine.connections', $connections);
+        $container->setParameter('doctrine.dbal.connection_middlewares', $middlewares);
         $container->setParameter('doctrine.default_connection', $this->defaultConnection);
 
         $connWithLogging   = [];
@@ -612,6 +622,8 @@ final class DoctrineExtension extends Extension
             $connection['profiling'],
             $connection['profiling_collect_backtrace'],
             $connection['profiling_collect_schema_errors'],
+            // read in dbalLoad() and handed to MiddlewaresPass, never a DBAL connection param
+            $connection['middlewares'],
         );
 
         if (isset($connection['auto_commit'])) {
