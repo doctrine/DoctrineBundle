@@ -26,11 +26,18 @@ use const PHP_VERSION_ID;
 class Registry extends ManagerRegistry implements ResetInterface
 {
     /**
-     * @param string[] $connections
-     * @param string[] $entityManagers
+     * @param string[]              $connections
+     * @param string[]              $entityManagers
+     * @param array<string, string> $decoratedManagers Inner service id of each decorated entity manager, keyed by its service id
      */
-    public function __construct(Container $container, array $connections, array $entityManagers, string $defaultConnection, string $defaultEntityManager)
-    {
+    public function __construct(
+        Container $container,
+        array $connections,
+        array $entityManagers,
+        string $defaultConnection,
+        string $defaultEntityManager,
+        private readonly array $decoratedManagers = [],
+    ) {
         $this->container = $container;
 
         parent::__construct('ORM', $connections, $entityManagers, $defaultConnection, $defaultEntityManager, Proxy::class);
@@ -75,6 +82,13 @@ class Registry extends ManagerRegistry implements ResetInterface
         }
     }
 
+    /** @param string $name */
+    protected function resetService($name): void
+    {
+        // Resetting a decorator would only rebuild it around the very same manager instance
+        parent::resetService($this->decoratedManagers[$name] ?? $name);
+    }
+
     private function resetOrClearManager(string $managerName, string $serviceId): void
     {
         if (! $this->container->initialized($serviceId)) {
@@ -90,7 +104,10 @@ class Registry extends ManagerRegistry implements ResetInterface
         $sfNativeLazyObjects = method_exists('Symfony\Component\DependencyInjection\ContainerBuilder', 'findTaggedResourceIds');
 
         if (PHP_VERSION_ID < 80400 || ! $sfNativeLazyObjects) {
-            if ((! $manager instanceof LazyLoadingInterface && ! $manager instanceof LazyObjectInterface) || $manager->isOpen()) {
+            // A decorator is not a lazy object: check the manager it decorates, which is what resetService() resets
+            $innerManager = isset($this->decoratedManagers[$serviceId]) ? $this->container->get($this->decoratedManagers[$serviceId]) : $manager;
+
+            if ((! $innerManager instanceof LazyLoadingInterface && ! $innerManager instanceof LazyObjectInterface) || $manager->isOpen()) {
                 $manager->clear();
 
                 return;
