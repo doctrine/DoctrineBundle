@@ -16,9 +16,10 @@ use function hash;
 use function is_array;
 use function is_object;
 use function is_resource;
+use function ltrim;
 use function serialize;
-use function spl_object_id;
 use function sprintf;
+use function strncasecmp;
 
 /**
  * Reports statements that get replayed with many different parameter sets.
@@ -28,8 +29,14 @@ use function sprintf;
  * issued, so a thrown report points straight at the code that triggered the
  * lazy load, which a profile read afterwards cannot.
  *
- * Each statement is reported once; its parameters are dropped afterwards so a
- * long-running worker does not accumulate them.
+ * Writes are left alone: one flush() inserting fifty rows is the same
+ * statement with fifty different parameter sets, and no amount of eager
+ * fetching changes that.
+ *
+ * A statement is reported once and its parameters dropped at that point. One
+ * that stays below the threshold keeps at most that many hashes until the
+ * guard is reset, which happens between requests and between messenger
+ * messages.
  */
 class NPlusOneGuard implements ResetInterface
 {
@@ -54,7 +61,7 @@ class NPlusOneGuard implements ResetInterface
     public function track(string $connectionName, string $sql, array $params): void
     {
         $threshold = $this->thresholdByConnection[$connectionName] ?? 0;
-        if ($threshold < 2 || isset($this->reported[$connectionName][$sql])) {
+        if ($threshold < 2 || isset($this->reported[$connectionName][$sql]) || ! self::readsRows($sql)) {
             return;
         }
 
@@ -87,12 +94,22 @@ class NPlusOneGuard implements ResetInterface
         $this->reported  = [];
     }
 
+    private static function readsRows(string $sql): bool
+    {
+        return strncasecmp(ltrim($sql), 'SELECT', 6) === 0;
+    }
+
     /**
      * Returns a fixed-size identity for a set of parameters.
      *
      * Resources all serialize to the same value, which would hide the very
-     * repetitions being looked for, and some objects cannot be serialized at
-     * all: both are replaced by a marker.
+     * repetitions being looked for, so they are told apart by their id.
+     *
+     * An object that cannot be serialized has no value to compare, and its
+     * object id is a handle PHP recycles as soon as the previous one is freed,
+     * so one allocated per loop iteration would keep getting the same marker.
+     * Rather than pretend, every instance of such a class counts as the same
+     * parameter: a statement told apart only by one goes unreported.
      *
      * @param array<array-key, mixed> $params
      */
@@ -117,7 +134,7 @@ class NPlusOneGuard implements ResetInterface
                 try {
                     $params[$key] = serialize($param);
                 } catch (Throwable) {
-                    $params[$key] = sprintf('/* %s#%d */', $param::class, spl_object_id($param));
+                    $params[$key] = sprintf('/* %s */', $param::class);
                 }
             }
         }

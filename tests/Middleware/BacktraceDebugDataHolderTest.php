@@ -51,6 +51,21 @@ class BacktraceDebugDataHolderTest extends TestCase
         $sut->addQuery('myconn', $this->createQuery('SELECT * FROM product WHERE category_id = ?', 2));
     }
 
+    public function testResettingTheHolderAlsoResetsTheGuard(): void
+    {
+        $guard = new NPlusOneGuard(['myconn' => 2], ['myconn' => true]);
+        $sut   = new BacktraceDebugDataHolder([], $guard);
+
+        $sut->addQuery('myconn', $this->createQuery('SELECT * FROM product WHERE category_id = ?', 1));
+        $sut->reset();
+
+        // Without the reset reaching the guard, the second parameter set would
+        // reach the threshold and throw.
+        $sut->addQuery('myconn', $this->createQuery('SELECT * FROM product WHERE category_id = ?', 2));
+
+        $this->assertCount(1, $sut->getData()['myconn'] ?? []);
+    }
+
     public function testWithoutAGuardQueriesAreOnlyRecorded(): void
     {
         $sut = new BacktraceDebugDataHolder([]);

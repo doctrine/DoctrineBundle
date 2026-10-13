@@ -106,8 +106,8 @@ Configuration Reference
                         profiling_collect_backtrace: false
                         # When true, profiling also collects schema errors for each query
                         profiling_collect_schema_errors: true
-                        # Reports a statement replayed with that many different parameter
-                        # sets as N+1 queries; 0 disables the check
+                        # Reports a SELECT replayed with that many different parameter
+                        # sets as N+1 queries; 0 disables the check, 1 is refused
                         profiling_n_plus_one_threshold: 0
                         # When true, reaching the threshold throws instead of logging
                         profiling_n_plus_one_strict: false
@@ -458,8 +458,8 @@ Configuration Reference
                             'profiling_collect_backtrace' => false,
                             // When true, profiling also collects schema errors for each query
                             'profiling_collect_schema_errors' => true,
-                            // Reports a statement replayed with that many different parameter
-                            // sets as N+1 queries; 0 disables the check
+                            // Reports a SELECT replayed with that many different parameter
+                            // sets as N+1 queries; 0 disables the check, 1 is refused
                             'profiling_n_plus_one_threshold' => 0,
                             // When true, reaching the threshold throws instead of logging
                             'profiling_n_plus_one_strict' => false,

@@ -29,6 +29,11 @@ class BacktraceDebugDataHolder extends DebugDataHolder
     {
         parent::reset();
 
+        // The bridge's collector resets the holder directly, without going
+        // through kernel.reset, and the guard has to follow or it keeps
+        // thinking it already reported what is now forgotten.
+        $this->nPlusOneGuard?->reset();
+
         $this->backtraces = [];
     }
 

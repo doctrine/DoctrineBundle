@@ -113,7 +113,7 @@ class NPlusOneGuardTest extends TestCase
         $this->assertCount(1, $logger->warnings);
     }
 
-    public function testHandlesUnserializableParameters(): void
+    public function testStillTellsStatementsApartByTheirOtherParameters(): void
     {
         $logger = $this->createLogger();
         $guard  = new NPlusOneGuard(['default' => 2], [], $logger);
@@ -122,6 +122,43 @@ class NPlusOneGuardTest extends TestCase
         $guard->track('default', 'SELECT * FROM post WHERE author_id = ?', [2, static fn () => null]);
 
         $this->assertCount(1, $logger->warnings);
+    }
+
+    public function testCountsParametersWithNoComparableValueAsOneSet(): void
+    {
+        $logger = $this->createLogger();
+        $guard  = new NPlusOneGuard(['default' => 2], [], $logger);
+
+        // An object that cannot be serialized has no value to compare, and its
+        // object id is a handle PHP recycles, so a per-iteration one would look
+        // alternately same and different. Every instance counts as the same.
+        foreach ([1, 2, 3, 4, 5] as $ignored) {
+            $guard->track('default', 'SELECT * FROM post WHERE author = ?', [static fn () => $ignored]);
+        }
+
+        $this->assertSame([], $logger->warnings);
+    }
+
+    public function testLeavesWritesAlone(): void
+    {
+        $logger = $this->createLogger();
+        $guard  = new NPlusOneGuard(['default' => 2], [], $logger);
+
+        // One flush() inserting rows is the same statement with one parameter
+        // set per row, which no amount of eager fetching would change.
+        foreach ([1, 2, 3, 4, 5] as $postId) {
+            $guard->track('default', 'INSERT INTO post (id) VALUES (?)', [$postId]);
+        }
+
+        foreach ([1, 2, 3] as $postId) {
+            $guard->track('default', 'UPDATE post SET title = ? WHERE id = ?', ['t', $postId]);
+        }
+
+        foreach ([1, 2, 3] as $postId) {
+            $guard->track('default', 'DELETE FROM post WHERE id = ?', [$postId]);
+        }
+
+        $this->assertSame([], $logger->warnings);
     }
 
     /** @return AbstractLogger&object{warnings: list<string>} */
