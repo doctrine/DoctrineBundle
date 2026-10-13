@@ -66,6 +66,30 @@ class BacktraceDebugDataHolderTest extends TestCase
         $this->assertCount(1, $sut->getData()['myconn'] ?? []);
     }
 
+    public function testAStrictGuardDoesNotShiftTheBacktraces(): void
+    {
+        $guard = new NPlusOneGuard(['myconn' => 2], ['myconn' => true]);
+        $sut   = new BacktraceDebugDataHolder(['myconn'], $guard);
+
+        $sut->addQuery('myconn', $this->createQuery('SELECT * FROM product WHERE category_id = ?', 1));
+
+        try {
+            $sut->addQuery('myconn', $this->createQuery('SELECT * FROM product WHERE category_id = ?', 2));
+            $this->fail('The guard was expected to throw.');
+        } catch (NPlusOneQueriesDetected) {
+        }
+
+        $sut->addQuery('myconn', $this->createQuery('SELECT * FROM category WHERE id = ?', 3));
+
+        // The throw must not leave a record without the backtrace it is read by.
+        $data = $sut->getData();
+        $this->assertCount(3, $data['myconn'] ?? []);
+
+        foreach ($data['myconn'] as $record) {
+            $this->assertGreaterThan(0, count($record['backtrace'] ?? []));
+        }
+    }
+
     public function testWithoutAGuardQueriesAreOnlyRecorded(): void
     {
         $sut = new BacktraceDebugDataHolder([]);

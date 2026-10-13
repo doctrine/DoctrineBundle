@@ -146,6 +146,7 @@ class NPlusOneGuardTest extends TestCase
             '(SELECT * FROM post WHERE author_id = ?) UNION (SELECT * FROM draft)',
             '/* app:PostRepository */ SELECT * FROM post WHERE author_id = ?',
             "-- app:PostRepository\nSELECT * FROM post WHERE author_id = ?",
+            "# app:PostRepository\nSELECT * FROM post WHERE author_id = ?",
         ];
 
         foreach ($reads as $sql) {
@@ -156,6 +157,24 @@ class NPlusOneGuardTest extends TestCase
             $guard->track('default', $sql, [2]);
 
             $this->assertCount(1, $logger->warnings, $sql);
+        }
+    }
+
+    public function testACommonTableExpressionThatModifiesRowsIsAWrite(): void
+    {
+        $writes = [
+            'WITH moved AS (DELETE FROM post WHERE id = ? RETURNING *) INSERT INTO archive SELECT * FROM moved',
+            'WITH touched AS (UPDATE post SET seen = true WHERE id = ? RETURNING id) SELECT count(*) FROM touched',
+        ];
+
+        foreach ($writes as $sql) {
+            $logger = $this->createLogger();
+            $guard  = new NPlusOneGuard(['default' => 2], [], $logger);
+
+            $guard->track('default', $sql, [1]);
+            $guard->track('default', $sql, [2]);
+
+            $this->assertSame([], $logger->warnings, $sql);
         }
     }
 

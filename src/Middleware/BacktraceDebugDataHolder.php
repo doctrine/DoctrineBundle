@@ -41,14 +41,15 @@ class BacktraceDebugDataHolder extends DebugDataHolder
     {
         parent::addQuery($connectionName, $query);
 
-        $this->nPlusOneGuard?->track($connectionName, $query->getSql(), $query->getParams());
-
-        if (! in_array($connectionName, $this->connWithBacktraces, true)) {
-            return;
+        if (in_array($connectionName, $this->connWithBacktraces, true)) {
+            // array_slice to skip middleware calls in the trace
+            $this->backtraces[$connectionName][] = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2);
         }
 
-        // array_slice to skip middleware calls in the trace
-        $this->backtraces[$connectionName][] = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2);
+        // Last: the guard throws in strict mode, and the backtraces are read
+        // by the index of the record they belong to, so leaving one of the two
+        // behind would shift every trace that follows.
+        $this->nPlusOneGuard?->track($connectionName, $query->getSql(), $query->getParams());
     }
 
     /** @return array<string, array<string, mixed>[]> */
