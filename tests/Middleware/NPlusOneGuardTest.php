@@ -139,6 +139,38 @@ class NPlusOneGuardTest extends TestCase
         $this->assertSame([], $logger->warnings);
     }
 
+    public function testRecognisesReadsThatDoNotStartWithSelect(): void
+    {
+        $reads = [
+            'WITH recent AS (SELECT * FROM post) SELECT * FROM recent WHERE author_id = ?',
+            '(SELECT * FROM post WHERE author_id = ?) UNION (SELECT * FROM draft)',
+            '/* app:PostRepository */ SELECT * FROM post WHERE author_id = ?',
+            "-- app:PostRepository\nSELECT * FROM post WHERE author_id = ?",
+        ];
+
+        foreach ($reads as $sql) {
+            $logger = $this->createLogger();
+            $guard  = new NPlusOneGuard(['default' => 2], [], $logger);
+
+            $guard->track('default', $sql, [1]);
+            $guard->track('default', $sql, [2]);
+
+            $this->assertCount(1, $logger->warnings, $sql);
+        }
+    }
+
+    public function testAWriteBehindACommentIsStillAWrite(): void
+    {
+        $logger = $this->createLogger();
+        $guard  = new NPlusOneGuard(['default' => 2], [], $logger);
+
+        foreach ([1, 2, 3] as $postId) {
+            $guard->track('default', '/* app:PostRepository */ INSERT INTO post (id) VALUES (?)', [$postId]);
+        }
+
+        $this->assertSame([], $logger->warnings);
+    }
+
     public function testLeavesWritesAlone(): void
     {
         $logger = $this->createLogger();

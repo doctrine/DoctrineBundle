@@ -16,7 +16,7 @@ use function hash;
 use function is_array;
 use function is_object;
 use function is_resource;
-use function ltrim;
+use function preg_replace;
 use function serialize;
 use function sprintf;
 use function strncasecmp;
@@ -94,9 +94,16 @@ class NPlusOneGuard implements ResetInterface
         $this->reported  = [];
     }
 
+    /**
+     * Statements do not always start with their verb: a CTE opens with WITH, a
+     * compound select can be parenthesised, and tracing middlewares prepend a
+     * comment. Step over all of that before looking.
+     */
     private static function readsRows(string $sql): bool
     {
-        return strncasecmp(ltrim($sql), 'SELECT', 6) === 0;
+        $sql = preg_replace('{^(?:\s|/\*.*?\*/|--[^\n]*(?:\n|$)|\()+}s', '', $sql) ?? $sql;
+
+        return strncasecmp($sql, 'SELECT', 6) === 0 || strncasecmp($sql, 'WITH', 4) === 0;
     }
 
     /**
