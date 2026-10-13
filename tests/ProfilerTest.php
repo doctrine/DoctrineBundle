@@ -6,6 +6,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
@@ -33,6 +34,7 @@ use function html_entity_decode;
 use function preg_match;
 use function preg_quote;
 use function str_replace;
+use function substr_count;
 
 class ProfilerTest extends BaseTestCase
 {
@@ -123,5 +125,49 @@ class ProfilerTest extends BaseTestCase
 
         $this->assertStringContainsString('Managed entities', $output);
         $this->assertStringContainsString('No managed entities.', $output);
+    }
+
+    public function testRenderGroupedFlagsStatementsReplayedWithDifferentParameters(): void
+    {
+        foreach ([1, 2] as $authorId) {
+            $query = new Query('SELECT * FROM post WHERE author_id = ?');
+            $query->setValue(1, $authorId, ParameterType::INTEGER);
+            $this->debugDataHolder->addQuery('foo', $query);
+        }
+
+        // Same statement, same parameters: repeated, but not an N+1 signature.
+        foreach ([1, 1] as $authorId) {
+            $query = new Query('SELECT * FROM author WHERE id = ?');
+            $query->setValue(1, $authorId, ParameterType::INTEGER);
+            $this->debugDataHolder->addQuery('foo', $query);
+        }
+
+        $this->collector->collect($request = new Request(['group' => '1']), new Response());
+
+        $profile = new Profile('foo');
+        $profile->setMethod('GET');
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
+
+        $requestDataCollector = new RequestDataCollector($requestStack);
+        $requestDataCollector->collect($request, new Response());
+        $requestDataCollector->lateCollect();
+
+        $profile->addCollector($requestDataCollector);
+
+        $output = $this->twig->render('db.html.twig', [
+            'request' => $request,
+            'token' => 'foo',
+            'page' => 'foo',
+            'profile' => $profile,
+            'collector' => $this->collector,
+            'queries' => $this->debugDataHolder->getData(),
+            'profiler_markup_version' => 3,
+            'profile_type' => 'request',
+        ]);
+
+        $this->assertSame(1, substr_count($output, 'N+1?'));
+        $this->assertStringContainsString('Ran 2 times with 2 different parameter sets', $output);
+        $this->assertStringContainsString('JOIN FETCH', $output);
     }
 }

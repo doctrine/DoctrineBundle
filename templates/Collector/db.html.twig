@@ -234,7 +234,7 @@
                                                 {{ query.count }}
                                                 {% if query.paramSetCount|default(0) > 1 %}
                                                     <br />
-                                                    <span class="badge status-warning" title="Executed {{ query.count }} times with {{ query.paramSetCount }} different parameter sets">N+1?</span>
+                                                    <span class="badge status-warning" title="Same statement replayed with different parameters">N+1?</span>
                                                 {% endif %}
                                             </td>
                                         {% else %}
@@ -253,6 +253,12 @@
                                             <div>
                                                 <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(query.params, 2) }}
                                             </div>
+
+                                            {% if query.paramSetCount|default(0) > 1 %}
+                                                <div class="text-small font-normal">
+                                                    Ran {{ query.count }} times with {{ query.paramSetCount }} different parameter sets. If these come from lazy loading, fetch the association together with its parent &mdash; <code>JOIN FETCH</code> in DQL, or a join plus <code>addSelect()</code> on the joined alias with the query builder.
+                                                </div>
+                                            {% endif %}
 
                                             <div class="text-small font-normal">
                                                 <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
