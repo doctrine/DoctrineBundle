@@ -35,6 +35,7 @@ use function interface_exists;
  *    types: ?array<array-key, Type|int|string|null>,
  *    count: int,
  *    index: int,
+ *    paramSetCount: int,
  *    executionPercent?: float
  * }
  * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
@@ -300,6 +301,93 @@ class DoctrineDataCollectorTest extends TestCase
         $secondItem = $groupedQueries['default'][1];
         $this->assertEqualsWithDelta(33.333, $secondItem['executionPercent'] ?? null, 0.001);
         $this->assertSame('SELECT * FROM foo', $secondItem['sql']);
+    }
+
+    public function testGetGroupedQueriesCountsDistinctParameterSets(): void
+    {
+        $debugDataHolder = $this->createStub(DebugDataHolder::class);
+
+        $queries = [
+            'default' => [
+                [
+                    'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                    'params' => [':id' => 1],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+                [
+                    'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                    'params' => [':id' => 2],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+                [
+                    'sql' => 'SELECT * FROM author WHERE id = :id',
+                    'params' => [':id' => 1],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+                [
+                    'sql' => 'SELECT * FROM author WHERE id = :id',
+                    'params' => [':id' => 1],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+            ],
+        ];
+
+        $debugDataHolder->method('getData')
+            ->willReturnCallback(static function () use (&$queries) {
+                return $queries;
+            });
+
+        $collector = $this->createCollector([], true, $debugDataHolder);
+        $collector->collect(new Request(), new Response());
+
+        $groupedQueries = $collector->getGroupedQueries();
+
+        $this->assertSame('SELECT * FROM post WHERE author_id = :id', $groupedQueries['default'][0]['sql']);
+        $this->assertSame(2, $groupedQueries['default'][0]['count']);
+        $this->assertSame(2, $groupedQueries['default'][0]['paramSetCount']);
+
+        $this->assertSame('SELECT * FROM author WHERE id = :id', $groupedQueries['default'][1]['sql']);
+        $this->assertSame(2, $groupedQueries['default'][1]['count']);
+        $this->assertSame(1, $groupedQueries['default'][1]['paramSetCount']);
+    }
+
+    public function testGetGroupedQueriesWithUnserializableParameters(): void
+    {
+        $debugDataHolder = $this->createStub(DebugDataHolder::class);
+
+        $queries = [
+            'default' => [
+                [
+                    'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                    'params' => [':id' => 1, ':at' => static fn () => null],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+                [
+                    'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                    'params' => [':id' => 2, ':at' => static fn () => null],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+            ],
+        ];
+
+        $debugDataHolder->method('getData')
+            ->willReturnCallback(static function () use (&$queries) {
+                return $queries;
+            });
+
+        $collector = $this->createCollector([], true, $debugDataHolder);
+        $collector->collect(new Request(), new Response());
+
+        $groupedQueries = $collector->getGroupedQueries();
+
+        $this->assertSame(2, $groupedQueries['default'][0]['count']);
+        $this->assertSame(2, $groupedQueries['default'][0]['paramSetCount']);
     }
 
     /**

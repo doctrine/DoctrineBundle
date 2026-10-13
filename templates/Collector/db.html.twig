@@ -230,7 +230,13 @@
                                                 <span class="time-bar" style="width:{{ '%0.2f'|format(query.executionPercent) }}%"></span>
                                                 <span class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms<br />({{ '%0.2f'|format(query.executionPercent) }}%)</span>
                                             </td>
-                                            <td class="nowrap">{{ query.count }}</td>
+                                            <td class="nowrap">
+                                                {{ query.count }}
+                                                {% if query.paramSetCount|default(0) > 1 %}
+                                                    <br />
+                                                    <span class="badge status-warning" title="Executed {{ query.count }} times with {{ query.paramSetCount }} different parameter sets">N+1?</span>
+                                                {% endif %}
+                                            </td>
                                         {% else %}
                                             <td class="nowrap">{{ loop.index }}</td>
                                             <td>

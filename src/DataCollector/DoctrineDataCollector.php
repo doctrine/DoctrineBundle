@@ -18,6 +18,7 @@ use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
+use Symfony\Component\VarDumper\Cloner\Data;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Throwable;
 
@@ -26,7 +27,9 @@ use function array_sum;
 use function arsort;
 use function assert;
 use function count;
+use function hash;
 use function in_array;
+use function serialize;
 use function usort;
 
 /**
@@ -60,6 +63,7 @@ use function usort;
  *    types: ?array<array-key, Type|int|string|null>,
  *    count: int,
  *    index: int,
+ *    paramSetCount: int,
  *    executionPercent?: float
  * }
  * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
@@ -337,6 +341,7 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         $totalExecutionMS     = 0;
         foreach ($this->data['queries'] as $connection => $queries) {
             $connectionGroupedQueries = [];
+            $paramSets                = [];
             foreach ($queries as $i => $query) {
                 $key = $query['sql'];
                 if (! isset($connectionGroupedQueries[$key])) {
@@ -349,6 +354,12 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
                 $connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
                 $connectionGroupedQueries[$key]['count']++;
                 $totalExecutionMS += $query['executionMS'];
+
+                $paramSets[$key][$this->hashParams($query['params'] ?? [])] = true;
+            }
+
+            foreach ($connectionGroupedQueries as $key => $groupedQuery) {
+                $connectionGroupedQueries[$key]['paramSetCount'] = count($paramSets[$key]);
             }
 
             usort($connectionGroupedQueries, static function ($a, $b) {
@@ -368,6 +379,23 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         }
 
         return $this->groupedQueries;
+    }
+
+    /**
+     * Returns a fixed-size identity for a set of query parameters.
+     *
+     * Counting the distinct identities of a group tells apart the same
+     * statement repeated as is from the same statement replayed with varying
+     * parameters, which is the typical signature of N+1 queries caused by ORM
+     * lazy loading.
+     */
+    private function hashParams(mixed $params): string
+    {
+        if ($params instanceof Data) {
+            $params = $params->getValue(true);
+        }
+
+        return hash('xxh128', serialize($params));
     }
 
     private function executionTimePercentage(float $executionTimeMS, float $totalExecutionTimeMS): float
