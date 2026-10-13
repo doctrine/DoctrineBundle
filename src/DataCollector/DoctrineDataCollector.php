@@ -29,6 +29,7 @@ use function assert;
 use function count;
 use function hash;
 use function in_array;
+use function preg_match;
 use function preg_replace;
 use function serialize;
 use function strncasecmp;
@@ -407,9 +408,17 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
      */
     private static function readsRows(string $sql): bool
     {
-        $sql = preg_replace('{^(?:\s|/\*.*?\*/|--[^\n]*(?:\n|$)|\()+}s', '', $sql) ?? $sql;
+        $sql = preg_replace('{^(?:\s|/\*.*?\*/|(?:--|\#)[^\n]*(?:\n|$)|\()+}s', '', $sql) ?? $sql;
 
-        return strncasecmp($sql, 'SELECT', 6) === 0 || strncasecmp($sql, 'WITH', 4) === 0;
+        if (strncasecmp($sql, 'SELECT', 6) === 0) {
+            return true;
+        }
+
+        // A common table expression modifies rows when its body does, which on
+        // PostgreSQL it may. Nothing short of parsing says where that body
+        // ends, so a WITH carrying any of those words is left alone.
+        return strncasecmp($sql, 'WITH', 4) === 0
+            && preg_match('{\b(?:INSERT|UPDATE|DELETE|MERGE)\b}i', $sql) === 0;
     }
 
     /**

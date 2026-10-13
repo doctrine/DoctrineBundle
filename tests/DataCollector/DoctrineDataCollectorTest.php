@@ -384,6 +384,7 @@ class DoctrineDataCollectorTest extends TestCase
             'WITH recent AS (SELECT * FROM post) SELECT * FROM recent WHERE author_id = :id',
             '(SELECT * FROM post WHERE author_id = :id) UNION (SELECT * FROM draft)',
             '/* app:PostRepository */ SELECT * FROM post WHERE author_id = :id',
+            "# app:PostRepository\nSELECT * FROM post WHERE author_id = :id",
         ];
 
         foreach ($reads as $sql) {
@@ -400,6 +401,30 @@ class DoctrineDataCollectorTest extends TestCase
             $groupedQueries = $this->collectGroupedQueries($queries);
 
             $this->assertTrue($groupedQueries['default'][0]['suspectedNPlusOne'], $sql);
+        }
+    }
+
+    public function testGetGroupedQueriesDoesNotFlagACommonTableExpressionThatModifiesRows(): void
+    {
+        $writes = [
+            'WITH moved AS (DELETE FROM post WHERE id = :id RETURNING *) INSERT INTO archive SELECT * FROM moved',
+            'WITH touched AS (UPDATE post SET seen = true WHERE id = :id RETURNING id) SELECT count(*) FROM touched',
+        ];
+
+        foreach ($writes as $sql) {
+            $queries = [];
+            foreach ([1, 2, 3, 4, 5] as $postId) {
+                $queries[] = [
+                    'sql' => $sql,
+                    'params' => [':id' => $postId],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ];
+            }
+
+            $groupedQueries = $this->collectGroupedQueries($queries);
+
+            $this->assertFalse($groupedQueries['default'][0]['suspectedNPlusOne'], $sql);
         }
     }
 
