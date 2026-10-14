@@ -39,13 +39,13 @@
         "symfony/config": "^6.4 || ^7.0 || ^8.0",
         "symfony/console": "^6.4 || ^7.0 || ^8.0",
         "symfony/dependency-injection": "^6.4 || ^7.0 || ^8.0",
-        "symfony/doctrine-bridge": "^6.4.3 || ^7.0.3 || ^8.0",
+        "symfony/doctrine-bridge": "^6.4.47 || ^7.4.20 || ^8.1.9",
         "symfony/framework-bundle": "^6.4 || ^7.0 || ^8.0",
         "symfony/service-contracts": "^3"
     },
     "require-dev": {
         "doctrine/coding-standard": "^14",
-        "doctrine/orm": "^3.7.5",
+        "doctrine/orm": "^3.8",
         "phpstan/phpstan": "^2.1.13",
         "phpstan/phpstan-phpunit": "2.0.3",
         "phpstan/phpstan-strict-rules": "^2",
@@ -69,7 +69,7 @@
         "twig/twig": "^3.21.1 || ^4"
     },
     "conflict": {
-        "doctrine/orm": "<3.0 || >=4.0",
+        "doctrine/orm": "<3.8 || >=4.0",
         "twig/twig": "<3.0.4 || >=5"
     },
     "suggest": {
