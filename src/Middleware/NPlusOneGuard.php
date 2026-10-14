@@ -23,21 +23,11 @@ use function sprintf;
 use function strncasecmp;
 
 /**
- * Reports statements that get replayed with many different parameter sets.
+ * Reports a statement replayed with many different parameter sets, which is the
+ * signature of ORM lazy loading: the same SELECT, once per parent row.
  *
- * That is the signature of N+1 queries caused by ORM lazy loading: the same
- * SELECT, once per parent row. The guard runs while the queries are being
- * issued, so a thrown report points straight at the code that triggered the
- * lazy load, which a profile read afterwards cannot.
- *
- * Writes are left alone: one flush() inserting fifty rows is the same
- * statement with fifty different parameter sets, and no amount of eager
- * fetching changes that.
- *
- * A statement is reported once and its parameters dropped at that point. One
- * that stays below the threshold keeps at most that many hashes until the
- * guard is reset, which happens between requests and between messenger
- * messages.
+ * Writes are left alone: one flush() inserting fifty rows is the same statement
+ * with fifty parameter sets, and no amount of eager fetching changes that.
  */
 class NPlusOneGuard implements ResetInterface
 {
@@ -72,6 +62,8 @@ class NPlusOneGuard implements ResetInterface
             return;
         }
 
+        // Reported once, and its parameters dropped, so that a long-running
+        // worker does not accumulate them.
         $this->reported[$connectionName][$sql] = true;
         unset($this->paramSets[$connectionName][$sql]);
 
@@ -95,11 +87,7 @@ class NPlusOneGuard implements ResetInterface
         $this->reported  = [];
     }
 
-    /**
-     * Statements do not always start with their verb: a CTE opens with WITH, a
-     * compound select can be parenthesised, and tracing middlewares prepend a
-     * comment. Step over all of that before looking.
-     */
+    /** Statements do not always start with their verb: step over comments and parentheses first. */
     private static function readsRows(string $sql): bool
     {
         $sql = preg_replace('{^(?:\s|/\*.*?\*/|(?:--|\#)[^\n]*(?:\n|$)|\()+}s', '', $sql) ?? $sql;
@@ -108,33 +96,25 @@ class NPlusOneGuard implements ResetInterface
             return true;
         }
 
-        // A common table expression modifies rows when its body does, which on
-        // PostgreSQL it may. Nothing short of parsing says where that body
-        // ends, so a WITH carrying any of those words is left alone.
+        // A CTE modifies rows when its body does, and nothing short of parsing
+        // says where that body ends.
         return strncasecmp($sql, 'WITH', 4) === 0
             && preg_match('{\b(?:INSERT|UPDATE|DELETE|MERGE)\b}i', $sql) === 0;
     }
 
-    /**
-     * Returns a fixed-size identity for a set of parameters.
-     *
-     * Resources all serialize to the same value, which would hide the very
-     * repetitions being looked for, so they are told apart by their id.
-     *
-     * An object that cannot be serialized has no value to compare, and its
-     * object id is a handle PHP recycles as soon as the previous one is freed,
-     * so one allocated per loop iteration would keep getting the same marker.
-     * Rather than pretend, every instance of such a class counts as the same
-     * parameter: a statement told apart only by one goes unreported.
-     *
-     * @param array<array-key, mixed> $params
-     */
+    /** @param array<array-key, mixed> $params */
     private static function hashParams(array $params): string
     {
         return hash('xxh128', serialize(self::normalizeParams($params)));
     }
 
     /**
+     * Resources would otherwise all serialize to the same value, hiding the
+     * repetitions being looked for, so they are told apart by their id. An
+     * object that cannot be serialized has no value to compare and no stable
+     * identity either, since PHP recycles object ids, so every instance of such
+     * a class counts as the same parameter.
+     *
      * @param array<array-key, mixed> $params
      *
      * @return array<array-key, mixed>
