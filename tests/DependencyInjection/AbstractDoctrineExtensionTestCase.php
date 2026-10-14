@@ -1197,6 +1197,11 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
 
         $this->assertSame(['guarded' => 20], $arguments[0]);
         $this->assertSame(['guarded' => true], $arguments[1]);
+
+        $this->assertSame(
+            [['connection' => 'guarded', 'priority' => 10]],
+            $container->getDefinition('doctrine.dbal.n_plus_one_guard_middleware')->getTag('doctrine.middleware'),
+        );
     }
 
     public function testNativeLazyObjectsWithoutConfig(): void

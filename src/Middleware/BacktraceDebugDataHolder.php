@@ -21,18 +21,12 @@ class BacktraceDebugDataHolder extends DebugDataHolder
     /** @param string[] $connWithBacktraces */
     public function __construct(
         private readonly array $connWithBacktraces,
-        private readonly NPlusOneGuard|null $nPlusOneGuard = null,
     ) {
     }
 
     public function reset(): void
     {
         parent::reset();
-
-        // The bridge's collector resets the holder directly, without going
-        // through kernel.reset, and the guard has to follow or it keeps
-        // thinking it already reported what is now forgotten.
-        $this->nPlusOneGuard?->reset();
 
         $this->backtraces = [];
     }
@@ -41,15 +35,12 @@ class BacktraceDebugDataHolder extends DebugDataHolder
     {
         parent::addQuery($connectionName, $query);
 
-        if (in_array($connectionName, $this->connWithBacktraces, true)) {
-            // array_slice to skip middleware calls in the trace
-            $this->backtraces[$connectionName][] = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2);
+        if (! in_array($connectionName, $this->connWithBacktraces, true)) {
+            return;
         }
 
-        // Last: the guard throws in strict mode, and the backtraces are read
-        // by the index of the record they belong to, so leaving one of the two
-        // behind would shift every trace that follows.
-        $this->nPlusOneGuard?->track($connectionName, $query->getSql(), $query->getParams());
+        // array_slice to skip middleware calls in the trace
+        $this->backtraces[$connectionName][] = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2);
     }
 
     /** @return array<string, array<string, mixed>[]> */

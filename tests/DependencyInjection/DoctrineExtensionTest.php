@@ -1219,9 +1219,8 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue(in_array(['connection' => 'conn3', 'priority' => 10], $debugMiddlewareTagAttributes, true));
 
         $arguments = $container->getDefinition('doctrine.debug_data_holder')->getArguments();
-        $this->assertCount(2, $arguments);
+        $this->assertCount(1, $arguments);
         $this->assertSame(['conn3'], $arguments[0]);
-        $this->assertSame('doctrine.dbal.n_plus_one_guard', (string) $arguments[1]);
     }
 
     public function testNPlusOneGuardIsWiredForProfiledConnectionsWithAThreshold(): void
@@ -1261,6 +1260,25 @@ class DoctrineExtensionTest extends TestCase
         $arguments = $container->getDefinition('doctrine.dbal.n_plus_one_guard')->getArguments();
         $this->assertSame(['conn1' => 20, 'conn2' => 5], $arguments[0]);
         $this->assertSame(['conn1' => false, 'conn2' => true], $arguments[1]);
+
+        $this->assertSame(
+            [
+                ['connection' => 'conn1', 'priority' => 10],
+                ['connection' => 'conn2', 'priority' => 10],
+            ],
+            $container->getDefinition('doctrine.dbal.n_plus_one_guard_middleware')->getTag('doctrine.middleware'),
+        );
+    }
+
+    public function testNPlusOneGuardIsNotRegisteredWithoutAThreshold(): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $extension->load([BundleConfigurationBuilder::createBuilderWithBaseValues()->build()], $container);
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.n_plus_one_guard'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.n_plus_one_guard_middleware'));
     }
 
     public function testDefinitionsToLogAndProfile(): void

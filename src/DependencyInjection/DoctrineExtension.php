@@ -1580,9 +1580,20 @@ final class DoctrineExtension extends Extension
 
         $container->getDefinition('doctrine.debug_data_holder')->replaceArgument(0, $connWithBacktrace);
 
-        $nPlusOneGuardDef = $container->getDefinition('doctrine.dbal.n_plus_one_guard');
-        $nPlusOneGuardDef->replaceArgument(0, $nPlusOneThresholds);
-        $nPlusOneGuardDef->replaceArgument(1, $nPlusOneStrict);
+        if ($nPlusOneThresholds === []) {
+            $container->removeDefinition('doctrine.dbal.n_plus_one_guard');
+            $container->removeDefinition('doctrine.dbal.n_plus_one_guard_middleware');
+        } else {
+            $nPlusOneGuardDef = $container->getDefinition('doctrine.dbal.n_plus_one_guard');
+            $nPlusOneGuardDef->replaceArgument(0, $nPlusOneThresholds);
+            $nPlusOneGuardDef->replaceArgument(1, $nPlusOneStrict);
+
+            $nPlusOneGuardMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.n_plus_one_guard_middleware');
+            foreach (array_keys($nPlusOneThresholds) as $connName) {
+                $nPlusOneGuardMiddlewareAbstractDef
+                    ->addTag('doctrine.middleware', ['connection' => $connName, 'priority' => 10]);
+            }
+        }
 
         $debugMiddlewareAbstractDef = $container->getDefinition('doctrine.dbal.debug_middleware');
         foreach ($connWithProfiling as $connName) {

@@ -9,6 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\Middleware\BacktraceDebugDataHolder;
 use Doctrine\Bundle\DoctrineBundle\Middleware\DebugMiddleware;
 use Doctrine\Bundle\DoctrineBundle\Middleware\IdleConnectionMiddleware;
 use Doctrine\Bundle\DoctrineBundle\Middleware\NPlusOneGuard;
+use Doctrine\Bundle\DoctrineBundle\Middleware\NPlusOneGuardMiddleware;
 use Doctrine\DBAL\Logging\Middleware;
 
 return static function (ContainerConfigurator $container): void {
@@ -32,10 +33,15 @@ return static function (ContainerConfigurator $container): void {
             ->tag('monolog.logger', ['channel' => 'doctrine'])
             ->tag('kernel.reset', ['method' => 'reset'])
 
+        ->set('doctrine.dbal.n_plus_one_guard_middleware', NPlusOneGuardMiddleware::class)
+            ->abstract()
+            ->args([
+                service('doctrine.dbal.n_plus_one_guard'),
+            ])
+
         ->set('doctrine.debug_data_holder', BacktraceDebugDataHolder::class)
             ->args([
                 [],
-                service('doctrine.dbal.n_plus_one_guard'),
             ])
             ->tag('kernel.reset', ['method' => 'reset'])
 
