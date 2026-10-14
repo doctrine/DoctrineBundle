@@ -35,8 +35,8 @@
         <xsd:attribute name="profiling" type="xsd:string" default="false" />
         <xsd:attribute name="profiling-collect-backtrace" type="xsd:string" default="false" />
         <xsd:attribute name="profiling-collect-schema-errors" type="xsd:string" default="true" />
-        <xsd:attribute name="profiling-n-plus-one-threshold" type="xsd:string" default="0" />
-        <xsd:attribute name="profiling-n-plus-one-strict" type="xsd:string" default="false" />
+        <xsd:attribute name="n-plus-one-threshold" type="xsd:string" default="20" />
+        <xsd:attribute name="n-plus-one-strict" type="xsd:string" default="false" />
         <xsd:attribute name="server-version" type="xsd:string" />
         <xsd:attribute name="schema-manager-factory" type="xsd:string" />
         <xsd:attribute name="result-cache" type="xsd:string" />

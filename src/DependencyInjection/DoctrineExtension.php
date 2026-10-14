@@ -105,7 +105,7 @@ use const GLOB_NOSORT;
  * @internal
  *
  * @phpstan-type DBALConfig = array{
- *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, profiling_n_plus_one_threshold: int, profiling_n_plus_one_strict: bool, idle_connection_ttl: int}>,
+ *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, n_plus_one_threshold: int, n_plus_one_strict: bool, idle_connection_ttl: int}>,
  *      driver_schemes: array<string, string>,
  *      default_connection: string,
  *      types: array<string, string>,
@@ -555,11 +555,11 @@ final class DoctrineExtension extends Extension
                 if ($connection['profiling_collect_backtrace']) {
                     $connWithBacktrace[] = $name;
                 }
+            }
 
-                if ($connection['profiling_n_plus_one_threshold'] > 1) {
-                    $nPlusOneThresholds[$name] = $connection['profiling_n_plus_one_threshold'];
-                    $nPlusOneStrict[$name]     = $connection['profiling_n_plus_one_strict'];
-                }
+            if ($connection['n_plus_one_threshold'] > 1) {
+                $nPlusOneThresholds[$name] = $connection['n_plus_one_threshold'];
+                $nPlusOneStrict[$name]     = $connection['n_plus_one_strict'];
             }
 
             if ($connection['idle_connection_ttl'] > 0) {
@@ -619,8 +619,8 @@ final class DoctrineExtension extends Extension
             $connection['profiling'],
             $connection['profiling_collect_backtrace'],
             $connection['profiling_collect_schema_errors'],
-            $connection['profiling_n_plus_one_threshold'],
-            $connection['profiling_n_plus_one_strict'],
+            $connection['n_plus_one_threshold'],
+            $connection['n_plus_one_strict'],
         );
 
         if (isset($connection['auto_commit'])) {

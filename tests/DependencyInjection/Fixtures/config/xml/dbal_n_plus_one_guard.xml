@@ -11,13 +11,14 @@
             <connection
                 name="guarded"
                 logging="false"
-                profiling="true"
-                profiling-n-plus-one-threshold="20"
-                profiling-n-plus-one-strict="true" />
+                profiling="false"
+                n-plus-one-threshold="20"
+                n-plus-one-strict="true" />
             <connection
                 name="unguarded"
                 logging="false"
-                profiling="true" />
+                profiling="false"
+                n-plus-one-threshold="0" />
         </dbal>
     </config>
 </srv:container>
