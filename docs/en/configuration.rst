@@ -106,6 +106,11 @@ Configuration Reference
                         profiling_collect_backtrace: false
                         # When true, profiling also collects schema errors for each query
                         profiling_collect_schema_errors: true
+                        # Reports a read replayed with that many different parameter
+                        # sets as N+1 queries; 0 disables the check, 1 is refused
+                        n_plus_one_threshold: 20
+                        # When true, reaching the threshold throws instead of logging
+                        n_plus_one_strict: false
 
                         server_version:       ~
                         driver_class:         ~
@@ -453,6 +458,11 @@ Configuration Reference
                             'profiling_collect_backtrace' => false,
                             // When true, profiling also collects schema errors for each query
                             'profiling_collect_schema_errors' => true,
+                            // Reports a read replayed with that many different parameter
+                            // sets as N+1 queries; 0 disables the check, 1 is refused
+                            'n_plus_one_threshold' => 20,
+                            // When true, reaching the threshold throws instead of logging
+                            'n_plus_one_strict' => false,
 
                             'server_version' => null,
                             'driver_class' => null,
@@ -1054,5 +1064,35 @@ For example, to inject a connection with the name ``purchase_logs`` use this:
         {
             $this->connection = $purchaseLogsConnection;
         }
+
+Detecting N+1 Queries
+~~~~~~~~~~~~~~~~~~~~~
+
+A statement replayed with many different parameter sets is the signature of ORM
+lazy loading: the same ``SELECT``, once per parent row. A middleware counts
+those parameter sets per connection and reports once ``n_plus_one_threshold`` of
+them is reached, while the queries are being issued, so the report points at the
+code that triggered the lazy load.
+
+It is enabled with a threshold of 20 in debug mode and off otherwise. Reaching
+the threshold logs a warning on the ``doctrine`` channel; with
+``n_plus_one_strict``, it throws a
+``Doctrine\Bundle\DoctrineBundle\Exception\NPlusOneQueriesDetected`` instead,
+which lets a test suite refuse to go green on an N+1:
+
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        # config/packages/doctrine.yaml
+        when@test:
+            doctrine:
+                dbal:
+                    n_plus_one_strict: true
+
+Writes are left alone: one ``flush()`` inserting fifty rows is the same
+statement with fifty parameter sets, and no amount of eager fetching changes
+that. A loop that replays the same read on purpose is reported all the same, so
+raise the threshold for it, or set it to ``0`` to turn the check off.
 
 .. _DBAL documentation: https://www.doctrine-project.org/projects/doctrine-dbal/en/current/index.html
