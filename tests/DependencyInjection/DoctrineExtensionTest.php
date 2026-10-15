@@ -433,6 +433,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertNull($definition->getFactory());
 
         $this->assertEquals(['default' => 'doctrine.orm.default_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
+        $this->assertEquals(['default' => 'default'], $container->getParameter('doctrine.entity_manager_connections'), 'Set of the connections used by the EntityManagers is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
 
         $arguments = $definition->getArguments();

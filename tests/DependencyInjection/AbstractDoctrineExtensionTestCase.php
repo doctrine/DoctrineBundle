@@ -467,6 +467,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['XmlBundle', 'AttributesBundle']);
 
         $this->assertEquals(['em1' => 'doctrine.orm.em1_entity_manager', 'em2' => 'doctrine.orm.em2_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
+        $this->assertEquals(['em1' => 'default', 'em2' => 'default'], $container->getParameter('doctrine.entity_manager_connections'), 'Set of the connections used by the EntityManagers is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
 
         $def1 = $container->getDefinition('doctrine.orm.em1_metadata_driver');
@@ -1042,6 +1043,8 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $this->loadFromFile($container, 'orm_attach_entity_listeners_two_connections');
 
         $this->compileContainer($container);
+
+        $this->assertSame(['em1' => 'default', 'em2' => 'foobar'], $container->getParameter('doctrine.entity_manager_connections'));
 
         $defaultEventManager = $container->getDefinition('doctrine.dbal.default_connection.event_manager');
         $this->assertEmpty($defaultEventManager->getMethodCalls());
