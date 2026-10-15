@@ -28,10 +28,21 @@ constructor can receive services. The `#[AsDbalType]` attribute is repeatable
 and accepts a `connection` argument to restrict a type to a single connection.
 
 Resolving those types in a query, in persistence or in schema validation
-requires Doctrine ORM 3.8, which is the first version that reads the type
-provider of the connection. This bundle now requires it. With an older ORM
-version, keep declaring the types with the `doctrine.dbal.types` configuration
-option, which registers them in the global registry.
+requires an ORM that reads the type provider of the connection, which is the
+case from Doctrine ORM 3.8. With an older ORM, which resolves types through the
+global registry, the bundle registers the tagged types there instead, as the
+instances built by the container, when the first connection is created. The
+connections do not receive a type provider in that case, so each type has a
+single registration. Two limitations come with the global registry, which is
+shared by every connection:
+
+- the `connection` argument is ignored, so the type is visible on all
+  connections;
+- two services cannot declare the same type name, which is reported at compile
+  time.
+
+The `doctrine.dbal.types` configuration option keeps registering types in the
+global registry with DBAL, without dependency injection.
 
 With DBAL < 4.6, the types keep being registered in the global registry, without
 dependency injection and without per-connection restriction. A type that
