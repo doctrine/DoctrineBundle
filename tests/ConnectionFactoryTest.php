@@ -157,14 +157,14 @@ class ConnectionFactoryTest extends TestCase
         $this->assertSame('replica_test', $parsedParams['replica']['replica1']['dbname']);
     }
 
-    public function testGlobalTypesAreRegisteredAsInstances(): void
+    public function testServiceTypesAreRegisteredAsInstances(): void
     {
         self::requiresTypeProvider();
 
         $type    = new ConnectionFactoryGlobalType('injected value');
         $locator = new ServiceLocator(['global_type' => static fn (): Type => $type]);
 
-        (new ConnectionFactory([], null, $locator))->createConnection(
+        (new ConnectionFactory($locator))->createConnection(
             ['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'],
             $this->configuration,
         );
@@ -178,7 +178,7 @@ class ConnectionFactoryTest extends TestCase
         self::assertSame('injected value', $type->dependency);
     }
 
-    public function testGlobalTypeServiceUsedForSeveralNamesIsCopied(): void
+    public function testServiceTypeUsedForSeveralNamesIsCopied(): void
     {
         self::requiresTypeProvider();
 
@@ -188,7 +188,7 @@ class ConnectionFactoryTest extends TestCase
             'global_type_two' => static fn (): Type => $type,
         ]);
 
-        (new ConnectionFactory([], null, $locator))->createConnection(
+        (new ConnectionFactory($locator))->createConnection(
             ['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'],
             $this->configuration,
         );
@@ -203,13 +203,14 @@ class ConnectionFactoryTest extends TestCase
         self::assertSame('injected value', $registry->get('global_type_two')->dependency);
     }
 
-    public function testConfigTypeIsRegisteredInTheGlobalRegistryWithoutDeprecation(): void
+    public function testServiceTypesAreRegisteredWithoutDeprecation(): void
     {
         self::requiresTypeProvider();
 
         $triggered = Deprecation::getTriggeredDeprecations();
 
-        (new ConnectionFactory(['global_config_type' => ['class' => ConnectionFactoryConfigType::class]]))
+        $locator = new ServiceLocator(['global_type' => static fn (): Type => new ConnectionFactoryConfigType()]);
+        (new ConnectionFactory($locator))
             ->createConnection(['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'], $this->configuration);
 
         // The static methods of Type are deprecated on DBAL 4.6, and they trigger the deprecation
@@ -218,11 +219,22 @@ class ConnectionFactoryTest extends TestCase
         // dependencies.
         self::assertSame($triggered, Deprecation::getTriggeredDeprecations(), 'Registering a type must not trigger a deprecation.');
 
-        // The type of the doctrine.dbal.types option goes to the global registry.
         $registry = (new Configuration())->getTypeProvider();
         self::assertInstanceOf(TypeRegistry::class, $registry);
-        self::assertTrue($registry->has('global_config_type'));
-        self::assertInstanceOf(ConnectionFactoryConfigType::class, $registry->get('global_config_type'));
+        self::assertInstanceOf(ConnectionFactoryConfigType::class, $registry->get('global_type'));
+    }
+
+    public function testConfigTypesAreRegisteredWithTheStaticMethodsOfType(): void
+    {
+        self::requiresNoTypeProvider();
+
+        (new ConnectionFactory(['global_config_type' => ['class' => ConnectionFactoryConfigType::class]]))
+            ->createConnection(['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'], $this->configuration);
+
+        // The container passes the doctrine.dbal.types option as an array when the types cannot be
+        // services, so the factory registers them with the static methods of Type.
+        self::assertTrue(Type::hasType('global_config_type'));
+        self::assertInstanceOf(ConnectionFactoryConfigType::class, Type::getType('global_config_type'));
     }
 
     private static function requiresTypeProvider(): void
@@ -233,6 +245,16 @@ class ConnectionFactoryTest extends TestCase
         }
 
         self::markTestSkipped('This test requires DBAL >= 4.6.');
+    }
+
+    private static function requiresNoTypeProvider(): void
+    {
+        /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
+        if (! method_exists(Configuration::class, 'getTypeProvider')) {
+            return;
+        }
+
+        self::markTestSkipped('This test covers DBAL < 4.6, without type provider support.');
     }
 }
 

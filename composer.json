@@ -69,7 +69,7 @@
         "twig/twig": "^3.21.1 || ^4"
     },
     "conflict": {
-        "doctrine/orm": "<3.0 || >=4.0",
+        "doctrine/orm": "<3.7.5 || >=4.0",
         "twig/twig": "<3.0.4 || >=5"
     },
     "suggest": {

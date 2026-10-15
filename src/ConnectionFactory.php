@@ -24,8 +24,9 @@ use Symfony\Contracts\Service\ServiceProviderInterface;
 
 use function array_keys;
 use function array_merge;
+use function assert;
+use function is_array;
 use function is_subclass_of;
-use function method_exists;
 use function spl_object_id;
 use function sprintf;
 
@@ -56,14 +57,14 @@ final class ConnectionFactory
     private bool $initialized = false;
 
     /**
-     * @param mixed[][]                           $typesConfig
-     * @param ServiceProviderInterface<Type>|null $globalTypes Types that must also be registered
-     *                                                        in the global type registry, keyed by type name
+     * @param array<string, array{class: class-string<Type>}>|ServiceProviderInterface<Type> $types
+     *        The types to register in the global type registry, keyed by type name. The container
+     *        passes the types it built on DBAL >= 4.6, where it can inject their dependencies, and
+     *        the configuration of the doctrine.dbal.types option on DBAL < 4.6.
      */
     public function __construct(
-        private readonly array $typesConfig = [],
+        private readonly array|ServiceProviderInterface $types = [],
         DsnParser|null $dsnParser = null,
-        private readonly ServiceProviderInterface|null $globalTypes = null,
     ) {
         $this->dsnParser = $dsnParser ?? new DsnParser(self::DEFAULT_SCHEME_MAP);
     }
@@ -179,71 +180,59 @@ final class ConnectionFactory
      */
     private function initializeTypes(): void
     {
-        // A default Configuration exposes the global type registry as its type provider. Reading
-        // it that way does not trigger the deprecation of Type::getTypeRegistry(). It is null on
-        // DBAL < 4.6, where the static methods of Type are the only way and are not deprecated.
-        /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
-        $provider = method_exists(Configuration::class, 'getTypeProvider')
-            ? (new Configuration())->getTypeProvider()
-            : null;
+        $types = $this->types;
 
-        $registry = $provider instanceof TypeRegistry ? $provider : null;
-
-        foreach ($this->typesConfig as $typeName => $typeConfig) {
-            $this->registerGlobalType($registry, $typeName, $typeConfig['class']);
+        if (is_array($types)) {
+            $this->registerConfigTypes($types);
+        } else {
+            $this->registerServiceTypes($types);
         }
-
-        $this->registerGlobalTypes($registry);
 
         $this->initialized = true;
     }
 
     /**
-     * Registers a type in the global type registry.
+     * Registers the types of the doctrine.dbal.types option.
      *
-     * @param TypeRegistry|null       $registry The global registry, or null on DBAL < 4.6
-     * @param class-string<Type>|Type $type
+     * The static methods of Type are the only way to register a type before DBAL 4.6, and they are
+     * not deprecated there. From DBAL 4.6, the container passes the types as services instead.
+     *
+     * @param array<string, array{class: class-string<Type>}> $types
      */
-    private function registerGlobalType(TypeRegistry|null $registry, string $typeName, string|Type $type): void
+    private function registerConfigTypes(array $types): void
     {
-        if ($registry === null) {
+        foreach ($types as $typeName => $typeConfig) {
             if (Type::hasType($typeName)) {
-                Type::overrideType($typeName, $type);
+                Type::overrideType($typeName, $typeConfig['class']);
             } else {
-                Type::addType($typeName, $type);
+                Type::addType($typeName, $typeConfig['class']);
             }
-
-            return;
-        }
-
-        if ($registry->has($typeName)) {
-            $registry->override($typeName, $type);
-        } else {
-            $registry->register($typeName, $type);
         }
     }
 
     /**
-     * Registers the types provided by the container in the global type registry.
+     * Registers the types built by the container in the global type registry.
      *
-     * Doctrine ORM before 3.8 resolves types through the global registry instead of the type
-     * provider of the connection. The types are registered as instances, which keeps the
-     * dependencies injected by the container.
+     * The types of the connection are registered globally too, because Doctrine ORM before 3.8
+     * resolves them through the global registry instead of the type provider of the connection.
+     * They are registered as instances, which keeps the dependencies injected by the container.
+     *
+     * @param ServiceProviderInterface<Type> $types
      */
-    private function registerGlobalTypes(TypeRegistry|null $registry): void
+    private function registerServiceTypes(ServiceProviderInterface $types): void
     {
-        $globalTypes = $this->globalTypes;
-        if ($globalTypes === null) {
-            return;
-        }
+        // A default Configuration exposes the global type registry as its type provider. Reading
+        // it that way does not trigger the deprecation of Type::getTypeRegistry().
+        $registry = (new Configuration())->getTypeProvider();
+        assert($registry instanceof TypeRegistry);
 
         // A service can provide several type names, for example with a repeated #[AsDbalType]
-        // attribute. The global registry refuses the same instance under two names, so the extra
-        // names get a copy of the instance.
+        // attribute. The registry refuses the same instance under two names, so the extra names
+        // get a copy of the instance.
         $registered = [];
 
-        foreach (array_keys($globalTypes->getProvidedServices()) as $typeName) {
-            $type = $globalTypes->get($typeName);
+        foreach (array_keys($types->getProvidedServices()) as $typeName) {
+            $type = $types->get($typeName);
 
             // The locator is typed by convention, a misconfigured service is caught here.
             /** @phpstan-ignore instanceof.alwaysTrue */
@@ -257,7 +246,11 @@ final class ConnectionFactory
 
             $registered[spl_object_id($type)] = true;
 
-            $this->registerGlobalType($registry, $typeName, $type);
+            if ($registry->has($typeName)) {
+                $registry->override($typeName, $type);
+            } else {
+                $registry->register($typeName, $type);
+            }
         }
     }
 
