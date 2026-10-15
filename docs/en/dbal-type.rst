@@ -88,11 +88,12 @@ in the mapping:
     back to the global registry.
 
     With an older ORM, which reads the types from the global registry, the
-    bundle registers the tagged types there too, when the first connection is
-    created. It registers the instances built by the container, so dependency
-    injection keeps working. The global registry is shared by every connection,
-    so the ``connection`` argument does not apply there, and two services cannot
-    declare the same type name.
+    bundle registers the tagged types there instead, when the first connection
+    is created, and the connections receive no type provider. It registers the
+    instances built by the container, so dependency injection keeps working. The
+    global registry is shared by every connection, so the ``connection``
+    argument does not apply there, and two services cannot declare the same type
+    name.
 
 Dependency Injection
 ~~~~~~~~~~~~~~~~~~~~~
@@ -119,7 +120,7 @@ that are resolved by the container:
     in the global registry and created by DBAL, so a constructor with required
     parameters fails when a connection is created.
 
-    With Doctrine ORM before 3.8, the instance built by the container is also
+    With Doctrine ORM before 3.8, the instance built by the container is
     registered in the global registry, so the dependencies are injected there
     too.
 
@@ -145,8 +146,8 @@ a type can be registered on several connections with different names:
     the ``connection`` is ignored and the type is registered globally.
 
     With Doctrine ORM before 3.8, the type is registered in the global registry
-    in addition to the restricted connections, so the ``connection`` argument
-    does not keep it away from the other connections.
+    instead of the connections, so the ``connection`` argument does not keep it
+    away from the other connections.
 
 Registering a Type as a Service
 -------------------------------
@@ -187,7 +188,8 @@ When you do not need dependency injection, a type can be registered by mapping a
 name to its class name under ``doctrine.dbal.types``. This is supported on all
 DBAL versions and does not turn the type into a service. With DBAL >= 4.6 the
 type is registered both in the global registry and in the type provider of each
-connection, so the two registrations hold separate instances of the type:
+connection, so the two registrations hold separate instances of the type. With
+Doctrine ORM before 3.8 the global registry is the only registration:
 
 .. configuration-block::
 

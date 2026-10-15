@@ -74,6 +74,13 @@ final class RegisterDbalTypePass implements CompilerPassInterface
 
         $this->registerGlobalTypes($container, $configTypes, $taggedServiceIds);
 
+        // Doctrine ORM before 3.8 resolves the types through the global type registry, which the
+        // factory fills. It does not read the type provider of the connection, and injecting one
+        // would give the same type two instances.
+        if (interface_exists(EntityManagerInterface::class) && ! class_exists(TypeProviderLocator::class)) {
+            return;
+        }
+
         foreach (array_keys($container->getParameter('doctrine.connections')) as $name) {
             $services = [];
 

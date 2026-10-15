@@ -19,7 +19,6 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeRegistry;
-use InvalidArgumentException;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
 use function array_keys;
@@ -28,7 +27,6 @@ use function assert;
 use function is_array;
 use function is_subclass_of;
 use function spl_object_id;
-use function sprintf;
 
 use const PHP_EOL;
 
@@ -230,14 +228,9 @@ final class ConnectionFactory
         // get a copy of the instance.
         $registered = [];
 
+        // getProvidedServices() describes the services, the instances come from the provider.
         foreach (array_keys($types->getProvidedServices()) as $typeName) {
             $type = $types->get($typeName);
-
-            // The locator is typed by convention, a misconfigured service is caught here.
-            /** @phpstan-ignore instanceof.alwaysTrue */
-            if (! $type instanceof Type) {
-                throw new InvalidArgumentException(sprintf('The service registered for the DBAL type "%s" must be an instance of "%s".', $typeName, Type::class));
-            }
 
             if (isset($registered[spl_object_id($type)])) {
                 $type = clone $type;

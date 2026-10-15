@@ -30,9 +30,11 @@ and accepts a `connection` argument to restrict a type to a single connection.
 Resolving those types in a query, in persistence or in schema validation
 requires an ORM that reads the type provider of the connection, which is the
 case from Doctrine ORM 3.8. With an older ORM, which resolves types through the
-global registry, the bundle registers the tagged types there too, as the
-instances built by the container, when the first connection is created. Two
-limitations come with the global registry, which is shared by every connection:
+global registry, the bundle registers the tagged types there instead, as the
+instances built by the container, when the first connection is created. The
+connections do not receive a type provider in that case, so each type has a
+single registration. Two limitations come with the global registry, which is
+shared by every connection:
 
 - the `connection` argument is ignored, so the type is visible on all
   connections;
