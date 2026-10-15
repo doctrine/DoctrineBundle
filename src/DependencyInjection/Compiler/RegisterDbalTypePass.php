@@ -169,9 +169,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
             return;
         }
 
-        $locator = ServiceLocatorTagPass::register($container, $services);
-
-        $container->getDefinition('doctrine.dbal.connection_factory')->setArgument(0, $locator);
+        $container->getDefinition('doctrine.dbal.connection_factory')->setArgument(0, ServiceLocatorTagPass::register($container, $services));
     }
 
     /**
