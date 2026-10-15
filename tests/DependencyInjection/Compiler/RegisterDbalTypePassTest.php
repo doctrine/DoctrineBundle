@@ -19,6 +19,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeProvider;
 use Doctrine\DBAL\Types\TypeRegistry;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Internal\TypeProviderLocator;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -315,8 +316,14 @@ class RegisterDbalTypePassTest extends TestCase
 
         $provider = $this->getTypeProvider($container, 'conn1');
 
-        // The test fails if the lookup triggers a deprecation, because failOnDeprecation is enabled.
+        // The counter of doctrine/deprecations is read instead of relying on failOnDeprecation,
+        // which ignores the deprecations that the dependencies trigger.
+        $triggered = Deprecation::getTriggeredDeprecations();
+
+        // The lookup falls back to the global registry, which must not trigger the deprecation of
+        // Type::getTypeRegistry().
         self::assertFalse($provider->has('unknown_type'));
+        self::assertSame($triggered, Deprecation::getTriggeredDeprecations(), 'Looking up an unknown type must not trigger a deprecation.');
     }
 
     public function testCustomTypeIsAvailableForOrmEntityMapping(): void
@@ -399,8 +406,9 @@ class RegisterDbalTypePassTest extends TestCase
         $arguments = $container->getDefinition('doctrine.dbal.connection_factory')->getArguments();
 
         // The connection factory receives a locator of the types to register in the global registry.
-        self::assertCount(3, $arguments);
-        self::assertInstanceOf(Reference::class, $arguments[2]);
+        self::assertCount(2, $arguments);
+        self::assertInstanceOf(Reference::class, $arguments[0]);
+        self::assertArrayHasKey('money', $container->getDefinition((string) $arguments[0])->getArgument(0));
     }
 
     public function testTaggedTypesAreNotRegisteredGloballyForOrm38(): void
@@ -417,6 +425,26 @@ class RegisterDbalTypePassTest extends TestCase
 
         // ORM 3.8 reads the type provider of the connection, the global registry stays untouched.
         self::assertCount(2, $arguments);
+        self::assertSame([], $arguments[0]);
+    }
+
+    public function testConfigTypesAreRegisteredGlobally(): void
+    {
+        self::requiresTypeProvider();
+
+        $container = $this->createContainer(
+            static function (ContainerBuilder $container): void {
+            },
+            configTypes: ['uuid' => ['class' => RegisterDbalTypePassUuidType::class]],
+        );
+
+        $arguments = $container->getDefinition('doctrine.dbal.connection_factory')->getArguments();
+
+        // The types of the doctrine.dbal.types option go to the global registry too, on every
+        // supported ORM version.
+        self::assertCount(2, $arguments);
+        self::assertInstanceOf(Reference::class, $arguments[0]);
+        self::assertArrayHasKey('uuid', $container->getDefinition((string) $arguments[0])->getArgument(0));
     }
 
     public function testTwoServicesWithTheSameTypeNameFailForOrmBefore38(): void
@@ -433,6 +461,34 @@ class RegisterDbalTypePassTest extends TestCase
             $container->register('my_type_b', RegisterDbalTypePassMoneyType::class)
                 ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
         });
+    }
+
+    public function testConfigTypeIsRegisteredInTheGlobalRegistry(): void
+    {
+        self::requiresTypeProvider();
+
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $exceptionHandler = set_exception_handler(null);
+
+        $kernel = new RegisterDbalTypePassTestKernel();
+        $kernel->boot();
+
+        try {
+            // Creating the connection registers the types of the doctrine.dbal.types option in the
+            // global registry.
+            $kernel->getContainer()->get('doctrine.dbal.default_connection');
+
+            $registry = (new DbalConfiguration())->getTypeProvider();
+            self::assertInstanceOf(TypeRegistry::class, $registry);
+            self::assertTrue($registry->has('kernel_type'));
+            self::assertInstanceOf(RegisterDbalTypePassUuidType::class, $registry->get('kernel_type'));
+        } finally {
+            $kernel->shutdown();
+            set_exception_handler($exceptionHandler);
+        }
     }
 
     public function testTaggedTypeIsRegisteredInTheGlobalRegistryForOrmBefore38(): void
@@ -777,7 +833,10 @@ class RegisterDbalTypePassTestKernel extends Kernel
                 'handle_all_throwables' => true,
             ]);
             $container->loadFromExtension('doctrine', [
-                'dbal' => ['driver' => 'pdo_sqlite'],
+                'dbal' => [
+                    'driver' => 'pdo_sqlite',
+                    'types' => ['kernel_type' => ['class' => RegisterDbalTypePassUuidType::class]],
+                ],
                 'orm' => [
                     'mappings' => [
                         'Fixtures' => [
