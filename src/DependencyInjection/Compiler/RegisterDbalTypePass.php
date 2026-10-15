@@ -9,6 +9,8 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\TypeProviderGlobalFallback;
 use Doctrine\DBAL\Configuration as DbalConfiguration;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Internal\TypeProviderLocator;
 use ReflectionClass;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -19,6 +21,9 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
 use function array_keys;
+use function array_map;
+use function class_exists;
+use function interface_exists;
 use function is_subclass_of;
 use function method_exists;
 use function sprintf;
@@ -61,6 +66,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
         /** @var array<string, array{class: string}> $configTypes */
         $configTypes = $container->getParameter('doctrine.dbal.connection_factory.types');
 
+        /** @var array<string, list<array{type_name?: string, connection?: string|null}>> $taggedServiceIds */
         $taggedServiceIds = $container->findTaggedServiceIds(self::TAG);
 
         if ($configTypes === [] && $taggedServiceIds === []) {
@@ -103,6 +109,64 @@ final class RegisterDbalTypePass implements CompilerPassInterface
                 ->getDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name))
                 ->addMethodCall('setTypeProvider', [new Reference($providerId)]);
         }
+
+        $this->registerGlobalFallback($container, $taggedServiceIds);
+    }
+
+    /**
+     * Registers the tagged types in the global type registry as well.
+     *
+     * Doctrine ORM before 3.8 resolves types through the global registry, it does not read the
+     * type provider of the connection. Registering the types there keeps them visible to the ORM,
+     * with the limitations of the global registry: the types apply to every connection, and two
+     * services cannot provide the same type name.
+     *
+     * The types are registered as instances, so they keep the dependencies injected by the
+     * container. The connection factory registers them when the first connection is created, so
+     * that booting the kernel does not instantiate the types.
+     *
+     * @param array<string, list<array{type_name?: string, connection?: string|null}>> $taggedServiceIds
+     */
+    private function registerGlobalFallback(ContainerBuilder $container, array $taggedServiceIds): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            return;
+        }
+
+        // ORM 3.8 reads the type provider of the connection through this class. Its presence means
+        // the types of the connection are visible to the ORM, so the global registry is not needed.
+        if (class_exists(TypeProviderLocator::class)) {
+            return;
+        }
+
+        $services = [];
+        foreach ($taggedServiceIds as $id => $tags) {
+            foreach ($tags as $tag) {
+                $typeName = $tag['type_name'] ?? $id;
+
+                if (isset($services[$typeName]) && $services[$typeName] !== $id) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The DBAL type "%s" is registered by both "%s" and "%s". The global type registry, which Doctrine ORM before 3.8 reads, cannot hold two implementations of the same type name.',
+                        $typeName,
+                        $services[$typeName],
+                        $id,
+                    ));
+                }
+
+                $services[$typeName] = $id;
+            }
+        }
+
+        if ($services === []) {
+            return;
+        }
+
+        $locator = ServiceLocatorTagPass::register($container, array_map(
+            static fn (string $id): Reference => new Reference($id),
+            $services,
+        ));
+
+        $container->getDefinition('doctrine.dbal.connection_factory')->setArgument(2, $locator);
     }
 
     /**

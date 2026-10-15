@@ -82,10 +82,17 @@ in the mapping:
 .. note::
 
     With DBAL >= 4.6 the type is registered on the connections instead of the
-    global type registry. The ORM resolves it when it reads the type provider of
-    the connection, which requires Doctrine ORM >= 3.8. Types that other code
-    registers globally with ``Type::addType()`` stay available, because the
-    connection provider falls back to the global registry.
+    global type registry. Doctrine ORM >= 3.8 resolves it when it reads the type
+    provider of the connection. Types that other code registers globally with
+    ``Type::addType()`` stay available, because the connection provider falls
+    back to the global registry.
+
+    With an older ORM, which reads the types from the global registry, the
+    bundle registers the tagged types there too, when the first connection is
+    created. It registers the instances built by the container, so dependency
+    injection keeps working. The global registry is shared by every connection,
+    so the ``connection`` argument does not apply there, and two services cannot
+    declare the same type name.
 
 Dependency Injection
 ~~~~~~~~~~~~~~~~~~~~~
@@ -112,6 +119,10 @@ that are resolved by the container:
     in the global registry and created by DBAL, so a constructor with required
     parameters fails when a connection is created.
 
+    With Doctrine ORM before 3.8, the instance built by the container is also
+    registered in the global registry, so the dependencies are injected there
+    too.
+
 Restricting a Type to a Connection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -132,6 +143,10 @@ a type can be registered on several connections with different names:
 
     Restricting a type to a connection requires DBAL >= 4.6. On older versions
     the ``connection`` is ignored and the type is registered globally.
+
+    With Doctrine ORM before 3.8, the type is registered in the global registry
+    in addition to the restricted connections, so the ``connection`` argument
+    does not keep it away from the other connections.
 
 Registering a Type as a Service
 -------------------------------
