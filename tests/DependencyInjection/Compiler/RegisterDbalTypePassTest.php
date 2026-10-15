@@ -21,6 +21,7 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeProvider;
 use Doctrine\DBAL\Types\TypeRegistry;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Internal\TypeProviderLocator;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -68,6 +69,28 @@ class RegisterDbalTypePassTest extends TestCase
         }
 
         self::markTestSkipped('This test covers the fallback path for DBAL < 4.6 without type provider support.');
+    }
+
+    private static function requiresOrmReadsGlobalRegistry(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM.');
+        }
+
+        if (! class_exists(TypeProviderLocator::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test covers ORM before 3.8, which resolves types through the global registry.');
+    }
+
+    private static function requiresOrmReadsTypeProvider(): void
+    {
+        if (class_exists(TypeProviderLocator::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test covers ORM 3.8 and later, which read the type provider of the connection.');
     }
 
     public function testNoTaggedTypesSkipsTypeProviderSetup(): void
@@ -359,6 +382,80 @@ class RegisterDbalTypePassTest extends TestCase
             $found = $em->find(MoneyEntity::class, 1);
             self::assertInstanceOf(MoneyEntity::class, $found);
             self::assertEquals('12.34', $found->amount);
+        } finally {
+            $kernel->shutdown();
+            set_exception_handler($exceptionHandler);
+        }
+    }
+
+    public function testTaggedTypesAreRegisteredGloballyForOrmBefore38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsGlobalRegistry();
+
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+        });
+
+        $arguments = $container->getDefinition('doctrine.dbal.connection_factory')->getArguments();
+
+        // The connection factory receives a locator of the types to register in the global registry.
+        self::assertCount(3, $arguments);
+        self::assertInstanceOf(Reference::class, $arguments[2]);
+    }
+
+    public function testTaggedTypesAreNotRegisteredGloballyForOrm38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsTypeProvider();
+
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+        });
+
+        $arguments = $container->getDefinition('doctrine.dbal.connection_factory')->getArguments();
+
+        // ORM 3.8 reads the type provider of the connection, the global registry stays untouched.
+        self::assertCount(2, $arguments);
+    }
+
+    public function testTwoServicesWithTheSameTypeNameFailForOrmBefore38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsGlobalRegistry();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The DBAL type "money" is registered by both');
+
+        $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type_a', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+            $container->register('my_type_b', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+        });
+    }
+
+    public function testTaggedTypeIsRegisteredInTheGlobalRegistryForOrmBefore38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsGlobalRegistry();
+
+        $exceptionHandler = set_exception_handler(null);
+
+        $kernel = new RegisterDbalTypePassTestKernel();
+        $kernel->boot();
+
+        try {
+            // Creating the connection registers the tagged types in the global registry, which is
+            // where ORM before 3.8 resolves types from.
+            $kernel->getContainer()->get('doctrine.dbal.default_connection');
+
+            $registry = (new DbalConfiguration())->getTypeProvider();
+            self::assertInstanceOf(TypeRegistry::class, $registry);
+            self::assertTrue($registry->has('money'));
+            self::assertInstanceOf(MoneyTypeFixture::class, $registry->get('money'));
         } finally {
             $kernel->shutdown();
             set_exception_handler($exceptionHandler);
@@ -731,6 +828,10 @@ class RegisterDbalTypePassTestKernel extends Kernel
 
     public function getProjectDir(): string
     {
-        return sys_get_temp_dir() . '/sf_kernel_' . md5(static::class);
+        // The compiled container depends on the installed ORM version, so two runs with different
+        // versions must not share their cache.
+        $ormVersion = class_exists(TypeProviderLocator::class) ? 'orm38' : 'orm37';
+
+        return sys_get_temp_dir() . '/sf_kernel_' . md5(static::class . $ormVersion);
     }
 }

@@ -8,10 +8,16 @@ use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
+use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\TypeRegistry;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 use function assert;
+use function method_exists;
 
 class ConnectionFactoryTest extends TestCase
 {
@@ -149,6 +155,111 @@ class ConnectionFactoryTest extends TestCase
 
         $this->assertSame('primary_test', $parsedParams['primary']['dbname']);
         $this->assertSame('replica_test', $parsedParams['replica']['replica1']['dbname']);
+    }
+
+    public function testGlobalTypesAreRegisteredAsInstances(): void
+    {
+        self::requiresTypeProvider();
+
+        $type    = new ConnectionFactoryGlobalType('injected value');
+        $locator = new ServiceLocator(['global_type' => static fn (): Type => $type]);
+
+        (new ConnectionFactory([], null, $locator))->createConnection(
+            ['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'],
+            $this->configuration,
+        );
+
+        $registry = (new Configuration())->getTypeProvider();
+        self::assertInstanceOf(TypeRegistry::class, $registry);
+
+        // The instance built by the container is registered, so it keeps its injected dependency.
+        self::assertTrue($registry->has('global_type'));
+        self::assertSame($type, $registry->get('global_type'));
+        self::assertSame('injected value', $type->dependency);
+    }
+
+    public function testGlobalTypeServiceUsedForSeveralNamesIsCopied(): void
+    {
+        self::requiresTypeProvider();
+
+        $type    = new ConnectionFactoryGlobalType('injected value');
+        $locator = new ServiceLocator([
+            'global_type_one' => static fn (): Type => $type,
+            'global_type_two' => static fn (): Type => $type,
+        ]);
+
+        (new ConnectionFactory([], null, $locator))->createConnection(
+            ['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'],
+            $this->configuration,
+        );
+
+        $registry = (new Configuration())->getTypeProvider();
+        self::assertInstanceOf(TypeRegistry::class, $registry);
+
+        // The global registry refuses the same instance under two names, so the extra name gets a copy.
+        self::assertSame($type, $registry->get('global_type_one'));
+        self::assertNotSame($type, $registry->get('global_type_two'));
+        self::assertInstanceOf(ConnectionFactoryGlobalType::class, $registry->get('global_type_two'));
+        self::assertSame('injected value', $registry->get('global_type_two')->dependency);
+    }
+
+    public function testConfigTypeIsRegisteredInTheGlobalRegistryWithoutDeprecation(): void
+    {
+        self::requiresTypeProvider();
+
+        $triggered = Deprecation::getTriggeredDeprecations();
+
+        (new ConnectionFactory(['global_config_type' => ['class' => ConnectionFactoryConfigType::class]]))
+            ->createConnection(['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'], $this->configuration);
+
+        // The static methods of Type are deprecated on DBAL 4.6, and they trigger the deprecation
+        // whatever the error reporting configuration. The counter of doctrine/deprecations is read
+        // instead of relying on failOnDeprecation, which ignores the deprecations of the
+        // dependencies.
+        self::assertSame($triggered, Deprecation::getTriggeredDeprecations(), 'Registering a type must not trigger a deprecation.');
+
+        // The type of the doctrine.dbal.types option goes to the global registry.
+        $registry = (new Configuration())->getTypeProvider();
+        self::assertInstanceOf(TypeRegistry::class, $registry);
+        self::assertTrue($registry->has('global_config_type'));
+        self::assertInstanceOf(ConnectionFactoryConfigType::class, $registry->get('global_config_type'));
+    }
+
+    private static function requiresTypeProvider(): void
+    {
+        /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
+        if (method_exists(Configuration::class, 'getTypeProvider')) {
+            return;
+        }
+
+        self::markTestSkipped('This test requires DBAL >= 4.6.');
+    }
+}
+
+// The constructor of Doctrine\DBAL\Types\Type is final before DBAL 4.6, so a type declaring its
+// own constructor can only be defined when the TypeProvider API is available.
+/** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
+if (method_exists(Configuration::class, 'getTypeProvider')) {
+    class ConnectionFactoryGlobalType extends Type
+    {
+        public function __construct(public string $dependency)
+        {
+        }
+
+        /** @param array<string, mixed> $column */
+        public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
+        {
+            return 'VARCHAR(255)';
+        }
+    }
+}
+
+class ConnectionFactoryConfigType extends Type
+{
+    /** @param array<string, mixed> $column */
+    public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
+    {
+        return 'VARCHAR(255)';
     }
 }
 
