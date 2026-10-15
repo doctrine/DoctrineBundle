@@ -72,6 +72,21 @@ class RegisterDbalTypePassTest extends TestCase
         self::markTestSkipped('This test covers the fallback path for DBAL < 4.6 without type provider support.');
     }
 
+    /**
+     * The provider of a connection is only built when the ORM reads it. Doctrine ORM before 3.8
+     * resolves the types through the global type registry instead.
+     */
+    private static function requiresConnectionTypeProvider(): void
+    {
+        self::requiresTypeProvider();
+
+        if (! interface_exists(EntityManagerInterface::class) || class_exists(TypeProviderLocator::class)) {
+            return;
+        }
+
+        self::markTestSkipped('Doctrine ORM before 3.8 does not read the type provider of the connection.');
+    }
+
     private static function requiresOrmReadsGlobalRegistry(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -110,7 +125,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testGlobalTypeIsRegisteredOnAllConnections(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -128,7 +143,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeServiceReceivesInjectedDependencies(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassTypeWithRequiredArg::class)
@@ -146,7 +161,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeRestrictedToOneConnection(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -164,7 +179,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testAutoconfiguredTypeRestrictedToConnectionViaAttribute(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyTypeForConn1::class)
@@ -182,7 +197,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeRegisteredOnMultipleConnectionsViaRepeatedAttribute(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMultiConnectionType::class)
@@ -202,7 +217,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeWithNoNameDefaultsToServiceId(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register(RegisterDbalTypePassAnonymousType::class, RegisterDbalTypePassAnonymousType::class)
@@ -218,7 +233,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTaggedTypeWithNoTypeAttributeDefaultsToServiceId(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -232,7 +247,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testConfigTypesAreIncludedInRegistry(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(
             static function (ContainerBuilder $container): void {
@@ -250,7 +265,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeProviderIsSetOnConfiguration(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -277,7 +292,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testGloballyRegisteredTypesStayAvailable(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         // A default Configuration returns the global type registry, which is the registry that the
         // connection provider falls back to.
@@ -307,7 +322,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testHasDoesNotTriggerDeprecationForUnknownType(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -395,6 +410,31 @@ class RegisterDbalTypePassTest extends TestCase
         }
     }
 
+    /**
+     * Returns the types that the connection factory registers in the global type registry, keyed by
+     * type name.
+     *
+     * @return array<string, mixed>
+     */
+    private function getGlobalTypes(ContainerBuilder $container): array
+    {
+        $arguments = $container->getDefinition('doctrine.dbal.connection_factory')->getArguments();
+        self::assertCount(2, $arguments);
+
+        $locator = $arguments[0];
+        if ($locator instanceof Reference) {
+            $locator = $container->getDefinition((string) $locator);
+        }
+
+        // The compiler inlines the locator in the factory when nothing else uses it.
+        self::assertInstanceOf(Definition::class, $locator);
+
+        /** @var array<string, mixed> $map */
+        $map = $locator->getArgument(0);
+
+        return $map;
+    }
+
     public function testTaggedTypesAreRegisteredGloballyForOrmBefore38(): void
     {
         self::requiresTypeProvider();
@@ -405,12 +445,8 @@ class RegisterDbalTypePassTest extends TestCase
                 ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
         });
 
-        $arguments = $container->getDefinition('doctrine.dbal.connection_factory')->getArguments();
-
         // The connection factory receives a locator of the types to register in the global registry.
-        self::assertCount(2, $arguments);
-        self::assertInstanceOf(Reference::class, $arguments[0]);
-        self::assertArrayHasKey('money', $container->getDefinition((string) $arguments[0])->getArgument(0));
+        self::assertArrayHasKey('money', $this->getGlobalTypes($container));
     }
 
     public function testTaggedTypesAreNotRegisteredGloballyForOrm38(): void
@@ -440,13 +476,9 @@ class RegisterDbalTypePassTest extends TestCase
             configTypes: ['uuid' => ['class' => RegisterDbalTypePassUuidType::class]],
         );
 
-        $arguments = $container->getDefinition('doctrine.dbal.connection_factory')->getArguments();
-
         // The types of the doctrine.dbal.types option go to the global registry too, on every
         // supported ORM version.
-        self::assertCount(2, $arguments);
-        self::assertInstanceOf(Reference::class, $arguments[0]);
-        self::assertArrayHasKey('uuid', $container->getDefinition((string) $arguments[0])->getArgument(0));
+        self::assertArrayHasKey('uuid', $this->getGlobalTypes($container));
     }
 
     public function testTwoServicesWithTheSameTypeNameFailForOrmBefore38(): void
