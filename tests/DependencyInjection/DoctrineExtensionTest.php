@@ -1272,10 +1272,14 @@ class DoctrineExtensionTest extends TestCase
         $container->setParameter('kernel.debug', true);
         $extension = new DoctrineExtension();
 
-        $extension->load([BundleConfigurationBuilder::createBuilderWithBaseValues()->build()], $container);
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection(['connections' => ['conn1' => ['password' => 'foo']]])
+            ->build();
+
+        $extension->load([$config], $container);
 
         $this->assertSame(
-            ['default' => 20],
+            ['conn1' => 20],
             $container->getDefinition('doctrine.dbal.n_plus_one_guard')->getArgument(0),
         );
     }
