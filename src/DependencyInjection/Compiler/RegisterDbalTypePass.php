@@ -75,8 +75,8 @@ final class RegisterDbalTypePass implements CompilerPassInterface
         $this->registerGlobalTypes($container, $configTypes, $taggedServiceIds);
 
         // Doctrine ORM before 3.8 resolves the types through the global type registry, which the
-        // factory fills. It does not read the type provider of the connection, and injecting one
-        // would give the same type two instances.
+        // factory fills. It does not read the type provider of a connection, so injecting one
+        // would only register the same types twice.
         if (interface_exists(EntityManagerInterface::class) && ! class_exists(TypeProviderLocator::class)) {
             return;
         }
@@ -122,15 +122,14 @@ final class RegisterDbalTypePass implements CompilerPassInterface
     /**
      * Gives the connection factory the types to register in the global type registry.
      *
-     * The doctrine.dbal.types option is always registered there, so that the code calling
-     * Type::getType() keeps finding those types. The tagged services are added for Doctrine ORM
-     * before 3.8, which resolves types through the global registry instead of the type provider of
-     * the connection, with the limitations of the global registry: the types apply to every
-     * connection, and two services cannot provide the same type name.
+     * The doctrine.dbal.types option always goes there, so that the code calling Type::getType()
+     * keeps finding those types. The tagged services are added for Doctrine ORM before 3.8, which
+     * resolves the types through the global registry instead of the type provider of the
+     * connection. That registry is shared by every connection, so the types apply to all of them,
+     * and two services cannot provide the same type name.
      *
-     * The types are registered as instances, so they keep the dependencies injected by the
-     * container. The factory reads them from a locator when it creates the first connection, so
-     * that booting the kernel does not instantiate the types.
+     * The factory registers the instances it reads from a locator, so they keep the dependencies
+     * injected by the container, and booting the kernel does not instantiate the types.
      *
      * @param array<string, array{class: string}>                                      $configTypes
      * @param array<string, list<array{type_name?: string, connection?: string|null}>> $taggedServiceIds
@@ -142,8 +141,9 @@ final class RegisterDbalTypePass implements CompilerPassInterface
             $services[$typeName] = new Definition($typeConfig['class']);
         }
 
-        // Doctrine ORM 3.8 reads the type provider of the connection through this class, so the
-        // global registry is not needed there. Without the ORM, nothing reads it either.
+        // Only Doctrine ORM before 3.8 needs the tagged services in the global registry, because
+        // it resolves the types there. ORM 3.8 and DBAL alone resolve them through the type
+        // provider of the connection.
         if (interface_exists(EntityManagerInterface::class) && ! class_exists(TypeProviderLocator::class)) {
             $serviceIds = [];
             foreach ($taggedServiceIds as $id => $tags) {

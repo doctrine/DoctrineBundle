@@ -56,9 +56,9 @@ final class ConnectionFactory
 
     /**
      * @param array<string, array{class: class-string<Type>}>|ServiceProviderInterface<Type> $types
-     *        The types to register in the global type registry, keyed by type name. The container
-     *        passes the types it built on DBAL >= 4.6, where it can inject their dependencies, and
-     *        the configuration of the doctrine.dbal.types option on DBAL < 4.6.
+     *        The types to register in the global type registry, keyed by type name. On DBAL >= 4.6
+     *        the container passes them as services, so that their dependencies are injected. On
+     *        DBAL < 4.6 it passes the doctrine.dbal.types option.
      */
     public function __construct(
         private readonly array|ServiceProviderInterface $types = [],
@@ -191,8 +191,8 @@ final class ConnectionFactory
     /**
      * Registers the types of the doctrine.dbal.types option.
      *
-     * The static methods of Type are the only way to register a type before DBAL 4.6, and they are
-     * not deprecated there. From DBAL 4.6, the container passes the types as services instead.
+     * Before DBAL 4.6, the static methods of Type are the only way to register a type, and they
+     * are not deprecated there. From DBAL 4.6, the container passes the types as services instead.
      *
      * @param array<string, array{class: class-string<Type>}> $types
      */
@@ -210,9 +210,9 @@ final class ConnectionFactory
     /**
      * Registers the types built by the container in the global type registry.
      *
-     * The types of the connection are registered globally too, because Doctrine ORM before 3.8
-     * resolves them through the global registry instead of the type provider of the connection.
-     * They are registered as instances, which keeps the dependencies injected by the container.
+     * The types are registered as instances, so they keep the dependencies injected by the
+     * container. They are registered globally too, because Doctrine ORM before 3.8 resolves them
+     * through the global registry instead of the type provider of the connection.
      *
      * @param ServiceProviderInterface<Type> $types
      */
@@ -223,16 +223,11 @@ final class ConnectionFactory
         $registry = (new Configuration())->getTypeProvider();
         assert($registry instanceof TypeRegistry);
 
-        // A service can provide several type names, for example with a repeated #[AsDbalType]
-        // attribute. The registry refuses the same instance under two names, so the extra names
-        // get a copy of the instance.
         $registered = [];
-
-        // getProvidedServices() describes the services, the instances come from the provider.
         foreach (array_keys($types->getProvidedServices()) as $typeName) {
             $type = $types->get($typeName);
 
-            if (isset($registered[spl_object_id($type)])) {
+            if ($registered[spl_object_id($type)] ?? false) {
                 $type = clone $type;
             }
 
