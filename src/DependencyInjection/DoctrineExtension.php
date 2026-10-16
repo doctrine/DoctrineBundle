@@ -76,6 +76,7 @@ use Symfony\Component\Messenger\Bridge\Doctrine\EventListener\PostgreSqlNotifyOn
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
+use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
 
 use function array_flip;
@@ -778,7 +779,7 @@ final class DoctrineExtension extends Extension
         }
 
         // EntityExistsValidator exists since symfony/doctrine-bridge 8.2
-        if (! class_exists(EntityExistsValidator::class)) {
+        if (! class_exists(ConstraintValidator::class) || ! class_exists(EntityExistsValidator::class)) {
             $container->removeDefinition('doctrine.orm.validator.entity_exists');
         }
 
