@@ -17,7 +17,7 @@ use RuntimeException;
 use function class_exists;
 use function get_debug_type;
 use function is_a;
-use function spl_object_hash;
+use function spl_object_id;
 use function sprintf;
 
 /**
@@ -104,7 +104,7 @@ final class ContainerRepositoryFactory implements RepositoryFactory
         EntityManagerInterface $entityManager,
         ClassMetadata $metadata,
     ): ObjectRepository {
-        $repositoryHash = $metadata->getName() . spl_object_hash($entityManager);
+        $repositoryHash = $metadata->getName() . '#' . spl_object_id($entityManager);
         if (isset($this->managedRepositories[$repositoryHash])) {
             /** @phpstan-var ObjectRepository<TEntity> */
             return $this->managedRepositories[$repositoryHash];
