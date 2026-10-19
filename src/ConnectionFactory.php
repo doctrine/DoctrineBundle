@@ -18,9 +18,15 @@ use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\TypeRegistry;
+use Symfony\Contracts\Service\ServiceProviderInterface;
 
+use function array_keys;
 use function array_merge;
+use function assert;
+use function is_array;
 use function is_subclass_of;
+use function spl_object_id;
 
 use const PHP_EOL;
 
@@ -48,9 +54,14 @@ final class ConnectionFactory
 
     private bool $initialized = false;
 
-    /** @param mixed[][] $typesConfig */
+    /**
+     * @param array<string, array{class: class-string<Type>}>|ServiceProviderInterface<Type> $types
+     *        The types to register in the global type registry, keyed by type name. On DBAL >= 4.6
+     *        the container passes them as services, so that their dependencies are injected. On
+     *        DBAL < 4.6 it passes the doctrine.dbal.types option.
+     */
     public function __construct(
-        private readonly array $typesConfig = [],
+        private readonly array|ServiceProviderInterface $types = [],
         DsnParser|null $dsnParser = null,
     ) {
         $this->dsnParser = $dsnParser ?? new DsnParser(self::DEFAULT_SCHEME_MAP);
@@ -166,15 +177,68 @@ final class ConnectionFactory
      */
     private function initializeTypes(): void
     {
-        foreach ($this->typesConfig as $typeName => $typeConfig) {
+        $types = $this->types;
+
+        if (is_array($types)) {
+            $this->registerConfigTypes($types);
+        } else {
+            $this->registerServiceTypes($types);
+        }
+
+        $this->initialized = true;
+    }
+
+    /**
+     * Registers the types of the doctrine.dbal.types option.
+     *
+     * Before DBAL 4.6, the static methods of Type are the only way to register a type, and they
+     * are not deprecated there. From DBAL 4.6, the container passes the types as services instead.
+     *
+     * @param array<string, array{class: class-string<Type>}> $types
+     */
+    private function registerConfigTypes(array $types): void
+    {
+        foreach ($types as $typeName => $typeConfig) {
             if (Type::hasType($typeName)) {
                 Type::overrideType($typeName, $typeConfig['class']);
             } else {
                 Type::addType($typeName, $typeConfig['class']);
             }
         }
+    }
 
-        $this->initialized = true;
+    /**
+     * Registers the types built by the container in the global type registry.
+     *
+     * The types are registered as instances, so they keep the dependencies injected by the
+     * container. They are registered globally too, because Doctrine ORM before 3.8 resolves them
+     * through the global registry instead of the type provider of the connection.
+     *
+     * @param ServiceProviderInterface<Type> $types
+     */
+    private function registerServiceTypes(ServiceProviderInterface $types): void
+    {
+        // A default Configuration exposes the global type registry as its type provider. Reading
+        // it that way does not trigger the deprecation of Type::getTypeRegistry().
+        $registry = (new Configuration())->getTypeProvider();
+        assert($registry instanceof TypeRegistry);
+
+        $registered = [];
+        foreach (array_keys($types->getProvidedServices()) as $typeName) {
+            $type = $types->get($typeName);
+
+            if ($registered[spl_object_id($type)] ?? false) {
+                $type = clone $type;
+            }
+
+            $registered[spl_object_id($type)] = true;
+
+            if ($registry->has($typeName)) {
+                $registry->override($typeName, $type);
+            } else {
+                $registry->register($typeName, $type);
+            }
+        }
     }
 
     /**

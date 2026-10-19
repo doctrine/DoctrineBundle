@@ -9,6 +9,8 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\TypeProviderGlobalFallback;
 use Doctrine\DBAL\Configuration as DbalConfiguration;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Internal\TypeProviderLocator;
 use ReflectionClass;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -19,6 +21,8 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
 use function array_keys;
+use function class_exists;
+use function interface_exists;
 use function is_subclass_of;
 use function method_exists;
 use function sprintf;
@@ -61,9 +65,19 @@ final class RegisterDbalTypePass implements CompilerPassInterface
         /** @var array<string, array{class: string}> $configTypes */
         $configTypes = $container->getParameter('doctrine.dbal.connection_factory.types');
 
+        /** @var array<string, list<array{type_name?: string, connection?: string|null}>> $taggedServiceIds */
         $taggedServiceIds = $container->findTaggedServiceIds(self::TAG);
 
         if ($configTypes === [] && $taggedServiceIds === []) {
+            return;
+        }
+
+        $this->registerGlobalTypes($container, $configTypes, $taggedServiceIds);
+
+        // Doctrine ORM before 3.8 resolves the types through the global type registry, which the
+        // factory fills. It does not read the type provider of a connection, so injecting one
+        // would only register the same types twice.
+        if (interface_exists(EntityManagerInterface::class) && ! class_exists(TypeProviderLocator::class)) {
             return;
         }
 
@@ -103,6 +117,59 @@ final class RegisterDbalTypePass implements CompilerPassInterface
                 ->getDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name))
                 ->addMethodCall('setTypeProvider', [new Reference($providerId)]);
         }
+    }
+
+    /**
+     * Gives the connection factory the types to register in the global type registry.
+     *
+     * The doctrine.dbal.types option always goes there, so that the code calling Type::getType()
+     * keeps finding those types. The tagged services are added for Doctrine ORM before 3.8, which
+     * resolves the types through the global registry instead of the type provider of the
+     * connection. That registry is shared by every connection, so the types apply to all of them,
+     * and two services cannot provide the same type name.
+     *
+     * The factory registers the instances it reads from a locator, so they keep the dependencies
+     * injected by the container, and booting the kernel does not instantiate the types.
+     *
+     * @param array<string, array{class: string}>                                      $configTypes
+     * @param array<string, list<array{type_name?: string, connection?: string|null}>> $taggedServiceIds
+     */
+    private function registerGlobalTypes(ContainerBuilder $container, array $configTypes, array $taggedServiceIds): void
+    {
+        $services = [];
+        foreach ($configTypes as $typeName => $typeConfig) {
+            $services[$typeName] = new Definition($typeConfig['class']);
+        }
+
+        // Only Doctrine ORM before 3.8 needs the tagged services in the global registry, because
+        // it resolves the types there. ORM 3.8 and DBAL alone resolve them through the type
+        // provider of the connection.
+        if (interface_exists(EntityManagerInterface::class) && ! class_exists(TypeProviderLocator::class)) {
+            $serviceIds = [];
+            foreach ($taggedServiceIds as $id => $tags) {
+                foreach ($tags as $tag) {
+                    $typeName = $tag['type_name'] ?? $id;
+
+                    if (isset($serviceIds[$typeName]) && $serviceIds[$typeName] !== $id) {
+                        throw new InvalidArgumentException(sprintf(
+                            'The DBAL type "%s" is registered by both "%s" and "%s". The global type registry, which Doctrine ORM before 3.8 reads, cannot hold two implementations of the same type name.',
+                            $typeName,
+                            $serviceIds[$typeName],
+                            $id,
+                        ));
+                    }
+
+                    $serviceIds[$typeName] = $id;
+                    $services[$typeName]   = new Reference($id);
+                }
+            }
+        }
+
+        if ($services === []) {
+            return;
+        }
+
+        $container->getDefinition('doctrine.dbal.connection_factory')->setArgument(0, ServiceLocatorTagPass::register($container, $services));
     }
 
     /**
