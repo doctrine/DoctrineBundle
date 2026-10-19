@@ -1223,6 +1223,89 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame(['conn3'], $arguments[0]);
     }
 
+    public function testNPlusOneGuardIsWiredForEveryConnectionWithAThreshold(): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => [
+                        'password' => 'foo',
+                        'profiling' => true,
+                        'n_plus_one_threshold' => 20,
+                    ],
+                    'conn2' => [
+                        'password' => 'bar',
+                        'profiling' => false,
+                        'n_plus_one_threshold' => 5,
+                        'n_plus_one_strict' => true,
+                    ],
+                    'conn3' => [
+                        'password' => 'baz',
+                        'profiling' => true,
+                        'n_plus_one_threshold' => 0,
+                    ],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $arguments = $container->getDefinition('doctrine.dbal.n_plus_one_guard')->getArguments();
+        $this->assertSame(['conn1' => 20, 'conn2' => 5], $arguments[0]);
+        $this->assertSame(['conn1' => false, 'conn2' => true], $arguments[1]);
+
+        $this->assertSame(
+            [
+                ['connection' => 'conn1', 'priority' => 10],
+                ['connection' => 'conn2', 'priority' => 10],
+            ],
+            $container->getDefinition('doctrine.dbal.n_plus_one_guard_middleware')->getTag('doctrine.middleware'),
+        );
+    }
+
+    public function testNPlusOneGuardIsOnByDefaultInDebugMode(): void
+    {
+        $container = $this->getContainer();
+        $container->setParameter('kernel.debug', true);
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection(['connections' => ['conn1' => ['password' => 'foo']]])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $this->assertSame(
+            ['conn1' => 20],
+            $container->getDefinition('doctrine.dbal.n_plus_one_guard')->getArgument(0),
+        );
+    }
+
+    public function testNPlusOneGuardIsNotRegisteredWithoutAThreshold(): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => [
+                        'password' => 'foo',
+                        'n_plus_one_threshold' => 0,
+                    ],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.n_plus_one_guard'));
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.n_plus_one_guard_middleware'));
+    }
+
     public function testDefinitionsToLogAndProfile(): void
     {
         $container = $this->getContainer();
