@@ -18,10 +18,17 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
+use function array_column;
+use function array_filter;
 use function array_keys;
+use function array_map;
+use function array_merge;
+use function array_values;
 use function is_subclass_of;
+use function iterator_to_array;
 use function method_exists;
 use function sprintf;
+use function str_starts_with;
 
 /** @internal */
 final class RegisterDbalTypePass implements CompilerPassInterface
@@ -43,8 +50,34 @@ final class RegisterDbalTypePass implements CompilerPassInterface
         /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
         if (method_exists(DbalConfiguration::class, 'setTypeProvider')) {
             $this->registerInTypeRegistry($container);
+            // A new registry only holds the built-in types
+            $builtinTypes = array_map(static fn (Type $type): string => $type::class, iterator_to_array(new TypeRegistry()));
         } else {
             $this->registerInConfig($container);
+            // The global registry may also hold the types of code that ran earlier in this process
+            $builtinTypes = array_filter(Type::getTypesMap(), static fn (string $class): bool => str_starts_with($class, 'Doctrine\\DBAL\\Types\\'));
+        }
+
+        $this->preloadTypes($container, $builtinTypes);
+    }
+
+    /**
+     * DBAL creates the built-in types and the configured ones when they are first used: preload their classes.
+     *
+     * @param array<string, string> $builtinTypes
+     */
+    private function preloadTypes(ContainerBuilder $container, array $builtinTypes): void
+    {
+        if (! $container->hasDefinition('doctrine.dbal.connection_factory')) {
+            return;
+        }
+
+        /** @var array<string, array{class: string}> $configTypes */
+        $configTypes = $container->getParameter('doctrine.dbal.connection_factory.types');
+        $factory     = $container->getDefinition('doctrine.dbal.connection_factory');
+
+        foreach (array_merge(array_values($builtinTypes), array_column($configTypes, 'class')) as $class) {
+            $factory->addTag('container.preload', ['class' => $class]);
         }
     }
 
