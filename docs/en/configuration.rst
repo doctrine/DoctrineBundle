@@ -246,6 +246,11 @@ Configuration Reference
                         class_metadata_factory_name:  Doctrine\ORM\Mapping\ClassMetadataFactory
                         default_repository_class:     Doctrine\ORM\EntityRepository
                         auto_mapping:                 false
+                        # Registers all classes tagged with "doctrine.orm.entity" by the container scan,
+                        # removing the need for explicit "mappings". When not set, enabled if neither
+                        # "mappings" nor "auto_mapping" is configured and Symfony 8.2 and doctrine/orm 3.6
+                        # are available.
+                        auto_discover_entities:       ~
                         # 0pt-in to the new mapping driver mode as of Doctrine ORM 2.14. See https://github.com/doctrine/orm/pull/6728.
                         validate_xml_mapping: false
                         naming_strategy:              doctrine.orm.naming_strategy.default
@@ -798,6 +803,34 @@ The following example shows an overview of the caching configurations:
             pools:
                 doctrine.result_cache_pool:
                     adapter: cache.app
+
+Entity Auto-Discovery
+~~~~~~~~~~~~~~~~~~~~~
+
+Setting ``auto_discover_entities: true`` on an entity manager (requires Symfony
+8.2) registers every entity class discovered by the service container scan:
+classes carrying the ``#[Entity]`` or ``#[MappedSuperclass]`` attribute are
+tagged with ``doctrine.orm.entity`` while ``src/`` is scanned, removing the
+need for an explicit ``mappings`` block. Explicit mappings keep priority — the
+discovered classes only feed the metadata driver chain's default driver.
+
+Discovery relies on ``ContainerBuilder::findTaggedResourceIds()`` (Symfony
+8.2) and on the ORM's ``AttributeDriver`` accepting a ``ClassLocator`` (doctrine/orm
+3.6). When the option is not set, discovery is enabled automatically for entity
+managers that configure neither ``mappings`` nor ``auto_mapping``, provided both
+requirements are met. Set it to ``false`` to opt out, or to ``true`` to require
+it: a ``LogicException`` naming the missing requirement is then thrown.
+
+.. warning::
+
+    Only classes seen by the container scan are discovered. If your
+    ``services.yaml`` still excludes the entity directory (the legacy
+    ``exclude: '../src/{Entity,...}'`` line from older skeletons), those
+    classes are registered from their file path without attribute
+    autoconfiguration and will **not** be discovered. Remove the entity
+    directory from the ``exclude`` list: since Symfony 7.3, entities are
+    automatically excluded from the service container without being hidden
+    from discovery.
 
 Mapping Configuration
 ~~~~~~~~~~~~~~~~~~~~~

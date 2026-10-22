@@ -11,6 +11,7 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsMiddleware;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityAutoDiscoveryPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
@@ -41,12 +42,15 @@ use Doctrine\ORM\Proxy\Autoloader;
 use Doctrine\ORM\Tools\AttachEntityListenersListener;
 use Doctrine\ORM\Tools\Console\Command\Debug\DebugEventManagerDoctrineCommand;
 use Doctrine\ORM\UnitOfWork;
+use Doctrine\Persistence\Mapping\Driver\ClassNames;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\Persistence\Mapping\Driver\PHPDriver;
 use Doctrine\Persistence\Mapping\Driver\StaticPHPDriver;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
+use ReflectionParameter;
+use ReflectionUnionType;
 use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
@@ -1146,6 +1150,13 @@ final class DoctrineExtension extends Extension
         $this->loadMappingInformation($entityManager, $container);
         $this->registerMappingDrivers($entityManager, $container);
 
+        $autoDiscoverEntities = $entityManager['auto_discover_entities']
+            ?? ($entityManager['mappings'] === [] && ! $entityManager['auto_mapping'] && self::missingEntityAutoDiscoveryRequirement() === null);
+
+        if ($autoDiscoverEntities) {
+            $this->registerEntityAutoDiscoveryDriver($entityManager, $container);
+        }
+
         $container->getDefinition($this->getObjectManagerElementName($entityManager['name'] . '_metadata_driver'));
         /** @psalm-suppress NoValue $this->drivers is set by $this->loadMappingInformation() call  */
         foreach (array_keys($this->drivers) as $driverType) {
@@ -1163,6 +1174,40 @@ final class DoctrineExtension extends Extension
         }
 
         $ormConfigDef->addMethodCall('setEntityNamespaces', [$this->aliasMap]);
+    }
+
+    /** @param array<string, mixed> $entityManager A configured ORM entity manager */
+    private function registerEntityAutoDiscoveryDriver(array $entityManager, ContainerBuilder $container): void
+    {
+        $missingRequirement = self::missingEntityAutoDiscoveryRequirement();
+        if ($missingRequirement !== null) {
+            throw new LogicException(sprintf('The "auto_discover_entities" option requires %s.', $missingRequirement));
+        }
+
+        $locatorId  = $this->getObjectManagerElementName($entityManager['name'] . '_auto_discover_class_locator');
+        $locatorDef = new Definition(ClassNames::class, [[]]);
+        $locatorDef->addTag(EntityAutoDiscoveryPass::TAG);
+        $container->setDefinition($locatorId, $locatorDef);
+
+        $driverId = $this->getObjectManagerElementName($entityManager['name'] . '_auto_discover_metadata_driver');
+        $container->setDefinition($driverId, new Definition(AttributeDriver::class, [new Reference($locatorId)]));
+
+        $container->getDefinition($this->getObjectManagerElementName($entityManager['name'] . '_metadata_driver'))
+            ->addMethodCall('setDefaultDriver', [new Reference($driverId)]);
+    }
+
+    private static function missingEntityAutoDiscoveryRequirement(): string|null
+    {
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        if (! method_exists(ContainerBuilder::class, 'findTaggedResourceIds')) {
+            return 'symfony/dependency-injection 8.2 (ContainerBuilder::findTaggedResourceIds())';
+        }
+
+        if (! (new ReflectionParameter([AttributeDriver::class, '__construct'], 'paths'))->getType() instanceof ReflectionUnionType) {
+            return 'doctrine/orm 3.6 (AttributeDriver accepting a ClassLocator)';
+        }
+
+        return null;
     }
 
     /**
