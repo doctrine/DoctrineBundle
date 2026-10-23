@@ -27,11 +27,13 @@ use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ServicesResetterInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 use function assert;
 use function class_exists;
 use function dirname;
+use function is_a;
 
 /** @final */
 class DoctrineBundle extends Bundle
@@ -100,6 +102,12 @@ class DoctrineBundle extends Bundle
 
     public function shutdown(): void
     {
+        // Container shutdown callbacks are available since Symfony 8.2.
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        if (is_a(ServicesResetterInterface::class, 'Symfony\\Contracts\\Service\\ShutdownInterface', true)) {
+            return;
+        }
+
         if ($this->container === null) {
             return;
         }
