@@ -135,6 +135,33 @@ added to the middleware. This tag supports a ``connections`` attribute to
 limit the scope of the middleware and a ``priority`` attribute to change
 the execution order of the registered middlewares.
 
+Registering a middleware from the configuration
+-----------------------------------------------
+
+The attribute lives on the middleware itself, which is not an option when the
+class comes from a library you do not own. A connection can list the
+middlewares it uses instead:
+
+.. code-block:: yaml
+
+    # config/packages/doctrine.yaml
+    doctrine:
+        dbal:
+            connections:
+                legacy:
+                    middlewares:
+                        - App\Middleware\PreventRootConnectionMiddleware
+                        - { service: Vendor\Middleware\SomeMiddleware, priority: 10 }
+
+Each entry is a service id, optionally with a priority. A priority set here
+applies to that connection, and an entry without one keeps the priority the
+middleware declares through its attribute or its tag.
+
+A middleware may appear both in the configuration and with an attribute. One
+restricted to some connections by its attribute is then also registered on the
+connections that list it. One that carries no connection applies everywhere, as
+before, and listing it only changes its priority on that connection.
+
 .. note::
 
     Middlewares have been introduced in version 3.2 of ``doctrine/dbal``
