@@ -9,15 +9,9 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
-use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
-
-use function array_intersect_key;
 
 class ConnectionFactoryTest extends TestCase
 {
-    use VerifyDeprecations;
-
     private Configuration $configuration;
 
     protected function setUp(): void
@@ -39,7 +33,9 @@ class ConnectionFactoryTest extends TestCase
         $connection    = $factory->createConnection($params, $this->configuration);
 
         $this->assertInstanceof(FakeConnection::class, $connection);
-        $this->assertSame('utf8', $connection->getParams()['charset']);
+        /** @var array{charset: string} $params */
+        $params = $connection->getParams();
+        $this->assertSame('utf8', $params['charset']);
         $this->assertSame(1 + $creationCount, FakeConnection::$creationCount);
     }
 
@@ -50,7 +46,9 @@ class ConnectionFactoryTest extends TestCase
 
         $connection = $factory->createConnection($params, $this->configuration);
 
-        $this->assertSame('utf8mb4', $connection->getParams()['charset']);
+        $params = $connection->getParams();
+        /** @var array{charset: string} $params */
+        $this->assertSame('utf8mb4', $params['charset']);
     }
 
     public function testDefaultCollationMySql(): void
@@ -58,60 +56,16 @@ class ConnectionFactoryTest extends TestCase
         $factory    = new ConnectionFactory([]);
         $connection = $factory->createConnection(['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'], $this->configuration);
 
+        $params = $connection->getParams();
+        /** @var array{defaultTableOptions: array{collation: string}} $params */
+        $defaultTableOptions = $params['defaultTableOptions'];
         $this->assertSame(
             'utf8mb4_unicode_ci',
-            $connection->getParams()['defaultTableOptions']['collation'],
+            $defaultTableOptions['collation'],
         );
     }
 
-    #[IgnoreDeprecations]
-    public function testCollateMapsToCollationForMySql(): void
-    {
-        $factory = new ConnectionFactory([]);
-        $this->expectDeprecationWithIdentifier(
-            'https://github.com/doctrine/dbal/issues/5214',
-        );
-        $connection = $factory->createConnection(
-            [
-                'driver' => 'pdo_mysql',
-                'defaultTableOptions' => ['collate' => 'my_collation'],
-                'serverVersion' => '9.4.0',
-            ],
-            $this->configuration,
-        );
-
-        $tableOptions = $connection->getParams()['defaultTableOptions'];
-        $this->assertArrayNotHasKey('collate', $tableOptions);
-        $this->assertSame(
-            'my_collation',
-            $tableOptions['collation'],
-        );
-    }
-
-    #[IgnoreDeprecations]
-    public function testConnectionOverrideOptions(): void
-    {
-        $params = [
-            'dbname' => 'main_test',
-            'host' => 'db_test',
-            'port' => 5432,
-            'user' => 'tester',
-            'password' => 'wordpass',
-        ];
-
-        /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
-        $connection = (new ConnectionFactory([]))->createConnection(
-            [
-                'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-12.1.1',
-                'connection_override_options' => $params,
-            ],
-            $this->configuration,
-        );
-
-        $this->assertEquals($params, array_intersect_key($connection->getParams(), $params));
-    }
-
-    public function testConnectionCharsetFromUrl()
+    public function testConnectionCharsetFromUrl(): void
     {
         /** @psalm-suppress InvalidArgument Need to be compatible with DBAL < 4, which still has `$params['url']` */
         $connection = (new ConnectionFactory([]))->createConnection(
@@ -119,7 +73,9 @@ class ConnectionFactoryTest extends TestCase
             $this->configuration,
         );
 
-        $this->assertEquals('utf8mb4_unicode_ci', $connection->getParams()['charset']);
+        $params = $connection->getParams();
+        /** @var array{charset: string} $params */
+        $this->assertEquals('utf8mb4_unicode_ci', $params['charset']);
     }
 
     public function testDbnameSuffix(): void
@@ -133,7 +89,9 @@ class ConnectionFactoryTest extends TestCase
             $this->configuration,
         );
 
-        $this->assertSame('main_test', $connection->getParams()['dbname']);
+        $params = $connection->getParams();
+        /** @var array{dbname: string} $params */
+        $this->assertSame('main_test', $params['dbname']);
     }
 
     public function testDbnameSuffixForReplicas(): void
@@ -157,6 +115,7 @@ class ConnectionFactoryTest extends TestCase
             $this->configuration,
         );
 
+        /** @var array{primary: array{dbname: string}, replica: array{replica1: array{dbname: string}}} $parsedParams */
         $parsedParams = $connection->getParams();
         $this->assertArrayHasKey('primary', $parsedParams);
         $this->assertArrayHasKey('replica', $parsedParams);
@@ -173,6 +132,8 @@ class FakeConnection extends Connection
 
     /**
      * {@inheritDoc}
+     *
+     * @param array<string, mixed> $params
      */
     public function __construct(array $params, Driver $driver, Configuration|null $config = null)
     {

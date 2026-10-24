@@ -39,7 +39,7 @@ class MiddlewarePassTest extends TestCase
     #[DataProvider('provideAddMiddleware')]
     public function testAddMiddlewareWithExplicitTag(string $middlewareClass, bool $connectionNameAware): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) use ($middlewareClass) {
+        $container = $this->createContainer(static function (ContainerBuilder $container) use ($middlewareClass): void {
             $container
                 ->register('middleware', $middlewareClass)
                 ->setAbstract(true)
@@ -60,7 +60,7 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareWithExplicitTagsOnSpecificConnections(): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container
                 ->register('middleware', PHP7Middleware::class)
                 ->setAbstract(true)
@@ -81,7 +81,7 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareWithAutoconfigure(): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container
                 ->register('middleware', AutoconfiguredPHP7Middleware::class)
                 ->setAutoconfigured(true);
@@ -112,7 +112,7 @@ class MiddlewarePassTest extends TestCase
     #[DataProvider('provideAddMiddlewareWithAttributeForAutoconfiguration')]
     public function testAddMiddlewareWithAttributeForAutoconfiguration(string $className, bool $registeredOnConn1): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) use ($className) {
+        $container = $this->createContainer(static function (ContainerBuilder $container) use ($className): void {
             $container
                 ->register('middleware', $className)
                 ->setAutoconfigured(true);
@@ -147,7 +147,7 @@ class MiddlewarePassTest extends TestCase
     #[DataProvider('provideDontAddMiddleware')]
     public function testDontAddMiddlewareWhenDbalIsNotUsed(string $middlewareClass): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) use ($middlewareClass) {
+        $container = $this->createContainer(static function (ContainerBuilder $container) use ($middlewareClass): void {
             $container
                 ->register('middleware', $middlewareClass)
                 ->setAbstract(true)
@@ -162,7 +162,7 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareOrderingWithDefaultPriority(): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container
                 ->register('middleware1', PHP7Middleware::class)
                 ->setAbstract(true)
@@ -186,7 +186,7 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareOrderingWithExplicitPriority(): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container
                 ->register('middleware1', PHP7Middleware::class)
                 ->setAbstract(true)
@@ -210,7 +210,7 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareOrderingWithExplicitPriorityAndConnection(): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container
                 ->register('middleware1', PHP7Middleware::class)
                 ->setAbstract(true)
@@ -240,7 +240,7 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareOrderingWithExplicitPriorityPerConnection(): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container
                 ->register('middleware1', PHP7Middleware::class)
                 ->setAbstract(true)
@@ -273,7 +273,7 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareOrderingWithInheritedPriorityPerConnection(): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container
                 ->register('middleware1', PHP7Middleware::class)
                 ->setAbstract(true)
@@ -337,7 +337,7 @@ class MiddlewarePassTest extends TestCase
 
     public function testAddMiddlewareOrderingWithAttributeForAutoconfiguration(): void
     {
-        $container = $this->createContainer(static function (ContainerBuilder $container) {
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container
                 ->register('middleware1', AutoconfiguredMiddleware::class)
                 ->setAutoconfigured(true);

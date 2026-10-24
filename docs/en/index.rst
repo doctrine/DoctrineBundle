@@ -8,6 +8,7 @@ configuration options, console commands and even a web debug toolbar collector.
 
     installation
     doctrine-console
+    dbal-type
     entity-listeners
     event-listeners
     custom-id-generators

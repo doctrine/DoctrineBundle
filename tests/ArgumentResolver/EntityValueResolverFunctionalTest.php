@@ -10,7 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-use function assert;
 use function interface_exists;
 use function json_decode;
 
@@ -35,7 +34,6 @@ class EntityValueResolverFunctionalTest extends TestCase
         try {
             $container = $kernel->getContainer();
             $em        = $container->get('doctrine.orm.default_entity_manager');
-            assert($em instanceof EntityManagerInterface);
 
             // SchemaTool::createSchema triggers Schema::createTable, deprecated in
             // DBAL 4 (https://github.com/doctrine/dbal/pull/7373); the DBAL 4 fluent

@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Twig;
 
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
 
 use function pack;
-use function substr_count;
 
 class DoctrineExtensionTest extends TestCase
 {
@@ -116,55 +114,19 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('1', DoctrineExtension::escapeFunction(true));
     }
 
-    #[IgnoreDeprecations]
-    public function testItHighlightsSqlQueriesUsingCssClasses(): void
+    public function testNoEscapeFloatParameter(): void
     {
-        $extension = new DoctrineExtension();
-        self::assertStringContainsString(
-            'class=',
-            $extension->formatQuery('CREATE DATABASE 📚;'),
-        );
-        self::assertStringContainsString(
-            'class=',
-            $extension->formatSql('CREATE DATABASE 📚;', true),
-        );
+        $this->assertEquals(1.1, DoctrineExtension::escapeFunction(1.1));
     }
 
-    #[IgnoreDeprecations]
-    public function testItDoesNotOutputDuplicatePreTags(): void
+    public function testReplaceBinaryParameterAfterEscaping(): void
     {
-        $extension = new DoctrineExtension();
-        self::assertSame(
-            1,
-            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<pre'),
-        );
-        self::assertSame(
-            1,
-            substr_count($extension->formatSQL('CREATE DATABASE 📚;', true), '<pre'),
-        );
-    }
+        $extension  = new DoctrineExtension();
+        $query      = 'column = ?';
+        $parameters = [pack('H*', '9d40b8c1417f42d099af4782ec4b20b6')];
 
-    #[IgnoreDeprecations]
-    public function testItUsesCssOnTheDivTag(): void
-    {
-        $extension = new DoctrineExtension();
-        self::assertSame(
-            1,
-            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<div class='),
-        );
-        self::assertSame(
-            1,
-            substr_count($extension->formatQuery('CREATE DATABASE 📚;'), '<pre>'),
-        );
-    }
-
-    public function testItUsesCssOnThePreTag(): void
-    {
-        $extension = new DoctrineExtension();
-        self::assertSame(
-            1,
-            substr_count($extension->formatSQL('CREATE DATABASE 📚;', true), '<pre class='),
-        );
+        $result = $extension->replaceQueryParameters($query, $parameters);
+        $this->assertEquals('column = 0x9D40B8C1417F42D099AF4782EC4B20B6', $result);
     }
 }
 

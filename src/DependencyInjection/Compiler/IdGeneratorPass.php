@@ -18,10 +18,11 @@ use function array_keys;
 use function array_map;
 use function sprintf;
 
+/** @internal */
 final class IdGeneratorPass implements CompilerPassInterface
 {
-    public const ID_GENERATOR_TAG  = 'doctrine.id_generator';
-    public const CONFIGURATION_TAG = 'doctrine.orm.configuration';
+    public const string ID_GENERATOR_TAG  = 'doctrine.id_generator';
+    public const string CONFIGURATION_TAG = 'doctrine.orm.configuration';
 
     public function process(ContainerBuilder $container): void
     {

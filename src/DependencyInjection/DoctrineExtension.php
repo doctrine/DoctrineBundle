@@ -4,43 +4,39 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsMiddleware;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
-use Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\Bundle\DoctrineBundle\Mapping\ContainerEntityListenerResolver;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
-use Doctrine\Common\Annotations\Annotation;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
-use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
-use Doctrine\Deprecations\Deprecation;
-use Doctrine\ORM\Configuration as ORMConfiguration;
+use Doctrine\ORM\Cache\CacheConfiguration;
+use Doctrine\ORM\Cache\DefaultCacheFactory;
+use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
+use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
+use Doctrine\ORM\Cache\Region\DefaultRegion;
+use Doctrine\ORM\Cache\Region\FileLockRegion;
+use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
-use Doctrine\ORM\Mapping\Driver\PHPDriver as LegacyPHPDriver;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
-use Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver;
-use Doctrine\ORM\Mapping\Driver\StaticPHPDriver as LegacyStaticPHPDriver;
 use Doctrine\ORM\Mapping\Embeddable;
 use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\LegacyReflectionFields;
 use Doctrine\ORM\Mapping\MappedSuperclass;
-use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Proxy\Autoloader;
-use Doctrine\ORM\Proxy\ProxyFactory;
-use Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand;
-use Doctrine\ORM\Tools\Console\Command\EnsureProductionSettingsCommand;
-use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
+use Doctrine\ORM\Tools\AttachEntityListenersListener;
+use Doctrine\ORM\Tools\Console\Command\Debug\DebugEventManagerDoctrineCommand;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\Persistence\Mapping\Driver\PHPDriver;
@@ -48,6 +44,7 @@ use Doctrine\Persistence\Mapping\Driver\StaticPHPDriver;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
+use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -58,7 +55,7 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Config\Resource\GlobResource;
+use Symfony\Component\Console\ArgumentResolver\ValueResolver\ValueResolverInterface;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -69,14 +66,13 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormTypeGuesserInterface;
+use Symfony\Component\Messenger\Bridge\Doctrine\EventListener\PostgreSqlNotifyOnIdleListener;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
-use Symfony\Component\VarExporter\ProxyHelper;
 
 use function array_flip;
-use function array_intersect_key;
 use function array_keys;
 use function array_merge;
 use function array_replace;
@@ -84,28 +80,23 @@ use function array_values;
 use function assert;
 use function class_exists;
 use function dirname;
-use function file_get_contents;
 use function glob;
 use function in_array;
 use function interface_exists;
-use function is_bool;
 use function is_dir;
-use function method_exists;
-use function preg_match;
-use function preg_quote;
+use function is_string;
 use function realpath;
 use function reset;
 use function sprintf;
-use function str_contains;
 use function str_replace;
 
 use const GLOB_NOSORT;
-use const PHP_VERSION_ID;
 
 /**
  * DoctrineExtension is an extension for the Doctrine DBAL and ORM library.
  *
- * @final since 2.9
+ * @internal
+ *
  * @phpstan-type DBALConfig = array{
  *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, idle_connection_ttl: int}>,
  *      driver_schemes: array<string, string>,
@@ -113,34 +104,33 @@ use const PHP_VERSION_ID;
  *      types: array<string, string>,
  *  }
  */
-class DoctrineExtension extends Extension
+final class DoctrineExtension extends Extension
 {
     /**
      * Used inside metadata driver method to simplify aggregation of data.
      *
      * @var array<string, string> List of alias => namespace
      */
-    protected array $aliasMap = [];
+    private array $aliasMap = [];
 
     /**
      * Used inside metadata driver method to simplify aggregation of data.
      *
      * @var array<string, array<string, string>> List of driver type => prefix => path
      */
-    protected array $drivers = [];
+    private array $drivers = [];
 
     /**
      * @param array<string, mixed> $objectManager A configured object manager
      *
-     * @return void
-     *
      * @throws InvalidArgumentException
      */
-    protected function loadMappingInformation(array $objectManager, ContainerBuilder $container)
+    private function loadMappingInformation(array $objectManager, ContainerBuilder $container): void
     {
         if ($objectManager['auto_mapping']) {
             // automatically register bundle mappings
-            foreach (array_keys($container->getParameter('kernel.bundles')) as $bundle) {
+            $bundles = $container->getParameter('kernel.bundles');
+            foreach (array_keys($bundles) as $bundle) {
                 if (isset($objectManager['mappings'][$bundle])) {
                     continue;
                 }
@@ -172,10 +162,13 @@ class DoctrineExtension extends Extension
             if ($mappingConfig['is_bundle']) {
                 $bundle         = null;
                 $bundleMetadata = null;
-                foreach ($container->getParameter('kernel.bundles') as $name => $class) {
+                /** @var array<string, class-string> $kernelBundles */
+                $kernelBundles         = $container->getParameter('kernel.bundles');
+                $kernelBundlesMetadata = $container->getParameter('kernel.bundles_metadata');
+                foreach ($kernelBundles as $name => $class) {
                     if ($mappingName === $name) {
                         $bundle         = new ReflectionClass($class);
-                        $bundleMetadata = $container->getParameter('kernel.bundles_metadata')[$name];
+                        $bundleMetadata = $kernelBundlesMetadata[$name];
 
                         break;
                     }
@@ -185,12 +178,14 @@ class DoctrineExtension extends Extension
                     throw new InvalidArgumentException(sprintf('Bundle "%s" does not exist or it is not enabled.', $mappingName));
                 }
 
-                $mappingConfig = $this->getMappingDriverBundleConfigDefaults($mappingConfig, $bundle, $container, $bundleMetadata['path']);
-                if (! $mappingConfig) {
-                    continue;
+                if ($bundleMetadata !== null) {
+                    $mappingConfig = $this->getMappingDriverBundleConfigDefaults($mappingConfig, $bundle, $container, $bundleMetadata['path']);
+                    if (! $mappingConfig) {
+                        continue;
+                    }
                 }
             } elseif (! $mappingConfig['type']) {
-                $mappingConfig['type'] = $this->detectMappingType($mappingConfig['dir'], $container);
+                $mappingConfig['type'] = 'attribute';
             }
 
             $this->assertValidMappingConfiguration($mappingConfig, $objectManager['name']);
@@ -205,10 +200,8 @@ class DoctrineExtension extends Extension
      * Aliases can be used in the Query languages of all the Doctrine object managers to simplify writing tasks.
      *
      * @param array<string, mixed> $mappingConfig
-     *
-     * @return void
      */
-    protected function setMappingDriverAlias(array $mappingConfig, string $mappingName)
+    private function setMappingDriverAlias(array $mappingConfig, string $mappingName): void
     {
         if (isset($mappingConfig['alias'])) {
             $this->aliasMap[$mappingConfig['alias']] = $mappingConfig['prefix'];
@@ -222,11 +215,9 @@ class DoctrineExtension extends Extension
      *
      * @param array<string, mixed> $mappingConfig
      *
-     * @return void
-     *
      * @throws InvalidArgumentException
      */
-    protected function setMappingDriverConfig(array $mappingConfig, string $mappingName)
+    private function setMappingDriverConfig(array $mappingConfig, string $mappingName): void
     {
         $mappingDirectory = $mappingConfig['dir'];
         if (! is_dir($mappingDirectory)) {
@@ -241,15 +232,20 @@ class DoctrineExtension extends Extension
      *
      * Returns false when autodetection failed, an array of the completed information otherwise.
      *
-     * @param array<string, mixed> $bundleConfig
+     * @param array<string, mixed>    $bundleConfig
+     * @param ReflectionClass<object> $bundle
+     *
+     * @return array<string, mixed>|false
      */
-    protected function getMappingDriverBundleConfigDefaults(
+    private function getMappingDriverBundleConfigDefaults(
         array $bundleConfig,
         ReflectionClass $bundle,
         ContainerBuilder $container,
         string|null $bundleDir = null,
     ): array|false {
-        $bundleClassDir = dirname($bundle->getFileName());
+        $fileName = $bundle->getFileName();
+        assert(is_string($fileName));
+        $bundleClassDir = dirname($fileName);
         $bundleDir    ??= $bundleClassDir;
 
         if (! $bundleConfig['type']) {
@@ -266,7 +262,7 @@ class DoctrineExtension extends Extension
         }
 
         if (! $bundleConfig['dir']) {
-            if (in_array($bundleConfig['type'], ['annotation', 'staticphp', 'attribute'])) {
+            if (in_array($bundleConfig['type'], ['staticphp', 'attribute'])) {
                 $bundleConfig['dir'] = $bundleClassDir . '/' . $this->getMappingObjectDefaultName();
             } else {
                 $bundleConfig['dir'] = $bundleDir . '/' . $this->getMappingResourceConfigDirectory($bundleDir);
@@ -286,10 +282,8 @@ class DoctrineExtension extends Extension
      * Register all the collected mapping information with the object manager by registering the appropriate mapping drivers.
      *
      * @param array<string, mixed> $objectManager
-     *
-     * @return void
      */
-    protected function registerMappingDrivers(array $objectManager, ContainerBuilder $container)
+    private function registerMappingDrivers(array $objectManager, ContainerBuilder $container): void
     {
         // configure metadata driver for each bundle based on the type of mapping files found
         if ($container->hasDefinition($this->getObjectManagerElementName($objectManager['name'] . '_metadata_driver'))) {
@@ -299,36 +293,12 @@ class DoctrineExtension extends Extension
         }
 
         foreach ($this->drivers as $driverType => $driverPaths) {
-            $mappingService = $this->getObjectManagerElementName($objectManager['name'] . '_' . $driverType . '_metadata_driver');
-            if ($container->hasDefinition($mappingService)) {
-                $mappingDriverDef = $container->getDefinition($mappingService);
-                $args             = $mappingDriverDef->getArguments();
-                if ($driverType === 'annotation') {
-                    $args[1] = array_merge(array_values($driverPaths), $args[1]);
-                } else {
-                    $args[0] = array_merge(array_values($driverPaths), $args[0]);
-                }
+            $mappingService   = $this->getObjectManagerElementName($objectManager['name'] . '_' . $driverType . '_metadata_driver');
+            $mappingDriverDef = new Definition($this->getMetadataDriverClass($driverType), [
+                array_values($driverPaths),
+            ]);
 
-                $mappingDriverDef->setArguments($args);
-            } elseif ($driverType === 'attribute') {
-                $mappingDriverDef = new Definition($this->getMetadataDriverClass($driverType), [
-                    array_values($driverPaths),
-                ]);
-            } elseif ($driverType === 'annotation') {
-                $mappingDriverDef = new Definition($this->getMetadataDriverClass($driverType), [
-                    new Reference($this->getObjectManagerElementName('metadata.annotation_reader')),
-                    array_values($driverPaths),
-                ]);
-            } else {
-                $mappingDriverDef = new Definition($this->getMetadataDriverClass($driverType), [
-                    array_values($driverPaths),
-                ]);
-            }
-
-            if (
-                str_contains($mappingDriverDef->getClass(), 'yml') || str_contains($mappingDriverDef->getClass(), 'xml')
-                || str_contains($mappingDriverDef->getClass(), 'Yaml') || str_contains($mappingDriverDef->getClass(), 'Xml')
-            ) {
+            if ($mappingDriverDef->getClass() === SimplifiedXmlDriver::class) {
                 $mappingDriverDef->setArguments([array_flip($driverPaths)]);
                 $mappingDriverDef->addMethodCall('setGlobalBasename', ['mapping']);
             }
@@ -348,11 +318,9 @@ class DoctrineExtension extends Extension
      *
      * @param array<string, mixed> $mappingConfig
      *
-     * @return void
-     *
      * @throws InvalidArgumentException
      */
-    protected function assertValidMappingConfiguration(array $mappingConfig, string $objectManagerName)
+    private function assertValidMappingConfiguration(array $mappingConfig, string $objectManagerName): void
     {
         if (! $mappingConfig['type'] || ! $mappingConfig['dir'] || ! $mappingConfig['prefix']) {
             throw new InvalidArgumentException(sprintf('Mapping definitions for Doctrine manager "%s" require at least the "type", "dir" and "prefix" options.', $objectManagerName));
@@ -362,15 +330,15 @@ class DoctrineExtension extends Extension
             throw new InvalidArgumentException(sprintf('Specified non-existing directory "%s" as Doctrine mapping source.', $mappingConfig['dir']));
         }
 
-        if (! in_array($mappingConfig['type'], ['xml', 'yml', 'annotation', 'php', 'staticphp', 'attribute'])) {
-            throw new InvalidArgumentException(sprintf('Can only configure "xml", "yml", "annotation", "php", "staticphp" or "attribute" through the DoctrineBundle. Use your own bundle to configure other metadata drivers. You can register them by adding a new driver to the "%s" service definition.', $this->getObjectManagerElementName($objectManagerName . '_metadata_driver')));
+        if (! in_array($mappingConfig['type'], ['xml', 'php', 'staticphp', 'attribute'])) {
+            throw new InvalidArgumentException(sprintf('Can only configure "xml", "php", "staticphp" or "attribute" through the DoctrineBundle. Use your own bundle to configure other metadata drivers. You can register them by adding a new driver to the "%s" service definition.', $this->getObjectManagerElementName($objectManagerName . '_metadata_driver')));
         }
     }
 
     /**
      * Detects what metadata driver to use for the supplied directory.
      */
-    protected function detectMetadataDriver(string $dir, ContainerBuilder $container): string|null
+    private function detectMetadataDriver(string $dir, ContainerBuilder $container): string|null
     {
         $configPath = $this->getMappingResourceConfigDirectory($dir);
         $extension  = $this->getMappingResourceExtension();
@@ -390,9 +358,8 @@ class DoctrineExtension extends Extension
 
             $container->fileExists($resource, false);
 
-            $discoveryPath = $dir . '/' . $this->getMappingObjectDefaultName();
-            if ($container->fileExists($discoveryPath, false)) {
-                 return $this->detectMappingType($discoveryPath, $container);
+            if ($container->fileExists($dir . '/' . $this->getMappingObjectDefaultName(), false)) {
+                return 'attribute';
             }
 
             return null;
@@ -401,59 +368,6 @@ class DoctrineExtension extends Extension
         $container->fileExists($dir . '/' . $configPath, false);
 
         return $driver;
-    }
-
-    /**
-     * Detects what mapping type to use for the supplied directory.
-     *
-     * @return string A mapping type 'attribute' or 'annotation'
-     */
-    private function detectMappingType(string $directory, ContainerBuilder $container): string
-    {
-        $type = 'attribute';
-
-        $glob = new GlobResource($directory, '*', true);
-        $container->addResource($glob);
-
-        $quotedMappingObjectName = preg_quote($this->getMappingObjectDefaultName(), '/');
-
-        foreach ($glob as $file) {
-            $content = file_get_contents((string) $file);
-
-            if (
-                preg_match('/^#\[.*' . $quotedMappingObjectName . '\b/m', $content)
-                || preg_match('/^#\[.*Embeddable\b/m', $content)
-                || preg_match('/^#\[.*MappedSuperclass\b/m', $content)
-            ) {
-                break;
-            }
-
-            if (
-                self::textContainsAnnotation($quotedMappingObjectName, $content)
-                || self::textContainsAnnotation('Embeddable', $content)
-                || self::textContainsAnnotation('MappedSuperclass', $content)
-            ) {
-                $type = 'annotation';
-                break;
-            }
-        }
-
-        return $type;
-    }
-
-    /**
-     * Check if the file content contains a class-like annotation
-     *
-     * @internal
-     */
-    public static function textContainsAnnotation(string $quotedMappingObjectName, string $content): bool
-    {
-        return preg_match('/^(?:[ ]\*|\/\*\*)[ ]@               # Match phpdoc start or line with an at
-            \\\\?                                               # Can start with antislash
-            ([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*\\\\)*     # Match namespace components ending with antislash
-            ' . $quotedMappingObjectName . '                    # The target class
-            \b                                                  # Match word boundary
-            /mx', $content) === 1;
     }
 
     /**
@@ -466,7 +380,7 @@ class DoctrineExtension extends Extension
      *
      * @return array<string, array<string, mixed>>
      */
-    protected function fixManagersAutoMappings(array $managerConfigs, array $bundles): array
+    private function fixManagersAutoMappings(array $managerConfigs, array $bundles): array
     {
         $autoMappedManager = $this->validateAutoMapping($managerConfigs);
 
@@ -519,10 +433,8 @@ class DoctrineExtension extends Extension
 
     /**
      * {@inheritDoc}
-     *
-     * @return void
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = $this->getConfiguration($configs, $container);
         $config        = $this->processConfigurationPrependingDefaults($configuration, $configs);
@@ -588,7 +500,7 @@ class DoctrineExtension extends Extension
      * @param DBALConfig       $config    An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function dbalLoad(array $config, ContainerBuilder $container)
+    private function dbalLoad(array $config, ContainerBuilder $container): void
     {
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('dbal.php');
@@ -598,6 +510,7 @@ class DoctrineExtension extends Extension
             $config['default_connection'] = reset($keys);
         }
 
+        assert(is_string($config['default_connection']));
         $this->defaultConnection = $config['default_connection'];
 
         $container->setAlias('database_connection', sprintf('doctrine.dbal.%s_connection', $this->defaultConnection));
@@ -642,9 +555,12 @@ class DoctrineExtension extends Extension
             $this->loadDbalConnection($name, $connection, $container);
         }
 
+        /** @phpstan-ignore argument.type (Needed for the $reflector parameter) */
+        $container->registerAttributeForAutoconfiguration(AsDbalType::class, RegisterDbalTypePass::autoconfigureFromAttribute(...));
+
         $container->registerForAutoconfiguration(MiddlewareInterface::class)->addTag('doctrine.middleware');
 
-        $container->registerAttributeForAutoconfiguration(AsMiddleware::class, static function (ChildDefinition $definition, AsMiddleware $attribute) {
+        $container->registerAttributeForAutoconfiguration(AsMiddleware::class, static function (ChildDefinition $definition, AsMiddleware $attribute): void {
             $priority = isset($attribute->priority) ? ['priority' => $attribute->priority] : [];
 
             if ($attribute->connections === []) {
@@ -677,7 +593,7 @@ class DoctrineExtension extends Extension
      * @param array<string, mixed> $connection A dbal connection configuration.
      * @param ContainerBuilder     $container  A ContainerBuilder instance
      */
-    protected function loadDbalConnection($name, array $connection, ContainerBuilder $container)
+    private function loadDbalConnection(string $name, array $connection, ContainerBuilder $container): void
     {
         $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new ChildDefinition('doctrine.dbal.connection.configuration'));
         unset($connection['logging']);
@@ -696,12 +612,6 @@ class DoctrineExtension extends Extension
         }
 
         unset($connection['auto_commit']);
-
-        if (isset($connection['disable_type_comments'])) {
-            $configuration->addMethodCall('setDisableTypeComments', [$connection['disable_type_comments']]);
-        }
-
-        unset($connection['disable_type_comments']);
 
         if (isset($connection['schema_filter']) && $connection['schema_filter']) {
             $definition = new Definition(RegexSchemaAssetFilter::class, [$connection['schema_filter']]);
@@ -725,47 +635,24 @@ class DoctrineExtension extends Extension
             ->setArguments([
                 $options,
                 new Reference(sprintf('doctrine.dbal.%s_connection.configuration', $name)),
-                // event manager is only supported on DBAL < 4
-                method_exists(Connection::class, 'getEventManager') ? new Reference(sprintf('doctrine.dbal.%s_connection.event_manager', $name)) : null,
                 $connection['mapping_types'],
             ]);
 
         $container
-            ->registerAliasForArgument($connectionId, Connection::class, sprintf('%s.connection', $name))
-            ->setPublic(false);
+            ->registerAliasForArgument($connectionId, Connection::class, sprintf('%s.connection', $name), $name);
 
         // Set class in case "wrapper_class" option was used to assist IDEs
         if (isset($options['wrapperClass'])) {
             $def->setClass($options['wrapperClass']);
         }
 
-        if (isset($connection['use_savepoints'])) {
-            // DBAL >= 4 always has savepoints enabled. So we only need to call "setNestTransactionsWithSavepoints" for DBAL < 4
-            if (method_exists(Connection::class, 'getEventManager')) {
-                if ($connection['use_savepoints']) {
-                    $def->addMethodCall('setNestTransactionsWithSavepoints', [$connection['use_savepoints']]);
-                }
-            } elseif (! $connection['use_savepoints']) {
-                throw new LogicException('The "use_savepoints" option can only be set to "true" and should ideally not be set when using DBAL >= 4');
-            }
-        }
-
-        $container->setDefinition(
-            ManagerRegistryAwareConnectionProvider::class,
-            new Definition(ManagerRegistryAwareConnectionProvider::class, [$container->getDefinition('doctrine')]),
-        );
-
         $configuration->addMethodCall('setSchemaManagerFactory', [new Reference($connection['schema_manager_factory'])]);
 
-        if (isset($connection['result_cache'])) {
-            $configuration->addMethodCall('setResultCache', [new Reference($connection['result_cache'])]);
-        }
-
-        if (class_exists(LegacySchemaManagerFactory::class)) {
+        if (! isset($connection['result_cache'])) {
             return;
         }
 
-        $container->removeDefinition('doctrine.dbal.legacy_schema_manager_factory');
+        $configuration->addMethodCall('setResultCache', [new Reference($connection['result_cache'])]);
     }
 
     /**
@@ -773,7 +660,7 @@ class DoctrineExtension extends Extension
      *
      * @return mixed[]
      */
-    protected function getConnectionOptions(array $connection): array
+    private function getConnectionOptions(array $connection): array
     {
         $options = $connection;
 
@@ -784,24 +671,12 @@ class DoctrineExtension extends Extension
             'password' => null,
         ];
 
-        if ($options['override_url'] ?? false) {
-            $options['connection_override_options'] = array_intersect_key($options, ['dbname' => null] + $connectionDefaults);
-        }
-
-        unset($options['override_url']);
         unset($options['schema_manager_factory']);
 
         $options += $connectionDefaults;
 
-        foreach (['replicas', 'slaves'] as $connectionKey) {
-            foreach (array_keys($options[$connectionKey]) as $name) {
-                $options[$connectionKey][$name] += $connectionDefaults;
-            }
-        }
-
-        if (isset($options['platform_service'])) {
-            $options['platform'] = new Reference($options['platform_service']);
-            unset($options['platform_service']);
+        foreach (array_keys($options['replicas']) as $name) {
+            $options['replicas'][$name] += $connectionDefaults;
         }
 
         unset($options['mapping_types']);
@@ -811,7 +686,6 @@ class DoctrineExtension extends Extension
                 'options' => 'driverOptions',
                 'driver_class' => 'driverClass',
                 'wrapper_class' => 'wrapperClass',
-                'keep_slave' => 'keepReplica',
                 'keep_replica' => 'keepReplica',
                 'replicas' => 'replica',
                 'server_version' => 'serverVersion',
@@ -826,27 +700,23 @@ class DoctrineExtension extends Extension
             unset($options[$old]);
         }
 
-        foreach (['replica', 'slaves'] as $connectionKey) {
-            foreach ($options[$connectionKey] as $name => $value) {
-                $driverOptions       = $value['driverOptions'] ?? [];
-                $parentDriverOptions = $options['driverOptions'] ?? [];
-                if ($driverOptions === [] && $parentDriverOptions === []) {
-                    continue;
-                }
-
-                $options[$connectionKey][$name]['driverOptions'] = $driverOptions + $parentDriverOptions;
+        foreach ($options['replica'] as $name => $value) {
+            $driverOptions       = $value['driverOptions'] ?? [];
+            $parentDriverOptions = $options['driverOptions'] ?? [];
+            if ($driverOptions === [] && $parentDriverOptions === []) {
+                continue;
             }
+
+            $options['replica'][$name]['driverOptions'] = $driverOptions + $parentDriverOptions;
         }
 
-        if (! empty($options['slaves']) || ! empty($options['replica'])) {
+        if (! empty($options['replica'])) {
             $nonRewrittenKeys = [
                 'driver' => true,
                 'driverClass' => true,
                 'wrapperClass' => true,
-                'keepSlave' => true,
                 'keepReplica' => true,
                 'platform' => true,
-                'slaves' => true,
                 'primary' => true,
                 'replica' => true,
                 'serverVersion' => true,
@@ -871,7 +741,7 @@ class DoctrineExtension extends Extension
                 $options['wrapperClass'] = PrimaryReadReplicaConnection::class;
             }
         } else {
-            unset($options['slaves'], $options['replica']);
+            unset($options['replica']);
         }
 
         return $options;
@@ -887,7 +757,7 @@ class DoctrineExtension extends Extension
      * @param array<string, mixed> $config    An array of configuration settings
      * @param ContainerBuilder     $container A ContainerBuilder instance
      */
-    protected function ormLoad(array $config, ContainerBuilder $container)
+    private function ormLoad(array $config, ContainerBuilder $container): void
     {
         if (! class_exists(UnitOfWork::class)) {
             throw new LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
@@ -900,10 +770,6 @@ class DoctrineExtension extends Extension
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
         }
 
-        if (! class_exists(Annotation::class)) {
-            $container->removeAlias('doctrine.orm.metadata.annotation_reader');
-        }
-
         if (! class_exists(UlidGenerator::class)) {
             $container->removeDefinition('doctrine.ulid_generator');
         }
@@ -914,6 +780,11 @@ class DoctrineExtension extends Extension
 
         if (! class_exists(ExpressionLanguage::class)) {
             $container->removeDefinition('doctrine.orm.entity_value_resolver.expression_language');
+        }
+
+        if (! class_exists(DebugEventManagerDoctrineCommand::class)) {
+            $container->removeDefinition('doctrine.event_manager_debug_command');
+            $container->removeDefinition('doctrine.entity_listeners_debug_command');
         }
 
         if (! interface_exists(FormTypeGuesserInterface::class)) {
@@ -930,58 +801,30 @@ class DoctrineExtension extends Extension
             $controllerResolverDefaults['disabled'] = true;
         }
 
-        if ($config['controller_resolver']['auto_mapping'] === null) {
-            Deprecation::trigger(
-                'doctrine/doctrine-bundle',
-                'https://github.com/doctrine/DoctrineBundle/pull/1762',
-                'The default value of "doctrine.orm.controller_resolver.auto_mapping" will be changed from `true` to `false`. Explicitly configure `true` to keep existing behaviour.',
-            );
-            $config['controller_resolver']['auto_mapping'] = true;
-        }
-
-        if ($config['controller_resolver']['auto_mapping'] === true) {
-            Deprecation::trigger(
-                'doctrine/doctrine-bundle',
-                'https://github.com/doctrine/DoctrineBundle/pull/1804',
-                'Enabling the controller resolver automapping feature has been deprecated. Symfony Mapped Route Parameters should be used as replacement.',
-            );
-        }
-
-        if (! $config['controller_resolver']['auto_mapping']) {
-            $controllerResolverDefaults['mapping'] = [];
-        }
-
         if ($config['controller_resolver']['evict_cache']) {
             $controllerResolverDefaults['evict_cache'] = true;
         }
 
-        $valueResolverDefinition = $container->getDefinition('doctrine.orm.entity_value_resolver');
-        $valueResolverDefinition->setArgument(2, (new Definition(MapEntity::class))->setArguments([
-            null,
-            null,
-            null,
-            $controllerResolverDefaults['mapping'] ?? null,
-            null,
-            null,
-            null,
-            $controllerResolverDefaults['evict_cache'] ?? null,
-            $controllerResolverDefaults['disabled'] ?? false,
+        $controllerValueResolverDefinition = $container->getDefinition('doctrine.orm.entity_value_resolver');
+        $controllerValueResolverDefinition->setArgument(2, (new Definition(MapEntity::class))->setArguments([
+            '$evictCache' => $controllerResolverDefaults['evict_cache'] ?? null,
+            '$disabled' => $controllerResolverDefaults['disabled'] ?? false,
         ]));
 
         // Symfony 7.3 and higher expose type alias support in the EntityValueResolver
-        $valueResolverDefinition->setArgument(3, $config['resolve_target_entities']);
+        $controllerValueResolverDefinition->setArgument(3, $config['resolve_target_entities']);
 
-        // not available in Doctrine ORM 3.0 and higher
-        if (! class_exists(ConvertMappingCommand::class)) {
-            $container->removeDefinition('doctrine.mapping_convert_command');
-        }
+        // The Console ValueResolverInterface and EntityValueResolver is available in Symfony 8.1 and higher
+        if (interface_exists(ValueResolverInterface::class) && class_exists(EntityValueResolver::class)) {
+            $consoleValueResolverDefinition = $container->getDefinition('doctrine.orm.entity_value_resolver.console');
+            $consoleValueResolverDefinition->setArgument(2, (new Definition(MapEntity::class))->setArguments([
+                '$evictCache' => $controllerResolverDefaults['evict_cache'] ?? null,
+                '$disabled' => $controllerResolverDefaults['disabled'] ?? false,
+            ]));
 
-        if (! class_exists(EnsureProductionSettingsCommand::class)) {
-            $container->removeDefinition('doctrine.ensure_production_settings_command');
-        }
-
-        if (! class_exists(ClassMetadataExporter::class)) {
-            $container->removeDefinition('doctrine.mapping_import_command');
+            $consoleValueResolverDefinition->setArgument(3, $config['resolve_target_entities']);
+        } else {
+            $container->removeDefinition('doctrine.orm.entity_value_resolver.console');
         }
 
         $entityManagers = [];
@@ -998,56 +841,11 @@ class DoctrineExtension extends Extension
 
         $container->setParameter('doctrine.default_entity_manager', $config['default_entity_manager']);
 
-        if ($config['enable_lazy_ghost_objects'] ?? false) {
-            if (! class_exists(ProxyHelper::class)) {
-                throw new LogicException(
-                    'Lazy ghost objects cannot be enabled because the "symfony/var-exporter" library'
-                    . ' is not installed. Please run "composer require symfony/var-exporter".',
-                );
-            }
-        } elseif (! method_exists(ProxyFactory::class, 'resetUninitializedProxy')) {
-            throw new LogicException(
-                'Lazy ghost objects cannot be disabled for ORM 3.',
-            );
-        } else {
-            Deprecation::trigger(
-                'doctrine/doctrine-bundle',
-                'https://github.com/doctrine/DoctrineBundle/pull/1568',
-                'Not setting "doctrine.orm.enable_lazy_ghost_objects" to true is deprecated.',
-            );
-        }
-
-        if ($config['enable_native_lazy_objects'] ?? false) {
-            /** @phpstan-ignore function.alreadyNarrowedType */
-            if (! method_exists(ORMConfiguration::class, 'enableNativeLazyObjects')) {
-                throw new LogicException(
-                    'Native lazy objects are not supported with your installed version of the ORM. Please upgrade to "doctrine/orm >= 3.4".',
-                );
-            }
-
-            if (PHP_VERSION_ID < 80400) {
-                throw new LogicException('Using native lazy objects requires PHP 8.4 or higher.');
-            }
-
-            $container->removeDefinition('doctrine.orm.proxy_cache_warmer');
-        } elseif (! class_exists(AnnotationDriver::class) && PHP_VERSION_ID >= 80400) {
-            // Only emit the deprecation notice for ORM 3 and PHP 8.4+ users
-            Deprecation::trigger(
-                'doctrine/doctrine-bundle',
-                'https://github.com/doctrine/DoctrineBundle/pull/1905',
-                'Not setting "doctrine.orm.enable_native_lazy_objects" to true is deprecated.',
-            );
-        }
-
-        $options = ['auto_generate_proxy_classes', 'enable_lazy_ghost_objects', 'enable_native_lazy_objects', 'proxy_dir', 'proxy_namespace'];
-        foreach ($options as $key) {
-            $container->setParameter('doctrine.orm.' . $key, $config[$key]);
-        }
-
         $container->setAlias('doctrine.orm.entity_manager', $defaultEntityManagerDefinitionId = sprintf('doctrine.orm.%s_entity_manager', $config['default_entity_manager']));
         $container->getAlias('doctrine.orm.entity_manager')->setPublic(true);
 
-        $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $container->getParameter('kernel.bundles'));
+        $bundles                   = $container->getParameter('kernel.bundles');
+        $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $bundles);
 
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
@@ -1082,13 +880,10 @@ class DoctrineExtension extends Extension
         $container->registerForAutoconfiguration(ServiceEntityRepositoryInterface::class)
             ->addTag(ServiceRepositoryCompilerPass::REPOSITORY_SERVICE_TAG);
 
-        $container->registerForAutoconfiguration(EventSubscriberInterface::class)
-            ->addTag('doctrine.event_subscriber');
-
         $container->registerForAutoconfiguration(AbstractIdGenerator::class)
             ->addTag(IdGeneratorPass::ID_GENERATOR_TAG);
 
-        $container->registerAttributeForAutoconfiguration(AsEntityListener::class, static function (ChildDefinition $definition, AsEntityListener $attribute) {
+        $container->registerAttributeForAutoconfiguration(AsEntityListener::class, static function (ChildDefinition $definition, AsEntityListener $attribute): void {
             $definition->addTag('doctrine.orm.entity_listener', [
                 'event'          => $attribute->event,
                 'method'         => $attribute->method,
@@ -1098,7 +893,7 @@ class DoctrineExtension extends Extension
                 'priority'       => $attribute->priority,
             ]);
         });
-        $container->registerAttributeForAutoconfiguration(AsDoctrineListener::class, static function (ChildDefinition $definition, AsDoctrineListener $attribute) {
+        $container->registerAttributeForAutoconfiguration(AsDoctrineListener::class, static function (ChildDefinition $definition, AsDoctrineListener $attribute): void {
             $definition->addTag('doctrine.event_listener', [
                 'event'      => $attribute->event,
                 'priority'   => $attribute->priority,
@@ -1106,13 +901,13 @@ class DoctrineExtension extends Extension
             ]);
         });
 
-        $container->registerAttributeForAutoconfiguration(Embeddable::class, static function (ChildDefinition $definition) {
+        $container->registerAttributeForAutoconfiguration(Embeddable::class, static function (ChildDefinition $definition): void {
             $definition->setAbstract(true)->addTag('container.excluded', ['source' => sprintf('with #[%s] attribute', Embeddable::class)]);
         });
-        $container->registerAttributeForAutoconfiguration(Entity::class, static function (ChildDefinition $definition) {
+        $container->registerAttributeForAutoconfiguration(Entity::class, static function (ChildDefinition $definition): void {
             $definition->setAbstract(true)->addTag('container.excluded', ['source' => sprintf('with #[%s] attribute', Entity::class)]);
         });
-        $container->registerAttributeForAutoconfiguration(MappedSuperclass::class, static function (ChildDefinition $definition) {
+        $container->registerAttributeForAutoconfiguration(MappedSuperclass::class, static function (ChildDefinition $definition): void {
             $definition->setAbstract(true)->addTag('container.excluded', ['source' => sprintf('with #[%s] attribute', MappedSuperclass::class)]);
         });
 
@@ -1129,7 +924,7 @@ class DoctrineExtension extends Extension
      * @param array<string, mixed> $entityManager A configured ORM entity manager.
      * @param ContainerBuilder     $container     A ContainerBuilder instance
      */
-    protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container)
+    private function loadOrmEntityManager(array $entityManager, ContainerBuilder $container): void
     {
         $ormConfigDef = $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), new ChildDefinition('doctrine.orm.configuration'));
         $ormConfigDef->addTag(IdGeneratorPass::CONFIGURATION_TAG);
@@ -1140,19 +935,17 @@ class DoctrineExtension extends Extension
         if (isset($entityManager['entity_listener_resolver']) && $entityManager['entity_listener_resolver']) {
             $container->setAlias(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name']), $entityManager['entity_listener_resolver']);
         } else {
-            $definition = new Definition('%doctrine.orm.entity_listener_resolver.class%');
+            $definition = new Definition(ContainerEntityListenerResolver::class);
             $definition->addArgument(new Reference('service_container'));
             $container->setDefinition(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name']), $definition);
         }
 
         $methods = [
+            'enableNativeLazyObjects' => true,
             'setMetadataCache' => new Reference(sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name'])),
             'setQueryCache' => new Reference(sprintf('doctrine.orm.%s_query_cache', $entityManager['name'])),
             'setResultCache' => new Reference(sprintf('doctrine.orm.%s_result_cache', $entityManager['name'])),
             'setMetadataDriverImpl' => new Reference('doctrine.orm.' . $entityManager['name'] . '_metadata_driver'),
-            'setProxyDir' => '%doctrine.orm.proxy_dir%',
-            'setProxyNamespace' => '%doctrine.orm.proxy_namespace%',
-            'setAutoGenerateProxyClasses' => '%doctrine.orm.auto_generate_proxy_classes%',
             'setSchemaIgnoreClasses' => $entityManager['schema_ignore_classes'],
             'setClassMetadataFactoryName' => $entityManager['class_metadata_factory_name'],
             'setDefaultRepositoryClassName' => $entityManager['default_repository_class'],
@@ -1160,34 +953,15 @@ class DoctrineExtension extends Extension
             'setQuoteStrategy' => new Reference($entityManager['quote_strategy']),
             'setTypedFieldMapper' => new Reference($entityManager['typed_field_mapper']),
             'setEntityListenerResolver' => new Reference(sprintf('doctrine.orm.%s_entity_listener_resolver', $entityManager['name'])),
-            'setLazyGhostObjectEnabled' => '%doctrine.orm.enable_lazy_ghost_objects%',
             'setIdentityGenerationPreferences' => $entityManager['identity_generation_preferences'],
         ];
-
-        if (PHP_VERSION_ID >= 80400 && class_exists(LegacyReflectionFields::class)) {
-            $enableNativeLazyObjects = $container->getParameter('doctrine.orm.enable_native_lazy_objects');
-
-            assert(is_bool($enableNativeLazyObjects));
-
-            $methods['enableNativeLazyObjects'] = $enableNativeLazyObjects;
-
-            // Do not set deprecated proxy configurations when native lazy objects are enabled with `doctrine/orm:^3.5`
-            /** @phpstan-ignore function.alreadyNarrowedType */
-            if ($enableNativeLazyObjects && method_exists(ORMSetup::class, 'createAttributeMetadataConfig')) {
-                unset(
-                    $methods['setProxyDir'],
-                    $methods['setProxyNamespace'],
-                    $methods['setAutoGenerateProxyClasses'],
-                );
-            }
-        }
 
         if (isset($entityManager['fetch_mode_subselect_batch_size'])) {
             $methods['setEagerFetchBatchSize'] = $entityManager['fetch_mode_subselect_batch_size'];
         }
 
         $listenerId        = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);
-        $listenerDef       = $container->setDefinition($listenerId, new Definition('%doctrine.orm.listeners.attach_entity_listeners.class%'));
+        $listenerDef       = $container->setDefinition($listenerId, new Definition(AttachEntityListenersListener::class));
         $listenerTagParams = ['event' => 'loadClassMetadata'];
         if (isset($entityManager['connection'])) {
             $listenerTagParams['connection'] = $entityManager['connection'];
@@ -1263,8 +1037,7 @@ class DoctrineExtension extends Extension
             ->setConfigurator([new Reference($managerConfiguratorName), 'configure']);
 
         $container
-            ->registerAliasForArgument($entityManagerId, EntityManagerInterface::class, sprintf('%s.entity_manager', $entityManager['name']))
-            ->setPublic(false);
+            ->registerAliasForArgument($entityManagerId, EntityManagerInterface::class, sprintf('%s.entity_manager', $entityManager['name']), $entityManager['name']);
 
         $container->setAlias(
             sprintf('doctrine.orm.%s_entity_manager.event_manager', $entityManager['name']),
@@ -1311,12 +1084,11 @@ class DoctrineExtension extends Extension
      *  doctrine.orm:
      *     mappings:
      *         MyBundle1: ~
-     *         MyBundle2: yml
-     *         MyBundle3: { type: annotation, dir: Entities/ }
-     *         MyBundle4: { type: xml, dir: Resources/config/doctrine/mapping }
-     *         MyBundle5: { type: attribute, dir: Entities/ }
-     *         MyBundle6:
-     *             type: yml
+     *         MyBundle2: xml
+     *         MyBundle3: { type: xml, dir: Resources/config/doctrine/mapping }
+     *         MyBundle4: { type: attribute, dir: Entities/ }
+     *         MyBundle5:
+     *             type: xml
      *             dir: bundle-mappings/
      *             alias: BundleAlias
      *         arbitrary_key:
@@ -1328,7 +1100,7 @@ class DoctrineExtension extends Extension
      * In the case of bundles everything is really optional (which leads to autodetection for this bundle) but
      * in the mappings key everything except alias is a required argument.
      */
-    protected function loadOrmEntityManagerMappingInformation(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container)
+    private function loadOrmEntityManagerMappingInformation(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container): void
     {
         // reset state of drivers and alias map. They are only used by this methods and children.
         $this->drivers  = [];
@@ -1343,16 +1115,12 @@ class DoctrineExtension extends Extension
             $mappingService   = $this->getObjectManagerElementName($entityManager['name'] . '_' . $driverType . '_metadata_driver');
             $mappingDriverDef = $container->getDefinition($mappingService);
             $args             = $mappingDriverDef->getArguments();
-            if ($driverType === 'annotation') {
-                $args[2] = $entityManager['report_fields_where_declared'];
-            } elseif ($driverType === 'attribute') {
-                $args[1] = $entityManager['report_fields_where_declared'];
-            } elseif ($driverType === 'xml') {
-                $args[1] ??= SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION;
-                $args[2]   = $entityManager['validate_xml_mapping'];
-            } else {
+            if ($driverType !== 'xml') {
                 continue;
             }
+
+            $args[1] ??= SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION;
+            $args[2]   = $entityManager['validate_xml_mapping'];
 
             $mappingDriverDef->setArguments($args);
         }
@@ -1390,7 +1158,7 @@ class DoctrineExtension extends Extension
      *                      cache_driver:
      *                          type: apc
      */
-    protected function loadOrmSecondLevelCache(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container)
+    private function loadOrmSecondLevelCache(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container): void
     {
         $driverId = null;
         $enabled  = $entityManager['second_level_cache']['enabled'];
@@ -1404,13 +1172,13 @@ class DoctrineExtension extends Extension
         $configId   = sprintf('doctrine.orm.%s_second_level_cache.cache_configuration', $entityManager['name']);
         $regionsId  = sprintf('doctrine.orm.%s_second_level_cache.regions_configuration', $entityManager['name']);
         $driverId   = $driverId ?: sprintf('doctrine.orm.%s_second_level_cache.region_cache_driver', $entityManager['name']);
-        $configDef  = $container->setDefinition($configId, new Definition('%doctrine.orm.second_level_cache.cache_configuration.class%'));
+        $configDef  = $container->setDefinition($configId, new Definition(CacheConfiguration::class));
         $regionsDef = $container
-            ->setDefinition($regionsId, new Definition('%doctrine.orm.second_level_cache.regions_configuration.class%'))
+            ->setDefinition($regionsId, new Definition(RegionsConfiguration::class))
             ->setArguments([$entityManager['second_level_cache']['region_lifetime'], $entityManager['second_level_cache']['region_lock_lifetime']]);
 
         $slcFactoryId = sprintf('doctrine.orm.%s_second_level_cache.default_cache_factory', $entityManager['name']);
-        $factoryClass = $entityManager['second_level_cache']['factory'] ?? '%doctrine.orm.second_level_cache.default_cache_factory.class%';
+        $factoryClass = $entityManager['second_level_cache']['factory'] ?? DefaultCacheFactory::class;
 
         $definition = new Definition($factoryClass, [new Reference($regionsId), new Reference($driverId)]);
 
@@ -1437,22 +1205,25 @@ class DoctrineExtension extends Extension
                     $regionRef  = new Reference($regionId);
 
                     $container
-                        ->setDefinition($regionId, new Definition('%doctrine.orm.second_level_cache.default_region.class%'))
-                        ->setArguments([$name, new Reference($driverId), $region['lifetime']]);
+                        ->setDefinition($regionId, new Definition(DefaultRegion::class))
+                        ->setArguments([$name, new Reference($driverId), $region['lifetime'] ?? $entityManager['second_level_cache']['region_lifetime']]);
                 }
 
                 if ($regionType === 'filelock') {
                     $regionId = sprintf('doctrine.orm.%s_second_level_cache.region.%s_filelock', $entityManager['name'], $name);
 
                     $container
-                        ->setDefinition($regionId, new Definition('%doctrine.orm.second_level_cache.filelock_region.class%'))
+                        ->setDefinition($regionId, new Definition(FileLockRegion::class))
                         ->setArguments([$regionRef, $region['lock_path'], $region['lock_lifetime']]);
 
                     $regionRef = new Reference($regionId);
                     $regionsDef->addMethodCall('getLockLifetime', [$name, $region['lock_lifetime']]);
                 }
 
-                $regionsDef->addMethodCall('setLifetime', [$name, $region['lifetime']]);
+                if ($region['lifetime'] !== null) {
+                    $regionsDef->addMethodCall('setLifetime', [$name, $region['lifetime']]);
+                }
+
                 $slcFactoryDef->addMethodCall('setRegion', [$regionRef]);
             }
         }
@@ -1460,8 +1231,8 @@ class DoctrineExtension extends Extension
         if ($entityManager['second_level_cache']['log_enabled']) {
             $loggerChainId   = sprintf('doctrine.orm.%s_second_level_cache.logger_chain', $entityManager['name']);
             $loggerStatsId   = sprintf('doctrine.orm.%s_second_level_cache.logger_statistics', $entityManager['name']);
-            $loggerChaingDef = $container->setDefinition($loggerChainId, new Definition('%doctrine.orm.second_level_cache.logger_chain.class%'));
-            $loggerStatsDef  = $container->setDefinition($loggerStatsId, new Definition('%doctrine.orm.second_level_cache.logger_statistics.class%'));
+            $loggerChaingDef = $container->setDefinition($loggerChainId, new Definition(CacheLoggerChain::class));
+            $loggerStatsDef  = $container->setDefinition($loggerStatsId, new Definition(StatisticsCacheLogger::class));
 
             $loggerChaingDef->addMethodCall('setLogger', ['statistics', $loggerStatsDef]);
             $configDef->addMethodCall('setCacheLogger', [$loggerChaingDef]);
@@ -1484,11 +1255,9 @@ class DoctrineExtension extends Extension
     /**
      * Prefixes the relative dependency injection container path with the object manager prefix.
      *
-     * @param string $name
-     *
      * @example $name is 'entity_manager' then the result would be 'doctrine.orm.entity_manager'
      */
-    protected function getObjectManagerElementName($name): string
+    private function getObjectManagerElementName(string $name): string
     {
         return 'doctrine.orm.' . $name;
     }
@@ -1498,7 +1267,7 @@ class DoctrineExtension extends Extension
      *
      * Will be used for autodetection of persistent objects directory.
      */
-    protected function getMappingObjectDefaultName(): string
+    private function getMappingObjectDefaultName(): string
     {
         return 'Entity';
     }
@@ -1506,7 +1275,7 @@ class DoctrineExtension extends Extension
     /**
      * Relative path from the bundle root to the directory where mapping files reside.
      */
-    protected function getMappingResourceConfigDirectory(string|null $bundleDir = null): string
+    private function getMappingResourceConfigDirectory(string|null $bundleDir = null): string
     {
         if ($bundleDir !== null && is_dir($bundleDir . '/config/doctrine')) {
             return 'config/doctrine';
@@ -1518,7 +1287,7 @@ class DoctrineExtension extends Extension
     /**
      * Extension used by the mapping files.
      */
-    protected function getMappingResourceExtension(): string
+    private function getMappingResourceExtension(): string
     {
         return 'orm';
     }
@@ -1526,15 +1295,13 @@ class DoctrineExtension extends Extension
     /**
      * Loads a cache driver.
      *
-     * @param string               $cacheName
-     * @param string               $objectManagerName
      * @param array<string, mixed> $cacheDriver
      *
      * @throws InvalidArgumentException
      */
-    protected function loadCacheDriver(
-        $cacheName,
-        $objectManagerName,
+    private function loadCacheDriver(
+        string $cacheName,
+        string $objectManagerName,
         array $cacheDriver,
         ContainerBuilder $container,
     ): string {
@@ -1568,7 +1335,7 @@ class DoctrineExtension extends Extension
      *
      * @param array<string, mixed> $entityManager A configured ORM entity manager.
      */
-    protected function loadOrmCacheDrivers(array $entityManager, ContainerBuilder $container)
+    private function loadOrmCacheDrivers(array $entityManager, ContainerBuilder $container): void
     {
         if (isset($entityManager['metadata_cache_driver'])) {
             $this->loadCacheDriver('metadata_cache', $entityManager['name'], $entityManager['metadata_cache_driver'], $container);
@@ -1593,7 +1360,7 @@ class DoctrineExtension extends Extension
 
             $container->register($cacheWarmerServiceId, DoctrineMetadataCacheWarmer::class)
                 ->setArguments([new Reference(sprintf('doctrine.orm.%s_entity_manager', $objectManagerName)), $phpArrayFile])
-                ->addTag('kernel.cache_warmer', ['priority' => 1000]); // priority should be higher than ProxyCacheWarmer
+                ->addTag('kernel.cache_warmer', ['priority' => 1000]);
 
             $cache = new Definition(PhpArrayAdapter::class, [$phpArrayFile, $cache]);
         }
@@ -1640,6 +1407,8 @@ class DoctrineExtension extends Extension
 
     /**
      * {@inheritDoc}
+     *
+     * @param array<string, mixed> $config
      */
     public function getConfiguration(array $config, ContainerBuilder $container): Configuration
     {
@@ -1649,33 +1418,20 @@ class DoctrineExtension extends Extension
     /**
      * The class name used by the various mapping drivers.
      */
-    protected function getMetadataDriverClass(string $driverType): string
+    private function getMetadataDriverClass(string $driverType): string
     {
         switch ($driverType) {
             case 'driver_chain':
                 return MappingDriverChain::class;
 
-            case 'annotation':
-                if (! class_exists(AnnotationDriver::class)) {
-                    throw new LogicException('The annotation driver is only available in doctrine/orm v2.');
-                }
-
-                return AnnotationDriver::class;
-
             case 'xml':
                 return SimplifiedXmlDriver::class;
 
-            case 'yml':
-                /* @phpstan-ignore class.notFound */
-                return SimplifiedYamlDriver::class;
-
             case 'php':
-                /* @phpstan-ignore class.notFound */
-                return class_exists(PHPDriver::class) ? PHPDriver::class : LegacyPHPDriver::class;
+                return PHPDriver::class;
 
             case 'staticphp':
-                /* @phpstan-ignore class.notFound */
-                return class_exists(StaticPHPDriver::class) ? StaticPHPDriver::class : LegacyStaticPHPDriver::class;
+                return StaticPHPDriver::class;
 
             case 'attribute':
                 return AttributeDriver::class;
@@ -1695,6 +1451,10 @@ class DoctrineExtension extends Extension
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('messenger.php');
+
+        if (! class_exists(PostgreSqlNotifyOnIdleListener::class)) {
+            $container->removeDefinition('messenger.transport.doctrine.pg_notify_on_idle_listener');
+        }
 
         /**
          * The Doctrine transport component (symfony/doctrine-messenger) is optional.

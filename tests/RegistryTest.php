@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
-use Closure;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\DBAL\Connection;
@@ -13,17 +12,11 @@ use Doctrine\Persistence\ObjectManager;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
 use InvalidArgumentException;
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
-use PHPUnit\Framework\Attributes\RequiresPhp;
-use ProxyManager\Proxy\ProxyInterface;
 use Symfony\Component\DependencyInjection\Container;
-use Symfony\Component\VarExporter\LazyObjectInterface;
 
 use function assert;
 use function interface_exists;
 use function restore_exception_handler;
-
-use const PHP_VERSION_ID;
 
 class RegistryTest extends TestCase
 {
@@ -123,58 +116,6 @@ class RegistryTest extends TestCase
         $registry->resetManager('default');
     }
 
-    #[IgnoreDeprecations]
-    #[RequiresPhp('<8.4.0')]
-    public function testReset(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $noProxyManager = $this->getMockBuilder(EntityManagerInterface::class)->getMock();
-        $noProxyManager->expects($this->once())
-            ->method('clear');
-
-        $proxyManager = $this->createMock(LazyLoadingEntityManagerInterface::class);
-        $proxyManager->expects($this->once())
-            ->method('setProxyInitializer')
-            ->with($this->isInstanceOf(Closure::class));
-
-        $container = new Container();
-        $container->set('doctrine.orm.noproxy_entity_manager', $noProxyManager);
-        $container->set('doctrine.orm.proxy_entity_manager', $proxyManager);
-
-        $entityManagers = [
-            'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
-            'noproxy' => 'doctrine.orm.noproxy_entity_manager',
-            'proxy' => 'doctrine.orm.proxy_entity_manager',
-        ];
-
-        $registry = new Registry($container, [], $entityManagers, 'default', 'default');
-        $registry->reset();
-    }
-
-    #[RequiresPhp('>= 8.4.0')]
-    public function testResetLazyObject(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class) || ! interface_exists(LazyObjectInterface::class)) {
-            self::markTestSkipped('This test requires ORM and VarExporter 6.2+');
-        }
-
-        $ghostManager = $this->createMock(LazyObjectEntityManagerInterface::class);
-        $ghostManager->expects($this->once())->method('resetLazyObject')->willReturn(true);
-
-        $container = new Container();
-        $container->set('doctrine.orm.ghost_entity_manager', $ghostManager);
-
-        $entityManagers = [
-            'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
-            'ghost' => 'doctrine.orm.ghost_entity_manager',
-        ];
-
-        (new Registry($container, [], $entityManagers, 'default', 'default'))->reset();
-    }
-
     public function testIdentityMapsStayConsistentAfterReset(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -187,13 +128,6 @@ class RegistryTest extends TestCase
         $container     = $kernel->getContainer();
         $registry      = $container->get('doctrine');
         $entityManager = $container->get('doctrine.orm.default_entity_manager');
-
-        if (PHP_VERSION_ID < 80400) {
-            $this->assertInstanceOf(interface_exists(LazyObjectInterface::class) ? LazyObjectInterface::class : ProxyInterface::class, $entityManager);
-        }
-
-        assert($entityManager instanceof EntityManagerInterface);
-        assert($registry instanceof Registry);
 
         $repository = $entityManager->getRepository(TestCustomClassRepoEntity::class);
         assert($repository instanceof TestCustomClassRepoRepository);

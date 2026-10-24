@@ -5,11 +5,6 @@
     xmlns:srv="http://symfony.com/schema/dic/services"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
                         http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
-
-    <srv:parameters>
-        <srv:parameter key="doctrine.orm.proxy_namespace">Proxies</srv:parameter>
-    </srv:parameters>
-
     <config>
         <dbal default-connection="conn1">
             <connection
@@ -28,7 +23,7 @@
                 memory="true" />
         </dbal>
 
-        <orm default-entity-manager="em2" auto-generate-proxy-classes="true">
+        <orm default-entity-manager="em2">
             <entity-manager name="em1" connection="conn1">
                 <mapping name="XmlBundle" />
             </entity-manager>

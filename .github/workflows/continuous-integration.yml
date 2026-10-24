@@ -44,9 +44,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.1"
-          - "8.2"
-          - "8.3"
           - "8.4"
         dependencies:
           - "highest"
@@ -62,15 +59,20 @@ jobs:
           # Tests the lowest set of dependencies
           - dependencies: "lowest"
             stability: "stable"
-            php-version: "8.1"
+            php-version: "8.4"
 
-          # Test old LTS
+          # Test legacy LTS
           - symfony-require: "6.4.*"
             dependencies: "highest"
             php-version: "8.5"
 
           # Test LTS
           - symfony-require: "7.4.*"
+            dependencies: "highest"
+            php-version: "8.5"
+
+          # Test non-LTS
+          - symfony-require: "8.0.*"
             dependencies: "highest"
             php-version: "8.5"
 

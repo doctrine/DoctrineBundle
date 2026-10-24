@@ -41,28 +41,34 @@ class XMLSchemaTest extends TestCase
 
         $dbalElements = $dom->getElementsByTagNameNS($xmlns, 'dbal');
         if ($dbalElements->length) {
-            $dbalDom    = new DOMDocument('1.0', 'UTF-8');
-            $dbalNode   = $dbalDom->importNode($dbalElements->item(0));
-            $configNode = $dbalDom->createElementNS($xmlns, 'config');
-            $configNode->appendChild($dbalNode);
-            $dbalDom->appendChild($configNode);
+            $dbalDom     = new DOMDocument('1.0', 'UTF-8');
+            $dbalElement = $dbalElements->item(0);
+            if ($dbalElement !== null) {
+                $dbalNode   = $dbalDom->importNode($dbalElement);
+                $configNode = $dbalDom->createElementNS($xmlns, 'config');
+                $configNode->appendChild($dbalNode);
+                $dbalDom->appendChild($configNode);
 
-            $ret = $dbalDom->schemaValidate(__DIR__ . '/../../config/schema/doctrine-1.0.xsd');
-            $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
-            $found = true;
+                $ret = $dbalDom->schemaValidate(__DIR__ . '/../../config/schema/doctrine-1.0.xsd');
+                $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
+                $found = true;
+            }
         }
 
         $ormElements = $dom->getElementsByTagNameNS($xmlns, 'orm');
         if ($ormElements->length) {
             $ormDom     = new DOMDocument('1.0', 'UTF-8');
-            $ormNode    = $ormDom->importNode($ormElements->item(0));
-            $configNode = $ormDom->createElementNS($xmlns, 'config');
-            $configNode->appendChild($ormNode);
-            $ormDom->appendChild($configNode);
+            $ormElement = $ormElements->item(0);
+            if ($ormElement !== null) {
+                $ormNode    = $ormDom->importNode($ormElement);
+                $configNode = $ormDom->createElementNS($xmlns, 'config');
+                $configNode->appendChild($ormNode);
+                $ormDom->appendChild($configNode);
 
-            $ret = $ormDom->schemaValidate(__DIR__ . '/../../config/schema/doctrine-1.0.xsd');
-            $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
-            $found = true;
+                $ret = $ormDom->schemaValidate(__DIR__ . '/../../config/schema/doctrine-1.0.xsd');
+                $this->assertTrue($ret, 'DoctrineBundle Dependency Injection XMLSchema did not validate this XML instance.');
+                $found = true;
+            }
         }
 
         $this->assertTrue($found, 'Neither <doctrine:orm> nor <doctrine:dbal> elements found in given XML. Are namespaces configured correctly?');

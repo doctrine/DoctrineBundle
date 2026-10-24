@@ -1,6 +1,3 @@
-parameters:
-  doctrine.orm.proxy_namespace: Proxies
-
 doctrine:
     dbal:
         default_connection: conn1
@@ -20,7 +17,6 @@ doctrine:
 
     orm:
         default_entity_manager: em2
-        auto_generate_proxy_classes: true
         entity_managers:
             em1:
                 connection: conn1

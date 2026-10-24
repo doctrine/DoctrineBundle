@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
-use Doctrine\Common\Annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
@@ -16,7 +14,6 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-use function class_exists;
 use function sys_get_temp_dir;
 use function uniqid;
 
@@ -36,14 +33,9 @@ class TestCase extends BaseTestCase
             'container.build_id' => uniqid(),
         ]));
 
-        if (class_exists(AnnotationReader::class)) {
-            $container->set('annotation_reader', new AnnotationReader());
-        }
-
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
         $extension->load([
-            DeprecationFreeConfig::get(),
             [
                 'dbal' => [
                     'connections' => [
@@ -87,7 +79,6 @@ class TestCase extends BaseTestCase
 
         $compilerPassConfig->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $compilerPassConfig->setRemovingPasses([]);
-        $compilerPassConfig->addPass(new CacheCompatibilityPass());
         // make all Doctrine services public, so we can fetch them in the test
         $compilerPassConfig->addPass(new TestCaseAllPublicCompilerPass());
 

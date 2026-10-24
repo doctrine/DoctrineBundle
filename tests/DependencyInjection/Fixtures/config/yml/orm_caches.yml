@@ -1,10 +1,6 @@
 services:
     cache.psr6:
         class: Symfony\Component\Cache\Adapter\ArrayAdapter
-    cache.doctrine:
-        class: Doctrine\Common\Cache\Psr6\DoctrineProvider
-        factory: [Doctrine\Common\Cache\Psr6\DoctrineProvider, wrap]
-        arguments: ["@cache.psr6"]
 
 doctrine:
     dbal:
@@ -26,10 +22,6 @@ doctrine:
                 metadata_cache_driver:
                     type: service
                     id: cache.psr6
-            metadata_cache_service_doctrine:
-                metadata_cache_driver:
-                    type: service
-                    id: cache.doctrine
 
             query_cache_pool:
                 query_cache_driver:
@@ -39,10 +31,6 @@ doctrine:
                 query_cache_driver:
                     type: service
                     id: cache.psr6
-            query_cache_service_doctrine:
-                query_cache_driver:
-                    type: service
-                    id: cache.doctrine
 
             result_cache_pool:
                 result_cache_driver:
@@ -52,10 +40,6 @@ doctrine:
                 result_cache_driver:
                     type: service
                     id: cache.psr6
-            result_cache_service_doctrine:
-                result_cache_driver:
-                    type: service
-                    id: cache.doctrine
 
             second_level_cache_pool:
                 second_level_cache:
@@ -69,9 +53,3 @@ doctrine:
                     region_cache_driver:
                         type: service
                         id: cache.psr6
-            second_level_cache_service_doctrine:
-                second_level_cache:
-                    enabled: true
-                    region_cache_driver:
-                        type: service
-                        id: cache.doctrine

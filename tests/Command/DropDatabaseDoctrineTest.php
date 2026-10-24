@@ -134,7 +134,7 @@ class DropDatabaseDoctrineTest extends TestCase
     }
 
     /**
-     * @param list<mixed> $params Connection parameters
+     * @param array{url?: string, path?: string, driver: string} $params Connection parameters
      * @psalm-param Params $params
      *
      * @return Stub&Container

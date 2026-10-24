@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\QueryBuilder;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomServiceRepoEntity;
@@ -19,6 +16,7 @@ use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepos
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomServiceRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
+use Symfony\Component\Cache\CacheBundle;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -65,8 +63,8 @@ class ServiceRepositoryTest extends TestCase
             'debug.file_link_format' => null,
         ]));
 
-        if (class_exists(AnnotationReader::class)) {
-            $container->set('annotation_reader', new AnnotationReader());
+        if (class_exists(CacheBundle::class)) {
+            (new CacheBundle())->getContainerExtension()?->load([], $container);
         }
 
         $extension = new FrameworkExtension();
@@ -75,7 +73,6 @@ class ServiceRepositoryTest extends TestCase
             'framework' => [
                 'http_method_override' => false,
                 'php_errors' => ['log' => true],
-                'annotations' => ['enabled' => false],
                 'handle_all_throwables' => true,
             ],
         ], $container);
@@ -83,7 +80,6 @@ class ServiceRepositoryTest extends TestCase
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);
         $extension->load([
-            DeprecationFreeConfig::get(),
             [
                 'dbal' => [
                     'driver' => 'pdo_sqlite',
@@ -98,7 +94,7 @@ class ServiceRepositoryTest extends TestCase
                             'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
                         ],
                     ],
-                ] + (class_exists(AnnotationDriver::class) ? ['report_fields_where_declared' => true] : []),
+                ],
             ],
         ], $container);
 
@@ -111,7 +107,6 @@ class ServiceRepositoryTest extends TestCase
         $def->setAutoconfigured(true);
 
         $container->addCompilerPass(new ServiceRepositoryCompilerPass());
-        $container->addCompilerPass(new CacheCompatibilityPass());
         $container->compile();
 
         $em = $container->get('doctrine.orm.default_entity_manager');

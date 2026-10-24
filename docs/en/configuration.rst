@@ -7,6 +7,7 @@ Configuration Reference
 
         doctrine:
             dbal:
+                # The name of the default connection
                 default_connection:           default
 
                 # A collection of custom types
@@ -15,9 +16,16 @@ Configuration Reference
                     some_custom_type:
                         class:                Acme\HelloBundle\MyCustomType
 
+                # Defines a driver for given URL schemes
+                driver_schemes:
+                    # example
+                    # custom: pdo_mysql
+
                 connections:
                     # A collection of different named connections (e.g. default, conn2, etc)
                     default:
+                        # A URL with connection information; any parameter parsed from it overrides the ones below
+                        url:                  ~
                         dbname:               ~
                         host:                 localhost
                         port:                 ~
@@ -29,6 +37,8 @@ Configuration Reference
 
                         # Adds the given suffix to the configured database name, this option has no effects for the SQLite platform
                         dbname_suffix:        ~
+                        # PostgreSQL specific. The application name reported to the database server
+                        application_name:     ~
 
                         # SQLite specific
                         path:                 ~
@@ -88,12 +98,16 @@ Configuration Reference
 
                         # pdo_sqlsrv driver specific. Configuring MultipleActiveResultSets for the pdo_sqlsrv driver
                         MultipleActiveResultSets:  ~
+                        # Oracle specific. The INSTANCE_NAME used to select an instance of an Oracle RAC server
+                        instancename:         ~
+                        # Oracle specific. A complete Easy Connect connection descriptor
+                        connectstring:        ~
 
-                        # Enable savepoints for nested transactions
-                        use_savepoints: true
-
+                        # The database driver
                         driver:               pdo_mysql
+                        # Service id of a custom DBAL platform
                         platform_service:     ~
+                        # Whether to enable auto-commit for the connection
                         auto_commit:          ~
 
                         # If set to "/^sf2_/" all tables, and any named objects such as sequences
@@ -104,21 +118,23 @@ Configuration Reference
                         # When true, queries are logged to a "doctrine" monolog channel
                         logging:              "%kernel.debug%"
 
+                        # When true, the connection is profiled in the web debug toolbar
                         profiling:            "%kernel.debug%"
                         # When true, profiling also collects a backtrace for each query
                         profiling_collect_backtrace: false
                         # When true, profiling also collects schema errors for each query
                         profiling_collect_schema_errors: true
 
-                        # When true, type comments are skipped in the database schema, matching the behavior of DBAL 4.
-                        # This requires using the non-deprecated schema comparison APIs of DBAL.
-                        disable_type_comments: false
-
+                        # The database server version, e.g. "8.0.31"
                         server_version:       ~
+                        # Time in seconds before an idle connection is closed, 0 to disable
+                        idle_connection_ttl:  600
+                        # Class name of a custom DBAL driver
                         driver_class:         ~
                         # Allows to specify a custom wrapper implementation to use.
                         # Must be a subclass of Doctrine\DBAL\Connection
                         wrapper_class:        ~
+                        # Whether to keep the replica connection after connecting to the primary
                         keep_replica:           ~
 
                         # An array of options
@@ -135,10 +151,11 @@ Configuration Reference
                             # Affects schema-tool. If absent, DBAL chooses defaults
                             # based on the platform. Examples here are for MySQL.
                             # charset:      utf8mb4
-                            # collate:      utf8mb4_unicode_ci # When using doctrine/dbal 2.x
-                            # collation:    utf8mb4_unicode_ci # When using doctrine/dbal 3.x
+                            # collation:    utf8mb4_unicode_ci
                             # engine:       InnoDB
 
+                        # Service id of the schema manager factory
+                        schema_manager_factory: doctrine.dbal.default_schema_manager_factory
                         # Service identifier of a Psr\Cache\CacheItemPoolInterface implementation
                         # to use as the cache driver for dbal result sets.
                         result_cache:        ~
@@ -214,14 +231,16 @@ Configuration Reference
             orm:
                 default_entity_manager: ~ # The first defined is used if not set
 
-                # Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL", "FILE_NOT_EXISTS_OR_CHANGED"
-                auto_generate_proxy_classes:  false
-                proxy_dir:                    "%kernel.cache_dir%/doctrine/orm/Proxies"
-                proxy_namespace:              Proxies
-                # Enables the new implementation of proxies based on lazy ghosts instead of using the legacy implementation
-                enable_lazy_ghost_objects:    false
-                # Enables the new native implementation of PHP lazy objects instead of generated proxies
-                enable_native_lazy_objects:   false
+                # No-op, deprecated, will be removed in the future
+                enable_native_lazy_objects:   true
+
+                controller_resolver:
+                    # Whether the controller resolver is enabled
+                    enabled:              true
+                    # When true, the entity is fetched from the database instead of the cache, if any
+                    evict_cache:          false
+
+                # Identity generation preference per platform when using the AUTO strategy
                 identity_generation_preferences:
                     Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
 
@@ -229,25 +248,30 @@ Configuration Reference
 
                     # A collection of different named entity managers (e.g. some_em, another_em)
                     some_em:
+                        # The cache driver used for the query cache
                         query_cache_driver:
                             type: ~
                             id:   ~
                             pool: ~
+
+                        # The cache driver used for the metadata cache
                         metadata_cache_driver:
                             type: ~
                             id:   ~
                             pool: ~
+
+                        # The cache driver used for the result cache
                         result_cache_driver:
                             type: ~
                             id:   ~
                             pool: ~
+
+                        # The entity listeners to register
                         entity_listeners:
                             entities:
-
                                 # example
                                 Acme\HelloBundle\Entity\Author:
                                     listeners:
-
                                         # example
                                         Acme\HelloBundle\EventListener\ExampleListener:
                                             events:
@@ -256,19 +280,36 @@ Configuration Reference
 
                         # The name of a DBAL connection (the one marked as default is used if not set)
                         connection:           ~
+
+                        # Class name of the metadata factory
                         class_metadata_factory_name:  Doctrine\ORM\Mapping\ClassMetadataFactory
+
+                        # Default repository class
                         default_repository_class:     Doctrine\ORM\EntityRepository
+
+                        # Automatically map the entities of all bundles
                         auto_mapping:                 false
-                        # Opt-in to new mapping driver mode as of Doctrine ORM 2.16, https://github.com/doctrine/orm/pull/10455
-                        report_fields_where_declared: false
                         # 0pt-in to the new mapping driver mode as of Doctrine ORM 2.14. See https://github.com/doctrine/orm/pull/6728.
                         validate_xml_mapping: false
+
+                        # Service id of the naming strategy
                         naming_strategy:              doctrine.orm.naming_strategy.default
+
+                        # Service id of the quote strategy
                         quote_strategy:               doctrine.orm.quote_strategy.default
+
+                        # Service id of the typed field mapper
                         typed_field_mapper:           doctrine.orm.typed_field_mapper.default
+
+                        # Service id of the entity listener resolver
                         entity_listener_resolver:     ~
+
+                        # Service id of the repository factory
                         repository_factory:           ~
+
+                        # Second level cache configuration
                         second_level_cache:
+                            enabled:              true
                             region_cache_driver:
                                 type: ~
                                 id:   ~
@@ -276,10 +317,8 @@ Configuration Reference
                             region_lock_lifetime: 60
                             log_enabled:          true
                             region_lifetime:      0
-                            enabled:              true
                             factory:              ~
                             regions:
-
                                 # Prototype
                                 name:
                                     cache_driver:
@@ -293,7 +332,6 @@ Configuration Reference
                                     service:              ~
                                     name:                 ~
                             loggers:
-
                                 # Prototype
                                 name:
                                     name:                 ~
@@ -301,7 +339,6 @@ Configuration Reference
 
                         # An array of hydrator names
                         hydrators:
-
                             # example
                             ListHydrator: Acme\HelloBundle\Hydrators\ListHydrator
 
@@ -318,19 +355,16 @@ Configuration Reference
                         dql:
                             # A collection of string functions
                             string_functions:
-
                                 # example
                                 # test_string: Acme\HelloBundle\DQL\StringFunction
 
                             # A collection of numeric functions
                             numeric_functions:
-
                                 # example
                                 # test_numeric: Acme\HelloBundle\DQL\NumericFunction
 
                             # A collection of datetime functions
                             datetime_functions:
-
                                 # example
                                 # test_datetime: Acme\HelloBundle\DQL\DatetimeFunction
 
@@ -344,317 +378,460 @@ Configuration Reference
 
                                 # An array of parameters
                                 parameters:
-
                                     # example
                                     foo_param:              bar_value
 
+                        # Entities to ignore when generating the schema
                         schema_ignore_classes:
                             - Acme\AppBundle\Entity\Order
                             - Acme\AppBundle\Entity\PhoneNumber
 
+                        # Batch size for the subselect fetch mode
                         fetch_mode_subselect_batch_size: 2000
                 # Search for the "ResolveTargetEntityListener" class for a cookbook about this
                 resolve_target_entities:
-
                     # Prototype
                     Acme\InvoiceBundle\Model\InvoiceSubjectInterface: Acme\AppBundle\Entity\Customer
 
-    .. code-block:: xml
+    .. code-block:: php
 
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <container xmlns="http://symfony.com/schema/dic/services"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns:doctrine="http://symfony.com/schema/dic/doctrine"
-            xsi:schemaLocation="http://symfony.com/schema/dic/services
-                http://symfony.com/schema/dic/services/services-1.0.xsd
-                http://symfony.com/schema/dic/doctrine
-                http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
+        // config/packages/doctrine.php
+        use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
-            <doctrine:config>
+        return static function (ContainerConfigurator $containerConfigurator): void {
+            $containerConfigurator->extension('doctrine', [
+                'dbal' => [
+                    // The name of the default connection
+                    'default_connection' => 'default',
 
-                <doctrine:dbal default-connection="default">
+                    // A collection of custom types
+                    'types' => [
+                        // example
+                        'some_custom_type' => [
+                            'class' => 'Acme\HelloBundle\MyCustomType',
+                        ],
+                    ],
 
-                    <!-- example -->
-                    <!-- class: Required -->
-                    <doctrine:type
-                        name="some_custom_type"
-                        class="Acme\HelloBundle\MyCustomType"
-                    />
+                    // Defines a driver for given URL schemes
+                    'driver_schemes' => [
+                        // example
+                        // 'custom' => 'pdo_mysql',
+                    ],
 
-                    <!-- example -->
-                    <!-- unix-socket: The unix socket to use for MySQL -->
-                    <!-- persistent: True to use as persistent connection for the ibm_db2 driver -->
-                    <!-- protocol: The protocol to use for the ibm_db2 driver (default to TCPIP if omitted) -->
-                    <!-- service: True to use SERVICE_NAME as connection parameter instead of SID for Oracle -->
-                    <!-- servicename: Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter for Oracle depending on the service parameter. -->
-                    <!-- sessionMode: The session mode to use for the oci8 driver -->
-                    <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
-                    <!-- default_dbname: Override the default database (postgres) to connect to for PostgreSQL. -->
-                    <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
-                    <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
-                    <!-- sslcert: The name of a file containing a client SSL certificate -->
-                    <!-- sslkey: The name of a file containing the private key used for the client SSL certificate -->
-                    <!-- sslcrl: The name of a file containing the SSL certificate revocation list (CRL) -->
-                    <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
-                    <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
-                    <!-- use-savepoints: Enable savepoints for nested transactions -->
-                    <doctrine:connection
-                        name="default"
-                        dbname=""
-                        host="localhost"
-                        port="null"
-                        user="root"
-                        password="null"
-                        charset="null"
-                        path=""
-                        memory=""
-                        unix-socket=""
-                        persistent=""
-                        protocol=""
-                        service=""
-                        servicename=""
-                        sessionMode=""
-                        server=""
-                        default_dbname=""
-                        sslmode=""
-                        sslrootcert=""
-                        sslcert=""
-                        sslkey=""
-                        sslcrl=""
-                        pooled=""
-                        MultipleActiveResultSets=""
-                        use-savepoints="true"
-                        driver="pdo_mysql"
-                        platform-service=""
-                        auto-commit=""
-                        schema-filter=""
-                        logging="%kernel.debug%"
-                        profiling="%kernel.debug%"
-                        profiling-collect-backtrace="false"
-                        profiling-collect-schema-errors="true"
-                        disable-type-comments="false"
-                        server-version=""
-                        driver-class=""
-                        wrapper-class=""
-                        keep-replica=""
-                    >
+                    'connections' => [
+                        // A collection of different named connections (e.g. default, conn2, etc)
+                        'default' => [
+                            // A URL with connection information; any parameter parsed from it overrides the ones below
+                            'url' => null,
+                            'dbname' => null,
+                            'host' => 'localhost',
+                            'port' => null,
+                            'user' => 'root',
+                            'password' => null,
 
-                        <!-- example -->
-                        <doctrine:option key="key">value</doctrine:option>
+                            // RDBMS specific; Refer to the manual of your RDBMS for more information
+                            'charset' => null,
 
-                        <!-- example -->
-                        <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
+                            // Adds the given suffix to the configured database name, this option has no effects for the SQLite platform
+                            'dbname_suffix' => null,
+                            // PostgreSQL specific. The application name reported to the database server
+                            'application_name' => null,
 
-                        <!-- example -->
-                        <doctrine:default-table-option name="charset">utf8mb4</doctrine:default-table-option>
-                        <!-- when using doctrine/dbal 2.x -->
-                        <doctrine:default-table-option name="collate">utf8mb4_unicode_ci</doctrine:default-table-option>
-                        <!-- when using doctrine/dbal 3.x -->
-                        <doctrine:default-table-option name="collation">utf8_unicode_ci</doctrine:default-table-option>
-                        <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
+                            // SQLite specific
+                            'path' => null,
 
-                        <!-- example -->
-                        <!-- dbname_suffix: Adds the given suffix to the configured database name, this option has no effects for the SQLite platform -->
-                        <!-- unix-socket: The unix socket to use for MySQL -->
-                        <!-- persistent: True to use as persistent connection for the ibm_db2 driver -->
-                        <!-- protocol: The protocol to use for the ibm_db2 driver (default to TCPIP if omitted) -->
-                        <!-- service: True to use SERVICE_NAME as connection parameter instead of SID for Oracle -->
-                        <!-- servicename: Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter for Oracle depending on the service parameter. -->
-                        <!-- sessionMode: The session mode to use for the oci8 driver -->
-                        <!-- server: The name of a running database server to connect to for SQL Anywhere. -->
-                        <!-- default_dbname: Override the default database (postgres) to connect to for PostgreSQL. -->
-                        <!-- sslmode: Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL. -->
-                        <!-- sslrootcert: The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities. -->
-                        <!-- sslcert: The name of a file containing a client SSL certificate -->
-                        <!-- sslkey: The name of a file containing the private key used for the client SSL certificate -->
-                        <!-- sslcrl: The name of a file containing the SSL certificate revocation list (CRL) -->
-                        <!-- pooled: True to use a pooled server with the oci8/pdo_oracle driver -->
-                        <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
-                        <doctrine:replica
-                            name="replica1"
-                            dbname=""
-                            host="localhost"
-                            port="null"
-                            user="root"
-                            password="null"
-                            charset=""
-                            dbname_suffix=""
-                            path=""
-                            memory=""
-                            unix-socket=""
-                            persistent=""
-                            protocol=""
-                            service=""
-                            servicename=""
-                            sessionMode=""
-                            server=""
-                            default_dbname=""
-                            sslmode=""
-                            sslrootcert=""
-                            sslcert=""
-                            sslkey=""
-                            sslcrl=""
-                            pooled=""
-                            MultipleActiveResultSets=""
-                        />
+                            // SQLite specific
+                            'memory' => null,
 
-                    </doctrine:connection>
+                            // MySQL specific. The unix socket to use for MySQL
+                            'unix_socket' => null,
 
-                </doctrine:dbal>
+                            // IBM DB2 specific. True to use as persistent connection for the ibm_db2 driver
+                            'persistent' => null,
 
-                <!-- auto-generate-proxy-classes: Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL, "FILE_NOT_EXISTS_OR_CHANGED" -->
-                <doctrine:orm
-                    default-entity-manager="default"
-                    auto-generate-proxy-classes="false"
-                    proxy-dir="%kernel.cache_dir%/doctrine/orm/Proxies"
-                    proxy-namespace="Proxies"
-                >
+                            // IBM DB2 specific. The protocol to use for the ibm_db2 driver (default to TCPIP if omitted)
+                            'protocol' => null,
 
-                    <!-- example -->
-                    <doctrine:entity-manager
-                        name="default"
-                        connection=""
-                        class-metadata-factory-name="Doctrine\ORM\Mapping\ClassMetadataFactory"
-                        default-repository-class="Doctrine\ORM\EntityRepository"
-                        auto-mapping="false"
-                        report-fields-where-declared="false"
-                        naming-strategy="doctrine.orm.naming_strategy.default"
-                        quote-strategy="doctrine.orm.quote_strategy.default"
-                        typed-field-mapper="doctrine.orm.typed_field_mapper.default"
-                        entity-listener-resolver="null"
-                        repository-factory="null"
-                    >
+                            // Oracle specific. True to use SERVICE_NAME as connection parameter instead of SID for Oracle
+                            'service' => null,
 
-                        <doctrine:query-cache-driver
-                            type="pool"
-                            id=""
-                            pool=""
-                        />
+                            // Oracle specific. Overrules dbname parameter if given and used as SERVICE_NAME or SID connection
+                            // parameter for Oracle depending on the service parameter.
+                            'servicename' => null,
 
-                        <doctrine:metadata-cache-driver
-                            type="pool"
-                            id=""
-                            pool=""
-                        />
+                            // oci8 driver specific. The session mode to use for the oci8 driver.
+                            'sessionMode' => null,
 
-                        <doctrine:result-cache-driver
-                            type="pool"
-                            id=""
-                            pool=""
-                        />
+                            // SQL Anywhere specific (ServerName). The name of a running database server to connect to for SQL Anywhere.
+                            'server' => null,
 
-                        <doctrine:entity-listeners>
+                            // PostgreSQL specific (default_dbname).
+                            // Override the default database (postgres) to connect to.
+                            'default_dbname' => null,
 
-                            <!-- example -->
-                            <doctrine:entity class="Acme\HelloBundle\Entity\Author">
+                            // PostgreSQL specific (LIBPQ-CONNECT-SSLMODE).
+                            // Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
+                            'sslmode' => null,
 
-                                <!-- example -->
-                                <doctrine:listener class="Acme\HelloBundle\EventListener\ExampleListener">
+                            // PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT).
+                            // The name of a file containing SSL certificate authority (CA) certificate(s).
+                            // If the file exists, the server's certificate will be verified to be signed by one of these authorities.
+                            'sslrootcert' => null,
 
-                                    <!-- example -->
-                                    <doctrine:event
-                                        type="preUpdate"
-                                        method="preUpdate"
-                                    />
+                            // PostgreSQL specific (LIBPQ-CONNECT-SSLCERT).
+                            // The name of a file containing the client SSL certificate.
+                            'sslcert' => null,
 
-                                </doctrine:listener>
+                            // PostgreSQL specific (LIBPQ-CONNECT-SSLKEY).
+                            // The name of a file containing the private key for the client SSL certificate.
+                            'sslkey' => null,
 
-                            </doctrine:entity>
+                            // PostgreSQL specific (LIBPQ-CONNECT-SSLCRL).
+                            // The name of a file containing the SSL certificate revocation list (CRL).
+                            'sslcrl' => null,
 
-                        </doctrine:entity-listeners>
+                            // Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
+                            'pooled' => null,
 
-                        <doctrine:second-level-cache
-                            region-lock-lifetime="60"
-                            log-enabled="true"
-                            region-lifetime="0"
-                            enabled="true"
-                            factory=""
-                        >
+                            // pdo_sqlsrv driver specific. Configuring MultipleActiveResultSets for the pdo_sqlsrv driver
+                            'MultipleActiveResultSets' => null,
+                            // Oracle specific. The INSTANCE_NAME used to select an instance of an Oracle RAC server
+                            'instancename' => null,
+                            // Oracle specific. A complete Easy Connect connection descriptor
+                            'connectstring' => null,
 
-                            <doctrine:region-cache-driver
-                                type="pool"
-                                id=""
-                                pool=""
-                            />
+                            // The database driver
+                            'driver' => 'pdo_mysql',
+                            // Service id of a custom DBAL platform
+                            'platform_service' => null,
+                            // Whether to enable auto-commit for the connection
+                            'auto_commit' => null,
 
-                            <!-- example -->
-                            <doctrine:region
-                                name=""
-                                lock-path="%kernel.cache_dir%/doctrine/orm/slc/filelock"
-                                lock-lifetime="60"
-                                type="default"
-                                lifetime="0"
-                                service=""
-                            >
+                            // If set to "/^sf2_/" all tables, and any named objects such as sequences
+                            // not prefixed with "sf2_" will be ignored by the schema tool.
+                            // This is for custom tables which should not be altered automatically.
+                            'schema_filter' => null,
 
-                                <doctrine:cache-driver
-                                    type="pool"
-                                    id=""
-                                    pool=""
-                                />
+                            // When true, queries are logged to a "doctrine" monolog channel
+                            'logging' => '%kernel.debug%',
 
-                            </doctrine:region>
+                            // When true, the connection is profiled in the web debug toolbar
+                            'profiling' => '%kernel.debug%',
+                            // When true, profiling also collects a backtrace for each query
+                            'profiling_collect_backtrace' => false,
+                            // When true, profiling also collects schema errors for each query
+                            'profiling_collect_schema_errors' => true,
 
-                            <!-- example -->
-                            <doctrine:logger
-                                name=""
-                                service=""
-                            />
+                            // The database server version, e.g. "8.0.31"
+                            'server_version' => null,
+                            // Time in seconds before an idle connection is closed, 0 to disable
+                            'idle_connection_ttl' => 600,
+                            // Class name of a custom DBAL driver
+                            'driver_class' => null,
+                            // Allows to specify a custom wrapper implementation to use.
+                            // Must be a subclass of Doctrine\DBAL\Connection
+                            'wrapper_class' => null,
+                            // Whether to keep the replica connection after connecting to the primary
+                            'keep_replica' => null,
 
-                        </doctrine:second-level-cache>
+                            // An array of options
+                            'options' => [
+                                // example
+                                // 'key' => 'value',
+                            ],
 
-                        <!-- example -->
-                        <doctrine:hydrator name="ListHydrator">Acme\HelloBundle\Hydrators\ListHydrator</doctrine:hydrator>
+                            // An array of mapping types
+                            'mapping_types' => [
+                                // example
+                                // 'enum' => 'string',
+                            ],
 
-                        <!-- example -->
-                        <doctrine:mapping
-                            name="AcmeHelloBundle"
-                            mapping="true"
-                            type=""
-                            dir=""
-                            alias=""
-                            prefix=""
-                            is-bundle=""
-                        />
+                            'default_table_options' => [
+                                // Affects schema-tool. If absent, DBAL chooses defaults
+                                // based on the platform. Examples here are for MySQL.
+                                // 'charset' => 'utf8mb4',
+                                // 'collation' => 'utf8mb4_unicode_ci',
+                                // 'engine' => 'InnoDB',
+                            ],
 
-                        <doctrine:dql>
+                            // Service id of the schema manager factory
+                            'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
+                            // Service identifier of a Psr\Cache\CacheItemPoolInterface implementation
+                            // to use as the cache driver for dbal result sets.
+                            'result_cache' => null,
 
-                            <!-- example -->
-                            <doctrine:string-function name="test_string">Acme\HelloBundle\DQL\StringFunction</doctrine:string-function>
+                            'replicas' => [
+                                // A collection of named replica connections (e.g. replica1, replica2)
+                                'replica1' => [
+                                    'dbname' => null,
+                                    'host' => 'localhost',
+                                    'port' => null,
+                                    'user' => 'root',
+                                    'password' => null,
+                                    'charset' => null,
 
-                            <!-- example -->
-                            <doctrine:numeric-function name="test_numeric">Acme\HelloBundle\DQL\NumericFunction</doctrine:numeric-function>
+                                    // Adds the given suffix to the configured database name, this option has no effects for the SQLite platform
+                                    'dbname_suffix' => null,
+                                    'path' => null,
+                                    'memory' => null,
 
-                            <!-- example -->
-                            <doctrine:datetime-function name="test_datetime">Acme\HelloBundle\DQL\DatetimeFunction</doctrine:datetime-function>
+                                    // MySQL specific. The unix socket to use for MySQL
+                                    'unix_socket' => null,
 
-                        </doctrine:dql>
+                                    // IBM DB2 specific. True to use as persistent connection for the ibm_db2 driver
+                                    'persistent' => null,
 
-                        <!-- example -->
-                        <!-- Register SQL Filters in the entity manager -->
-                        <!-- class: Required -->
-                        <doctrine:filter
-                            name="some_filter"
-                            class="Acme\HelloBundle\Filter\SomeFilter"
-                            enabled="false"
-                        >
+                                    // IBM DB2 specific. The protocol to use for the ibm_db2 driver (default to TCPIP if omitted)
+                                    'protocol' => null,
 
-                            <!-- example -->
-                            <doctrine:parameter name="foo_param">bar_value</doctrine:parameter>
+                                    // Oracle specific. True to use SERVICE_NAME as connection parameter instead of SID for Oracle
+                                    'service' => null,
 
-                        </doctrine:filter>
+                                    // Oracle specific. Overrules dbname parameter if given and used as SERVICE_NAME or SID connection
+                                    // parameter for Oracle depending on the service parameter.
+                                    'servicename' => null,
 
-                        <doctrine:schema-ignore-class>Acme\AppBundle\Entity\Order</doctrine:resolve-target-entity>
-                        <doctrine:schema-ignore-class>Acme\AppBundle\Entity\PhoneNumber</doctrine:resolve-target-entity>
-                    </doctrine:entity-manager>
+                                    // oci8 driver specific. The session mode to use for the oci8 driver.
+                                    'sessionMode' => null,
 
-                    <!-- example -->
-                    <doctrine:resolve-target-entity interface="Acme\InvoiceBundle\Model\InvoiceSubjectInterface">Acme\AppBundle\Entity\Customer</doctrine:resolve-target-entity>
+                                    // SQL Anywhere specific (ServerName). The name of a running database server to connect to for SQL Anywhere.
+                                    'server' => null,
 
-                </doctrine:orm>
+                                    // PostgreSQL specific (default_dbname).
+                                    // Override the default database (postgres) to connect to.
+                                    'default_dbname' => null,
 
-            </doctrine:config>
-        </container>
+                                    // PostgreSQL specific (LIBPQ-CONNECT-SSLMODE).
+                                    // Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
+                                    'sslmode' => null,
+
+                                    // PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT).
+                                    // The name of a file containing SSL certificate authority (CA) certificate(s).
+                                    // If the file exists, the server's certificate will be verified to be signed by one of these authorities.
+                                    'sslrootcert' => null,
+
+                                    // PostgreSQL specific (LIBPQ-CONNECT-SSLCERT).
+                                    // The name of a file containing the client SSL certificate.
+                                    'sslcert' => null,
+
+                                    // PostgreSQL specific (LIBPQ-CONNECT-SSLKEY).
+                                    // The name of a file containing the private key for the client SSL certificate.
+                                    'sslkey' => null,
+
+                                    // PostgreSQL specific (LIBPQ-CONNECT-SSLCRL).
+                                    // The name of a file containing the SSL certificate revocation list (CRL).
+                                    'sslcrl' => null,
+
+                                    // Oracle specific (SERVER=POOLED). True to use a pooled server with the oci8/pdo_oracle driver
+                                    'pooled' => null,
+
+                                    // pdo_sqlsrv driver specific. Configuring MultipleActiveResultSets for the pdo_sqlsrv driver
+                                    'MultipleActiveResultSets' => null,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+
+                'orm' => [
+                    'default_entity_manager' => null, // The first defined is used if not set
+
+                    // No-op, deprecated, will be removed in the future
+                    'enable_native_lazy_objects' => true,
+
+                    'controller_resolver' => [
+                        // Whether the controller resolver is enabled
+                        'enabled' => true,
+                        // When true, the entity is fetched from the database instead of the cache, if any
+                        'evict_cache' => false,
+                    ],
+
+                    // Identity generation preference per platform when using the AUTO strategy
+                    'identity_generation_preferences' => [
+                        'Doctrine\DBAL\Platforms\PostgreSQLPlatform' => 'identity',
+                    ],
+
+                    'entity_managers' => [
+
+                        // A collection of different named entity managers (e.g. some_em, another_em)
+                        'some_em' => [
+                            // The cache driver used for the query cache
+                            'query_cache_driver' => [
+                                'type' => null,
+                                'id' => null,
+                                'pool' => null,
+                            ],
+
+                            // The cache driver used for the metadata cache
+                            'metadata_cache_driver' => [
+                                'type' => null,
+                                'id' => null,
+                                'pool' => null,
+                            ],
+
+                            // The cache driver used for the result cache
+                            'result_cache_driver' => [
+                                'type' => null,
+                                'id' => null,
+                                'pool' => null,
+                            ],
+
+                            // The entity listeners to register
+                            'entity_listeners' => [
+                                'entities' => [
+                                    // example
+                                    'Acme\HelloBundle\Entity\Author' => [
+                                        'listeners' => [
+                                            // example
+                                            'Acme\HelloBundle\EventListener\ExampleListener' => [
+                                                'events' => [
+                                                    'type' => 'preUpdate',
+                                                    'method' => 'preUpdate',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+
+                            // The name of a DBAL connection (the one marked as default is used if not set)
+                            'connection' => null,
+
+                            // Class name of the metadata factory
+                            'class_metadata_factory_name' => 'Doctrine\ORM\Mapping\ClassMetadataFactory',
+
+                            // Default repository class
+                            'default_repository_class' => 'Doctrine\ORM\EntityRepository',
+
+                            // Automatically map the entities of all bundles
+                            'auto_mapping' => false,
+                            // 0pt-in to the new mapping driver mode as of Doctrine ORM 2.14. See https://github.com/doctrine/orm/pull/6728.
+                            'validate_xml_mapping' => false,
+
+                            // Service id of the naming strategy
+                            'naming_strategy' => 'doctrine.orm.naming_strategy.default',
+
+                            // Service id of the quote strategy
+                            'quote_strategy' => 'doctrine.orm.quote_strategy.default',
+
+                            // Service id of the typed field mapper
+                            'typed_field_mapper' => 'doctrine.orm.typed_field_mapper.default',
+
+                            // Service id of the entity listener resolver
+                            'entity_listener_resolver' => null,
+
+                            // Service id of the repository factory
+                            'repository_factory' => null,
+
+                            // Second level cache configuration
+                            'second_level_cache' => [
+                                'region_cache_driver' => [
+                                    'type' => null,
+                                    'id' => null,
+                                    'pool' => null,
+                                ],
+                                'region_lock_lifetime' => 60,
+                                'log_enabled' => true,
+                                'region_lifetime' => 0,
+                                'enabled' => true,
+                                'factory' => null,
+                                'regions' => [
+                                    // Prototype
+                                    'name' => [
+                                        'cache_driver' => [
+                                            'type' => null,
+                                            'id' => null,
+                                            'pool' => null,
+                                        ],
+                                        'lock_path' => '%kernel.cache_dir%/doctrine/orm/slc/filelock',
+                                        'lock_lifetime' => 60,
+                                        'type' => 'default',
+                                        'lifetime' => 0,
+                                        'service' => null,
+                                        'name' => null,
+                                    ],
+                                ],
+                                'loggers' => [
+                                    // Prototype
+                                    'name' => [
+                                        'name' => null,
+                                        'service' => null,
+                                    ],
+                                ],
+                            ],
+
+                            // An array of hydrator names
+                            'hydrators' => [
+                                // example
+                                'ListHydrator' => 'Acme\HelloBundle\Hydrators\ListHydrator',
+                            ],
+
+                            'mappings' => [
+                                // An array of mappings, which may be a bundle name or something else
+                                'mapping_name' => [
+                                    'mapping' => true,
+                                    'type' => null,
+                                    'dir' => null,
+                                    'alias' => null,
+                                    'prefix' => null,
+                                    'is_bundle' => null,
+                                ],
+                            ],
+
+                            'dql' => [
+                                // A collection of string functions
+                                'string_functions' => [
+                                    // example
+                                    // 'test_string' => 'Acme\HelloBundle\DQL\StringFunction',
+                                ],
+
+                                // A collection of numeric functions
+                                'numeric_functions' => [
+                                    // example
+                                    // 'test_numeric' => 'Acme\HelloBundle\DQL\NumericFunction',
+                                ],
+
+                                // A collection of datetime functions
+                                'datetime_functions' => [
+                                    // example
+                                    // 'test_datetime' => 'Acme\HelloBundle\DQL\DatetimeFunction',
+                                ],
+                            ],
+
+                            // Register SQL Filters in the entity manager
+                            'filters' => [
+
+                                // An array of filters
+                                'some_filter' => [
+                                    'class' => 'Acme\HelloBundle\Filter\SomeFilter', // Required
+                                    'enabled' => false,
+
+                                    // An array of parameters
+                                    'parameters' => [
+                                        // example
+                                        'foo_param' => 'bar_value',
+                                    ],
+                                ],
+                            ],
+
+                            // Entities to ignore when generating the schema
+                            'schema_ignore_classes' => [
+                                'Acme\AppBundle\Entity\Order',
+                                'Acme\AppBundle\Entity\PhoneNumber',
+                            ],
+
+                            // Batch size for the subselect fetch mode
+                            'fetch_mode_subselect_batch_size' => 2000,
+                        ],
+                    ],
+                    // Search for the "ResolveTargetEntityListener" class for a cookbook about this
+                    'resolve_target_entities' => [
+                        // Prototype
+                        'Acme\InvoiceBundle\Model\InvoiceSubjectInterface' => 'Acme\AppBundle\Entity\Customer',
+                    ],
+                ],
+            ]);
+        };
 
 Configuration Overview
 ----------------------
@@ -668,14 +845,10 @@ the ORM resolves to:
         orm:
             auto_mapping: true
             # the standard distribution overrides this to be true in debug, false otherwise
-            auto_generate_proxy_classes: false
-            proxy_namespace: Proxies
-            proxy_dir: "%kernel.cache_dir%/doctrine/orm/Proxies"
             default_entity_manager: default
             metadata_cache_driver: ~
             query_cache_driver: ~
             result_cache_driver: ~
-            report_fields_where_declared: false
 
 There are lots of other configuration options that you can use to overwrite
 certain classes, but those are for very advanced use-cases only.
@@ -685,24 +858,17 @@ Oracle DB
 
 If the environment format configured in oracle does not meet doctrine requirements,
 you need to use a middleware so that doctrine is aware of the format
-used by Oracle DB. With ``doctrine/dbal`` 3, the same could be done with
-an event listener.
+used by Oracle DB.
 
 You can do so easily with
 
 .. code-block:: yaml
 
     services:
-        # DBAL 4
         oracle.middleware:
             class: Doctrine\DBAL\Driver\OCI8\Middleware\InitializeSession
             tags:
                 - { name: doctrine.middleware, connection: default }
-        # DBAL 3
-        oracle.listener:
-            class: Doctrine\DBAL\Event\Listeners\OracleSessionInit
-            tags:
-                - { name: doctrine.event_listener, event: postConnect }
 
 The environment variables that doctrine is going to change in the Oracle DB session are:
 
@@ -753,7 +919,7 @@ configuration for the ORM and there are several configuration options that you
 can control. The following configuration options exist for a mapping:
 
 ``type``
-    One of ``attribute``, ``xml``, ``yml``, ``php`` or ``staticphp``.
+    One of ``attribute``, ``xml``, ``php`` or ``staticphp``.
     This specifies which type of metadata type your mapping uses.
 
 ``dir``
@@ -815,7 +981,7 @@ You can easily define `doctrine filters`_ in your configuration file:
 ``myParameter: myValue``
     Bind the value ``myValue`` to the parameter ``myParameter`` (Optional)
 
-.. _doctrine filters: http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/filters.html
+.. _doctrine filters: https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/filters.html
 
 .. _`reference-dbal-configuration`:
 
@@ -843,15 +1009,6 @@ Doctrine DBAL Configuration
     accept, converted to the XML or YAML naming standards that Symfony
     enforces. See the Doctrine `DBAL documentation`_ for more information.
 
-.. note::
-
-    When specifying a ``url`` parameter, any information extracted from that
-    URL will override explicitly set parameters unless ``override_url`` is set
-    to ``true``. An example database URL would be
-    ``mysql://snoopy:redbaron@localhost/baseball``, and any explicitly set driver,
-    user, password and dbname parameter would be overridden by this URL.
-    See the Doctrine `DBAL documentation`_ for more information.
-
 Besides default Doctrine options, there are some Symfony-related ones that you
 can configure. The following block shows all possible configuration keys:
 
@@ -861,7 +1018,7 @@ can configure. The following block shows all possible configuration keys:
 
         doctrine:
             dbal:
-                url:                      mysql://user:secret@localhost:1234/otherdatabase # this would override the values below
+                url:                      mysql://user:secret@localhost:1234/otherdatabase
                 dbname:                   database
                 host:                     localhost
                 port:                     1234
@@ -895,6 +1052,7 @@ can configure. The following block shows all possible configuration keys:
                 platform_service:         MyOwnDatabasePlatformService
                 auto_commit:              false
                 schema_filter:            /^sf2_/
+                idle_connection_ttl:      600                 # Time in seconds before an idle connection is closed, 0 to disable
                 mapping_types:
                     enum: string
                 types:
@@ -904,101 +1062,70 @@ can configure. The following block shows all possible configuration keys:
                     # based on the platform. These defaults might be
                     # sub-optimal for backward compatibility reasons.
                     charset:              utf8mb4
-                    collate:              utf8mb4_unicode_ci # when using doctrine/dbal 2.x
-                    collation:            utf8mb4_unicode_ci # when using doctrine/dbal 3.x
+                    collation:            utf8mb4_unicode_ci
                     engine:               InnoDB
 
-    .. code-block:: xml
+    .. code-block:: php
 
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <container xmlns="http://symfony.com/schema/dic/services"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns:doctrine="http://symfony.com/schema/dic/doctrine"
-            xsi:schemaLocation="http://symfony.com/schema/dic/services
-                http://symfony.com/schema/dic/services/services-1.0.xsd
-                http://symfony.com/schema/dic/doctrine
-                http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
+        // config/packages/doctrine.php
+        use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
-            <doctrine:config>
-                <!--
-                    SQLite specific options:
-                    - path
-                    - memory
-                -->
-                <!--
-                    Oracle specific options:
-                    - pooled (SERVER=POOLED)
-                    - service (SERVICE_NAME instead of SID)
-                    - servicename (SERVICE_NAME)
-                -->
-                <!--
-                    PostgreSQL specific options:
-                    - default_dbname (default_dbname)
-                    - sslmode (LIBPQ-CONNECT-SSLMODE)
-                    - sslrootcert (LIBPQ-CONNECT-SSLROOTCERT)
-                    - sslcert (LIBPQ-CONNECT-SSLCERT)
-                    - sslkey (LIBPQ-CONNECT-SSLKEY)
-                    - sslcrl (LIBPQ-CONNECT-SSLCRL)
-                -->
-                <!--
-                    IBM DB2 specific options:
-                    - protocol (PROTOCOL)
-                -->
-                <!--
-                    SQL Anywhere specific options:
-                    - server (ServerName)
-                -->
-                <!--
-                    oci8 specific options:
-                    - sessionMode (session_mode)
-                -->
-
-                <doctrine:dbal
-                    name="default"
-                    url="mysql://user:secret@localhost:1234/otherdatabase"
-                    dbname="database"
-                    host="localhost"
-                    port="1234"
-                    user="user"
-                    password="secret"
-                    driver="pdo_mysql"
-                    driver-class="MyNamespace\MyDriverImpl"
-                    path="%kernel.project_dir%/var/data.db"
-                    memory="true"
-                    unix-socket="/tmp/mysql.sock"
-                    persistent="true"
-                    multiple-active-result-sets="true"
-                    pooled="true"
-                    protocol="TCPIP"
-                    server="my_database_server"
-                    service="true"
-                    servicename="MyOracleServiceName"
-                    sessionMode="2"
-                    default_dbname="database"
-                    sslmode="require"
-                    sslrootcert="postgresql-ca.pem"
-                    sslcert="postgresql-cert.pem"
-                    sslkey="postgresql-key.pem"
-                    sslcrl="postgresql.crl"
-                    wrapper-class="MyDoctrineDbalConnectionWrapper"
-                    charset=""
-                    logging="%kernel.debug%"
-                    platform-service="MyOwnDatabasePlatformService"
-                    auto-commit="false"
-                    schema-filter="^sf2_"
-                >
-                    <doctrine:option key="foo">bar</doctrine:option>
-                    <doctrine:mapping-type name="enum">string</doctrine:mapping-type>
-                    <doctrine:default-table-option name="charset">utf8mb4</doctrine:default-table-option>
-                    <!-- when using doctrine/dbal 2.x -->
-                    <doctrine:default-table-option name="collate">utf8mb4_unicode_ci</doctrine:default-table-option>
-                    <!-- when using doctrine/dbal 3.x -->
-                    <doctrine:default-table-option name="collation">utf8_unicode_ci</doctrine:default-table-option>
-                    <doctrine:default-table-option name="engine">InnoDB</doctrine:default-table-option>
-                    <doctrine:type name="custom">Acme\HelloBundle\MyCustomType</doctrine:type>
-                </doctrine:dbal>
-            </doctrine:config>
-        </container>
+        return static function (ContainerConfigurator $containerConfigurator): void {
+            $containerConfigurator->extension('doctrine', [
+                'dbal' => [
+                    'url' => 'mysql://user:secret@localhost:1234/otherdatabase',
+                    'dbname' => 'database',
+                    'host' => 'localhost',
+                    'port' => 1234,
+                    'user' => 'user',
+                    'password' => 'secret',
+                    'dbname_suffix' => '_test',
+                    'driver' => 'pdo_mysql',
+                    'driver_class' => 'MyNamespace\MyDriverImpl',
+                    'options' => [
+                        'foo' => 'bar',
+                    ],
+                    'path' => '%kernel.project_dir%/var/data.db', // SQLite specific
+                    'memory' => true, // SQLite specific
+                    'unix_socket' => '/tmp/mysql.sock',
+                    'persistent' => true,
+                    'MultipleActiveResultSets' => true, // pdo_sqlsrv driver specific
+                    'pooled' => true, // Oracle specific (SERVER=POOLED)
+                    'protocol' => 'TCPIP', // IBM DB2 specific (PROTOCOL)
+                    'server' => 'my_database_server', // SQL Anywhere specific (ServerName)
+                    'service' => true, // Oracle specific (SERVICE_NAME instead of SID)
+                    'servicename' => 'MyOracleServiceName', // Oracle specific (SERVICE_NAME)
+                    'sessionMode' => 2, // oci8 driver specific (session_mode)
+                    'default_dbname' => 'database', // PostgreSQL specific (default_dbname)
+                    'sslmode' => 'require', // PostgreSQL specific (LIBPQ-CONNECT-SSLMODE)
+                    'sslrootcert' => 'postgresql-ca.pem', // PostgreSQL specific (LIBPQ-CONNECT-SSLROOTCERT)
+                    'sslcert' => 'postgresql-cert.pem', // PostgreSQL specific (LIBPQ-CONNECT-SSLCERT)
+                    'sslkey' => 'postgresql-key.pem', // PostgreSQL specific (LIBPQ-CONNECT-SSLKEY)
+                    'sslcrl' => 'postgresql.crl', // PostgreSQL specific (LIBPQ-CONNECT-SSLCRL)
+                    'wrapper_class' => 'MyDoctrineDbalConnectionWrapper',
+                    'charset' => null, // RDBMS-specific. Refer to the manual of your RDBMS for more information.
+                    'logging' => '%kernel.debug%',
+                    'platform_service' => 'MyOwnDatabasePlatformService',
+                    'auto_commit' => false,
+                    'schema_filter' => '/^sf2_/',
+                    'idle_connection_ttl' => 600, // Time in seconds before an idle connection is closed, 0 to disable
+                    'mapping_types' => [
+                        'enum' => 'string',
+                    ],
+                    'types' => [
+                        'custom' => 'Acme\HelloBundle\MyCustomType',
+                    ],
+                    'default_table_options' => [
+                        // Affects schema-tool. If absent, DBAL chooses defaults
+                        // based on the platform. These defaults might be
+                        // sub-optimal for backward compatibility reasons.
+                        'charset' => 'utf8mb4',
+                        'collation' => 'utf8mb4_unicode_ci',
+                        'engine' => 'InnoDB',
+                    ],
+                ],
+            ]);
+        };
 
 If you want to configure multiple connections in YAML, put them under the
 ``connections`` key and give them a unique name:
@@ -1042,4 +1169,4 @@ For example, to inject a connection with the name ``purchase_logs`` use this:
             $this->connection = $purchaseLogsConnection;
         }
 
-.. _DBAL documentation: https://www.doctrine-project.org/projects/doctrine-dbal/en/2.10/index.html
+.. _DBAL documentation: https://www.doctrine-project.org/projects/doctrine-dbal/en/current/index.html

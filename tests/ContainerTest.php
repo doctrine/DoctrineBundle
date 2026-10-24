@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\Orm\ManagerRegistryAwareEntityManagerProvider;
-use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
@@ -18,8 +17,8 @@ use Doctrine\ORM\Tools\Console\Command\MappingDescribeCommand;
 use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
+use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as ConsoleEntityValueResolver;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
-use Symfony\Bridge\Doctrine\CacheWarmer\ProxyCacheWarmer;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
@@ -40,12 +39,12 @@ class ContainerTest extends TestCase
 
         $container = $this->createXmlBundleTestContainer();
 
-        if (interface_exists(Reader::class)) {
-            $this->assertInstanceOf(Reader::class, $container->get('doctrine.orm.metadata.annotation_reader'));
-        }
-
         if (class_exists(EntityValueResolver::class)) {
             $this->assertInstanceOf(EntityValueResolver::class, $container->get('doctrine.orm.entity_value_resolver'));
+        }
+
+        if (class_exists(ConsoleEntityValueResolver::class)) {
+            $this->assertInstanceOf(ConsoleEntityValueResolver::class, $container->get('doctrine.orm.entity_value_resolver.console'));
         }
 
         $this->assertInstanceOf(DoctrineDataCollector::class, $container->get('data_collector.doctrine'));
@@ -67,11 +66,6 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(InfoCommand::class, $container->get('doctrine.mapping_info_command'));
         $this->assertInstanceOf(MappingDescribeCommand::class, $container->get('doctrine.mapping_describe_command'));
         $this->assertInstanceOf(UpdateCommand::class, $container->get('doctrine.schema_update_command'));
-
-        if (! $container->getParameter('doctrine.orm.enable_native_lazy_objects')) {
-            $this->assertInstanceOf(ProxyCacheWarmer::class, $container->get('doctrine.orm.proxy_cache_warmer'));
-        }
-
         $this->assertTrue(Type::hasType('test'));
 
         $this->assertFalse($container->has('doctrine.dbal.default_connection.events.mysqlsessioninit'));

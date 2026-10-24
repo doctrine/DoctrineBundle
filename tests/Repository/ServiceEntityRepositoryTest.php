@@ -8,13 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
-use PHPUnit\Framework\Attributes\RequiresMethod;
-use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\VarExporter\LazyGhostTrait;
-use Symfony\Component\VarExporter\LazyObjectInterface;
-use Symfony\Component\VarExporter\ProxyHelper;
 
 use function interface_exists;
 
@@ -39,19 +33,5 @@ EXCEPTION);
         /* @phpstan-ignore class.notFound */
         $repo = new ServiceEntityRepository($registry, TestEntity::class);
         $repo->getClassName();
-    }
-
-    #[IgnoreDeprecations]
-    #[RequiresMethod(ProxyHelper::class, 'generateLazyGhost')]
-    #[RequiresPhp('>= 8.4.0')]
-    public function testConstructInitializesWhenImplementingLazyObjectInterface(): void
-    {
-        $registry = $this->createStub(ManagerRegistry::class);
-        $this->expectException(LogicException::class);
-
-        /* @phpstan-ignore class.notFound, expr.resultUnused */
-        new class ($registry, TestEntity::class) extends ServiceEntityRepository implements LazyObjectInterface {
-            use LazyGhostTrait;
-        };
     }
 }

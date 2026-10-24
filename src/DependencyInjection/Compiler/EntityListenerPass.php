@@ -23,12 +23,11 @@ use function usort;
 /**
  * Class for Symfony bundles to register entity listeners
  *
- * @final since 2.9
+ * @internal
  */
-class EntityListenerPass implements CompilerPassInterface
+final class EntityListenerPass implements CompilerPassInterface
 {
-    /** @return void */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $lazyServiceReferencesByResolver = [];
 

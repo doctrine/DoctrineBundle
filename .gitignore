@@ -5,3 +5,6 @@ phpunit.xml
 /.phpunit.result.cache
 /phpcs.xml
 /.phpcs-cache
+
+# created by phpstan-symfony
+/var/

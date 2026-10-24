@@ -18,6 +18,7 @@ use function md5;
 use function method_exists;
 use function mt_rand;
 use function sys_get_temp_dir;
+use function version_compare;
 
 use const PHP_VERSION_ID;
 
@@ -46,12 +47,12 @@ class EntityValueResolverFunctionalKernel extends Kernel
         $container->extension('framework', [
             'secret' => 'F00',
             'http_method_override' => false,
-            'annotations' => false,
             'php_errors' => ['log' => true],
             'handle_all_throwables' => true,
             'router' => ['utf8' => true],
             'test' => true,
-        ]);
+        /** @phpstan-ignore ternary.alwaysFalse */
+        ] + (version_compare(Kernel::VERSION, '7.0.0', '<') ? ['annotations' => false] : []));
 
         $container->extension('doctrine', [
             'dbal' => [
@@ -61,8 +62,7 @@ class EntityValueResolverFunctionalKernel extends Kernel
             ],
             'orm' => [
                 'controller_resolver' => ['auto_mapping' => false],
-                'enable_lazy_ghost_objects' => true,
-                /** @phpstan-ignore function.alreadyNarrowedType */
+                /** @phpstan-ignore function.alreadyNarrowedType,greaterOrEqual.alwaysTrue */
                 'enable_native_lazy_objects' => PHP_VERSION_ID >= 80400 && method_exists(Configuration::class, 'enableNativeLazyObjects'),
                 'mappings' => [
                     'PostFixtures' => [

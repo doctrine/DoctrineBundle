@@ -1,9 +1,0 @@
-doctrine:
-    dbal:
-        default_connection: default
-        connections:
-            default:
-                dbname: db
-
-    orm:
-        report_fields_where_declared: false

@@ -28,9 +28,7 @@
         <xsd:attribute name="driver" type="xsd:string" />
         <xsd:attribute name="driver-class" type="xsd:string" />
         <xsd:attribute name="wrapper-class" type="xsd:string" />
-        <xsd:attribute name="keep-slave" type="xsd:string" />
         <xsd:attribute name="keep-replica" type="xsd:string" />
-        <xsd:attribute name="platform-service" type="xsd:string" />
         <xsd:attribute name="auto-commit" type="xsd:string" />
         <xsd:attribute name="schema-filter" type="xsd:string" />
         <xsd:attribute name="logging" type="xsd:string" default="false" />
@@ -40,8 +38,6 @@
         <xsd:attribute name="server-version" type="xsd:string" />
         <xsd:attribute name="schema-manager-factory" type="xsd:string" />
         <xsd:attribute name="result-cache" type="xsd:string" />
-        <xsd:attribute name="use-savepoints" type="xsd:boolean" />
-        <xsd:attribute name="disable-type-comments" type="xsd:boolean" />
         <xsd:attributeGroup ref="driver-config" />
     </xsd:attributeGroup>
 
@@ -52,7 +48,7 @@
         <xsd:attribute name="port" type="xsd:string" />
         <xsd:attribute name="user" type="xsd:string" />
         <xsd:attribute name="password" type="xsd:string" />
-        <xsd:attribute name="override-url" type="xsd:boolean" />
+
         <xsd:attribute name="dbname-suffix" type="xsd:string" />
         <xsd:attribute name="application-name" type="xsd:string" />
         <xsd:attribute name="path" type="xsd:string" />
@@ -81,7 +77,6 @@
         <xsd:choice>
             <xsd:element name="option" type="option" />
             <xsd:element name="mapping-type" type="named_scalar" />
-            <xsd:element name="slave" type="replica" />
             <xsd:element name="replica" type="replica" />
             <xsd:element name="default-table-option" type="named_scalar" />
         </xsd:choice>
@@ -146,10 +141,6 @@
         </xsd:choice>
 
         <xsd:attribute name="default-entity-manager" type="xsd:string" />
-        <xsd:attribute name="proxy-dir" type="xsd:string" />
-        <xsd:attribute name="proxy-namespace" type="xsd:string" />
-        <xsd:attribute name="auto-generate-proxy-classes" type="xsd:string" default="false" />
-        <xsd:attribute name="enable-lazy-ghost-objects" type="xsd:boolean" />
         <xsd:attribute name="enable-native-lazy-objects" type="xsd:boolean" />
         <xsd:attributeGroup ref="entity-manager-config" />
     </xsd:complexType>
@@ -234,7 +225,6 @@
         <xsd:attribute name="typed-field-mapper" type="xsd:string" />
         <xsd:attribute name="entity-listener-resolver" type="xsd:string" />
         <xsd:attribute name="repository-factory" type="xsd:string" />
-        <xsd:attribute name="report-fields-where-declared" type="xsd:boolean" />
         <xsd:attribute name="validate-xml-mapping" type="xsd:boolean" />
     </xsd:attributeGroup>
 
@@ -273,7 +263,7 @@
         <xsd:attribute name="enabled" type="xsd:boolean" default="true"/>
         <xsd:attribute name="log-enabled" type="xsd:boolean" default="true"/>
         <xsd:attribute name="factory" type="xsd:string" />
-        <xsd:attribute name="query-validator" type="xsd:string" />
+
         <xsd:attribute name="region-lifetime" type="xsd:integer" />
         <xsd:attribute name="region-lock-lifetime" type="xsd:integer" />
     </xsd:complexType>
