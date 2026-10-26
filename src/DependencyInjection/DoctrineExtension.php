@@ -72,6 +72,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\ServicesResetterInterface;
 use Symfony\Component\ExpressionLanguage\CompiledExpressionLanguage;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\Form\AbstractType;
@@ -94,6 +95,7 @@ use function dirname;
 use function glob;
 use function in_array;
 use function interface_exists;
+use function is_a;
 use function is_dir;
 use function is_string;
 use function method_exists;
@@ -649,6 +651,12 @@ final class DoctrineExtension extends Extension
                 new Reference(sprintf('doctrine.dbal.%s_connection.configuration', $name)),
                 $connection['mapping_types'],
             ]);
+
+        // Container shutdown callbacks are available since Symfony 8.2.
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        if (is_a(ServicesResetterInterface::class, 'Symfony\\Contracts\\Service\\ShutdownInterface', true)) {
+            $def->addTag('kernel.reset', ['method' => 'close', 'on_shutdown' => 'only']);
+        }
 
         $container
             ->registerAliasForArgument($connectionId, Connection::class, sprintf('%s.connection', $name), $name);
