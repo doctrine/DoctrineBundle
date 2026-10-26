@@ -710,6 +710,8 @@ class DoctrineExtensionTest extends TestCase
              ->addBaseConnection()
              ->build();
         $config['orm'] = ['default_entity_manager' => 'default', 'entity_managers' => ['default' => ['mappings' => ['XmlBundle' => ['alias' => 'xml']]]]];
+
+        $this->expectUserDeprecationMessage('Since doctrine/doctrine-bundle 3.4: The "doctrine.orm.entity_managers.default.mappings.XmlBundle.alias" option is deprecated and will be removed in DoctrineBundle 4.0, as Doctrine ORM no longer supports entity namespace aliases.');
         $extension->load([$config], $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');

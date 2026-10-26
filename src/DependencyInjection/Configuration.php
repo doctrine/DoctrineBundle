@@ -662,7 +662,13 @@ final class Configuration implements ConfigurationInterface
                                 ->scalarNode('mapping')->defaultValue(true)->end()
                                 ->scalarNode('type')->end()
                                 ->scalarNode('dir')->end()
-                                ->scalarNode('alias')->end()
+                                ->scalarNode('alias')
+                                    ->setDeprecated(
+                                        'doctrine/doctrine-bundle',
+                                        '3.4',
+                                        'The "%path%.%node%" option is deprecated and will be removed in DoctrineBundle 4.0, as Doctrine ORM no longer supports entity namespace aliases.',
+                                    )
+                                ->end()
                                 ->scalarNode('prefix')->end()
                                 ->booleanNode('is_bundle')->end()
                             ->end()

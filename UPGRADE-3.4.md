@@ -37,3 +37,21 @@ With DBAL < 4.6, the types keep being registered in the global registry, without
 dependency injection and without per-connection restriction. A type that
 declares a constructor with required parameters fails when a connection is
 created.
+
+Mapping alias
+-------------
+
+The `alias` option of a mapping is deprecated and will be removed in
+DoctrineBundle 4.0. It has no effect: Doctrine ORM 3 no longer supports entity
+namespace aliases. Remove it from your configuration.
+
+```diff
+ doctrine:
+     orm:
+         mappings:
+             App:
+                 type: attribute
+                 dir: '%kernel.project_dir%/src/Entity'
+                 prefix: 'App\Entity'
+-                alias: App
+```

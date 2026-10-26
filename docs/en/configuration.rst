@@ -353,7 +353,10 @@ Configuration Reference
                                 mapping:              true
                                 type:                 ~
                                 dir:                  ~
+
+                                # No-op, deprecated, will be removed in the future
                                 alias:                ~
+
                                 prefix:               ~
                                 is_bundle:            ~
 
@@ -777,7 +780,10 @@ Configuration Reference
                                     'mapping' => true,
                                     'type' => null,
                                     'dir' => null,
+
+                                    // No-op, deprecated, will be removed in the future
                                     'alias' => null,
+
                                     'prefix' => null,
                                     'is_bundle' => null,
                                 ],
@@ -971,9 +977,8 @@ can control. The following configuration options exist for a mapping:
     ``Acme\HelloBundle\Entity``.
 
 ``alias``
-    Doctrine offers a way to alias entity namespaces to simpler, shorter names
-    to be used in DQL queries or for Repository access. When using a bundle the
-    alias defaults to the bundle name.
+    Deprecated and without effect: Doctrine ORM 3 no longer supports entity
+    namespace aliases. This option will be removed in DoctrineBundle 4.0.
 
 ``is_bundle``
     This option is a derived value from ``dir`` and by default is set to true if
