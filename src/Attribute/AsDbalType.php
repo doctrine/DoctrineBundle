@@ -6,6 +6,9 @@ namespace Doctrine\Bundle\DoctrineBundle\Attribute;
 
 use Attribute;
 
+/**
+ * Registers the class as a DBAL type, named after the class unless a name is given.
+ */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class AsDbalType
 {
