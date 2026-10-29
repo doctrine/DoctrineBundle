@@ -54,11 +54,19 @@ class ServiceEntityRepositoryProxy extends EntityRepository implements ServiceEn
             ->createResultSetMappingBuilder($alias);
     }
 
-    public function find(mixed $id, LockMode|int|null $lockMode = LockMode::NONE, int|null $lockVersion = null): object|null
+    public function find(mixed $id, LockMode|int|null $lockMode = null, int|null $lockVersion = null): object|null
     {
+        $repository = $this->repository ??= $this->resolveRepository();
+
+        // Let the ORM apply its own default: before ORM 3.7, LockMode::NONE refreshes an entity
+        // that is already managed, and since ORM 3.7, passing null is deprecated.
+        if ($lockMode === null) {
+            /** @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class */
+            return $repository->find($id, lockVersion: $lockVersion);
+        }
+
         /** @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class */
-        return ($this->repository ??= $this->resolveRepository())
-            ->find($id, $lockMode ?? LockMode::NONE, $lockVersion);
+        return $repository->find($id, $lockMode, $lockVersion);
     }
 
     /**

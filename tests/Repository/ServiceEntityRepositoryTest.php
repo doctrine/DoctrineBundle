@@ -5,7 +5,14 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Tests\Repository\Fixtures\Article;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\Configuration;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
+use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
@@ -17,6 +24,11 @@ use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Component\VarExporter\ProxyHelper;
 
 use function interface_exists;
+use function method_exists;
+use function property_exists;
+use function sys_get_temp_dir;
+
+use const PHP_VERSION_ID;
 
 class ServiceEntityRepositoryTest extends TestCase
 {
@@ -53,5 +65,40 @@ EXCEPTION);
         new class ($registry, TestEntity::class) extends ServiceEntityRepository implements LazyObjectInterface {
             use LazyGhostTrait;
         };
+    }
+
+    public function testFindDoesNotRefreshAManagedEntity(): void
+    {
+        if (property_exists(EntityRepository::class, '_entityName')) {
+            self::markTestSkipped('ServiceEntityRepository does not override find() with ORM 2');
+        }
+
+        $config = new Configuration();
+        $config->setMetadataDriverImpl(new AttributeDriver([__DIR__ . '/Fixtures']));
+
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        if (PHP_VERSION_ID >= 80400 && method_exists($config, 'enableNativeLazyObjects')) {
+            $config->enableNativeLazyObjects(true);
+        } else {
+            $config->setProxyDir(sys_get_temp_dir());
+            $config->setProxyNamespace('Proxies');
+        }
+
+        $em = new EntityManager(DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true], $config), $config);
+        (new SchemaTool($em))->createSchema([$em->getClassMetadata(Article::class)]);
+
+        $article = new Article(1, 'Original title');
+        $em->persist($article);
+        $em->flush();
+
+        $article->title = 'Changed title';
+
+        $registry = $this->createStub(ManagerRegistry::class);
+        $registry->method('getManagerForClass')->willReturn($em);
+
+        $repository = new ServiceEntityRepository($registry, Article::class);
+
+        self::assertSame($article, $repository->find(1));
+        self::assertSame('Changed title', $article->title);
     }
 }
