@@ -7,7 +7,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Attribute;
 use Attribute;
 
 /**
- * Registers the class as a Doctrine DBAL type.
+ * Registers the class as a DBAL type, named after the class unless a name is given.
  *
  * With DBAL >= 4.6, the type is registered per connection and created by the
  * dependency injection container, so its constructor can receive services.

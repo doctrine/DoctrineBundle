@@ -99,11 +99,12 @@ final class ConnectionFactory
             $connection = DriverManager::getConnection($params, $config);
             $params     = $this->addDatabaseSuffix($connection->getParams());
             $driver     = $connection->getDriver();
-            $platform   = $driver->getDatabasePlatform(new StaticServerVersionProvider(
-                $params['serverVersion'] ?? $params['primary']['serverVersion'] ?? '',
-            ));
 
             if (! isset($params['charset'])) {
+                $platform = $driver->getDatabasePlatform(new StaticServerVersionProvider(
+                    $params['serverVersion'] ?? $params['primary']['serverVersion'] ?? '',
+                ));
+
                 if ($platform instanceof AbstractMySQLPlatform) {
                     $params['charset'] = 'utf8mb4';
                     if (! isset($params['defaultTableOptions']['collation'])) {
