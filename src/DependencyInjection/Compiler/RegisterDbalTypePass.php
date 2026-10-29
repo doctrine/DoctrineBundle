@@ -9,6 +9,8 @@ use Doctrine\Bundle\DoctrineBundle\Dbal\TypeProviderGlobalFallback;
 use Doctrine\DBAL\Configuration as DbalConfiguration;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Internal\TypeProviderLocator;
 use ReflectionClass;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -16,6 +18,7 @@ use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\Reference;
 
 use function array_column;
@@ -24,6 +27,9 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
+use function class_exists;
+use function interface_exists;
+use function is_string;
 use function is_subclass_of;
 use function iterator_to_array;
 use function method_exists;
@@ -82,7 +88,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
     }
 
     /**
-     * New approach: inject a per-connection TypeRegistry with lazy service resolution (DBAL >= 4.6).
+     * New approach: inject a per-connection type provider with lazy service resolution (DBAL >= 4.6).
      */
     private function registerInTypeRegistry(ContainerBuilder $container): void
     {
@@ -94,9 +100,45 @@ final class RegisterDbalTypePass implements CompilerPassInterface
         /** @var array<string, array{class: string}> $configTypes */
         $configTypes = $container->getParameter('doctrine.dbal.connection_factory.types');
 
+        /** @var array<string, list<array{type_name?: string, connection?: string|null}>> $taggedServiceIds */
         $taggedServiceIds = $container->findTaggedServiceIds(self::TAG);
 
+        $parameterBag = $container->getParameterBag();
+
+        // The types feed the global registry and the provider of each connection: resolve their
+        // class and check it once.
+        foreach ($configTypes as $typeName => $typeConfig) {
+            $configTypes[$typeName]['class'] = $this->resolveTypeClass($parameterBag, $typeConfig['class'], sprintf('of the type "%s"', $typeName));
+        }
+
+        foreach ($taggedServiceIds as $id => $tags) {
+            $definition = $container->getDefinition($id);
+
+            // An abstract definition cannot be referenced by a service locator.
+            if ($definition->isAbstract()) {
+                unset($taggedServiceIds[$id]);
+
+                continue;
+            }
+
+            $class = $definition->getClass();
+            if ($class === null) {
+                continue;
+            }
+
+            $this->resolveTypeClass($parameterBag, $class, sprintf('of the service "%s"', $id));
+        }
+
         if ($configTypes === [] && $taggedServiceIds === []) {
+            return;
+        }
+
+        $this->registerGlobalTypes($container, $configTypes, $taggedServiceIds);
+
+        // Doctrine ORM before 3.8 resolves the types through the global type registry, which the
+        // factory fills. It does not read the type provider of a connection, so injecting one
+        // would only register the same types twice.
+        if (interface_exists(EntityManagerInterface::class) && ! class_exists(TypeProviderLocator::class)) {
             return;
         }
 
@@ -121,21 +163,69 @@ final class RegisterDbalTypePass implements CompilerPassInterface
 
             $providerId = sprintf('doctrine.dbal.%s_connection.type_provider', $name);
 
-            // Inject a ServiceLocator so types are resolved lazily on first use. The locator is
-            // keyed by type name, and it is the only argument the TypeRegistry needs. The registry
-            // is not a service on its own, it is inlined in the provider of the connection.
+            // The locator is keyed by type name: the provider falls back to the global registry for
+            // the other names, so an override of a built-in type in the global registry applies.
             $locatorRef = ServiceLocatorTagPass::register($container, $services);
 
-            // The provider of the connection also resolves the types that are registered globally,
-            // which the registry of the connection alone would hide.
-            $container->setDefinition($providerId, new Definition(TypeProviderGlobalFallback::class, [
-                new Definition(TypeRegistry::class, [$locatorRef]),
-            ]));
+            $container->setDefinition($providerId, new Definition(TypeProviderGlobalFallback::class, [$locatorRef]));
 
             $container
                 ->getDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name))
                 ->addMethodCall('setTypeProvider', [new Reference($providerId)]);
         }
+    }
+
+    /**
+     * Gives the connection factory the types to register in the global type registry.
+     *
+     * The doctrine.dbal.types option always goes there, so that the code calling Type::getType()
+     * keeps finding those types. The tagged services are added for Doctrine ORM before 3.8, which
+     * resolves the types through the global registry instead of the type provider of the
+     * connection. That registry is shared by every connection, so the types apply to all of them,
+     * and two services cannot provide the same type name.
+     *
+     * The factory registers the instances it reads from a locator, so they keep the dependencies
+     * injected by the container, and booting the kernel does not instantiate the types.
+     *
+     * @param array<string, array{class: string}>                                      $configTypes
+     * @param array<string, list<array{type_name?: string, connection?: string|null}>> $taggedServiceIds
+     */
+    private function registerGlobalTypes(ContainerBuilder $container, array $configTypes, array $taggedServiceIds): void
+    {
+        $services = [];
+        foreach ($configTypes as $typeName => $typeConfig) {
+            $services[$typeName] = new Definition($typeConfig['class']);
+        }
+
+        // Only Doctrine ORM before 3.8 needs the tagged services in the global registry, because
+        // it resolves the types there. ORM 3.8 and DBAL alone resolve them through the type
+        // provider of the connection.
+        if (interface_exists(EntityManagerInterface::class) && ! class_exists(TypeProviderLocator::class)) {
+            $serviceIds = [];
+            foreach ($taggedServiceIds as $id => $tags) {
+                foreach ($tags as $tag) {
+                    $typeName = $tag['type_name'] ?? $id;
+
+                    if (isset($serviceIds[$typeName]) && $serviceIds[$typeName] !== $id) {
+                        throw new InvalidArgumentException(sprintf(
+                            'The DBAL type "%s" is registered by both "%s" and "%s". The global type registry, which Doctrine ORM before 3.8 reads, cannot hold two implementations of the same type name.',
+                            $typeName,
+                            $serviceIds[$typeName],
+                            $id,
+                        ));
+                    }
+
+                    $serviceIds[$typeName] = $id;
+                    $services[$typeName]   = new Reference($id);
+                }
+            }
+        }
+
+        if ($services === []) {
+            return;
+        }
+
+        $container->getDefinition('doctrine.dbal.connection_factory')->setArgument(0, ServiceLocatorTagPass::register($container, $services));
     }
 
     /**
@@ -145,7 +235,8 @@ final class RegisterDbalTypePass implements CompilerPassInterface
      */
     private function registerInConfig(ContainerBuilder $container): void
     {
-        $types = $container->getParameter('doctrine.dbal.connection_factory.types');
+        $types        = $container->getParameter('doctrine.dbal.connection_factory.types');
+        $parameterBag = $container->getParameterBag();
 
         foreach ($container->findTaggedServiceIds(self::TAG) as $id => $tags) {
             $definition = $container->getDefinition($id);
@@ -155,9 +246,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
                 throw new InvalidArgumentException(sprintf('The definition of "%s" must define its class.', $id));
             }
 
-            if (! is_subclass_of($class, Type::class)) {
-                throw new InvalidArgumentException(sprintf('The "%s" class must extends "%s".', $class, Type::class));
-            }
+            $class = $this->resolveTypeClass($parameterBag, $class, sprintf('of the service "%s"', $id));
 
             // The type is instantiated by DBAL, not used as a service, so exclude its
             // definition from the container.
@@ -169,5 +258,22 @@ final class RegisterDbalTypePass implements CompilerPassInterface
         }
 
         $container->setParameter('doctrine.dbal.connection_factory.types', $types);
+    }
+
+    /**
+     * Resolves the class of a type, which is still a parameter placeholder at this stage, and checks
+     * that it extends the DBAL Type class.
+     *
+     * @return class-string<Type>
+     */
+    private function resolveTypeClass(ParameterBagInterface $parameterBag, string $class, string $location): string
+    {
+        $resolvedClass = $parameterBag->resolveValue($class);
+
+        if (! is_string($resolvedClass) || ! is_subclass_of($resolvedClass, Type::class)) {
+            throw new InvalidArgumentException(sprintf('The class "%s" %s must extend "%s".', $class, $location, Type::class));
+        }
+
+        return $resolvedClass;
     }
 }

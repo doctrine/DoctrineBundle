@@ -35,6 +35,7 @@ jobs:
       ) }}
       ${{ matrix.remove-orm && ' - remove ORM' }}
       ${{ matrix.remove-doctrine-messenger && ' - remove Messenger' }}
+      ${{ matrix.orm-version && format(' - ORM {0}', matrix.orm-version) }}
     runs-on: "ubuntu-latest"
     env:
       SYMFONY_REQUIRE: ${{matrix.symfony-require}}
@@ -47,10 +48,8 @@ jobs:
           - "8.4"
         dependencies:
           - "highest"
-        # TODO: restore "stable" once doctrine/orm 3.8 is released. This bundle requires
-        # doctrine/orm >= 3.8, and a stable dependency set cannot resolve it yet.
         stability:
-          - "dev"
+          - "stable"
         symfony-require:
           - ""
         remove-orm:
@@ -93,6 +92,13 @@ jobs:
             dependencies: "highest"
             stability: "dev"
 
+          # Doctrine ORM before 3.8 reads the global type registry instead of the type
+          # provider of the connection.
+          - php-version: "8.5"
+            dependencies: "highest"
+            stability: "dev"
+            orm-version: "3.7.*"
+
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v7"
@@ -124,7 +130,9 @@ jobs:
         uses: "ramsey/composer-install@v4"
         with:
           dependency-versions: "${{ matrix.dependencies }}"
-          composer-options: "--prefer-dist"
+          # The temporary constraint combines with the one of composer.json instead of
+          # replacing it.
+          composer-options: "--prefer-dist ${{ matrix.orm-version && format('--with=doctrine/orm:{0}', matrix.orm-version) }}"
 
       - name: "Run PHPUnit"
         run: "vendor/bin/phpunit --coverage-clover=coverage.xml"

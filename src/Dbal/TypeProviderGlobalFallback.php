@@ -9,14 +9,20 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeProvider;
 use Generator;
 use IteratorAggregate;
+use Symfony\Contracts\Service\ServiceProviderInterface;
+
+use function array_keys;
 
 /**
- * Provides the types of the provider of a connection, and falls back to the global type registry
- * for the types that other code registers with Type::addType().
+ * Provides the types registered as services for a connection, and falls back to the global type
+ * registry for every other name.
  *
  * A connection that has its own type provider does not read the global type registry anymore, so
  * the fallback keeps those types available, for example a type registered by another bundle or by
  * the application itself.
+ *
+ * Only the types of the connection take precedence: a registry also knows the built-in types, so
+ * querying one first would hide a built-in type overridden with Type::overrideType().
  *
  * @internal
  *
@@ -26,14 +32,15 @@ final class TypeProviderGlobalFallback implements TypeProvider, IteratorAggregat
 {
     private static TypeProvider $globalFallback;
 
-    public function __construct(private readonly TypeProvider $provider)
+    /** @param ServiceProviderInterface<Type> $services */
+    public function __construct(private readonly ServiceProviderInterface $services)
     {
     }
 
     public function get(string $name): Type
     {
-        if ($this->provider->has($name)) {
-            return $this->provider->get($name);
+        if ($this->services->has($name)) {
+            return $this->services->get($name);
         }
 
         return $this->global()->get($name);
@@ -41,21 +48,18 @@ final class TypeProviderGlobalFallback implements TypeProvider, IteratorAggregat
 
     public function has(string $name): bool
     {
-        return $this->provider->has($name) || $this->global()->has($name);
+        return $this->services->has($name) || $this->global()->has($name);
     }
 
     /** @return Generator<string, Type> */
     public function getIterator(): Generator
     {
-        $seen = [];
-        foreach ($this->provider as $name => $type) {
-            $seen[$name] = true;
-
-            yield $name => $type;
+        foreach (array_keys($this->services->getProvidedServices()) as $name) {
+            yield $name => $this->services->get($name);
         }
 
         foreach ($this->global() as $name => $type) {
-            if ($seen[$name] ?? false) {
+            if ($this->services->has($name)) {
                 continue;
             }
 
