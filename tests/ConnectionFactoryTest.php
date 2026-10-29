@@ -9,9 +9,14 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
+use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
+
+use function assert;
 
 class ConnectionFactoryTest extends TestCase
 {
+    use VerifyDeprecations;
+
     private Configuration $configuration;
 
     protected function setUp(): void
@@ -92,6 +97,27 @@ class ConnectionFactoryTest extends TestCase
         $params = $connection->getParams();
         /** @var array{dbname: string} $params */
         $this->assertSame('main_test', $params['dbname']);
+    }
+
+    public function testDbnameSuffixWithCharsetDoesNotResolveThePlatformWithoutServerVersion(): void
+    {
+        $this->expectNoDeprecationWithIdentifier('https://github.com/doctrine/dbal/pull/6343');
+
+        /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
+        $connection = (new ConnectionFactory([]))->createConnection(
+            [
+                'url' => 'mysql://root:password@database:3306/main?charset=utf8mb4',
+                'dbname_suffix' => '_test',
+            ],
+            $this->configuration,
+        );
+
+        $params = $connection->getParams();
+        assert(isset($params['dbname']));
+        assert(isset($params['charset']));
+
+        $this->assertSame('main_test', $params['dbname']);
+        $this->assertSame('utf8mb4', $params['charset']);
     }
 
     public function testDbnameSuffixForReplicas(): void
