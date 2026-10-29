@@ -448,6 +448,9 @@ final class DoctrineExtension extends Extension
     /** @var array<string, string> List of entity manager name => name of the connection it uses */
     private array $entityManagerConnections = [];
 
+    /** @var list<string> Names of the connections for which profiling is enabled */
+    private array $connectionsWithProfiling = [];
+
     /**
      * {@inheritDoc}
      */
@@ -592,6 +595,8 @@ final class DoctrineExtension extends Extension
         });
 
         $this->registerDbalMiddlewares($container, $connWithLogging, $connWithProfiling, $connWithBacktrace, array_keys($ttlByConnection));
+
+        $this->connectionsWithProfiling = $connWithProfiling;
 
         $container->getDefinition('doctrine.dbal.idle_connection_middleware')->setArgument(1, $ttlByConnection);
 
@@ -790,6 +795,8 @@ final class DoctrineExtension extends Extension
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('orm.php');
+
+        $this->registerLazyLoadListener($container);
 
         if (class_exists(AbstractType::class)) {
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
@@ -1605,6 +1612,30 @@ final class DoctrineExtension extends Extension
         $container->setDefinition($id, $poolDefinition);
 
         return $id;
+    }
+
+    /**
+     * Registers the postLoad listener that feeds the profiler with lazy loads.
+     *
+     * Only the connections whose queries are profiled need it. Removing the
+     * listener otherwise keeps the call stack inspection out of production.
+     */
+    private function registerLazyLoadListener(ContainerBuilder $container): void
+    {
+        if ($this->connectionsWithProfiling === []) {
+            $container->removeDefinition('doctrine.orm.listeners.lazy_load');
+
+            return;
+        }
+
+        $definition = $container->getDefinition('doctrine.orm.listeners.lazy_load');
+
+        foreach ($this->connectionsWithProfiling as $connectionName) {
+            $definition->addTag('doctrine.event_listener', [
+                'event' => Events::postLoad,
+                'connection' => $connectionName,
+            ]);
+        }
     }
 
     /**

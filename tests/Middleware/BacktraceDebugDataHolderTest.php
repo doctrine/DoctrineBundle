@@ -27,6 +27,22 @@ class BacktraceDebugDataHolderTest extends TestCase
         $this->assertSame([], $current['types'] ?? null);
     }
 
+    public function testKeepsThePositionOfTheLastQuery(): void
+    {
+        $sut = new BacktraceDebugDataHolder([]);
+
+        $this->assertNull($sut->getLastQuery());
+
+        $sut->addQuery('myconn', new Query('SELECT * FROM product'));
+        $this->assertSame(['connection' => 'myconn', 'query' => 0], $sut->getLastQuery());
+
+        $sut->addQuery('myconn', new Query('SELECT * FROM car'));
+        $this->assertSame(['connection' => 'myconn', 'query' => 1], $sut->getLastQuery());
+
+        $sut->addQuery('other', new Query('SELECT * FROM brand'));
+        $this->assertSame(['connection' => 'other', 'query' => 0], $sut->getLastQuery());
+    }
+
     public function testReset(): void
     {
         $sut = new BacktraceDebugDataHolder([]);
@@ -35,6 +51,7 @@ class BacktraceDebugDataHolderTest extends TestCase
         $this->assertCount(1, $sut->getData()['myconn'] ?? []);
         $sut->reset();
         $this->assertCount(0, $sut->getData()['myconn'] ?? []);
+        $this->assertNull($sut->getLastQuery());
     }
 
     public function testBacktracesEnabled(): void

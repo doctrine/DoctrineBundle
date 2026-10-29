@@ -12,6 +12,7 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityAutoDiscoveryPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
+use Doctrine\Bundle\DoctrineBundle\Profiling\LazyLoadListener;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalType;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTypeNoName;
@@ -1299,6 +1300,56 @@ class DoctrineExtensionTest extends TestCase
         $arguments = $container->getDefinition('doctrine.debug_data_holder')->getArguments();
         $this->assertCount(1, $arguments);
         $this->assertSame(['conn3'], $arguments[0]);
+    }
+
+    public function testLazyLoadListenerIsRegisteredForTheProfiledConnections(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => ['password' => 'foo', 'profiling' => true],
+                    'conn2' => ['password' => 'bar', 'profiling' => false],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $definition = $container->getDefinition('doctrine.orm.listeners.lazy_load');
+        $this->assertSame(LazyLoadListener::class, $definition->getClass());
+        $this->assertSame(
+            [['event' => 'postLoad', 'connection' => 'conn1']],
+            $definition->getTag('doctrine.event_listener'),
+        );
+    }
+
+    public function testLazyLoadListenerIsRemovedWithoutProfiling(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => ['password' => 'foo', 'profiling' => false],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $this->assertFalse($container->hasDefinition('doctrine.orm.listeners.lazy_load'));
     }
 
     public function testDefinitionsToLogAndProfile(): void
