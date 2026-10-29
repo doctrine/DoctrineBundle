@@ -136,6 +136,23 @@ class ConnectionFactoryTest extends TestCase
         $this->assertSame('main_test', $connection->getParams()['dbname']);
     }
 
+    public function testDbnameSuffixWithCharsetDoesNotResolveThePlatformWithoutServerVersion(): void
+    {
+        $this->expectNoDeprecationWithIdentifier('https://github.com/doctrine/dbal/pull/6343');
+
+        /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
+        $connection = (new ConnectionFactory([]))->createConnection(
+            [
+                'url' => 'mysql://root:password@database:3306/main?charset=utf8mb4',
+                'dbname_suffix' => '_test',
+            ],
+            $this->configuration,
+        );
+
+        $this->assertSame('main_test', $connection->getParams()['dbname']);
+        $this->assertSame('utf8mb4', $connection->getParams()['charset']);
+    }
+
     public function testDbnameSuffixForReplicas(): void
     {
         /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */

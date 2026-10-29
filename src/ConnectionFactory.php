@@ -123,15 +123,16 @@ class ConnectionFactory
             $connection = DriverManager::getConnection(...array_merge([$params, $config], $eventManager ? [$eventManager] : []));
             $params     = $this->addDatabaseSuffix(array_merge($connection->getParams(), $overriddenOptions));
             $driver     = $connection->getDriver();
-            /** @phpstan-ignore arguments.count (DBAL < 4.x doesn't accept an argument) */
-            $platform = $driver->getDatabasePlatform(
-                ...(class_exists(StaticServerVersionProvider::class)
-                    ? [new StaticServerVersionProvider($params['serverVersion'] ?? $params['primary']['serverVersion'] ?? '')]
-                    : []
-                ),
-            );
 
             if (! isset($params['charset'])) {
+                /** @phpstan-ignore arguments.count (DBAL < 4.x doesn't accept an argument) */
+                $platform = $driver->getDatabasePlatform(
+                    ...(class_exists(StaticServerVersionProvider::class)
+                        ? [new StaticServerVersionProvider($params['serverVersion'] ?? $params['primary']['serverVersion'] ?? '')]
+                        : []
+                    ),
+                );
+
                 if ($platform instanceof AbstractMySQLPlatform) {
                     $params['charset'] = 'utf8mb4';
 
