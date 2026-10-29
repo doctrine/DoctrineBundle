@@ -1193,6 +1193,20 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $this->assertFalse($collectorDefinition->getArguments()[1]);
     }
 
+    public function testNPlusOneGuardConfiguration(): void
+    {
+        $container = $this->loadContainer('dbal_n_plus_one_guard');
+        $arguments = $container->getDefinition('doctrine.dbal.n_plus_one_guard')->getArguments();
+
+        $this->assertSame(['guarded' => 20], $arguments[0]);
+        $this->assertSame(['guarded' => true], $arguments[1]);
+
+        $this->assertSame(
+            [['connection' => 'guarded', 'priority' => 10]],
+            $container->getDefinition('doctrine.dbal.n_plus_one_guard_middleware')->getTag('doctrine.middleware'),
+        );
+    }
+
     public function testNativeLazyObjectsWithoutConfig(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
