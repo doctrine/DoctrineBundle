@@ -445,6 +445,9 @@ final class DoctrineExtension extends Extension
 
     private string $defaultConnection;
 
+    /** @var array<string, string> List of entity manager name => name of the connection it uses */
+    private array $entityManagerConnections = [];
+
     /**
      * {@inheritDoc}
      */
@@ -783,6 +786,8 @@ final class DoctrineExtension extends Extension
             throw new LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
         }
 
+        $this->entityManagerConnections = [];
+
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('orm.php');
 
@@ -897,6 +902,8 @@ final class DoctrineExtension extends Extension
 
             $this->loadValidatorLoader($name, $container);
         }
+
+        $container->setParameter('doctrine.entity_manager_connections', $this->entityManagerConnections);
 
         $container->getDefinition('doctrine')->setArgument(5, new ServiceLocatorArgument($metadataDrivers));
 
@@ -1072,6 +1079,8 @@ final class DoctrineExtension extends Extension
         if (! isset($entityManager['connection'])) {
             $entityManager['connection'] = $this->defaultConnection;
         }
+
+        $this->entityManagerConnections[$entityManager['name']] = $entityManager['connection'];
 
         $entityManagerId = sprintf('doctrine.orm.%s_entity_manager', $entityManager['name']);
 
