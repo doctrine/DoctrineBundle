@@ -84,8 +84,10 @@ in the mapping:
     With DBAL >= 4.6 the type is registered on the connections instead of the
     global type registry. Doctrine ORM >= 3.8 resolves it when it reads the type
     provider of the connection. Types that other code registers globally with
-    ``Type::addType()`` stay available, because the connection provider falls
-    back to the global registry.
+    ``Type::addType()`` stay available, including the built-in types overridden
+    with ``Type::overrideType()``, because the connection provider falls back to
+    the global registry. A type declared for the connection takes precedence over
+    the global registry.
 
     With an older ORM, which reads the types from the global registry, the
     bundle registers the tagged types there instead, when the first connection

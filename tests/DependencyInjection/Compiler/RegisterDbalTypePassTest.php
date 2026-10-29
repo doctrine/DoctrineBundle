@@ -44,6 +44,7 @@ use function array_filter;
 use function array_values;
 use function class_exists;
 use function interface_exists;
+use function iterator_to_array;
 use function md5;
 use function method_exists;
 use function set_exception_handler;
@@ -318,6 +319,136 @@ class RegisterDbalTypePassTest extends TestCase
 
         // The types of the connection take precedence.
         self::assertInstanceOf(RegisterDbalTypePassMoneyType::class, $provider->get('money'));
+    }
+
+    public function testGlobalOverridesOfBuiltinTypesStayAvailable(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $globalProvider = (new DbalConfiguration())->getTypeProvider();
+        self::assertInstanceOf(TypeRegistry::class, $globalProvider);
+        $originalClass = $globalProvider->get('bigint')::class;
+
+        // Overrides a built-in type in the global registry, like Type::overrideType() does.
+        $globalProvider->override('bigint', RegisterDbalTypePassOverriddenBigIntType::class);
+
+        try {
+            $container = $this->createContainer(static function (ContainerBuilder $container): void {
+                $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                    ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+
+                $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+            });
+
+            $provider = $this->getTypeProvider($container, 'conn1');
+
+            // The registry of the connection knows the built-in types: it must not hide the
+            // override of the global registry.
+            self::assertTrue($provider->has('bigint'));
+            self::assertInstanceOf(RegisterDbalTypePassOverriddenBigIntType::class, $provider->get('bigint'));
+
+            $types = iterator_to_array($provider);
+            self::assertInstanceOf(RegisterDbalTypePassOverriddenBigIntType::class, $types['bigint']);
+        } finally {
+            $globalProvider->override('bigint', $originalClass);
+        }
+    }
+
+    public function testConnectionTypeTakesPrecedenceOverGlobalOverrideOfBuiltinType(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $globalProvider = (new DbalConfiguration())->getTypeProvider();
+        self::assertInstanceOf(TypeRegistry::class, $globalProvider);
+        $originalClass = $globalProvider->get('bigint')::class;
+
+        $globalProvider->override('bigint', RegisterDbalTypePassOverriddenBigIntType::class);
+
+        try {
+            $container = $this->createContainer(
+                static function (ContainerBuilder $container): void {
+                    $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+                },
+                configTypes: ['bigint' => ['class' => RegisterDbalTypePassUuidType::class]],
+            );
+
+            $provider = $this->getTypeProvider($container, 'conn1');
+
+            // A type declared for the connection still wins over the global registry.
+            self::assertInstanceOf(RegisterDbalTypePassUuidType::class, $provider->get('bigint'));
+
+            $types = iterator_to_array($provider);
+            self::assertInstanceOf(RegisterDbalTypePassUuidType::class, $types['bigint']);
+        } finally {
+            $globalProvider->override('bigint', $originalClass);
+        }
+    }
+
+    public function testTaggedServiceClassCanBeAParameter(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->setParameter('app.type_class', RegisterDbalTypePassMoneyType::class);
+            $container->register('my_type', '%app.type_class%')
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+
+            $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+        });
+
+        $this->assertTypeRegistered($container, 'conn1', 'money', RegisterDbalTypePassMoneyType::class);
+    }
+
+    public function testConfigTypeClassCanBeAParameter(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $container = $this->createContainer(
+            static function (ContainerBuilder $container): void {
+                $container->setParameter('app.type_class', RegisterDbalTypePassUuidType::class);
+                $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+            },
+            configTypes: ['uuid' => ['class' => '%app.type_class%']],
+        );
+
+        $this->assertTypeRegistered($container, 'conn1', 'uuid', RegisterDbalTypePassUuidType::class);
+    }
+
+    public function testTaggedServiceMustExtendType(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            'The class "%s" of the service "my_type" must extend "%s".',
+            RegisterDbalTypePassNotAType::class,
+            Type::class,
+        ));
+
+        $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassNotAType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'not_a_type']);
+        });
+    }
+
+    public function testAbstractTaggedServiceIsSkipped(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('abstract_type', RegisterDbalTypePassMoneyType::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+
+            $container->register('uuid_type', RegisterDbalTypePassUuidType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'uuid']);
+
+            $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+        });
+
+        // An abstract definition cannot be referenced by the service locator of the connection.
+        $this->assertTypeNotRegistered($container, 'conn1', 'money');
+        $this->assertTypeRegistered($container, 'conn1', 'uuid', RegisterDbalTypePassUuidType::class);
     }
 
     public function testHasDoesNotTriggerDeprecationForUnknownType(): void
@@ -670,7 +801,7 @@ class RegisterDbalTypePassTest extends TestCase
             ->addTag('doctrine.dbal.type', ['type_name' => 'invalid_type']);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf('The "%s" class must extends "%s".', RegisterDbalTypePassNotAType::class, Type::class));
+        $this->expectExceptionMessage(sprintf('The class "%s" of the service "%s" must extend "%s".', RegisterDbalTypePassNotAType::class, RegisterDbalTypePassNotAType::class, Type::class));
 
         $container->compile();
     }
@@ -846,6 +977,14 @@ class RegisterDbalTypePassBarType extends Type
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
         return 'bar';
+    }
+}
+
+class RegisterDbalTypePassOverriddenBigIntType extends Type
+{
+    public function getSQLDeclaration(mixed $column, AbstractPlatform $platform): string
+    {
+        return 'BIGINT';
     }
 }
 
