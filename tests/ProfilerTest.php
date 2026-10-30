@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
+use Doctrine\Bundle\DoctrineBundle\Profiling\LazyLoadDataHolder;
+use Doctrine\Bundle\DoctrineBundle\Profiling\LazyLoadDetector;
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase as BaseTestCase;
@@ -37,19 +39,22 @@ use function str_replace;
 class ProfilerTest extends BaseTestCase
 {
     private DebugDataHolder $debugDataHolder;
+    private LazyLoadDataHolder $lazyLoadDataHolder;
     private Environment $twig;
     private DoctrineDataCollector $collector;
 
     public function setUp(): void
     {
-        $this->debugDataHolder = new DebugDataHolder();
-        $registry              = $this->createStub(ManagerRegistry::class);
+        $this->debugDataHolder    = new DebugDataHolder();
+        $this->lazyLoadDataHolder = new LazyLoadDataHolder();
+        $registry                 = $this->createStub(ManagerRegistry::class);
         $registry->method('getConnectionNames')->willReturn([]);
         $registry->method('getManagerNames')->willReturn([]);
         $registry->method('getManagers')->willReturn([]);
-        $this->collector = new DoctrineDataCollector($registry, true, $this->debugDataHolder);
+        $this->collector = new DoctrineDataCollector($registry, true, $this->debugDataHolder, [], $this->lazyLoadDataHolder);
 
         $twigLoaderFilesystem = new FilesystemLoader(__DIR__ . '/../templates/Collector');
+        $twigLoaderFilesystem->addPath(__DIR__ . '/../templates', 'Doctrine');
         $twigLoaderFilesystem->addPath(__DIR__ . '/../vendor/symfony/web-profiler-bundle/Resources/views', 'WebProfiler');
         $this->twig = new Environment($twigLoaderFilesystem, ['debug' => true, 'strict_variables' => true]);
 
@@ -82,6 +87,7 @@ class ProfilerTest extends BaseTestCase
     public function testRender(): void
     {
         $this->debugDataHolder->addQuery('foo', new Query('SELECT * FROM foo WHERE bar IN (?, ?) AND "" >= ""'));
+        $this->lazyLoadDataHolder->record('App\Entity\Post', LazyLoadDetector::COLLECTION, null, 'foo', 0);
 
         $this->collector->collect($request = new Request(['group' => '0']), new Response());
 
@@ -123,5 +129,53 @@ class ProfilerTest extends BaseTestCase
 
         $this->assertStringContainsString('Managed entities', $output);
         $this->assertStringContainsString('No managed entities.', $output);
+        $this->assertStringContainsString('Lazy loaded entities', $output);
+        $this->assertStringContainsString('App\Entity\Post', $output);
+        $this->assertStringContainsString('>#1</a>', $output);
+        $this->assertStringContainsString('#queryNo-0-1', $output);
+        $this->assertStringContainsString('class="lazy-load-query"', $output);
+        $this->assertStringContainsString('data-tab="queries"', $output);
+    }
+
+    public function testToolbarDisplaysTheLazyLoadCount(): void
+    {
+        $this->debugDataHolder->addQuery('foo', new Query('SELECT * FROM foo'));
+        $this->lazyLoadDataHolder->record('App\Entity\Post', LazyLoadDetector::COLLECTION);
+        $this->collector->collect(new Request(), new Response());
+
+        $output = $this->renderToolbar();
+
+        $this->assertStringContainsString('Lazy loaded entities', $output);
+        $this->assertMatchesRegularExpression(
+            '/<b>Lazy loaded entities<\/b>\s*<span class="sf-toolbar-status">1<\/span>/',
+            $output,
+        );
+    }
+
+    public function testToolbarMarksManyLazyLoads(): void
+    {
+        $this->debugDataHolder->addQuery('foo', new Query('SELECT * FROM foo'));
+
+        for ($i = 0; $i < 51; $i++) {
+            $this->lazyLoadDataHolder->record('App\Entity\Post', LazyLoadDetector::COLLECTION);
+        }
+
+        $this->collector->collect(new Request(), new Response());
+
+        $this->assertStringContainsString(
+            '<span class="sf-toolbar-status sf-toolbar-status-yellow">51</span>',
+            $this->renderToolbar(),
+        );
+    }
+
+    private function renderToolbar(): string
+    {
+        return $this->twig->load('db.html.twig')->renderBlock('toolbar', [
+            'collector' => $this->collector,
+            'name' => 'db',
+            'token' => 'foo',
+            'profiler_url' => '/_profiler/foo',
+            'profiler_markup_version' => 3,
+        ]);
     }
 }

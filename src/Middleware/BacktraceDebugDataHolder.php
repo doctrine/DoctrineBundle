@@ -18,6 +18,12 @@ class BacktraceDebugDataHolder extends DebugDataHolder
     /** @var array<string, array<int|string, mixed>[]> */
     private array $backtraces = [];
 
+    /** @var array<string, int> Number of queries recorded for each connection */
+    private array $queryCounts = [];
+
+    /** @var array{connection: string, query: int}|null */
+    private array|null $lastQuery = null;
+
     /** @param string[] $connWithBacktraces */
     public function __construct(
         private readonly array $connWithBacktraces,
@@ -28,12 +34,20 @@ class BacktraceDebugDataHolder extends DebugDataHolder
     {
         parent::reset();
 
-        $this->backtraces = [];
+        $this->backtraces  = [];
+        $this->queryCounts = [];
+        $this->lastQuery   = null;
     }
 
     public function addQuery(string $connectionName, Query $query): void
     {
         parent::addQuery($connectionName, $query);
+
+        $this->lastQuery                    = [
+            'connection' => $connectionName,
+            'query' => $this->queryCounts[$connectionName] ?? 0,
+        ];
+        $this->queryCounts[$connectionName] = ($this->queryCounts[$connectionName] ?? 0) + 1;
 
         if (! in_array($connectionName, $this->connWithBacktraces, true)) {
             return;
@@ -41,6 +55,19 @@ class BacktraceDebugDataHolder extends DebugDataHolder
 
         // array_slice to skip middleware calls in the trace
         $this->backtraces[$connectionName][] = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2);
+    }
+
+    /**
+     * Returns the connection and the position of the query last recorded, so
+     * that a lazy load can link to it in the profiler.
+     *
+     * @internal
+     *
+     * @return array{connection: string, query: int}|null
+     */
+    public function getLastQuery(): array|null
+    {
+        return $this->lastQuery;
     }
 
     /** @return array<string, array<string, mixed>[]> */
