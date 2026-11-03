@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalCloseConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalOpenTransactionLoggerMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalPingConnectionMiddleware;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineCloseConnectionMiddleware;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineOpenTransactionLoggerMiddleware;
 use Symfony\Bridge\Doctrine\Messenger\DoctrinePingConnectionMiddleware;
@@ -14,6 +17,11 @@ use Symfony\Component\Messenger\Bridge\Doctrine\EventListener\PostgreSqlNotifyOn
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 
 return static function (ContainerConfigurator $container): void {
+    // symfony/doctrine-bridge 8.2 deprecates these classes in favor of the DoctrineDbal* ones
+    $pingMiddleware = class_exists(DoctrineDbalPingConnectionMiddleware::class) ? DoctrineDbalPingConnectionMiddleware::class : DoctrinePingConnectionMiddleware::class;
+    $closeMiddleware = class_exists(DoctrineDbalCloseConnectionMiddleware::class) ? DoctrineDbalCloseConnectionMiddleware::class : DoctrineCloseConnectionMiddleware::class;
+    $openTransactionLoggerMiddleware = class_exists(DoctrineDbalOpenTransactionLoggerMiddleware::class) ? DoctrineDbalOpenTransactionLoggerMiddleware::class : DoctrineOpenTransactionLoggerMiddleware::class;
+
     $container->services()
 
         ->set('messenger.middleware.doctrine_transaction', DoctrineTransactionMiddleware::class)
@@ -22,19 +30,19 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
             ])
 
-        ->set('messenger.middleware.doctrine_ping_connection', DoctrinePingConnectionMiddleware::class)
+        ->set('messenger.middleware.doctrine_ping_connection', $pingMiddleware)
             ->abstract()
             ->args([
                 service('doctrine'),
             ])
 
-        ->set('messenger.middleware.doctrine_close_connection', DoctrineCloseConnectionMiddleware::class)
+        ->set('messenger.middleware.doctrine_close_connection', $closeMiddleware)
             ->abstract()
             ->args([
                 service('doctrine'),
             ])
 
-        ->set('messenger.middleware.doctrine_open_transaction_logger', DoctrineOpenTransactionLoggerMiddleware::class)
+        ->set('messenger.middleware.doctrine_open_transaction_logger', $openTransactionLoggerMiddleware)
             ->abstract()
             ->args([
                 service('doctrine'),
