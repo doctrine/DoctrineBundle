@@ -182,36 +182,40 @@ final class ConnectionFactory
      */
     private function initializeTypes(): void
     {
-        if ($this->types !== null) {
-            /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
-            if (method_exists(Configuration::class, 'getTypeProvider')) {
-                // A default Configuration exposes the global type registry as its type provider.
-                // Reading it that way does not trigger the deprecation of Type::getTypeRegistry().
-                $registry = (new Configuration())->getTypeProvider();
-            } else {
-                $registry = Type::getTypeRegistry();
+        if ($this->types === null) {
+            $this->initialized = true;
+
+            return;
+        }
+
+        /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
+        if (method_exists(Configuration::class, 'getTypeProvider')) {
+            // A default Configuration exposes the global type registry as its type provider.
+            // Reading it that way does not trigger the deprecation of Type::getTypeRegistry().
+            $registry = (new Configuration())->getTypeProvider();
+        } else {
+            $registry = Type::getTypeRegistry();
+        }
+
+        assert($registry instanceof TypeRegistry);
+
+        $registered = [];
+        foreach (array_keys($this->types->getProvidedServices()) as $typeName) {
+            $type = $this->types->get($typeName);
+
+            if (
+                ($registered[spl_object_id($type)] ?? false)
+                || $this->isRegisteredUnderAnotherName($registry, $typeName, $type)
+            ) {
+                $type = clone $type;
             }
 
-            assert($registry instanceof TypeRegistry);
+            $registered[spl_object_id($type)] = true;
 
-            $registered = [];
-            foreach (array_keys($this->types->getProvidedServices()) as $typeName) {
-                $type = $this->types->get($typeName);
-
-                if (
-                    ($registered[spl_object_id($type)] ?? false)
-                    || $this->isRegisteredUnderAnotherName($registry, $typeName, $type)
-                ) {
-                    $type = clone $type;
-                }
-
-                $registered[spl_object_id($type)] = true;
-
-                if ($registry->has($typeName)) {
-                    $registry->override($typeName, $type);
-                } else {
-                    $registry->register($typeName, $type);
-                }
+            if ($registry->has($typeName)) {
+                $registry->override($typeName, $type);
+            } else {
+                $registry->register($typeName, $type);
             }
         }
 
