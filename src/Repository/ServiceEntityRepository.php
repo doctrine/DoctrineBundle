@@ -18,6 +18,7 @@ use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 
+use function func_num_args;
 use function sprintf;
 
 /**
@@ -61,22 +62,28 @@ class ServiceEntityRepository extends EntityRepository implements ServiceEntityR
             ->createResultSetMappingBuilder($alias);
     }
 
-    public function find(mixed $id, LockMode|int|null $lockMode = LockMode::NONE, int|null $lockVersion = null): object|null
+    public function find(mixed $id, LockMode|int|null $lockMode = null, int|null $lockVersion = null): object|null
     {
-        if ($lockMode === null) {
+        if ($lockMode === null && func_num_args() >= 2) {
             Deprecation::trigger(
                 'doctrine/doctrine-bundle',
                 'https://github.com/doctrine/DoctrineBundle/pull/2284',
                 'Passing null as $lockMode to %s() is deprecated and will not be possible in DoctrineBundle 4.0, pass LockMode::NONE instead.',
                 __METHOD__,
             );
+        }
 
-            $lockMode = LockMode::NONE;
+        $repository = $this->repository ??= $this->resolveRepository();
+
+        // Let the ORM apply its own default: before ORM 3.7, LockMode::NONE refreshes an entity
+        // that is already managed, and since ORM 3.7, passing null is deprecated.
+        if ($lockMode === null) {
+            /** @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class */
+            return $repository->find($id, lockVersion: $lockVersion);
         }
 
         /** @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class */
-        return ($this->repository ??= $this->resolveRepository())
-            ->find($id, $lockMode, $lockVersion);
+        return $repository->find($id, $lockMode, $lockVersion);
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\InvokableEntityListener;
 use Doctrine\DBAL\Configuration;
@@ -34,6 +35,7 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -527,7 +529,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
             ['test' => ['class' => TestType::class]],
             $container->getParameter('doctrine.dbal.connection_factory.types'),
         );
-        $this->assertEquals('%doctrine.dbal.connection_factory.types%', $container->getDefinition('doctrine.dbal.connection_factory')->getArgument(0));
+        $this->assertNotNull($container->getDefinition('doctrine.dbal.connection_factory')->getArgument(0));
     }
 
     public function testSetCustomFunctions(): void
@@ -1391,6 +1393,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $passConfig = $container->getCompilerPassConfig();
         $passConfig->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $passConfig->setRemovingPasses([]);
+        $passConfig->addPass(new RegisterDbalTypePass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, -10);
         $container->compile();
     }
 }

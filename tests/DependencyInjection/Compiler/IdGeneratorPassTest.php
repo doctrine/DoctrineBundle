@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Compiler;
 
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\CustomIdGenerator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +14,7 @@ use Fixtures\Bundles\AttributesBundle\Entity\TestCustomIdGeneratorEntity as Attr
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Component\Cache\CacheBundle;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
@@ -100,6 +102,7 @@ class IdGeneratorPassTest extends TestCase
         $def->setAutoconfigured(true);
 
         $container->addCompilerPass(new IdGeneratorPass());
+        $container->addCompilerPass(new RegisterDbalTypePass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, -10);
         $container->compile();
 
         $metadata = $container->get('doctrine.orm.default_entity_manager')->getClassMetadata($entity);
