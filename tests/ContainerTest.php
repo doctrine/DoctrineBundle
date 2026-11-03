@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\Orm\ManagerRegistryAwareEntityManagerProvider;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\Common\EventManager;
@@ -45,7 +46,9 @@ class ContainerTest extends TestCase
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->createXmlBundleTestContainer();
+        $container = $this->createXmlBundleTestContainer(static function (ContainerBuilder $container): void {
+            $container->addCompilerPass(new RegisterDbalTypePass());
+        });
 
         if (class_exists(EntityValueResolver::class)) {
             $this->assertInstanceOf(EntityValueResolver::class, $container->get('doctrine.orm.entity_value_resolver'));

@@ -6,6 +6,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Compiler;
 
 use DateTimeZone;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
+use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\Bundle\DoctrineBundle\Dbal\TypeProviderGlobalFallback;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
@@ -594,7 +595,7 @@ class RegisterDbalTypePassTest extends TestCase
 
         // ORM 3.8 reads the type provider of the connection, the global registry stays untouched.
         self::assertCount(2, $arguments);
-        self::assertSame([], $arguments[0]);
+        self::assertNull($arguments[0]);
     }
 
     public function testConfigTypesAreRegisteredGlobally(): void
@@ -759,6 +760,7 @@ class RegisterDbalTypePassTest extends TestCase
         $container->addCompilerPass(new RegisterDbalTypePass());
 
         $container->setParameter('doctrine.dbal.connection_factory.types', []);
+        $container->setDefinition('doctrine.dbal.connection_factory', (new Definition(ConnectionFactory::class, [null, null]))->setPublic(true));
 
         $container->register(RegisterDbalTypePassBarType::class)
             ->addTag('doctrine.dbal.type', ['type_name' => 'bar']);
@@ -766,9 +768,10 @@ class RegisterDbalTypePassTest extends TestCase
         $container->compile();
 
         self::assertSame(['bar' => ['class' => RegisterDbalTypePassBarType::class]], $container->getParameter('doctrine.dbal.connection_factory.types'));
+        self::assertArrayHasKey('bar', $this->getGlobalTypes($container));
     }
 
-    public function testTaggedTypeDefinitionIsExcludedFromContainer(): void
+    public function testTaggedTypeIsReferencedByTheConnectionFactory(): void
     {
         self::requiresNoTypeProvider();
 
@@ -776,16 +779,19 @@ class RegisterDbalTypePassTest extends TestCase
         $container->addCompilerPass(new RegisterDbalTypePass());
 
         $container->setParameter('doctrine.dbal.connection_factory.types', []);
+        $container->setDefinition('doctrine.dbal.connection_factory', (new Definition(ConnectionFactory::class, [null, null]))->setPublic(true));
 
-        $definition = $container->register(RegisterDbalTypePassBarType::class, RegisterDbalTypePassBarType::class)
+        $definition = $container->register('bar_type', RegisterDbalTypePassBarType::class)
             ->addTag('doctrine.dbal.type', ['type_name' => 'bar']);
 
-        (new RegisterDbalTypePass())->process($container);
+        $container->compile();
 
-        self::assertSame(
-            [['source' => 'by tag "doctrine.dbal.type"']],
-            $definition->getTag('container.excluded'),
-        );
+        self::assertSame([], $definition->getTag('container.excluded'));
+
+        $types = $this->getGlobalTypes($container);
+        self::assertArrayHasKey('bar', $types);
+        self::assertInstanceOf(Reference::class, $types['bar']);
+        self::assertSame('bar_type', (string) $types['bar']);
     }
 
     public function testTypeMustBeASubclassOfTheDbalBaseType(): void

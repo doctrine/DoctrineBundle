@@ -235,9 +235,19 @@ final class RegisterDbalTypePass implements CompilerPassInterface
      */
     private function registerInConfig(ContainerBuilder $container): void
     {
-        $types        = $container->getParameter('doctrine.dbal.connection_factory.types');
         $parameterBag = $container->getParameterBag();
 
+        /** @var array<string, array{class: string}> $configTypes */
+        $configTypes = $container->getParameter('doctrine.dbal.connection_factory.types');
+
+        $services = [];
+        foreach ($configTypes as $typeName => $typeConfig) {
+            $class = $this->resolveTypeClass($parameterBag, $typeConfig['class'], sprintf('of the type "%s"', $typeName));
+
+            $services[$typeName] = new Definition($class);
+        }
+
+        $types = $configTypes;
         foreach ($container->findTaggedServiceIds(self::TAG) as $id => $tags) {
             $definition = $container->getDefinition($id);
 
@@ -248,16 +258,23 @@ final class RegisterDbalTypePass implements CompilerPassInterface
 
             $class = $this->resolveTypeClass($parameterBag, $class, sprintf('of the service "%s"', $id));
 
-            // The type is instantiated by DBAL, not used as a service, so exclude its
-            // definition from the container.
-            $definition->addTag('container.excluded', ['source' => sprintf('by tag "%s"', self::TAG)]);
-
             foreach ($tags as $tag) {
-                $types[$tag['type_name'] ?? $id] = ['class' => $class];
+                $typeName = $tag['type_name'] ?? $id;
+
+                // The parameter is kept for preloading, the factory reads the locator.
+                $types[$typeName]    = ['class' => $class];
+                $services[$typeName] = new Reference($id);
             }
         }
 
         $container->setParameter('doctrine.dbal.connection_factory.types', $types);
+
+        if ($services === [] || ! $container->hasDefinition('doctrine.dbal.connection_factory')) {
+            return;
+        }
+
+        $container->getDefinition('doctrine.dbal.connection_factory')
+            ->setArgument(0, ServiceLocatorTagPass::register($container, $services));
     }
 
     /**

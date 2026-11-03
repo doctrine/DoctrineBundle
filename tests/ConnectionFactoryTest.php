@@ -34,7 +34,7 @@ class ConnectionFactoryTest extends TestCase
 
     public function testDefaultCharsetNonMySql(): void
     {
-        $factory = new ConnectionFactory([]);
+        $factory = new ConnectionFactory();
         $params  = [
             'driverClass' => Driver\PDO\SQLite\Driver::class,
             'wrapperClass' => FakeConnection::class,
@@ -52,7 +52,7 @@ class ConnectionFactoryTest extends TestCase
 
     public function testDefaultCharsetMySql(): void
     {
-        $factory = new ConnectionFactory([]);
+        $factory = new ConnectionFactory();
         $params  = ['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'];
 
         $connection = $factory->createConnection($params, $this->configuration);
@@ -64,7 +64,7 @@ class ConnectionFactoryTest extends TestCase
 
     public function testDefaultCollationMySql(): void
     {
-        $factory    = new ConnectionFactory([]);
+        $factory    = new ConnectionFactory();
         $connection = $factory->createConnection(['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'], $this->configuration);
 
         $params = $connection->getParams();
@@ -79,7 +79,7 @@ class ConnectionFactoryTest extends TestCase
     public function testConnectionCharsetFromUrl(): void
     {
         /** @psalm-suppress InvalidArgument Need to be compatible with DBAL < 4, which still has `$params['url']` */
-        $connection = (new ConnectionFactory([]))->createConnection(
+        $connection = (new ConnectionFactory())->createConnection(
             ['url' => 'mysql://root:password@database:3306/main?charset=utf8mb4_unicode_ci'],
             $this->configuration,
         );
@@ -92,7 +92,7 @@ class ConnectionFactoryTest extends TestCase
     public function testDbnameSuffix(): void
     {
         /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
-        $connection = (new ConnectionFactory([]))->createConnection(
+        $connection = (new ConnectionFactory())->createConnection(
             [
                 'url' => 'mysql://root:password@database:3306/main?serverVersion=mariadb-12.1.1',
                 'dbname_suffix' => '_test',
@@ -110,7 +110,7 @@ class ConnectionFactoryTest extends TestCase
         $this->expectNoDeprecationWithIdentifier('https://github.com/doctrine/dbal/pull/6343');
 
         /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
-        $connection = (new ConnectionFactory([]))->createConnection(
+        $connection = (new ConnectionFactory())->createConnection(
             [
                 'url' => 'mysql://root:password@database:3306/main?charset=utf8mb4',
                 'dbname_suffix' => '_test',
@@ -129,7 +129,7 @@ class ConnectionFactoryTest extends TestCase
     public function testDbnameSuffixForReplicas(): void
     {
         /** @psalm-suppress InvalidArgument We should adjust when https://github.com/vimeo/psalm/issues/8984 is fixed */
-        $connection = (new ConnectionFactory([]))->createConnection(
+        $connection = (new ConnectionFactory())->createConnection(
             [
                 'driver' => 'pdo_mysql',
                 'serverVersion' => '9.4.0',
@@ -248,15 +248,17 @@ class ConnectionFactoryTest extends TestCase
         self::assertInstanceOf(ConnectionFactoryConfigType::class, $registry->get('global_type'));
     }
 
-    public function testConfigTypesAreRegisteredWithTheStaticMethodsOfType(): void
+    public function testConfigTypesAreRegisteredAsInstances(): void
     {
         self::requiresNoTypeProvider();
 
-        (new ConnectionFactory(['global_config_type' => ['class' => ConnectionFactoryConfigType::class]]))
+        $locator = new ServiceLocator(['global_config_type' => static fn (): Type => new ConnectionFactoryConfigType()]);
+
+        (new ConnectionFactory($locator))
             ->createConnection(['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'], $this->configuration);
 
-        // The container passes the doctrine.dbal.types option as an array when the types cannot be
-        // services, so the factory registers them with the static methods of Type.
+        // The container builds the configured types, and the factory registers the instances
+        // in the global registry when the DBAL version has no type provider.
         self::assertTrue(Type::hasType('global_config_type'));
         self::assertInstanceOf(ConnectionFactoryConfigType::class, Type::getType('global_config_type'));
     }
