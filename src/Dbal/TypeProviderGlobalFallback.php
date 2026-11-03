@@ -11,8 +11,6 @@ use Generator;
 use IteratorAggregate;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
-use function array_keys;
-
 /**
  * Provides the types registered as services for a connection, and falls back to the global type
  * registry for every other name.
@@ -54,7 +52,7 @@ final class TypeProviderGlobalFallback implements TypeProvider, IteratorAggregat
     /** @return Generator<string, Type> */
     public function getIterator(): Generator
     {
-        foreach (array_keys($this->services->getProvidedServices()) as $name) {
+        foreach ($this->services->getProvidedServices() as $name => $definition) {
             yield $name => $this->services->get($name);
         }
 
