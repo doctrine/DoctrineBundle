@@ -97,7 +97,7 @@ jobs:
           - php-version: "8.5"
             dependencies: "highest"
             stability: "dev"
-            orm-version: "3.7.*"
+            orm-version: "~3.7.5"
 
     steps:
       - name: "Checkout"

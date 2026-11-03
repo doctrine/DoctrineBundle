@@ -17,6 +17,7 @@ use Doctrine\DBAL\Exception\MalformedDsnException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Tools\DsnParser;
+use Doctrine\DBAL\Types\Exception\TypeNotRegistered;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeRegistry;
 use Symfony\Contracts\Service\ServiceProviderInterface;
@@ -228,7 +229,10 @@ final class ConnectionFactory
         foreach (array_keys($types->getProvidedServices()) as $typeName) {
             $type = $types->get($typeName);
 
-            if ($registered[spl_object_id($type)] ?? false) {
+            if (
+                ($registered[spl_object_id($type)] ?? false)
+                || $this->isRegisteredUnderAnotherName($registry, $typeName, $type)
+            ) {
                 $type = clone $type;
             }
 
@@ -239,6 +243,15 @@ final class ConnectionFactory
             } else {
                 $registry->register($typeName, $type);
             }
+        }
+    }
+
+    private function isRegisteredUnderAnotherName(TypeRegistry $registry, string $typeName, Type $type): bool
+    {
+        try {
+            return $registry->lookupName($type) !== $typeName;
+        } catch (TypeNotRegistered) {
+            return false;
         }
     }
 
