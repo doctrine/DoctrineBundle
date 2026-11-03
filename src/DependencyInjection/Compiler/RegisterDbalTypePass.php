@@ -12,6 +12,7 @@ use Doctrine\DBAL\Types\TypeRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Internal\TypeProviderLocator;
 use ReflectionClass;
+use Symfony\Component\DependencyInjection\Argument\AbstractArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
@@ -63,6 +64,26 @@ final class RegisterDbalTypePass implements CompilerPassInterface
         }
 
         $this->preloadTypes($container, $builtinTypes);
+        $this->resolveTypesArgument($container);
+    }
+
+    /**
+     * The types argument is declared abstract in the bundle configuration: set it to null when no
+     * type is injected.
+     */
+    private function resolveTypesArgument(ContainerBuilder $container): void
+    {
+        if (! $container->hasDefinition('doctrine.dbal.connection_factory')) {
+            return;
+        }
+
+        $factory = $container->getDefinition('doctrine.dbal.connection_factory');
+
+        if (! (($factory->getArguments()[0] ?? null) instanceof AbstractArgument)) {
+            return;
+        }
+
+        $factory->setArgument(0, null);
     }
 
     /**
