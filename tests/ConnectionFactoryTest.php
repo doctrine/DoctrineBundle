@@ -43,6 +43,16 @@ class ConnectionFactoryTest extends TestCase
         $this->assertSame(1 + $creationCount, FakeConnection::$creationCount);
     }
 
+    public function testDefaultCharsetPostgreSqlWithoutServerVersion(): void
+    {
+        $connection = (new ConnectionFactory([]))->createConnection(
+            ['driver' => 'pdo_pgsql', 'dbname' => 'main'],
+            $this->configuration,
+        );
+
+        $this->assertSame('utf8', $connection->getParams()['charset']);
+    }
+
     public function testDefaultCharsetMySql(): void
     {
         $factory = new ConnectionFactory([]);
