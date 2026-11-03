@@ -51,15 +51,13 @@ final class ConnectionFactory
 
     private readonly DsnParser $dsnParser;
 
-    private bool $initialized = false;
-
     /**
      * @param ServiceProviderInterface<Type>|null $types The types to register in the global type
      *        registry, keyed by type name. The container builds them, so their dependencies are
      *        injected.
      */
     public function __construct(
-        private readonly ServiceProviderInterface|null $types = null,
+        private ServiceProviderInterface|null $types = null,
         DsnParser|null $dsnParser = null,
     ) {
         $this->dsnParser = $dsnParser ?? new DsnParser(self::DEFAULT_SCHEME_MAP);
@@ -76,9 +74,7 @@ final class ConnectionFactory
         Configuration|null $config = null,
         array $mappingTypes = [],
     ): Connection {
-        if (! $this->initialized) {
-            $this->initializeTypes();
-        }
+        $this->initializeTypes();
 
         $params = $this->parseDatabaseUrl($params);
 
@@ -181,8 +177,6 @@ final class ConnectionFactory
     private function initializeTypes(): void
     {
         if ($this->types === null) {
-            $this->initialized = true;
-
             return;
         }
 
@@ -207,7 +201,7 @@ final class ConnectionFactory
             }
         }
 
-        $this->initialized = true;
+        $this->types = null;
     }
 
     /**
