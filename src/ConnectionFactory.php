@@ -174,58 +174,48 @@ final class ConnectionFactory
     }
 
     /**
-     * initialize the types
-     */
-    private function initializeTypes(): void
-    {
-        if ($this->types !== null) {
-            $this->registerServiceTypes($this->types);
-        }
-
-        $this->initialized = true;
-    }
-
-    /**
      * Registers the types built by the container in the global type registry.
      *
      * The types are registered as instances, so they keep the dependencies injected by the
      * container. They are registered globally too, because Doctrine ORM before 3.8 resolves them
      * through the global registry instead of the type provider of the connection.
-     *
-     * @param ServiceProviderInterface<Type> $types
      */
-    private function registerServiceTypes(ServiceProviderInterface $types): void
+    private function initializeTypes(): void
     {
-        /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
-        if (method_exists(Configuration::class, 'getTypeProvider')) {
-            // A default Configuration exposes the global type registry as its type provider.
-            // Reading it that way does not trigger the deprecation of Type::getTypeRegistry().
-            $registry = (new Configuration())->getTypeProvider();
-        } else {
-            $registry = Type::getTypeRegistry();
-        }
-
-        assert($registry instanceof TypeRegistry);
-
-        $registered = [];
-        foreach (array_keys($types->getProvidedServices()) as $typeName) {
-            $type = $types->get($typeName);
-
-            if (
-                ($registered[spl_object_id($type)] ?? false)
-                || $this->isRegisteredUnderAnotherName($registry, $typeName, $type)
-            ) {
-                $type = clone $type;
-            }
-
-            $registered[spl_object_id($type)] = true;
-
-            if ($registry->has($typeName)) {
-                $registry->override($typeName, $type);
+        if ($this->types !== null) {
+            /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
+            if (method_exists(Configuration::class, 'getTypeProvider')) {
+                // A default Configuration exposes the global type registry as its type provider.
+                // Reading it that way does not trigger the deprecation of Type::getTypeRegistry().
+                $registry = (new Configuration())->getTypeProvider();
             } else {
-                $registry->register($typeName, $type);
+                $registry = Type::getTypeRegistry();
+            }
+
+            assert($registry instanceof TypeRegistry);
+
+            $registered = [];
+            foreach (array_keys($this->types->getProvidedServices()) as $typeName) {
+                $type = $this->types->get($typeName);
+
+                if (
+                    ($registered[spl_object_id($type)] ?? false)
+                    || $this->isRegisteredUnderAnotherName($registry, $typeName, $type)
+                ) {
+                    $type = clone $type;
+                }
+
+                $registered[spl_object_id($type)] = true;
+
+                if ($registry->has($typeName)) {
+                    $registry->override($typeName, $type);
+                } else {
+                    $registry->register($typeName, $type);
+                }
             }
         }
+
+        $this->initialized = true;
     }
 
     private function isRegisteredUnderAnotherName(TypeRegistry $registry, string $typeName, Type $type): bool
