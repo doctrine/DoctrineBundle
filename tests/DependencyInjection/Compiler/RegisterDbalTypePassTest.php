@@ -31,6 +31,7 @@ use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterDatePointTy
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Component\Clock\DatePoint;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -800,8 +801,13 @@ class RegisterDbalTypePassTest extends TestCase
 
         $types = $this->getGlobalTypes($container);
         self::assertArrayHasKey('bar', $types);
-        self::assertInstanceOf(Reference::class, $types['bar']);
-        self::assertSame('bar_type', (string) $types['bar']);
+
+        $type = $types['bar'];
+        self::assertInstanceOf(ServiceClosureArgument::class, $type);
+
+        $reference = $type->getValues()[0];
+        self::assertInstanceOf(Reference::class, $reference);
+        self::assertSame('bar_type', (string) $reference);
     }
 
     public function testTypeMustBeASubclassOfTheDbalBaseType(): void
