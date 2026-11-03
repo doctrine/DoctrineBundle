@@ -17,7 +17,6 @@ use Doctrine\DBAL\Exception\MalformedDsnException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Tools\DsnParser;
-use Doctrine\DBAL\Types\Exception\TypeNotRegistered;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeRegistry;
 use Symfony\Contracts\Service\ServiceProviderInterface;
@@ -27,7 +26,6 @@ use function array_merge;
 use function assert;
 use function is_subclass_of;
 use function method_exists;
-use function spl_object_id;
 
 use const PHP_EOL;
 
@@ -199,18 +197,8 @@ final class ConnectionFactory
 
         assert($registry instanceof TypeRegistry);
 
-        $registered = [];
         foreach (array_keys($this->types->getProvidedServices()) as $typeName) {
             $type = $this->types->get($typeName);
-
-            if (
-                ($registered[spl_object_id($type)] ?? false)
-                || $this->isRegisteredUnderAnotherName($registry, $typeName, $type)
-            ) {
-                $type = clone $type;
-            }
-
-            $registered[spl_object_id($type)] = true;
 
             if ($registry->has($typeName)) {
                 $registry->override($typeName, $type);
@@ -220,15 +208,6 @@ final class ConnectionFactory
         }
 
         $this->initialized = true;
-    }
-
-    private function isRegisteredUnderAnotherName(TypeRegistry $registry, string $typeName, Type $type): bool
-    {
-        try {
-            return $registry->lookupName($type) !== $typeName;
-        } catch (TypeNotRegistered) {
-            return false;
-        }
     }
 
     /**

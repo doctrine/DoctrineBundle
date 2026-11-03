@@ -68,6 +68,27 @@ final class RegisterDbalTypePass implements CompilerPassInterface
     }
 
     /**
+     * DBAL cannot hold the same type instance under two names in the global type registry. The
+     * locator returns one instance per service, so a service tagged with two different type names
+     * would break the registration at runtime.
+     *
+     * @param array<string, string> $typeNamesByServiceId
+     */
+    private function assertServiceHasSingleTypeName(array &$typeNamesByServiceId, string $id, string $typeName): void
+    {
+        if (isset($typeNamesByServiceId[$id]) && $typeNamesByServiceId[$id] !== $typeName) {
+            throw new InvalidArgumentException(sprintf(
+                'The DBAL type service "%s" is registered under both "%s" and "%s". The global type registry cannot hold the same instance under two names.',
+                $id,
+                $typeNamesByServiceId[$id],
+                $typeName,
+            ));
+        }
+
+        $typeNamesByServiceId[$id] = $typeName;
+    }
+
+    /**
      * DBAL creates the built-in types and the configured ones when they are first used: preload their classes.
      *
      * @param array<string, string> $builtinTypes
@@ -201,10 +222,13 @@ final class RegisterDbalTypePass implements CompilerPassInterface
         // it resolves the types there. ORM 3.8 and DBAL alone resolve them through the type
         // provider of the connection.
         if (interface_exists(EntityManagerInterface::class) && ! class_exists(TypeProviderLocator::class)) {
-            $serviceIds = [];
+            $serviceIds           = [];
+            $typeNamesByServiceId = [];
             foreach ($taggedServiceIds as $id => $tags) {
                 foreach ($tags as $tag) {
                     $typeName = $tag['type_name'] ?? $id;
+
+                    $this->assertServiceHasSingleTypeName($typeNamesByServiceId, $id, $typeName);
 
                     if (isset($serviceIds[$typeName]) && $serviceIds[$typeName] !== $id) {
                         throw new InvalidArgumentException(sprintf(
@@ -247,7 +271,8 @@ final class RegisterDbalTypePass implements CompilerPassInterface
             $services[$typeName] = new Definition($class);
         }
 
-        $types = $configTypes;
+        $types                = $configTypes;
+        $typeNamesByServiceId = [];
         foreach ($container->findTaggedServiceIds(self::TAG) as $id => $tags) {
             $definition = $container->getDefinition($id);
 
@@ -260,6 +285,8 @@ final class RegisterDbalTypePass implements CompilerPassInterface
 
             foreach ($tags as $tag) {
                 $typeName = $tag['type_name'] ?? $id;
+
+                $this->assertServiceHasSingleTypeName($typeNamesByServiceId, $id, $typeName);
 
                 // The parameter is kept for preloading, the factory reads the locator.
                 $types[$typeName]    = ['class' => $class];

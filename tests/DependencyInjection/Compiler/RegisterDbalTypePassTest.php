@@ -629,6 +629,35 @@ class RegisterDbalTypePassTest extends TestCase
         });
     }
 
+    public function testOneServiceCannotProvideTwoTypeNamesForOrmBefore38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsGlobalRegistry();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The DBAL type service "my_type" is registered under both "money" and "currency".');
+
+        $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money'])
+                ->addTag('doctrine.dbal.type', ['type_name' => 'currency']);
+        });
+    }
+
+    public function testOneServiceCannotProvideTwoTypeNamesWithoutTypeProvider(): void
+    {
+        self::requiresNoTypeProvider();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The DBAL type service "my_type" is registered under both "money" and "currency".');
+
+        $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money'])
+                ->addTag('doctrine.dbal.type', ['type_name' => 'currency']);
+        });
+    }
+
     public function testConfigTypeIsRegisteredInTheGlobalRegistry(): void
     {
         self::requiresTypeProvider();

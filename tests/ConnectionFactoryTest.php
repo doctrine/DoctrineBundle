@@ -178,55 +178,6 @@ class ConnectionFactoryTest extends TestCase
         self::assertSame('injected value', $type->dependency);
     }
 
-    public function testServiceTypeUsedForSeveralNamesIsCopied(): void
-    {
-        self::requiresTypeProvider();
-
-        $type    = new ConnectionFactoryGlobalType('injected value');
-        $locator = new ServiceLocator([
-            'global_type_one' => static fn (): Type => $type,
-            'global_type_two' => static fn (): Type => $type,
-        ]);
-
-        (new ConnectionFactory($locator))->createConnection(
-            ['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'],
-            $this->configuration,
-        );
-
-        $registry = (new Configuration())->getTypeProvider();
-        self::assertInstanceOf(TypeRegistry::class, $registry);
-
-        // The global registry refuses the same instance under two names, so the extra name gets a copy.
-        self::assertSame($type, $registry->get('global_type_one'));
-        self::assertNotSame($type, $registry->get('global_type_two'));
-        self::assertInstanceOf(ConnectionFactoryGlobalType::class, $registry->get('global_type_two'));
-        self::assertSame('injected value', $registry->get('global_type_two')->dependency);
-    }
-
-    public function testServiceTypeAlreadyRegisteredGloballyIsCopied(): void
-    {
-        self::requiresTypeProvider();
-
-        $type = new ConnectionFactoryGlobalType('injected value');
-
-        $registry = (new Configuration())->getTypeProvider();
-        self::assertInstanceOf(TypeRegistry::class, $registry);
-        $registry->register('pre_registered_type', $type);
-
-        $locator = new ServiceLocator(['global_type_copy' => static fn (): Type => $type]);
-
-        (new ConnectionFactory($locator))->createConnection(
-            ['driver' => 'pdo_mysql', 'serverVersion' => '9.4.0'],
-            $this->configuration,
-        );
-
-        // The instance is already registered under another name, so the new name gets a copy.
-        self::assertSame($type, $registry->get('pre_registered_type'));
-        self::assertNotSame($type, $registry->get('global_type_copy'));
-        self::assertInstanceOf(ConnectionFactoryGlobalType::class, $registry->get('global_type_copy'));
-        self::assertSame('injected value', $registry->get('global_type_copy')->dependency);
-    }
-
     public function testServiceTypesAreRegisteredWithoutDeprecation(): void
     {
         self::requiresTypeProvider();
