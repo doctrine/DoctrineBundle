@@ -781,25 +781,6 @@ class RegisterDbalTypePassTest extends TestCase
         }
     }
 
-    public function testTaggedTypeAreAddedToConfig(): void
-    {
-        self::requiresNoTypeProvider();
-
-        $container = new ContainerBuilder();
-        $container->addCompilerPass(new RegisterDbalTypePass());
-
-        $container->setParameter('doctrine.dbal.connection_factory.types', []);
-        $container->setDefinition('doctrine.dbal.connection_factory', (new Definition(ConnectionFactory::class, [null, null]))->setPublic(true));
-
-        $container->register(RegisterDbalTypePassBarType::class)
-            ->addTag('doctrine.dbal.type', ['type_name' => 'bar']);
-
-        $container->compile();
-
-        self::assertSame(['bar' => ['class' => RegisterDbalTypePassBarType::class]], $container->getParameter('doctrine.dbal.connection_factory.types'));
-        self::assertArrayHasKey('bar', $this->getGlobalTypes($container));
-    }
-
     public function testTaggedTypeIsReferencedByTheConnectionFactory(): void
     {
         self::requiresNoTypeProvider();
@@ -841,32 +822,15 @@ class RegisterDbalTypePassTest extends TestCase
         $container->compile();
     }
 
-    public function testTypeClassesArePreloaded(): void
+    public function testBuiltinTypeClassesArePreloaded(): void
     {
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
-            $container->setAlias('connection_factory', 'doctrine.dbal.connection_factory')->setPublic(true);
-        }, ['money' => ['class' => RegisterDbalTypePassMoneyType::class]]);
-
-        $preloaded = array_column($container->getDefinition('connection_factory')->getTag('container.preload'), 'class');
-
-        self::assertContains(BigIntType::class, $preloaded);
-        self::assertContains(RegisterDbalTypePassMoneyType::class, $preloaded);
-    }
-
-    public function testTaggedTypeClassesArePreloaded(): void
-    {
-        self::requiresNoTypeProvider();
-
-        $container = $this->createContainer(static function (ContainerBuilder $container): void {
-            $container->register('bar_type', RegisterDbalTypePassBarType::class)
-                ->addTag('doctrine.dbal.type', ['type_name' => 'bar']);
-
             $container->setAlias('connection_factory', 'doctrine.dbal.connection_factory')->setPublic(true);
         });
 
         $preloaded = array_column($container->getDefinition('connection_factory')->getTag('container.preload'), 'class');
 
-        self::assertContains(RegisterDbalTypePassBarType::class, $preloaded);
+        self::assertContains(BigIntType::class, $preloaded);
     }
 
     /** @param array<string, array{class: string}> $configTypes */

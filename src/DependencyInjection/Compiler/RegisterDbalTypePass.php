@@ -21,11 +21,9 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\Reference;
 
-use function array_column;
 use function array_filter;
 use function array_keys;
 use function array_map;
-use function array_merge;
 use function array_values;
 use function class_exists;
 use function interface_exists;
@@ -89,7 +87,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
     }
 
     /**
-     * DBAL creates the built-in types and the configured ones when they are first used: preload their classes.
+     * DBAL creates the built-in types when they are first used: preload their classes.
      *
      * @param array<string, string> $builtinTypes
      */
@@ -99,11 +97,9 @@ final class RegisterDbalTypePass implements CompilerPassInterface
             return;
         }
 
-        /** @var array<string, array{class: string}> $configTypes */
-        $configTypes = $container->getParameter('doctrine.dbal.connection_factory.types');
-        $factory     = $container->getDefinition('doctrine.dbal.connection_factory');
+        $factory = $container->getDefinition('doctrine.dbal.connection_factory');
 
-        foreach (array_merge(array_values($builtinTypes), array_column($configTypes, 'class')) as $class) {
+        foreach (array_values($builtinTypes) as $class) {
             $factory->addTag('container.preload', ['class' => $class]);
         }
     }
@@ -253,9 +249,8 @@ final class RegisterDbalTypePass implements CompilerPassInterface
     }
 
     /**
-     * Fallback approach: register types in the global type registry via doctrine.dbal.connection_factory.types.
-     * Used when DBAL does not support TypeRegistry injection (DBAL < 4.6).
-     * Does not support DI or per-connection type restriction.
+     * Fallback approach for DBAL < 4.6: the connection factory registers the types in the global
+     * type registry. Per-connection type restriction is not supported.
      */
     private function registerInConfig(ContainerBuilder $container): void
     {
@@ -271,7 +266,6 @@ final class RegisterDbalTypePass implements CompilerPassInterface
             $services[$typeName] = new Definition($class);
         }
 
-        $types                = $configTypes;
         $typeNamesByServiceId = [];
         foreach ($container->findTaggedServiceIds(self::TAG) as $id => $tags) {
             $definition = $container->getDefinition($id);
@@ -281,20 +275,16 @@ final class RegisterDbalTypePass implements CompilerPassInterface
                 throw new InvalidArgumentException(sprintf('The definition of "%s" must define its class.', $id));
             }
 
-            $class = $this->resolveTypeClass($parameterBag, $class, sprintf('of the service "%s"', $id));
+            $this->resolveTypeClass($parameterBag, $class, sprintf('of the service "%s"', $id));
 
             foreach ($tags as $tag) {
                 $typeName = $tag['type_name'] ?? $id;
 
                 $this->assertServiceHasSingleTypeName($typeNamesByServiceId, $id, $typeName);
 
-                // The parameter is kept for preloading, the factory reads the locator.
-                $types[$typeName]    = ['class' => $class];
                 $services[$typeName] = new Reference($id);
             }
         }
-
-        $container->setParameter('doctrine.dbal.connection_factory.types', $types);
 
         if ($services === [] || ! $container->hasDefinition('doctrine.dbal.connection_factory')) {
             return;
