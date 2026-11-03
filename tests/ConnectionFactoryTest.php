@@ -235,8 +235,9 @@ class ConnectionFactoryTest extends TestCase
     }
 }
 
-// The constructor of Doctrine\DBAL\Types\Type is final before DBAL 4.6, so a type declaring its
-// own constructor can only be defined when the TypeProvider API is available.
+// The constructor of Doctrine\DBAL\Types\Type is final until DBAL 4.3, so a type declaring its
+// own constructor can only be defined on DBAL 4.3 and later. The tests using this class require
+// the TypeProvider API of DBAL 4.6.
 /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
 if (method_exists(Configuration::class, 'getTypeProvider')) {
     class ConnectionFactoryGlobalType extends Type

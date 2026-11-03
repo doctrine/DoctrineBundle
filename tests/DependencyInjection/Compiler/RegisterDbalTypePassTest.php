@@ -987,9 +987,9 @@ class RegisterDbalTypePassOverriddenBigIntType extends Type
     }
 }
 
-// Doctrine\DBAL\Types\Type::__construct() is final before DBAL 4.6, so a type declaring
-// its own constructor can only be defined when the TypeProvider API is available. The
-// tests using this fixture are skipped on older DBAL versions.
+// Doctrine\DBAL\Types\Type::__construct() is final until DBAL 4.3, so a type declaring its own
+// constructor can only be defined on DBAL 4.3 and later. The tests using this fixture require
+// the TypeProvider API of DBAL 4.6 and are skipped on older versions.
 /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
 if (method_exists(DbalConfiguration::class, 'setTypeProvider')) {
     class RegisterDbalTypePassTypeWithRequiredArg extends Type
