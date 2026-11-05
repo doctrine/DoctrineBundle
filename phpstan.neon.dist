@@ -16,6 +16,30 @@ parameters:
          identifier: function.alreadyNarrowedType
          path: src/DependencyInjection/Configuration.php
          reportUnmatched: false
+      # The Schema::edit() method exists since doctrine/dbal 4.5, so this check is impossible or
+      # always true depending on the installed version.
+      -
+         message: '#^Call to function method_exists\(\) with .*Schema.* and .edit. will always evaluate to false\.$#'
+         identifier: function.impossibleType
+         path: src/DependencyInjection/Configuration.php
+         reportUnmatched: false
+      -
+         message: '#^Call to function method_exists\(\) with .*Schema.* and .edit. will always evaluate to true\.$#'
+         identifier: function.alreadyNarrowedType
+         path: src/DependencyInjection/Configuration.php
+         reportUnmatched: false
+      # Configuration::setUseSchemaEditorApi() exists since doctrine/orm 3.8, so this check is impossible or
+      # always true depending on the installed version.
+      -
+         message: '#^Call to function method_exists\(\) with .*Configuration.* and .setUseSchemaEditorA.* will always evaluate to false\.$#'
+         identifier: function.impossibleType
+         path: src/DependencyInjection/DoctrineExtension.php
+         reportUnmatched: false
+      -
+         message: '#^Call to function method_exists\(\) with .*Configuration.* and .setUseSchemaEditorA.* will always evaluate to true\.$#'
+         identifier: function.alreadyNarrowedType
+         path: src/DependencyInjection/DoctrineExtension.php
+         reportUnmatched: false
    paths:
       - config
       - src

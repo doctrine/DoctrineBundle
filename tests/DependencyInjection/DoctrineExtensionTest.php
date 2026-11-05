@@ -853,6 +853,27 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
+    public function testUseSchemaEditorApiIsNotSetByDefault(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addBaseEntityManager()
+            ->build();
+        $extension->load([$config], $container);
+
+        $definition  = $container->getDefinition('doctrine.orm.default_configuration');
+        $methodCalls = array_map(static fn (array $call) => $call[0], $definition->getMethodCalls());
+
+        self::assertNotContains('setUseSchemaEditorApi', $methodCalls);
+    }
+
     public function testMessengerIntegration(): void
     {
         if (! interface_exists(MessageBusInterface::class)) {

@@ -29,6 +29,7 @@ use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\Cache\Region\DefaultRegion;
 use Doctrine\ORM\Cache\Region\FileLockRegion;
 use Doctrine\ORM\Cache\RegionsConfiguration;
+use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Id\AbstractIdGenerator;
@@ -1014,6 +1015,14 @@ final class DoctrineExtension extends Extension
 
         if (isset($entityManager['fetch_mode_subselect_batch_size'])) {
             $methods['setEagerFetchBatchSize'] = $entityManager['fetch_mode_subselect_batch_size'];
+        }
+
+        if ($entityManager['use_schema_editor_api'] !== null) {
+            if (! method_exists(OrmConfiguration::class, 'setUseSchemaEditorApi')) {
+                throw new LogicException('The "use_schema_editor_api" option requires doctrine/orm 3.8 or higher.');
+            }
+
+            $methods['setUseSchemaEditorApi'] = $entityManager['use_schema_editor_api'];
         }
 
         $listenerId        = sprintf('doctrine.orm.%s_listeners.attach_entity_listeners', $entityManager['name']);

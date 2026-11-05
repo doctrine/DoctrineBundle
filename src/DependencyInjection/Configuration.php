@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -592,6 +593,14 @@ final class Configuration implements ConfigurationInterface
                     ->scalarNode('typed_field_mapper')->defaultValue('doctrine.orm.typed_field_mapper.default')->end()
                     ->scalarNode('entity_listener_resolver')->defaultNull()->end()
                     ->scalarNode('fetch_mode_subselect_batch_size')->end()
+                    ->booleanNode('use_schema_editor_api')
+                        ->defaultNull()
+                        ->info('Set to "true" or "false" to explicitly opt in or out of the schema editor API for schema generation. Requires doctrine/dbal 4.5 or higher and doctrine/orm 3.8 or higher.')
+                        ->validate()
+                            ->ifTrue(static fn ($v) => $v !== null && ! method_exists(Schema::class, 'edit'))
+                            ->thenInvalid('The setting "use_schema_editor_api" requires doctrine/dbal 4.5 or higher.')
+                        ->end()
+                    ->end()
                     ->scalarNode('repository_factory')->defaultValue('doctrine.orm.container_repository_factory')->end()
                     ->arrayNode('schema_ignore_classes')
                         ->prototype('scalar')->end()
