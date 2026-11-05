@@ -18,6 +18,7 @@ use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\Cache\Region\DefaultRegion;
 use Doctrine\ORM\Cache\Region\FileLockRegion;
 use Doctrine\ORM\Cache\RegionsConfiguration;
+use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -27,6 +28,7 @@ use InvalidArgumentException;
 use PDO;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator;
@@ -826,6 +828,22 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $def1 = $container->getDefinition('doctrine.orm.default_configuration');
 
         $this->assertDICDefinitionMethodCallOnce($def1, 'setEagerFetchBatchSize', [10000]);
+    }
+
+    #[RequiresMethod(OrmConfiguration::class, 'setUseDbalEditorApi')]
+    public function testUseDbalEditorApi(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_use_dbal_editor_api');
+
+        $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
+        $def2 = $container->getDefinition('doctrine.orm.em2_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($def1, 'setUseDbalEditorApi', [true]);
+        $this->assertDICDefinitionMethodCallOnce($def2, 'setUseDbalEditorApi', [false]);
     }
 
     public function testAttachEntityListeners(): void
