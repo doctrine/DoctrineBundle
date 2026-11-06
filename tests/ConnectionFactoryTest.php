@@ -50,7 +50,9 @@ class ConnectionFactoryTest extends TestCase
             $this->configuration,
         );
 
-        $this->assertSame('utf8', $connection->getParams()['charset']);
+        /** @var array{charset: string} $params */
+        $params = $connection->getParams();
+        $this->assertSame('utf8', $params['charset']);
     }
 
     public function testDefaultCharsetMySql(): void
