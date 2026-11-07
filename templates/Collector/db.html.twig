@@ -75,7 +75,7 @@
 {% endblock %}
 
 {% block menu %}
-    <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }} {{ collector.querycount == 0 ? 'disabled' }}">
+    <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }} {{ collector.querycount == 0 and collector.hydrations is empty ? 'disabled' }}">
         <span class="icon">{{ include('@Doctrine/Collector/' ~ (profiler_markup_version < 3 ? 'icon' : 'database') ~ '.svg') }}</span>
         <strong>Doctrine</strong>
         {% if collector.invalidEntityCount %}
@@ -124,7 +124,7 @@
         {% endif %}
     </style>
 
-    <h2>Query Metrics</h2>
+    <h2>Doctrine Metrics</h2>
 
     <div class="metrics">
         <div class="metric-group">
@@ -142,6 +142,13 @@
                 <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
                 <span class="label">Query time</span>
             </div>
+
+            {% if collector.hydrations %}
+                <div class="metric">
+                    <span class="value">{{ '%0.2f'|format(collector.hydrationTime * 1000) }} ms</span>
+                    <span class="label">Hydration time</span>
+                </div>
+            {% endif %}
 
             <div class="metric">
                 <span class="value">{{ collector.invalidEntityCount }}</span>
@@ -327,6 +334,37 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if collector.hydrations %}
+            <div class="tab">
+                <h3 class="tab-title">Hydration</h3>
+                <div class="tab-content">
+                    <table class="alt">
+                        <thead>
+                            <tr>
+                                <th scope="col">Hydrator</th>
+                                <th scope="col">Mapped entities</th>
+                                <th scope="col">Operations</th>
+                                <th scope="col">Results</th>
+                                <th scope="col">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hydration in collector.hydrations %}
+                                <tr>
+                                    <td>{{ hydration.hydrator }}</td>
+                                    <td>{{ hydration.entities|join(', ') }}</td>
+                                    <td>{{ hydration.operations }}</td>
+                                    <td>{{ hydration.results ?? 'N/A' }}</td>
+                                    <td>{{ '%0.2f'|format(hydration.time * 1000) }} ms</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <p>Each step of a streamed result counts as an operation. Time excludes nested hydration.</p>
+                </div>
+            </div>
+        {% endif %}
 
         <div class="tab {{ collector.connections is empty ? 'disabled' }}">
             <h3 class="tab-title">Database Connections</h3>
