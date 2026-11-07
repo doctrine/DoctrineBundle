@@ -10,6 +10,7 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsMiddleware;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
+use Doctrine\Bundle\DoctrineBundle\DataCollector\HydrationProfiler;
 use Doctrine\Bundle\DoctrineBundle\Dbal\RegexSchemaAssetFilter;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityAutoDiscoveryPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\IdGeneratorPass;
@@ -31,6 +32,7 @@ use Doctrine\ORM\Cache\Region\FileLockRegion;
 use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
+use Doctrine\ORM\HydrationObserver;
 use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\ORM\Mapping\ClassMetadataFactory as ORMClassMetadataFactory;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
@@ -68,6 +70,7 @@ use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
@@ -456,21 +459,22 @@ final class DoctrineExtension extends Extension
         $configuration = $this->getConfiguration($configs, $container);
         $config        = $this->processConfigurationPrependingDefaults($configuration, $configs);
 
-        if (! empty($config['dbal'])) {
-            $this->dbalLoad($config['dbal'], $container);
+        if (empty($config['dbal'])) {
+            if (! empty($config['orm'])) {
+                throw new LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
+            }
 
-            $this->loadMessengerServices($container);
+            return;
         }
+
+        $profiledConnections = $this->dbalLoad($config['dbal'], $container);
+        $this->loadMessengerServices($container);
 
         if (empty($config['orm'])) {
             return;
         }
 
-        if (empty($config['dbal'])) {
-            throw new LogicException('Configuring the ORM layer requires to configure the DBAL layer as well.');
-        }
-
-        $this->ormLoad($config['orm'], $container);
+        $this->ormLoad($config['orm'], $container, $profiledConnections);
     }
 
     /**
@@ -516,8 +520,10 @@ final class DoctrineExtension extends Extension
      *
      * @param DBALConfig       $config    An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
+     *
+     * @return list<string> Profiled connections
      */
-    private function dbalLoad(array $config, ContainerBuilder $container): void
+    private function dbalLoad(array $config, ContainerBuilder $container): array
     {
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('dbal.php');
@@ -595,12 +601,12 @@ final class DoctrineExtension extends Extension
 
         $container->getDefinition('doctrine.dbal.idle_connection_middleware')->setArgument(1, $ttlByConnection);
 
-        if (class_exists(Listener::class)) {
-            return;
+        if (! class_exists(Listener::class)) {
+            $container->removeDefinition('doctrine.dbal.idle_connection_listener');
+            $container->removeDefinition('doctrine.dbal.idle_connection_middleware');
         }
 
-        $container->removeDefinition('doctrine.dbal.idle_connection_listener');
-        $container->removeDefinition('doctrine.dbal.idle_connection_middleware');
+        return $connWithProfiling;
     }
 
     /**
@@ -777,10 +783,11 @@ final class DoctrineExtension extends Extension
      *
      *     <doctrine:orm id="mydm" connection="myconn" />
      *
-     * @param array<string, mixed> $config    An array of configuration settings
-     * @param ContainerBuilder     $container A ContainerBuilder instance
+     * @param array<string, mixed> $config              An array of configuration settings
+     * @param ContainerBuilder     $container           A ContainerBuilder instance
+     * @param list<string>         $profiledConnections
      */
-    private function ormLoad(array $config, ContainerBuilder $container): void
+    private function ormLoad(array $config, ContainerBuilder $container, array $profiledConnections): void
     {
         if (! class_exists(UnitOfWork::class)) {
             throw new LogicException('To configure the ORM layer, you must first install the doctrine/orm package.');
@@ -790,6 +797,17 @@ final class DoctrineExtension extends Extension
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('orm.php');
+
+        $hydrationProfiler = null;
+
+        if ($profiledConnections !== [] && interface_exists(HydrationObserver::class)) {
+            $container->register('doctrine.orm.hydration_profiler', HydrationProfiler::class)
+                ->setArgument(0, new Reference('debug.stopwatch', ContainerInterface::NULL_ON_INVALID_REFERENCE))
+                ->addTag('kernel.reset', ['method' => 'reset']);
+
+            $hydrationProfiler = new Reference('doctrine.orm.hydration_profiler');
+            $container->getDefinition('data_collector.doctrine')->setArgument(4, $hydrationProfiler);
+        }
 
         if (class_exists(AbstractType::class)) {
             $container->getDefinition('form.type.entity')->addTag('kernel.reset', ['method' => 'reset']);
@@ -886,6 +904,11 @@ final class DoctrineExtension extends Extension
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
             $this->loadOrmEntityManager($entityManager, $container);
+
+            if ($hydrationProfiler !== null && in_array($entityManager['connection'] ?? $this->defaultConnection, $profiledConnections, true)) {
+                $container->getDefinition(sprintf('doctrine.orm.%s_configuration', $name))
+                    ->addMethodCall('setHydrationObserver', [$hydrationProfiler]);
+            }
 
             // A custom metadata factory might not use the metadata driver to decide which classes are transient
             if (in_array($entityManager['class_metadata_factory_name'], [ORMClassMetadataFactory::class, ClassMetadataFactory::class], true)) {
