@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Composer\InstalledVersions;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
@@ -12,6 +13,7 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
@@ -54,6 +56,7 @@ use function is_dir;
 use function sprintf;
 use function sys_get_temp_dir;
 use function uniqid;
+use function version_compare;
 
 use const DIRECTORY_SEPARATOR;
 
@@ -831,6 +834,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
     }
 
     #[RequiresMethod(OrmConfiguration::class, 'setUseDbalEditorApi')]
+    #[RequiresMethod(Schema::class, 'edit')]
     public function testUseDbalEditorApi(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -844,6 +848,22 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
 
         $this->assertDICDefinitionMethodCallOnce($def1, 'setUseDbalEditorApi', [true]);
         $this->assertDICDefinitionMethodCallOnce($def2, 'setUseDbalEditorApi', [false]);
+    }
+
+    public function testUseDbalEditorApiRequiresDbal45(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        if (version_compare((string) InstalledVersions::getVersion('doctrine/dbal'), '4.5', '>=')) {
+            self::markTestSkipped('This test requires doctrine/dbal < 4.5');
+        }
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('The setting "use_dbal_editor_api" requires doctrine/dbal 4.5 or higher.');
+
+        $this->loadContainer('orm_use_dbal_editor_api');
     }
 
     public function testAttachEntityListeners(): void
