@@ -396,6 +396,8 @@ Configuration Reference
 
                         # Batch size for the subselect fetch mode
                         fetch_mode_subselect_batch_size: 2000
+                        # requires doctrine/orm 3.8+
+                        use_schema_editor_api: true
                 # Search for the "ResolveTargetEntityListener" class for a cookbook about this
                 resolve_target_entities:
                     # Prototype
@@ -833,6 +835,8 @@ Configuration Reference
 
                             // Batch size for the subselect fetch mode
                             'fetch_mode_subselect_batch_size' => 2000,
+                            // requires doctrine/orm 3.8+
+                            'use_schema_editor_api' => true,
                         ],
                     ],
                     // Search for the "ResolveTargetEntityListener" class for a cookbook about this

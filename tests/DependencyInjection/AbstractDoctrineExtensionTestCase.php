@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Composer\InstalledVersions;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
@@ -12,12 +13,14 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\Cache\Region\DefaultRegion;
 use Doctrine\ORM\Cache\Region\FileLockRegion;
 use Doctrine\ORM\Cache\RegionsConfiguration;
+use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -27,6 +30,7 @@ use InvalidArgumentException;
 use PDO;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator;
@@ -52,6 +56,7 @@ use function is_dir;
 use function sprintf;
 use function sys_get_temp_dir;
 use function uniqid;
+use function version_compare;
 
 use const DIRECTORY_SEPARATOR;
 
@@ -826,6 +831,39 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $def1 = $container->getDefinition('doctrine.orm.default_configuration');
 
         $this->assertDICDefinitionMethodCallOnce($def1, 'setEagerFetchBatchSize', [10000]);
+    }
+
+    #[RequiresMethod(OrmConfiguration::class, 'setUseSchemaEditorApi')]
+    #[RequiresMethod(Schema::class, 'edit')]
+    public function testUseSchemaEditorApi(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_use_schema_editor_api');
+
+        $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
+        $def2 = $container->getDefinition('doctrine.orm.em2_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($def1, 'setUseSchemaEditorApi', [true]);
+        $this->assertDICDefinitionMethodCallOnce($def2, 'setUseSchemaEditorApi', [false]);
+    }
+
+    public function testUseSchemaEditorApiRequiresDbal45(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        if (version_compare((string) InstalledVersions::getVersion('doctrine/dbal'), '4.5', '>=')) {
+            self::markTestSkipped('This test requires doctrine/dbal < 4.5');
+        }
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('The setting "use_schema_editor_api" requires doctrine/dbal 4.5 or higher.');
+
+        $this->loadContainer('orm_use_schema_editor_api');
     }
 
     public function testAttachEntityListeners(): void
