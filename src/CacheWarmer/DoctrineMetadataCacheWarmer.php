@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\CacheWarmer;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use LogicException;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 use function is_file;
+use function sprintf;
 
 /** @internal */
 final class DoctrineMetadataCacheWarmer extends BaseCacheWarmer
@@ -34,7 +36,14 @@ final class DoctrineMetadataCacheWarmer extends BaseCacheWarmer
 
         $metadataFactory = $this->entityManager->getMetadataFactory();
         if ($metadataFactory->getLoadedMetadata()) {
-            throw new LogicException('DoctrineMetadataCacheWarmer must load metadata first, check priority of your warmers.');
+            // Another service loaded metadata before this warmer ran. Warm a new factory, so every class reaches the cache.
+            $factoryClass    = $this->entityManager->getConfiguration()->getClassMetadataFactoryName();
+            $metadataFactory = new $factoryClass();
+            if (! $metadataFactory instanceof ClassMetadataFactory) {
+                throw new LogicException(sprintf('The metadata factory "%s" must extend "%s".', $factoryClass, ClassMetadataFactory::class));
+            }
+
+            $metadataFactory->setEntityManager($this->entityManager);
         }
 
         $metadataFactory->setCache($arrayAdapter);
