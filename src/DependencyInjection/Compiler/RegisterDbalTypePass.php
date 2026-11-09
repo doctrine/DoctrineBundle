@@ -25,7 +25,6 @@ use Symfony\Component\DependencyInjection\Reference;
 use function array_filter;
 use function array_keys;
 use function array_map;
-use function array_values;
 use function class_exists;
 use function interface_exists;
 use function is_string;
@@ -120,7 +119,7 @@ final class RegisterDbalTypePass implements CompilerPassInterface
 
         $factory = $container->getDefinition('doctrine.dbal.connection_factory');
 
-        foreach (array_values($builtinTypes) as $class) {
+        foreach ($builtinTypes as $class) {
             $factory->addTag('container.preload', ['class' => $class]);
         }
     }

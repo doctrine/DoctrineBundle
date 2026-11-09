@@ -21,7 +21,6 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeRegistry;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
-use function array_keys;
 use function array_merge;
 use function assert;
 use function is_subclass_of;
@@ -191,7 +190,7 @@ final class ConnectionFactory
 
         assert($registry instanceof TypeRegistry);
 
-        foreach (array_keys($this->types->getProvidedServices()) as $typeName) {
+        foreach ($this->types->getProvidedServices() as $typeName => $definition) {
             $type = $this->types->get($typeName);
 
             if ($registry->has($typeName)) {
