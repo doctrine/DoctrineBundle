@@ -18,9 +18,13 @@ use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\TypeRegistry;
+use Symfony\Contracts\Service\ServiceProviderInterface;
 
 use function array_merge;
+use function assert;
 use function is_subclass_of;
+use function method_exists;
 
 use const PHP_EOL;
 
@@ -46,11 +50,13 @@ final class ConnectionFactory
 
     private readonly DsnParser $dsnParser;
 
-    private bool $initialized = false;
-
-    /** @param mixed[][] $typesConfig */
+    /**
+     * @param ServiceProviderInterface<Type>|null $types The types to register in the global type
+     *        registry, keyed by type name. The container builds them, so their dependencies are
+     *        injected.
+     */
     public function __construct(
-        private readonly array $typesConfig = [],
+        private ServiceProviderInterface|null $types = null,
         DsnParser|null $dsnParser = null,
     ) {
         $this->dsnParser = $dsnParser ?? new DsnParser(self::DEFAULT_SCHEME_MAP);
@@ -67,9 +73,7 @@ final class ConnectionFactory
         Configuration|null $config = null,
         array $mappingTypes = [],
     ): Connection {
-        if (! $this->initialized) {
-            $this->initializeTypes();
-        }
+        $this->initializeTypes();
 
         $params = $this->parseDatabaseUrl($params);
 
@@ -163,19 +167,40 @@ final class ConnectionFactory
     }
 
     /**
-     * initialize the types
+     * Registers the types built by the container in the global type registry.
+     *
+     * The types are registered as instances, so they keep the dependencies injected by the
+     * container. They are registered globally too, because Doctrine ORM before 3.8 resolves them
+     * through the global registry instead of the type provider of the connection.
      */
     private function initializeTypes(): void
     {
-        foreach ($this->typesConfig as $typeName => $typeConfig) {
-            if (Type::hasType($typeName)) {
-                Type::overrideType($typeName, $typeConfig['class']);
+        if ($this->types === null) {
+            return;
+        }
+
+        /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
+        if (method_exists(Configuration::class, 'getTypeProvider')) {
+            // A default Configuration exposes the global type registry as its type provider.
+            // Reading it that way does not trigger the deprecation of Type::getTypeRegistry().
+            $registry = (new Configuration())->getTypeProvider();
+        } else {
+            $registry = Type::getTypeRegistry();
+        }
+
+        assert($registry instanceof TypeRegistry);
+
+        foreach ($this->types->getProvidedServices() as $typeName => $definition) {
+            $type = $this->types->get($typeName);
+
+            if ($registry->has($typeName)) {
+                $registry->override($typeName, $type);
             } else {
-                Type::addType($typeName, $typeConfig['class']);
+                $registry->register($typeName, $type);
             }
         }
 
-        $this->initialized = true;
+        $this->types = null;
     }
 
     /**

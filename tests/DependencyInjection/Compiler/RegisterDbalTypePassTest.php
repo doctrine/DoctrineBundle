@@ -6,6 +6,7 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Compiler;
 
 use DateTimeZone;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
+use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\Bundle\DoctrineBundle\Dbal\TypeProviderGlobalFallback;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
@@ -20,7 +21,9 @@ use Doctrine\DBAL\Types\BigIntType;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\TypeProvider;
 use Doctrine\DBAL\Types\TypeRegistry;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Internal\TypeProviderLocator;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -28,6 +31,7 @@ use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterDatePointTy
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Component\Clock\DatePoint;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -42,6 +46,7 @@ use function array_filter;
 use function array_values;
 use function class_exists;
 use function interface_exists;
+use function iterator_to_array;
 use function md5;
 use function method_exists;
 use function set_exception_handler;
@@ -70,6 +75,43 @@ class RegisterDbalTypePassTest extends TestCase
         self::markTestSkipped('This test covers the fallback path for DBAL < 4.6 without type provider support.');
     }
 
+    /**
+     * The provider of a connection is only built when the ORM reads it. Doctrine ORM before 3.8
+     * resolves the types through the global type registry instead.
+     */
+    private static function requiresConnectionTypeProvider(): void
+    {
+        self::requiresTypeProvider();
+
+        if (! interface_exists(EntityManagerInterface::class) || class_exists(TypeProviderLocator::class)) {
+            return;
+        }
+
+        self::markTestSkipped('Doctrine ORM before 3.8 does not read the type provider of the connection.');
+    }
+
+    private static function requiresOrmReadsGlobalRegistry(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM.');
+        }
+
+        if (! class_exists(TypeProviderLocator::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test covers ORM before 3.8, which resolves types through the global registry.');
+    }
+
+    private static function requiresOrmReadsTypeProvider(): void
+    {
+        if (class_exists(TypeProviderLocator::class)) {
+            return;
+        }
+
+        self::markTestSkipped('This test covers ORM 3.8 and later, which read the type provider of the connection.');
+    }
+
     public function testNoTaggedTypesSkipsTypeProviderSetup(): void
     {
         self::requiresTypeProvider();
@@ -86,7 +128,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testGlobalTypeIsRegisteredOnAllConnections(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -104,7 +146,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeServiceReceivesInjectedDependencies(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassTypeWithRequiredArg::class)
@@ -122,7 +164,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeRestrictedToOneConnection(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -140,7 +182,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testAutoconfiguredTypeRestrictedToConnectionViaAttribute(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyTypeForConn1::class)
@@ -158,7 +200,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeRegisteredOnMultipleConnectionsViaRepeatedAttribute(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMultiConnectionType::class)
@@ -178,7 +220,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeWithNoNameDefaultsToServiceId(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register(RegisterDbalTypePassAnonymousType::class, RegisterDbalTypePassAnonymousType::class)
@@ -194,7 +236,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTaggedTypeWithNoTypeAttributeDefaultsToServiceId(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -208,7 +250,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testConfigTypesAreIncludedInRegistry(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(
             static function (ContainerBuilder $container): void {
@@ -226,7 +268,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testTypeProviderIsSetOnConfiguration(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -253,7 +295,7 @@ class RegisterDbalTypePassTest extends TestCase
 
     public function testGloballyRegisteredTypesStayAvailable(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         // A default Configuration returns the global type registry, which is the registry that the
         // connection provider falls back to.
@@ -281,9 +323,139 @@ class RegisterDbalTypePassTest extends TestCase
         self::assertInstanceOf(RegisterDbalTypePassMoneyType::class, $provider->get('money'));
     }
 
+    public function testGlobalOverridesOfBuiltinTypesStayAvailable(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $globalProvider = (new DbalConfiguration())->getTypeProvider();
+        self::assertInstanceOf(TypeRegistry::class, $globalProvider);
+        $originalClass = $globalProvider->get('bigint')::class;
+
+        // Overrides a built-in type in the global registry, like Type::overrideType() does.
+        $globalProvider->override('bigint', RegisterDbalTypePassOverriddenBigIntType::class);
+
+        try {
+            $container = $this->createContainer(static function (ContainerBuilder $container): void {
+                $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                    ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+
+                $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+            });
+
+            $provider = $this->getTypeProvider($container, 'conn1');
+
+            // The registry of the connection knows the built-in types: it must not hide the
+            // override of the global registry.
+            self::assertTrue($provider->has('bigint'));
+            self::assertInstanceOf(RegisterDbalTypePassOverriddenBigIntType::class, $provider->get('bigint'));
+
+            $types = iterator_to_array($provider);
+            self::assertInstanceOf(RegisterDbalTypePassOverriddenBigIntType::class, $types['bigint']);
+        } finally {
+            $globalProvider->override('bigint', $originalClass);
+        }
+    }
+
+    public function testConnectionTypeTakesPrecedenceOverGlobalOverrideOfBuiltinType(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $globalProvider = (new DbalConfiguration())->getTypeProvider();
+        self::assertInstanceOf(TypeRegistry::class, $globalProvider);
+        $originalClass = $globalProvider->get('bigint')::class;
+
+        $globalProvider->override('bigint', RegisterDbalTypePassOverriddenBigIntType::class);
+
+        try {
+            $container = $this->createContainer(
+                static function (ContainerBuilder $container): void {
+                    $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+                },
+                configTypes: ['bigint' => ['class' => RegisterDbalTypePassUuidType::class]],
+            );
+
+            $provider = $this->getTypeProvider($container, 'conn1');
+
+            // A type declared for the connection still wins over the global registry.
+            self::assertInstanceOf(RegisterDbalTypePassUuidType::class, $provider->get('bigint'));
+
+            $types = iterator_to_array($provider);
+            self::assertInstanceOf(RegisterDbalTypePassUuidType::class, $types['bigint']);
+        } finally {
+            $globalProvider->override('bigint', $originalClass);
+        }
+    }
+
+    public function testTaggedServiceClassCanBeAParameter(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->setParameter('app.type_class', RegisterDbalTypePassMoneyType::class);
+            $container->register('my_type', '%app.type_class%')
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+
+            $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+        });
+
+        $this->assertTypeRegistered($container, 'conn1', 'money', RegisterDbalTypePassMoneyType::class);
+    }
+
+    public function testConfigTypeClassCanBeAParameter(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $container = $this->createContainer(
+            static function (ContainerBuilder $container): void {
+                $container->setParameter('app.type_class', RegisterDbalTypePassUuidType::class);
+                $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+            },
+            configTypes: ['uuid' => ['class' => '%app.type_class%']],
+        );
+
+        $this->assertTypeRegistered($container, 'conn1', 'uuid', RegisterDbalTypePassUuidType::class);
+    }
+
+    public function testTaggedServiceMustExtendType(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            'The class "%s" of the service "my_type" must extend "%s".',
+            RegisterDbalTypePassNotAType::class,
+            Type::class,
+        ));
+
+        $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassNotAType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'not_a_type']);
+        });
+    }
+
+    public function testAbstractTaggedServiceIsSkipped(): void
+    {
+        self::requiresConnectionTypeProvider();
+
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('abstract_type', RegisterDbalTypePassMoneyType::class)
+                ->setAbstract(true)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+
+            $container->register('uuid_type', RegisterDbalTypePassUuidType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'uuid']);
+
+            $container->setAlias('provider_conn1', 'doctrine.dbal.conn1_connection.type_provider')->setPublic(true);
+        });
+
+        // An abstract definition cannot be referenced by the service locator of the connection.
+        $this->assertTypeNotRegistered($container, 'conn1', 'money');
+        $this->assertTypeRegistered($container, 'conn1', 'uuid', RegisterDbalTypePassUuidType::class);
+    }
+
     public function testHasDoesNotTriggerDeprecationForUnknownType(): void
     {
-        self::requiresTypeProvider();
+        self::requiresConnectionTypeProvider();
 
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
             $container->register('my_type', RegisterDbalTypePassMoneyType::class)
@@ -294,8 +466,14 @@ class RegisterDbalTypePassTest extends TestCase
 
         $provider = $this->getTypeProvider($container, 'conn1');
 
-        // The test fails if the lookup triggers a deprecation, because failOnDeprecation is enabled.
+        // The counter of doctrine/deprecations is read instead of relying on failOnDeprecation,
+        // which ignores the deprecations that the dependencies trigger.
+        $triggered = Deprecation::getTriggeredDeprecations();
+
+        // The lookup falls back to the global registry, which must not trigger the deprecation of
+        // Type::getTypeRegistry().
         self::assertFalse($provider->has('unknown_type'));
+        self::assertSame($triggered, Deprecation::getTriggeredDeprecations(), 'Looking up an unknown type must not trigger a deprecation.');
     }
 
     public function testCustomTypeIsAvailableForOrmEntityMapping(): void
@@ -359,6 +537,175 @@ class RegisterDbalTypePassTest extends TestCase
             $found = $em->find(MoneyEntity::class, 1);
             self::assertInstanceOf(MoneyEntity::class, $found);
             self::assertEquals('12.34', $found->amount);
+        } finally {
+            $kernel->shutdown();
+            set_exception_handler($exceptionHandler);
+        }
+    }
+
+    /**
+     * Returns the types that the connection factory registers in the global type registry, keyed by
+     * type name.
+     *
+     * @return array<string, mixed>
+     */
+    private function getGlobalTypes(ContainerBuilder $container): array
+    {
+        $arguments = $container->getDefinition('doctrine.dbal.connection_factory')->getArguments();
+        self::assertCount(2, $arguments);
+
+        $locator = $arguments[0];
+        if ($locator instanceof Reference) {
+            $locator = $container->getDefinition((string) $locator);
+        }
+
+        // The compiler inlines the locator in the factory when nothing else uses it.
+        self::assertInstanceOf(Definition::class, $locator);
+
+        /** @var array<string, mixed> $map */
+        $map = $locator->getArgument(0);
+
+        return $map;
+    }
+
+    public function testTaggedTypesAreRegisteredGloballyForOrmBefore38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsGlobalRegistry();
+
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+        });
+
+        // The connection factory receives a locator of the types to register in the global registry.
+        self::assertArrayHasKey('money', $this->getGlobalTypes($container));
+    }
+
+    public function testTaggedTypesAreNotRegisteredGloballyForOrm38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsTypeProvider();
+
+        $container = $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+        });
+
+        $arguments = $container->getDefinition('doctrine.dbal.connection_factory')->getArguments();
+
+        // ORM 3.8 reads the type provider of the connection, the global registry stays untouched.
+        self::assertCount(2, $arguments);
+        self::assertNull($arguments[0]);
+    }
+
+    public function testConfigTypesAreRegisteredGlobally(): void
+    {
+        self::requiresTypeProvider();
+
+        $container = $this->createContainer(
+            static function (ContainerBuilder $container): void {
+            },
+            configTypes: ['uuid' => ['class' => RegisterDbalTypePassUuidType::class]],
+        );
+
+        // The types of the doctrine.dbal.types option go to the global registry too, on every
+        // supported ORM version.
+        self::assertArrayHasKey('uuid', $this->getGlobalTypes($container));
+    }
+
+    public function testTwoServicesWithTheSameTypeNameFailForOrmBefore38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsGlobalRegistry();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The DBAL type "money" is registered by both');
+
+        $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type_a', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+            $container->register('my_type_b', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money']);
+        });
+    }
+
+    public function testOneServiceCannotProvideTwoTypeNamesForOrmBefore38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsGlobalRegistry();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The DBAL type service "my_type" is registered under both "money" and "currency".');
+
+        $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money'])
+                ->addTag('doctrine.dbal.type', ['type_name' => 'currency']);
+        });
+    }
+
+    public function testOneServiceCannotProvideTwoTypeNamesWithoutTypeProvider(): void
+    {
+        self::requiresNoTypeProvider();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The DBAL type service "my_type" is registered under both "money" and "currency".');
+
+        $this->createContainer(static function (ContainerBuilder $container): void {
+            $container->register('my_type', RegisterDbalTypePassMoneyType::class)
+                ->addTag('doctrine.dbal.type', ['type_name' => 'money'])
+                ->addTag('doctrine.dbal.type', ['type_name' => 'currency']);
+        });
+    }
+
+    public function testConfigTypeIsRegisteredInTheGlobalRegistry(): void
+    {
+        self::requiresTypeProvider();
+
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $exceptionHandler = set_exception_handler(null);
+
+        $kernel = new RegisterDbalTypePassTestKernel();
+        $kernel->boot();
+
+        try {
+            // Creating the connection registers the types of the doctrine.dbal.types option in the
+            // global registry.
+            $kernel->getContainer()->get('doctrine.dbal.default_connection');
+
+            $registry = (new DbalConfiguration())->getTypeProvider();
+            self::assertInstanceOf(TypeRegistry::class, $registry);
+            self::assertTrue($registry->has('kernel_type'));
+            self::assertInstanceOf(RegisterDbalTypePassUuidType::class, $registry->get('kernel_type'));
+        } finally {
+            $kernel->shutdown();
+            set_exception_handler($exceptionHandler);
+        }
+    }
+
+    public function testTaggedTypeIsRegisteredInTheGlobalRegistryForOrmBefore38(): void
+    {
+        self::requiresTypeProvider();
+        self::requiresOrmReadsGlobalRegistry();
+
+        $exceptionHandler = set_exception_handler(null);
+
+        $kernel = new RegisterDbalTypePassTestKernel();
+        $kernel->boot();
+
+        try {
+            // Creating the connection registers the tagged types in the global registry, which is
+            // where ORM before 3.8 resolves types from.
+            $kernel->getContainer()->get('doctrine.dbal.default_connection');
+
+            $registry = (new DbalConfiguration())->getTypeProvider();
+            self::assertInstanceOf(TypeRegistry::class, $registry);
+            self::assertTrue($registry->has('money'));
+            self::assertInstanceOf(MoneyTypeFixture::class, $registry->get('money'));
         } finally {
             $kernel->shutdown();
             set_exception_handler($exceptionHandler);
@@ -435,7 +782,7 @@ class RegisterDbalTypePassTest extends TestCase
         }
     }
 
-    public function testTaggedTypeAreAddedToConfig(): void
+    public function testTaggedTypeIsReferencedByTheConnectionFactory(): void
     {
         self::requiresNoTypeProvider();
 
@@ -443,33 +790,24 @@ class RegisterDbalTypePassTest extends TestCase
         $container->addCompilerPass(new RegisterDbalTypePass());
 
         $container->setParameter('doctrine.dbal.connection_factory.types', []);
+        $container->setDefinition('doctrine.dbal.connection_factory', (new Definition(ConnectionFactory::class, [null, null]))->setPublic(true));
 
-        $container->register(RegisterDbalTypePassBarType::class)
+        $definition = $container->register('bar_type', RegisterDbalTypePassBarType::class)
             ->addTag('doctrine.dbal.type', ['type_name' => 'bar']);
 
         $container->compile();
 
-        self::assertSame(['bar' => ['class' => RegisterDbalTypePassBarType::class]], $container->getParameter('doctrine.dbal.connection_factory.types'));
-    }
+        self::assertSame([], $definition->getTag('container.excluded'));
 
-    public function testTaggedTypeDefinitionIsExcludedFromContainer(): void
-    {
-        self::requiresNoTypeProvider();
+        $types = $this->getGlobalTypes($container);
+        self::assertArrayHasKey('bar', $types);
 
-        $container = new ContainerBuilder();
-        $container->addCompilerPass(new RegisterDbalTypePass());
+        $type = $types['bar'];
+        self::assertInstanceOf(ServiceClosureArgument::class, $type);
 
-        $container->setParameter('doctrine.dbal.connection_factory.types', []);
-
-        $definition = $container->register(RegisterDbalTypePassBarType::class, RegisterDbalTypePassBarType::class)
-            ->addTag('doctrine.dbal.type', ['type_name' => 'bar']);
-
-        (new RegisterDbalTypePass())->process($container);
-
-        self::assertSame(
-            [['source' => 'by tag "doctrine.dbal.type"']],
-            $definition->getTag('container.excluded'),
-        );
+        $reference = $type->getValues()[0];
+        self::assertInstanceOf(Reference::class, $reference);
+        self::assertSame('bar_type', (string) $reference);
     }
 
     public function testTypeMustBeASubclassOfTheDbalBaseType(): void
@@ -485,37 +823,20 @@ class RegisterDbalTypePassTest extends TestCase
             ->addTag('doctrine.dbal.type', ['type_name' => 'invalid_type']);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf('The "%s" class must extends "%s".', RegisterDbalTypePassNotAType::class, Type::class));
+        $this->expectExceptionMessage(sprintf('The class "%s" of the service "%s" must extend "%s".', RegisterDbalTypePassNotAType::class, RegisterDbalTypePassNotAType::class, Type::class));
 
         $container->compile();
     }
 
-    public function testTypeClassesArePreloaded(): void
+    public function testBuiltinTypeClassesArePreloaded(): void
     {
         $container = $this->createContainer(static function (ContainerBuilder $container): void {
-            $container->setAlias('connection_factory', 'doctrine.dbal.connection_factory')->setPublic(true);
-        }, ['money' => ['class' => RegisterDbalTypePassMoneyType::class]]);
-
-        $preloaded = array_column($container->getDefinition('connection_factory')->getTag('container.preload'), 'class');
-
-        self::assertContains(BigIntType::class, $preloaded);
-        self::assertContains(RegisterDbalTypePassMoneyType::class, $preloaded);
-    }
-
-    public function testTaggedTypeClassesArePreloaded(): void
-    {
-        self::requiresNoTypeProvider();
-
-        $container = $this->createContainer(static function (ContainerBuilder $container): void {
-            $container->register('bar_type', RegisterDbalTypePassBarType::class)
-                ->addTag('doctrine.dbal.type', ['type_name' => 'bar']);
-
             $container->setAlias('connection_factory', 'doctrine.dbal.connection_factory')->setPublic(true);
         });
 
         $preloaded = array_column($container->getDefinition('connection_factory')->getTag('container.preload'), 'class');
 
-        self::assertContains(RegisterDbalTypePassBarType::class, $preloaded);
+        self::assertContains(BigIntType::class, $preloaded);
     }
 
     /** @param array<string, array{class: string}> $configTypes */
@@ -664,9 +985,17 @@ class RegisterDbalTypePassBarType extends Type
     }
 }
 
-// Doctrine\DBAL\Types\Type::__construct() is final before DBAL 4.6, so a type declaring
-// its own constructor can only be defined when the TypeProvider API is available. The
-// tests using this fixture are skipped on older DBAL versions.
+class RegisterDbalTypePassOverriddenBigIntType extends Type
+{
+    public function getSQLDeclaration(mixed $column, AbstractPlatform $platform): string
+    {
+        return 'BIGINT';
+    }
+}
+
+// Doctrine\DBAL\Types\Type::__construct() is final until DBAL 4.3, so a type declaring its own
+// constructor can only be defined on DBAL 4.3 and later. The tests using this fixture require
+// the TypeProvider API of DBAL 4.6 and are skipped on older versions.
 /** @phpstan-ignore function.alreadyNarrowedType (kept for DBAL < 4.6 compatibility) */
 if (method_exists(DbalConfiguration::class, 'setTypeProvider')) {
     class RegisterDbalTypePassTypeWithRequiredArg extends Type
@@ -710,7 +1039,10 @@ class RegisterDbalTypePassTestKernel extends Kernel
                 'handle_all_throwables' => true,
             ]);
             $container->loadFromExtension('doctrine', [
-                'dbal' => ['driver' => 'pdo_sqlite'],
+                'dbal' => [
+                    'driver' => 'pdo_sqlite',
+                    'types' => ['kernel_type' => ['class' => RegisterDbalTypePassUuidType::class]],
+                ],
                 'orm' => [
                     'mappings' => [
                         'Fixtures' => [
@@ -731,6 +1063,10 @@ class RegisterDbalTypePassTestKernel extends Kernel
 
     public function getProjectDir(): string
     {
-        return sys_get_temp_dir() . '/sf_kernel_' . md5(static::class);
+        // The compiled container depends on the installed ORM version, so two runs with different
+        // versions must not share their cache.
+        $ormVersion = class_exists(TypeProviderLocator::class) ? 'orm38' : 'orm37';
+
+        return sys_get_temp_dir() . '/sf_kernel_' . md5(static::class . $ormVersion);
     }
 }
