@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\Orm\ManagerRegistryAwareEntityManagerProvider;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
@@ -17,17 +18,24 @@ use Doctrine\ORM\Tools\Console\Command\MappingDescribeCommand;
 use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
+use ReflectionProperty;
 use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as ConsoleEntityValueResolver;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
+use Symfony\Bridge\Doctrine\Validator\Constraints\EntityExistsValidator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntityValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
+use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 use function class_exists;
 use function interface_exists;
+use function restore_exception_handler;
 
 class ContainerTest extends TestCase
 {
@@ -63,6 +71,14 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(EventManager::class, $container->get('doctrine.dbal.event_manager'));
         $this->assertInstanceOf(ManagerRegistry::class, $container->get('doctrine'));
         $this->assertInstanceOf(UniqueEntityValidator::class, $container->get('doctrine.orm.validator.unique'));
+
+        // EntityExistsValidator exists since symfony/doctrine-bridge 8.2
+        if (class_exists(EntityExistsValidator::class)) {
+            $this->assertInstanceOf(EntityExistsValidator::class, $container->get('doctrine.orm.validator.entity_exists'));
+        } else {
+            $this->assertFalse($container->has('doctrine.orm.validator.entity_exists'));
+        }
+
         $this->assertInstanceOf(InfoCommand::class, $container->get('doctrine.mapping_info_command'));
         $this->assertInstanceOf(MappingDescribeCommand::class, $container->get('doctrine.mapping_describe_command'));
         $this->assertInstanceOf(UpdateCommand::class, $container->get('doctrine.schema_update_command'));
@@ -74,5 +90,35 @@ class ContainerTest extends TestCase
 
         $this->assertInstanceOf(DoctrineLoader::class, $container->get('doctrine.orm.default_entity_manager.validator_loader'));
         $this->assertInstanceOf(ManagerRegistryAwareEntityManagerProvider::class, $container->get('doctrine.orm.command.entity_manager_provider'));
+    }
+
+    public function testEntityValueResolverExpressionLanguageUsesTheSystemCache(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $kernel = new class (false) extends TestKernel {
+            public function registerContainerConfiguration(LoaderInterface $loader): void
+            {
+                parent::registerContainerConfiguration($loader);
+
+                // Enable framework.test so that test.service_container exposes private services.
+                $loader->load(static function (ContainerBuilder $container): void {
+                    $container->loadFromExtension('framework', ['test' => true]);
+                });
+            }
+        };
+        $kernel->boot();
+        restore_exception_handler();
+
+        $container = $kernel->getContainer()->get('test.service_container');
+        $this->assertInstanceOf(ContainerInterface::class, $container);
+
+        $expressionLanguage = $container->get('doctrine.orm.entity_value_resolver.expression_language');
+        $this->assertInstanceOf(ExpressionLanguage::class, $expressionLanguage);
+
+        $cache = (new ReflectionProperty(ExpressionLanguage::class, 'cache'))->getValue($expressionLanguage);
+        $this->assertNotInstanceOf(ArrayAdapter::class, $cache);
     }
 }

@@ -8,12 +8,14 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheSchemaSubsc
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
+use Symfony\Component\Cache\CacheBundle;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 
+use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 
@@ -48,20 +50,27 @@ class CacheSchemaSubscriberTest extends TestCase
             'debug.file_link_format' => null,
         ]));
 
+        $frameworkConfig = [
+            'http_method_override' => false,
+            'handle_all_throwables' => true,
+            'php_errors' => ['log' => true],
+        ];
+
+        $cacheConfig = [
+            'pools' => [
+                'my_cache_adapter' => ['adapter' => 'cache.adapter.doctrine_dbal'],
+            ],
+        ];
+
+        if (class_exists(CacheBundle::class)) {
+            (new CacheBundle())->getContainerExtension()?->load([$cacheConfig], $container);
+        } else {
+            $frameworkConfig['cache'] = $cacheConfig;
+        }
+
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
-        $extension->load([
-            'framework' => [
-                'http_method_override' => false,
-                'handle_all_throwables' => true,
-                'php_errors' => ['log' => true],
-                'cache' => [
-                    'pools' => [
-                        'my_cache_adapter' => ['adapter' => 'cache.adapter.doctrine_dbal'],
-                    ],
-                ],
-            ],
-        ], $container);
+        $extension->load(['framework' => $frameworkConfig], $container);
 
         $extension = new DoctrineExtension();
         $container->registerExtension($extension);

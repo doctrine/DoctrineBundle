@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
+use Composer\InstalledVersions;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DbalSchemaFilterPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityListenerPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\InvokableEntityListener;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\Cache\Region\DefaultRegion;
 use Doctrine\ORM\Cache\Region\FileLockRegion;
 use Doctrine\ORM\Cache\RegionsConfiguration;
+use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -27,12 +31,15 @@ use InvalidArgumentException;
 use PDO;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Bundle\DoctrineBundle\Tests\DependencyInjection\TestHydrator;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -51,6 +58,7 @@ use function is_dir;
 use function sprintf;
 use function sys_get_temp_dir;
 use function uniqid;
+use function version_compare;
 
 use const DIRECTORY_SEPARATOR;
 
@@ -466,6 +474,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $container = $this->loadContainer('orm_multiple_em_bundle_mappings', ['XmlBundle', 'AttributesBundle']);
 
         $this->assertEquals(['em1' => 'doctrine.orm.em1_entity_manager', 'em2' => 'doctrine.orm.em2_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
+        $this->assertEquals(['em1' => 'default', 'em2' => 'default'], $container->getParameter('doctrine.entity_manager_connections'), 'Set of the connections used by the EntityManagers is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
 
         $def1 = $container->getDefinition('doctrine.orm.em1_metadata_driver');
@@ -525,7 +534,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
             ['test' => ['class' => TestType::class]],
             $container->getParameter('doctrine.dbal.connection_factory.types'),
         );
-        $this->assertEquals('%doctrine.dbal.connection_factory.types%', $container->getDefinition('doctrine.dbal.connection_factory')->getArgument(0));
+        $this->assertNotNull($container->getDefinition('doctrine.dbal.connection_factory')->getArgument(0));
     }
 
     public function testSetCustomFunctions(): void
@@ -734,6 +743,8 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
 
         $this->assertEquals('doctrine.orm.default_second_level_cache.regions_configuration', $slcFactoryArgs[0]);
         $this->assertEquals('doctrine.orm.default_second_level_cache.region_cache_driver', $slcFactoryArgs[1]);
+
+        $this->assertSame(['custom_slc_factory', 'default'], $container->getDefinition('data_collector.doctrine')->getArgument(3));
     }
 
     public function testSingleEMSetCustomFunctions(): void
@@ -822,6 +833,39 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $def1 = $container->getDefinition('doctrine.orm.default_configuration');
 
         $this->assertDICDefinitionMethodCallOnce($def1, 'setEagerFetchBatchSize', [10000]);
+    }
+
+    #[RequiresMethod(OrmConfiguration::class, 'setUseSchemaEditorApi')]
+    #[RequiresMethod(Schema::class, 'edit')]
+    public function testUseSchemaEditorApi(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->loadContainer('orm_use_schema_editor_api');
+
+        $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
+        $def2 = $container->getDefinition('doctrine.orm.em2_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($def1, 'setUseSchemaEditorApi', [true]);
+        $this->assertDICDefinitionMethodCallOnce($def2, 'setUseSchemaEditorApi', [false]);
+    }
+
+    public function testUseSchemaEditorApiRequiresDbal45(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        if (version_compare((string) InstalledVersions::getVersion('doctrine/dbal'), '4.5', '>=')) {
+            self::markTestSkipped('This test requires doctrine/dbal < 4.5');
+        }
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('The setting "use_schema_editor_api" requires doctrine/dbal 4.5 or higher.');
+
+        $this->loadContainer('orm_use_schema_editor_api');
     }
 
     public function testAttachEntityListeners(): void
@@ -1039,6 +1083,8 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $this->loadFromFile($container, 'orm_attach_entity_listeners_two_connections');
 
         $this->compileContainer($container);
+
+        $this->assertSame(['em1' => 'default', 'em2' => 'foobar'], $container->getParameter('doctrine.entity_manager_connections'));
 
         $defaultEventManager = $container->getDefinition('doctrine.dbal.default_connection.event_manager');
         $this->assertEmpty($defaultEventManager->getMethodCalls());
@@ -1363,6 +1409,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $passConfig = $container->getCompilerPassConfig();
         $passConfig->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $passConfig->setRemovingPasses([]);
+        $passConfig->addPass(new RegisterDbalTypePass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, -10);
         $container->compile();
     }
 }

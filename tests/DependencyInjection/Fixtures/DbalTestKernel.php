@@ -49,7 +49,7 @@ class DbalTestKernel extends Kernel
             /** @phpstan-ignore if.alwaysFalse */
             if (version_compare(Kernel::VERSION, '7.0.0', '<')) {
                 $container->loadFromExtension('framework', [
-                    'annotations' => ['enabled' => true],
+                    'annotations' => ['enabled' => false],
                 ]);
             }
 

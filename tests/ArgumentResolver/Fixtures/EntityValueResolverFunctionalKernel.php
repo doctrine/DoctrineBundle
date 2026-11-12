@@ -74,11 +74,26 @@ class EntityValueResolverFunctionalKernel extends Kernel
             ->autoconfigure()
             ->public()
             ->tag('controller.service_arguments');
+        $services->set(ServiceArgumentController::class)
+            ->autowire()
+            ->autoconfigure()
+            ->public()
+            ->tag('controller.service_arguments');
+
+        $services->set(TitleExpressionLanguageProvider::class)
+            ->tag('doctrine.orm.entity_value_resolver.expression_language_provider');
+        $services->set(TaggedProviderPostController::class)
+            ->autowire()
+            ->autoconfigure()
+            ->public()
+            ->tag('controller.service_arguments');
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
+        $routes->add('post_tagged', '/posts/tagged')->controller(TaggedProviderPostController::class);
         $routes->add('post_show', '/posts/{post}')->controller(PostController::class);
+        $routes->add('service_argument', '/service-argument')->controller(ServiceArgumentController::class);
     }
 
     public function getProjectDir(): string

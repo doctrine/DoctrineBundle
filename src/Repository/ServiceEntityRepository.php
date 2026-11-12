@@ -8,14 +8,17 @@ use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\DBAL\LockMode;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 
+use function func_num_args;
 use function sprintf;
 
 /**
@@ -61,9 +64,26 @@ class ServiceEntityRepository extends EntityRepository implements ServiceEntityR
 
     public function find(mixed $id, LockMode|int|null $lockMode = null, int|null $lockVersion = null): object|null
     {
+        if ($lockMode === null && func_num_args() >= 2) {
+            Deprecation::trigger(
+                'doctrine/doctrine-bundle',
+                'https://github.com/doctrine/DoctrineBundle/pull/2284',
+                'Passing null as $lockMode to %s() is deprecated and will not be possible in DoctrineBundle 4.0, pass LockMode::NONE instead.',
+                __METHOD__,
+            );
+        }
+
+        $repository = $this->repository ??= $this->resolveRepository();
+
+        // Let the ORM apply its own default: before ORM 3.7, LockMode::NONE refreshes an entity
+        // that is already managed, and since ORM 3.7, passing null is deprecated.
+        if ($lockMode === null) {
+            /** @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class */
+            return $repository->find($id, lockVersion: $lockVersion);
+        }
+
         /** @psalm-suppress InvalidReturnStatement This proxy is used only in combination with newer parent class */
-        return ($this->repository ??= $this->resolveRepository())
-            ->find($id, $lockMode, $lockVersion);
+        return $repository->find($id, $lockMode, $lockVersion);
     }
 
     /**
@@ -108,6 +128,11 @@ class ServiceEntityRepository extends EntityRepository implements ServiceEntityR
     protected function getEntityManager(): EntityManagerInterface
     {
         return ($this->repository ??= $this->resolveRepository())->getEntityManager();
+    }
+
+    protected function expr(): Expr
+    {
+        return ($this->repository ??= $this->resolveRepository())->expr();
     }
 
     /** @psalm-suppress InvalidReturnType This proxy is used only in combination with newer parent class */

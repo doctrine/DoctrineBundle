@@ -8,10 +8,13 @@ use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\TestWith;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
+use Symfony\Component\Cache\CacheBundle;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\Lock\LockBundle;
 
+use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 
@@ -48,6 +51,15 @@ class LockStoreSchemaListenerTest extends TestCase
             'env(default::SYMFONY_TRUSTED_HEADERS)' => '',
             'debug.file_link_format' => null,
         ]));
+
+        if (class_exists(CacheBundle::class)) {
+            (new CacheBundle())->getContainerExtension()?->load([], $container);
+        }
+
+        if (isset($config['lock']) && class_exists(LockBundle::class)) {
+            (new LockBundle())->getContainerExtension()?->load([$config['lock']], $container);
+            unset($config['lock']);
+        }
 
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);

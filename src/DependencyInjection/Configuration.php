@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
+use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -29,6 +30,7 @@ use function in_array;
 use function is_array;
 use function is_string;
 use function key;
+use function method_exists;
 use function reset;
 use function sprintf;
 use function strtoupper;
@@ -158,6 +160,12 @@ final class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('connections');
         $node        = $treeBuilder->getRootNode();
+
+        // a single connection given directly under "dbal" is the one named by "default_connection"
+        // requires symfony/config 8.2
+        if (method_exists($node, 'acceptElementsAtParentLevel')) {
+            $node->acceptElementsAtParentLevel();
+        }
 
         $connectionNode = $node
             ->requiresAtLeastOneElement()
@@ -532,6 +540,12 @@ final class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('entity_managers');
         $node        = $treeBuilder->getRootNode();
 
+        // a single entity manager given directly under "orm" is the one named by "default_entity_manager"
+        // requires symfony/config 8.2
+        if (method_exists($node, 'acceptElementsAtParentLevel')) {
+            $node->acceptElementsAtParentLevel();
+        }
+
         $node
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
@@ -547,11 +561,20 @@ final class Configuration implements ConfigurationInterface
                     ->scalarNode('class_metadata_factory_name')->defaultValue(ClassMetadataFactory::class)->end()
                     ->scalarNode('default_repository_class')->defaultValue(EntityRepository::class)->end()
                     ->scalarNode('auto_mapping')->defaultFalse()->end()
+                    ->booleanNode('auto_discover_entities')->defaultNull()->info('Registers all entity classes discovered by the container scan, removing the need for explicit "mappings". When not set, enabled if neither "mappings" nor "auto_mapping" is configured and Symfony 8.2 and doctrine/orm 3.6 are available.')->end()
                     ->scalarNode('naming_strategy')->defaultValue('doctrine.orm.naming_strategy.default')->end()
                     ->scalarNode('quote_strategy')->defaultValue('doctrine.orm.quote_strategy.default')->end()
                     ->scalarNode('typed_field_mapper')->defaultValue('doctrine.orm.typed_field_mapper.default')->end()
                     ->scalarNode('entity_listener_resolver')->defaultNull()->end()
                     ->scalarNode('fetch_mode_subselect_batch_size')->end()
+                    ->booleanNode('use_schema_editor_api')
+                        ->defaultNull()
+                        ->info('Set to "true" or "false" to explicitly opt in or out of the schema editor API for schema generation. Requires doctrine/dbal 4.5 or higher and doctrine/orm 3.8 or higher.')
+                        ->validate()
+                            ->ifTrue(static fn ($v) => $v !== null && ! method_exists(Schema::class, 'edit'))
+                            ->thenInvalid('The setting "use_schema_editor_api" requires doctrine/dbal 4.5 or higher.')
+                        ->end()
+                    ->end()
                     ->scalarNode('repository_factory')->defaultValue('doctrine.orm.container_repository_factory')->end()
                     ->arrayNode('schema_ignore_classes')
                         ->prototype('scalar')->end()
@@ -622,7 +645,13 @@ final class Configuration implements ConfigurationInterface
                                 ->scalarNode('mapping')->defaultValue(true)->end()
                                 ->scalarNode('type')->end()
                                 ->scalarNode('dir')->end()
-                                ->scalarNode('alias')->end()
+                                ->scalarNode('alias')
+                                    ->setDeprecated(
+                                        'doctrine/doctrine-bundle',
+                                        '3.4',
+                                        'The "%path%.%node%" option is deprecated and will be removed in DoctrineBundle 4.0, as Doctrine ORM no longer supports entity namespace aliases.',
+                                    )
+                                ->end()
                                 ->scalarNode('prefix')->end()
                                 ->booleanNode('is_bundle')->end()
                             ->end()

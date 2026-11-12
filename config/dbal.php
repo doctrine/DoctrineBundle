@@ -37,12 +37,13 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
                 true,
                 service('doctrine.debug_data_holder')->nullOnInvalid(),
+                [],
             ])
             ->tag('data_collector', ['template' => '@Doctrine/Collector/db.html.twig', 'id' => 'db', 'priority' => 250])
 
         ->set('doctrine.dbal.connection_factory', ConnectionFactory::class)
             ->args([
-                (string) param('doctrine.dbal.connection_factory.types'),
+                abstract_arg('types to register in the global type registry'),
                 service('doctrine.dbal.connection_factory.dsn_parser'),
             ])
 

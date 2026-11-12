@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,10 +17,13 @@ use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepos
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomServiceRepoRepository;
 use Fixtures\Bundles\RepositoryServiceBundle\RepositoryServiceBundle;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
+use Symfony\Component\Cache\CacheBundle;
 use Symfony\Component\DependencyInjection\Alias;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
+use function class_exists;
 use function interface_exists;
 use function sys_get_temp_dir;
 use function uniqid;
@@ -61,6 +65,10 @@ class ServiceRepositoryTest extends TestCase
             'debug.file_link_format' => null,
         ]));
 
+        if (class_exists(CacheBundle::class)) {
+            (new CacheBundle())->getContainerExtension()?->load([], $container);
+        }
+
         $extension = new FrameworkExtension();
         $container->registerExtension($extension);
         $extension->load([
@@ -101,6 +109,7 @@ class ServiceRepositoryTest extends TestCase
         $def->setAutoconfigured(true);
 
         $container->addCompilerPass(new ServiceRepositoryCompilerPass());
+        $container->addCompilerPass(new RegisterDbalTypePass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, -10);
         $container->compile();
 
         $em = $container->get('doctrine.orm.default_entity_manager');

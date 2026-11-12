@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterDbalTypePass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\TestType;
 use PHPUnit\Framework\TestCase as BaseTestCase;
@@ -81,6 +82,7 @@ class TestCase extends BaseTestCase
         $compilerPassConfig->setRemovingPasses([]);
         // make all Doctrine services public, so we can fetch them in the test
         $compilerPassConfig->addPass(new TestCaseAllPublicCompilerPass());
+        $compilerPassConfig->addPass(new RegisterDbalTypePass());
 
         if ($func !== null) {
             $func($container);
