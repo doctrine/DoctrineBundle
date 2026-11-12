@@ -11,11 +11,31 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 use function strpos;
 
 class DebugMiddlewareTest extends TestCase
 {
+    public function testQueryTimelineEvent(): void
+    {
+        $stopwatch     = new Stopwatch();
+        $configuration = new Configuration();
+        $configuration->setMiddlewares([new DebugMiddleware(new BacktraceDebugDataHolder([]), $stopwatch)]);
+
+        $connection = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            'memory' => true,
+        ], $configuration);
+
+        $connection->executeQuery('SELECT 1');
+        $connection->executeQuery('SELECT ?', [2]);
+
+        $event = $stopwatch->getEvent('doctrine.query');
+        self::assertSame('doctrine', $event->getCategory());
+        self::assertCount(2, $event->getPeriods());
+    }
+
     public function testData(): void
     {
         $configuration = new Configuration();

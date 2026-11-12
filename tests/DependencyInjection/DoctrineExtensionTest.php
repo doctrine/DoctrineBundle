@@ -10,6 +10,7 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
+use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityAutoDiscoveryPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
@@ -19,14 +20,19 @@ use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8Entity
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EventListener;
 use Doctrine\DBAL\Connection;
 use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
+use Doctrine\ORM\HydrationObserver;
+use Doctrine\ORM\Internal\Hydration\ScalarHydrator;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Mapping\Embeddable;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\MappedSuperclass;
+use Doctrine\ORM\Query\ResultSetMapping;
+use Generator;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -52,8 +58,11 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\ExpressionLanguage\CompiledExpressionLanguage;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 use function array_map;
 use function array_values;
@@ -61,6 +70,7 @@ use function class_exists;
 use function in_array;
 use function interface_exists;
 use function is_dir;
+use function iterator_to_array;
 use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
@@ -1373,6 +1383,79 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertFalse(in_array(['connection' => 'conn1', 'priority' => 10], $debugMiddlewareTagAttributes, true), 'Tag with connection conn1 found for doctrine.dbal.debug_middleware');
         $this->assertTrue(in_array(['connection' => 'conn2', 'priority' => 10], $debugMiddlewareTagAttributes, true), 'Tag with connection conn2 not found for doctrine.dbal.debug_middleware');
+    }
+
+    public function testHydrationProfilingFollowsConnectionConfiguration(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        $stopwatch = new Stopwatch(true);
+        $container->set('debug.stopwatch', $stopwatch);
+
+        $extension = new DoctrineExtension();
+        $extension->load([
+            [
+                'dbal' => [
+                    'default_connection' => 'profiled',
+                    'connections' => [
+                        'profiled' => ['driver' => 'pdo_sqlite', 'memory' => true, 'profiling' => true],
+                        'unprofiled' => ['driver' => 'pdo_sqlite', 'memory' => true, 'profiling' => false],
+                    ],
+                ],
+                'orm' => [
+                    'entity_managers' => [
+                        'default' => [],
+                        'unprofiled' => ['connection' => 'unprofiled'],
+                    ],
+                ],
+            ],
+        ], $container);
+        $container->getDefinition('data_collector.doctrine')->setPublic(true);
+        $this->compileContainer($container);
+
+        $mapping = new ResultSetMapping();
+        $mapping->addScalarResult('value', 'value', 'integer');
+
+        foreach (['default', 'unprofiled'] as $name) {
+            $manager = $container->get('doctrine.orm.' . $name . '_entity_manager');
+            self::assertInstanceOf(EntityManagerInterface::class, $manager);
+
+            $query = $manager->createNativeQuery('SELECT 42 AS value UNION ALL SELECT 43 AS value', $mapping);
+            self::assertCount(2, $query->getScalarResult());
+
+            $results = $query->toIterable([], AbstractQuery::HYDRATE_SCALAR);
+            self::assertInstanceOf(Generator::class, $results);
+            self::assertTrue($results->valid());
+            self::assertFalse($stopwatch->isStarted('doctrine.orm.hydration'));
+            self::assertCount(2, iterator_to_array($results));
+        }
+
+        $collector = $container->get('data_collector.doctrine');
+        self::assertInstanceOf(DoctrineDataCollector::class, $collector);
+        $collector->collect(new Request(), new Response());
+
+        if (! interface_exists(HydrationObserver::class)) {
+            self::assertSame([], $collector->getHydrations());
+
+            return;
+        }
+
+        self::assertSame([
+            [
+                'hydrator' => ScalarHydrator::class,
+                'entities' => [],
+                'operations' => 4,
+                'results' => 4,
+                'time' => $collector->getHydrationTime(),
+            ],
+        ], $collector->getHydrations());
+        self::assertGreaterThan(0, $collector->getHydrationTime());
+
+        $event = $stopwatch->getEvent('doctrine.orm.hydration');
+        self::assertCount(4, $event->getPeriods());
     }
 
     public function testDefinitionsToLogQueriesLoggingFalse(): void
