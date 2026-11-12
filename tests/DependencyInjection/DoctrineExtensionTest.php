@@ -397,27 +397,13 @@ class DoctrineExtensionTest extends TestCase
             $container,
         );
 
-        $configEm1 = $container->getDefinition('doctrine.orm.em1_configuration');
-        $configEm2 = $container->getDefinition('doctrine.orm.em2_configuration');
-
         self::assertContains(
-            [
-                'setEntityNamespaces',
-                [
-                    ['XmlBundle' => 'Fixtures\Bundles\XmlBundle\Entity'],
-                ],
-            ],
-            $configEm1->getMethodCalls(),
+            'Fixtures\Bundles\XmlBundle\Entity',
+            array_map(static fn (array $call): string => (string) $call[1][1], $container->getDefinition('doctrine.orm.em1_metadata_driver')->getMethodCalls()),
         );
-
         self::assertContains(
-            [
-                'setEntityNamespaces',
-                [
-                    ['NewXmlBundle' => 'Fixtures\Bundles\NewXmlBundle\Entity'],
-                ],
-            ],
-            $configEm2->getMethodCalls(),
+            'Fixtures\Bundles\NewXmlBundle\Entity',
+            array_map(static fn (array $call): string => (string) $call[1][1], $container->getDefinition('doctrine.orm.em2_metadata_driver')->getMethodCalls()),
         );
     }
 
@@ -520,7 +506,6 @@ class DoctrineExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $calls      = array_values($definition->getMethodCalls());
 
-        $this->assertEquals(['XmlBundle' => 'Fixtures\Bundles\XmlBundle\Entity'], $calls[0][1][0]);
         $references = [];
         foreach ($calls as $call) {
             if (! ($call[1][0] instanceof Reference)) {
@@ -675,54 +660,6 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('XmlBundle\Cache\MyCacheFactory', $slcDefinition->getClass());
     }
 
-    public function testBundleEntityAliases(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $container = $this->getContainer();
-        $extension = new DoctrineExtension();
-
-        $config        = BundleConfigurationBuilder::createBuilder()
-             ->addBaseConnection()
-             ->build();
-        $config['orm'] = ['default_entity_manager' => 'default', 'entity_managers' => ['default' => ['mappings' => ['XmlBundle' => []]]]];
-        $extension->load([$config], $container);
-
-        $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce(
-            $definition,
-            'setEntityNamespaces',
-            [['XmlBundle' => 'Fixtures\Bundles\XmlBundle\Entity']],
-        );
-    }
-
-    public function testOverwriteEntityAliases(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $container = $this->getContainer();
-        $extension = new DoctrineExtension();
-
-        $config        = BundleConfigurationBuilder::createBuilder()
-             ->addBaseConnection()
-             ->build();
-        $config['orm'] = ['default_entity_manager' => 'default', 'entity_managers' => ['default' => ['mappings' => ['XmlBundle' => ['alias' => 'xml']]]]];
-
-        $this->expectUserDeprecationMessage('Since doctrine/doctrine-bundle 3.4: The "doctrine.orm.entity_managers.default.mappings.XmlBundle.alias" option is deprecated and will be removed in DoctrineBundle 4.0, as Doctrine ORM no longer supports entity namespace aliases.');
-        $extension->load([$config], $container);
-
-        $definition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce(
-            $definition,
-            'setEntityNamespaces',
-            [['xml' => 'Fixtures\Bundles\XmlBundle\Entity']],
-        );
-    }
-
     public function testOverrideDefaultEntityManagerWithAdditionalConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -733,7 +670,7 @@ class DoctrineExtensionTest extends TestCase
         $extension = new DoctrineExtension();
 
         $extension->load([
-            ['dbal' => [], 'orm' => ['default_entity_manager' => 'app', 'entity_managers' => ['app' => ['mappings' => ['XmlBundle' => ['alias' => 'xml']]]]]],
+            ['dbal' => [], 'orm' => ['default_entity_manager' => 'app', 'entity_managers' => ['app' => ['mappings' => ['XmlBundle' => []]]]]],
             ['orm' => ['metadata_cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool']]],
         ], $container);
 

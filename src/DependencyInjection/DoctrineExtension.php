@@ -124,13 +124,6 @@ final class DoctrineExtension extends Extension
     /**
      * Used inside metadata driver method to simplify aggregation of data.
      *
-     * @var array<string, string> List of alias => namespace
-     */
-    private array $aliasMap = [];
-
-    /**
-     * Used inside metadata driver method to simplify aggregation of data.
-     *
      * @var array<string, array<string, string>> List of driver type => prefix => path
      */
     private array $drivers = [];
@@ -205,23 +198,6 @@ final class DoctrineExtension extends Extension
 
             $this->assertValidMappingConfiguration($mappingConfig, $objectManager['name']);
             $this->setMappingDriverConfig($mappingConfig, $mappingName);
-            $this->setMappingDriverAlias($mappingConfig, $mappingName);
-        }
-    }
-
-    /**
-     * Register the alias for this mapping driver.
-     *
-     * Aliases can be used in the Query languages of all the Doctrine object managers to simplify writing tasks.
-     *
-     * @param array<string, mixed> $mappingConfig
-     */
-    private function setMappingDriverAlias(array $mappingConfig, string $mappingName): void
-    {
-        if (isset($mappingConfig['alias'])) {
-            $this->aliasMap[$mappingConfig['alias']] = $mappingConfig['prefix'];
-        } else {
-            $this->aliasMap[$mappingName] = $mappingConfig['prefix'];
         }
     }
 
@@ -986,7 +962,7 @@ final class DoctrineExtension extends Extension
         $ormConfigDef = $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), new ChildDefinition('doctrine.orm.configuration'));
         $ormConfigDef->addTag(IdGeneratorPass::CONFIGURATION_TAG);
 
-        $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container);
+        $this->loadOrmEntityManagerMappingInformation($entityManager, $container);
         $this->loadOrmCacheDrivers($entityManager, $container);
 
         if (isset($entityManager['entity_listener_resolver']) && $entityManager['entity_listener_resolver']) {
@@ -1143,7 +1119,6 @@ final class DoctrineExtension extends Extension
      * 2. Specify an arbitrary mapping location.
      *
      * @param array<string, mixed> $entityManager A configured ORM entity manager
-     * @param Definition           $ormConfigDef  A Definition instance
      * @param ContainerBuilder     $container     A ContainerBuilder instance
      *
      * @example
@@ -1157,21 +1132,18 @@ final class DoctrineExtension extends Extension
      *         MyBundle5:
      *             type: xml
      *             dir: bundle-mappings/
-     *             alias: BundleAlias
      *         arbitrary_key:
      *             type: xml
      *             dir: %kernel.project_dir%/src/vendor/DoctrineExtensions/lib/DoctrineExtensions/Entities
      *             prefix: DoctrineExtensions\Entities\
-     *             alias: DExt
      *
      * In the case of bundles everything is really optional (which leads to autodetection for this bundle) but
-     * in the mappings key everything except alias is a required argument.
+     * in the mappings key type, dir and prefix are required arguments.
      */
-    private function loadOrmEntityManagerMappingInformation(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container): void
+    private function loadOrmEntityManagerMappingInformation(array $entityManager, ContainerBuilder $container): void
     {
-        // reset state of drivers and alias map. They are only used by this methods and children.
-        $this->drivers  = [];
-        $this->aliasMap = [];
+        // reset state of drivers. They are only used by this method and children.
+        $this->drivers = [];
 
         $this->loadMappingInformation($entityManager, $container);
         $this->registerMappingDrivers($entityManager, $container);
@@ -1198,8 +1170,6 @@ final class DoctrineExtension extends Extension
 
             $mappingDriverDef->setArguments($args);
         }
-
-        $ormConfigDef->addMethodCall('setEntityNamespaces', [$this->aliasMap]);
     }
 
     /** @param array<string, mixed> $entityManager A configured ORM entity manager */
