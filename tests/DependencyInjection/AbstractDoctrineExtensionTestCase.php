@@ -1240,7 +1240,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         }
 
         $this->assertTrue(
-            $this->loadContainer('orm_filters')->get('doctrine.orm.entity_manager')
+            $this->loadContainer('orm_native_lazy_objects_default')->get('doctrine.orm.entity_manager')
                 ->getConfiguration()->isNativeLazyObjectsEnabled(),
         );
     }
