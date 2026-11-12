@@ -24,10 +24,8 @@ class ManagerConfigurator
 
     /**
      * Create a connection by name.
-     *
-     * @return void
      */
-    public function configure(EntityManagerInterface $entityManager)
+    public function configure(EntityManagerInterface $entityManager): void
     {
         $this->enableFilters($entityManager);
     }

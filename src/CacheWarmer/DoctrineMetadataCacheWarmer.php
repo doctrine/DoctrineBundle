@@ -6,13 +6,12 @@ namespace Doctrine\Bundle\DoctrineBundle\CacheWarmer;
 
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
-use Symfony\Bundle\FrameworkBundle\CacheWarmer\AbstractPhpFileCacheWarmer;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 use function is_file;
 
-/** @final since 2.11 */
-class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
+/** @internal */
+final class DoctrineMetadataCacheWarmer extends BaseCacheWarmer
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -21,12 +20,9 @@ class DoctrineMetadataCacheWarmer extends AbstractPhpFileCacheWarmer
         parent::__construct($phpArrayFile);
     }
 
-    /**
-     * It must not be optional because it should be called before ProxyCacheWarmer which is not optional.
-     */
     public function isOptional(): bool
     {
-        return false;
+        return true;
     }
 
     protected function doWarmUp(string $cacheDir, ArrayAdapter $arrayAdapter, string|null $buildDir = null): bool

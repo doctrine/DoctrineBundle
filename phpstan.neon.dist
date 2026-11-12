@@ -1,24 +1,51 @@
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
 parameters:
-   level: 5
+   level: 8
+   reportUnmatchedIgnoredErrors: true
+   ignoreErrors:
+      # The DBAL messenger middlewares exist since symfony/doctrine-bridge 8.2, which is not released yet
+      -
+         message: '~^Class Symfony\\Bridge\\Doctrine\\Messenger\\DoctrineDbal\w+Middleware not found\.$~'
+         identifier: class.notFound
+         reportUnmatched: false
+      # The method_exists() check is always true when symfony/config provides the method, and the
+      # method is added in Symfony 8.2. The entry is unmatched with a version that does not have it.
+      -
+         message: '#^Call to function method_exists\(\) with .* and .*acceptElementsAtPar.* will always evaluate to true\.$#'
+         identifier: function.alreadyNarrowedType
+         path: src/DependencyInjection/Configuration.php
+         reportUnmatched: false
+      # The Schema::edit() method exists since doctrine/dbal 4.5, so this check is impossible or
+      # always true depending on the installed version.
+      -
+         message: '#^Call to function method_exists\(\) with .*Schema.* and .edit. will always evaluate to false\.$#'
+         identifier: function.impossibleType
+         path: src/DependencyInjection/Configuration.php
+         reportUnmatched: false
+      -
+         message: '#^Call to function method_exists\(\) with .*Schema.* and .edit. will always evaluate to true\.$#'
+         identifier: function.alreadyNarrowedType
+         path: src/DependencyInjection/Configuration.php
+         reportUnmatched: false
+      # Configuration::setUseSchemaEditorApi() exists since doctrine/orm 3.8, so this check is impossible or
+      # always true depending on the installed version.
+      -
+         message: '#^Call to function method_exists\(\) with .*Configuration.* and .setUseSchemaEditorA.* will always evaluate to false\.$#'
+         identifier: function.impossibleType
+         path: src/DependencyInjection/DoctrineExtension.php
+         reportUnmatched: false
+      -
+         message: '#^Call to function method_exists\(\) with .*Configuration.* and .setUseSchemaEditorA.* will always evaluate to true\.$#'
+         identifier: function.alreadyNarrowedType
+         path: src/DependencyInjection/DoctrineExtension.php
+         reportUnmatched: false
    paths:
       - config
       - src
       - tests
-
-   excludePaths:
-      - src/Command/Proxy/ConvertMappingDoctrineCommand.php
-      - src/Command/Proxy/EnsureProductionSettingsDoctrineCommand.php
-   ignoreErrors:
-    # Available in DBAL < 4 only
-    - message: '#((Mysql|Oracle)SessionInit|LegacySchemaManagerFactory)#'
-      identifier: class.notFound
-    # Available in ORM < 3 only
-    - '#Doctrine\\ORM\\Tools\\EntityGenerator.#'
-    - '#Doctrine\\ORM\\Tools\\DisconnectedClassMetadataFactory.#'
-    - '#Doctrine\\ORM\\Tools\\Export\\ClassMetadataExporter.#'
-    # Available in doctrine/persistence < 4 only
-    - message: '#((Annotation|SimplifiedYaml)Driver|(ConvertMapping|EnsureProductionSettings)Command|ManagerRegistry)#'
-      identifier: class.notFound
-    # phpstan has no array shape intersection support https://github.com/phpstan/phpstan/issues/12414
-    - message: '#unresolvable type.#'
-      path: src/DataCollector/DoctrineDataCollector.php
+   scanFiles:
+      - vendor/symfony/dependency-injection/Loader/Configurator/ContainerConfigurator.php
+   symfony:
+       constantHassers: false
+       containerXmlPath: var/cache/test/Doctrine_Bundle_DoctrineBundle_Tests_DependencyInjection_Fixtures_TestKernelTestDebugContainer.xml

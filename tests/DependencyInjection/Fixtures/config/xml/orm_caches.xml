@@ -8,10 +8,6 @@
 
     <srv:services>
         <srv:service id="cache.psr6" class="Symfony\Component\Cache\Adapter\ArrayAdapter"/>
-        <srv:service id="cache.doctrine" class="Doctrine\Common\Cache\Psr6\DoctrineProvider">
-            <srv:factory class="Doctrine\Common\Cache\Psr6\DoctrineProvider" method="wrap"/>
-            <srv:argument type="service" id="cache.psr6"/>
-        </srv:service>
     </srv:services>
 
     <config>
@@ -27,9 +23,6 @@
             <entity-manager name="metadata_cache_service_psr6">
                 <metadata-cache-driver type="service" id="cache.psr6"/>
             </entity-manager>
-            <entity-manager name="metadata_cache_service_doctrine">
-                <metadata-cache-driver type="service" id="cache.doctrine"/>
-            </entity-manager>
 
             <entity-manager name="query_cache_pool">
                 <query-cache-driver type="pool" pool="cache.psr6"/>
@@ -37,18 +30,12 @@
             <entity-manager name="query_cache_service_psr6">
                 <query-cache-driver type="service" id="cache.psr6"/>
             </entity-manager>
-            <entity-manager name="query_cache_service_doctrine">
-                <query-cache-driver type="service" id="cache.doctrine"/>
-            </entity-manager>
 
             <entity-manager name="result_cache_pool">
                 <result-cache-driver type="pool" pool="cache.psr6"/>
             </entity-manager>
             <entity-manager name="result_cache_service_psr6">
                 <result-cache-driver type="service" id="cache.psr6"/>
-            </entity-manager>
-            <entity-manager name="result_cache_service_doctrine">
-                <result-cache-driver type="service" id="cache.doctrine"/>
             </entity-manager>
 
             <entity-manager name="second_level_cache_pool">
@@ -59,11 +46,6 @@
             <entity-manager name="second_level_cache_service_psr6">
                 <second-level-cache enabled="true">
                     <region-cache-driver type="service" id="cache.psr6"/>
-                </second-level-cache>
-            </entity-manager>
-            <entity-manager name="second_level_cache_service_doctrine">
-                <second-level-cache enabled="true">
-                    <region-cache-driver type="service" id="cache.doctrine"/>
                 </second-level-cache>
             </entity-manager>
         </orm>

@@ -5,20 +5,18 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\ORMException;
+use Doctrine\Persistence\Mapping\Driver\MappingDriver;
+use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\Proxy;
-use ProxyManager\Proxy\LazyLoadingInterface;
+use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
-use function array_keys;
 use function assert;
 use function method_exists;
-
-use const PHP_VERSION_ID;
 
 /**
  * References all Doctrine connections and entity managers in a given Container.
@@ -26,9 +24,10 @@ use const PHP_VERSION_ID;
 class Registry extends ManagerRegistry implements ResetInterface
 {
     /**
-     * @param string[]              $connections
-     * @param string[]              $entityManagers
-     * @param array<string, string> $decoratedManagers Inner service id of each decorated entity manager, keyed by its service id
+     * @param string[]                $connections
+     * @param string[]                $entityManagers
+     * @param ContainerInterface|null $metadataDrivers   The metadata drivers of the entity managers, by manager name, used to find the manager of a class without initializing lazy managers
+     * @param array<string, string>   $decoratedManagers Inner service id of each decorated entity manager, keyed by its service id
      */
     public function __construct(
         Container $container,
@@ -36,6 +35,7 @@ class Registry extends ManagerRegistry implements ResetInterface
         array $entityManagers,
         string $defaultConnection,
         string $defaultEntityManager,
+        private readonly ContainerInterface|null $metadataDrivers = null,
         private readonly array $decoratedManagers = [],
     ) {
         $this->container = $container;
@@ -43,36 +43,30 @@ class Registry extends ManagerRegistry implements ResetInterface
         parent::__construct('ORM', $connections, $entityManagers, $defaultConnection, $defaultEntityManager, Proxy::class);
     }
 
-    /**
-     * Resolves a registered namespace alias to the full namespace.
-     *
-     * This method looks for the alias in all registered entity managers.
-     *
-     * @see Configuration::getEntityNamespace
-     *
-     * @param string $alias The alias
-     *
-     * @return string The full namespace
-     */
-    public function getAliasNamespace($alias)
+    public function getManagerForClass(string $class): ObjectManager|null
     {
-        foreach (array_keys($this->getManagers()) as $name) {
-            $objectManager = $this->getManager($name);
+        if ($this->metadataDrivers === null) {
+            return parent::getManagerForClass($class);
+        }
 
-            if (! $objectManager instanceof EntityManagerInterface) {
+        $reflection = new ReflectionClass($class);
+
+        if ($reflection->isAnonymous() || $reflection->implementsInterface(Proxy::class)) {
+            return parent::getManagerForClass($class);
+        }
+
+        foreach ($this->getManagerNames() as $name => $serviceId) {
+            if ($this->isTransient($class, $name, $serviceId)) {
                 continue;
             }
 
-            try {
-                /** @phpstan-ignore method.notFound (ORM < 3 specific) */
-                return $objectManager->getConfiguration()->getEntityNamespace($alias);
-            /* @phpstan-ignore class.notFound */
-            } catch (ORMException) {
-            }
+            $manager = $this->getService($serviceId);
+            assert($manager instanceof ObjectManager);
+
+            return $manager;
         }
 
-        /* @phpstan-ignore class.notFound */
-        throw ORMException::unknownEntityNamespace($alias);
+        return null;
     }
 
     public function reset(): void
@@ -82,7 +76,12 @@ class Registry extends ManagerRegistry implements ResetInterface
         }
     }
 
-    /** @param string $name */
+    /**
+     * The parent method is untyped, a native type hint would break the signature compatibility.
+     *
+     * @param string $name
+     */
+    // phpcs:ignore SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
     protected function resetService($name): void
     {
         // Resetting a decorator would only rebuild it around the very same manager instance
@@ -103,11 +102,11 @@ class Registry extends ManagerRegistry implements ResetInterface
         /** @phpstan-ignore function.alreadyNarrowedType */
         $sfNativeLazyObjects = method_exists('Symfony\Component\DependencyInjection\ContainerBuilder', 'findTaggedResourceIds');
 
-        if (PHP_VERSION_ID < 80400 || ! $sfNativeLazyObjects) {
+        if (! $sfNativeLazyObjects) {
             // A decorator is not a lazy object: check the manager it decorates, which is what resetService() resets
             $innerManager = isset($this->decoratedManagers[$serviceId]) ? $this->container->get($this->decoratedManagers[$serviceId]) : $manager;
 
-            if ((! $innerManager instanceof LazyLoadingInterface && ! $innerManager instanceof LazyObjectInterface) || $manager->isOpen()) {
+            if (! $innerManager instanceof LazyObjectInterface || $manager->isOpen()) {
                 $manager->clear();
 
                 return;
@@ -126,5 +125,36 @@ class Registry extends ManagerRegistry implements ResetInterface
         }
 
         $this->resetManager($managerName);
+    }
+
+    /** @param class-string $class */
+    private function isTransient(string $class, string $name, string $serviceId): bool
+    {
+        if ($this->metadataDrivers?->has($name) && $this->isUninitialized($serviceId)) {
+            $driver = $this->metadataDrivers->get($name);
+            assert($driver instanceof MappingDriver);
+
+            return $driver->isTransient($class);
+        }
+
+        $manager = $this->getService($serviceId);
+        assert($manager instanceof ObjectManager);
+
+        return $manager->getMetadataFactory()->isTransient($class);
+    }
+
+    private function isUninitialized(string $serviceId): bool
+    {
+        if (! $this->container->initialized($serviceId)) {
+            return true;
+        }
+
+        $manager = $this->container->get($serviceId);
+
+        if ($manager instanceof LazyObjectInterface) {
+            return ! $manager->isLazyObjectInitialized();
+        }
+
+        return (new ReflectionClass($manager))->isUninitializedLazyObject($manager);
     }
 }

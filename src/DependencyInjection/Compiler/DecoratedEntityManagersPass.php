@@ -51,7 +51,7 @@ final class DecoratedEntityManagersPass implements CompilerPassInterface
             return;
         }
 
-        $container->getDefinition('doctrine')->setArgument(5, $decoratedManagers);
+        $container->getDefinition('doctrine')->setArgument(6, $decoratedManagers);
     }
 
     /** Returns the id of the innermost service wrapped by the given decorator, or null when the definition is not a decorator. */

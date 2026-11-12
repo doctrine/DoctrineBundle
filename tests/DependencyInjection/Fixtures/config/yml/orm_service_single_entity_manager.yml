@@ -11,8 +11,6 @@ doctrine:
 
     orm:
         default_entity_manager: default
-        proxy_namespace: Proxies
-        auto_generate_proxy_classes: true
         entity_managers:
             default:
                 connection: default

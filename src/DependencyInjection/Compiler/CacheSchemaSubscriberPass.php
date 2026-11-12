@@ -14,12 +14,11 @@ use Symfony\Component\DependencyInjection\Reference;
  *
  * Must be run later after ResolveChildDefinitionsPass.
  *
- * @final since 2.9
+ * @internal
  */
-class CacheSchemaSubscriberPass implements CompilerPassInterface
+final class CacheSchemaSubscriberPass implements CompilerPassInterface
 {
-    /** @return void */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         if (! $container->hasDefinition('doctrine.orm.listeners.doctrine_dbal_cache_adapter_schema_listener')) {
             return;

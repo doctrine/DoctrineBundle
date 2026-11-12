@@ -160,7 +160,7 @@ EXCEPTION);
         return $container;
     }
 
-    /** @param array<class-string, ?string> $entityRepositoryClasses */
+    /** @param array<class-string, class-string<EntityRepository<object>>> $entityRepositoryClasses */
     private function createEntityManager(array $entityRepositoryClasses): EntityManagerInterface
     {
         $classMetadatas = [];

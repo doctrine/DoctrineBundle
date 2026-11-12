@@ -25,8 +25,6 @@ names and the names used by this bundle:
 +--------------------------------------------+---------------------------------------+
 | Bundle Command Name                        | Original Doctrine Command Name        |
 +============================================+=======================================+
-| ``doctrine:query:sql``                     | ``dbal:run-sql``                      |
-+--------------------------------------------+---------------------------------------+
 | ``doctrine:cache:clear-metadata``          | ``orm:clear-cache:metadata``          |
 +--------------------------------------------+---------------------------------------+
 | ``doctrine:cache:clear-query``             | ``orm:clear-cache:query``             |
@@ -39,15 +37,11 @@ names and the names used by this bundle:
 +--------------------------------------------+---------------------------------------+
 | ``doctrine:cache:clear-query-region``      | ``orm:clear-cache:region:query``      |
 +--------------------------------------------+---------------------------------------+
-| ``doctrine:mapping:convert``               | ``orm:convert-mapping``               |
-+--------------------------------------------+---------------------------------------+
 | ``doctrine:schema:create``                 | ``orm:schema-tool:create``            |
 +--------------------------------------------+---------------------------------------+
 | ``doctrine:schema:drop``                   | ``orm:schema-tool:drop``              |
 +--------------------------------------------+---------------------------------------+
 | ``doctrine:schema:update``                 | ``orm:schema-tool:update``            |
-+--------------------------------------------+---------------------------------------+
-| ``doctrine:ensure-production-settings``    | ``orm:ensure-production-settings``    |
 +--------------------------------------------+---------------------------------------+
 | ``doctrine:mapping:info``                  | ``orm:info``                          |
 +--------------------------------------------+---------------------------------------+
@@ -62,7 +56,6 @@ Additionally, the bundle provides the following commands:
 
 - ``doctrine:database:create``
 - ``doctrine:database:drop``
-- ``doctrine:mapping:import``
 
 To get a list of all available Doctrine commands, run:
 

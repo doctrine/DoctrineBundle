@@ -35,6 +35,7 @@ jobs:
       ) }}
       ${{ matrix.remove-orm && ' - remove ORM' }}
       ${{ matrix.remove-doctrine-messenger && ' - remove Messenger' }}
+      ${{ matrix.orm-version && format(' - ORM {0}', matrix.orm-version) }}
     runs-on: "ubuntu-latest"
     env:
       SYMFONY_REQUIRE: ${{matrix.symfony-require}}
@@ -44,9 +45,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.1"
-          - "8.2"
-          - "8.3"
           - "8.4"
         dependencies:
           - "highest"
@@ -61,16 +59,20 @@ jobs:
         include:
           # Tests the lowest set of dependencies
           - dependencies: "lowest"
-            stability: "stable"
-            php-version: "8.1"
+            php-version: "8.4"
 
-          # Test old LTS
+          # Test legacy LTS
           - symfony-require: "6.4.*"
             dependencies: "highest"
             php-version: "8.5"
 
           # Test LTS
           - symfony-require: "7.4.*"
+            dependencies: "highest"
+            php-version: "8.5"
+
+          # Test non-LTS
+          - symfony-require: "8.1.*"
             dependencies: "highest"
             php-version: "8.5"
 
@@ -83,13 +85,19 @@ jobs:
           # No Messenger integration
           - php-version: "8.5"
             dependencies: "highest"
-            stability: "stable"
             remove-doctrine-messenger: true
 
           # Bleeding edge
           - php-version: "8.5"
             dependencies: "highest"
             stability: "dev"
+
+          # Doctrine ORM before 3.8 reads the global type registry instead of the type
+          # provider of the connection.
+          - php-version: "8.5"
+            dependencies: "highest"
+            stability: "dev"
+            orm-version: "~3.7.5"
 
     steps:
       - name: "Checkout"
@@ -122,7 +130,9 @@ jobs:
         uses: "ramsey/composer-install@v4"
         with:
           dependency-versions: "${{ matrix.dependencies }}"
-          composer-options: "--prefer-dist"
+          # The temporary constraint combines with the one of composer.json instead of
+          # replacing it.
+          composer-options: "--prefer-dist ${{ matrix.orm-version && format('--with=doctrine/orm:{0}', matrix.orm-version) }}"
 
       - name: "Run PHPUnit"
         run: "vendor/bin/phpunit --coverage-clover=coverage.xml"

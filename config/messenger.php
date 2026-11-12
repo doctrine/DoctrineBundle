@@ -6,10 +6,15 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Symfony\Bridge\Doctrine\Messenger\DoctrineClearEntityManagerWorkerSubscriber;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineCloseConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalCloseConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalOpenTransactionLoggerMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalPingConnectionMiddleware;
+use Symfony\Bridge\Doctrine\Messenger\DoctrineDbalTransactionMiddleware;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineOpenTransactionLoggerMiddleware;
 use Symfony\Bridge\Doctrine\Messenger\DoctrinePingConnectionMiddleware;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineTransactionMiddleware;
 use Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaListener;
+use Symfony\Component\Messenger\Bridge\Doctrine\EventListener\PostgreSqlNotifyOnIdleListener;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 
 return static function (ContainerConfigurator $container): void {
@@ -21,13 +26,31 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
             ])
 
+        ->set('messenger.middleware.doctrine_dbal_transaction', DoctrineDbalTransactionMiddleware::class)
+            ->abstract()
+            ->args([
+                service('doctrine'),
+            ])
+
         ->set('messenger.middleware.doctrine_ping_connection', DoctrinePingConnectionMiddleware::class)
             ->abstract()
             ->args([
                 service('doctrine'),
             ])
 
+        ->set('messenger.middleware.doctrine_dbal_ping_connection', DoctrineDbalPingConnectionMiddleware::class)
+            ->abstract()
+            ->args([
+                service('doctrine'),
+            ])
+
         ->set('messenger.middleware.doctrine_close_connection', DoctrineCloseConnectionMiddleware::class)
+            ->abstract()
+            ->args([
+                service('doctrine'),
+            ])
+
+        ->set('messenger.middleware.doctrine_dbal_close_connection', DoctrineDbalCloseConnectionMiddleware::class)
             ->abstract()
             ->args([
                 service('doctrine'),
@@ -41,6 +64,13 @@ return static function (ContainerConfigurator $container): void {
                 service('logger'),
             ])
 
+        ->set('messenger.middleware.doctrine_dbal_open_transaction_logger', DoctrineDbalOpenTransactionLoggerMiddleware::class)
+            ->abstract()
+            ->args([
+                service('doctrine'),
+                service('logger'),
+            ])
+
         ->set('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager', DoctrineClearEntityManagerWorkerSubscriber::class)
             ->tag('kernel.event_subscriber')
             ->args([
@@ -51,6 +81,7 @@ return static function (ContainerConfigurator $container): void {
             ->tag('messenger.transport_factory')
             ->args([
                 service('doctrine'),
+                service('messenger.transport.doctrine.pg_notify_on_idle_listener')->ignoreOnInvalid(),
             ])
 
         ->set('doctrine.orm.messenger.doctrine_schema_listener', MessengerTransportDoctrineSchemaListener::class)
@@ -58,5 +89,12 @@ return static function (ContainerConfigurator $container): void {
                 tagged_iterator('messenger.receiver'),
             ])
             ->tag('doctrine.event_listener', ['event' => 'postGenerateSchema'])
-            ->tag('doctrine.event_listener', ['event' => 'onSchemaCreateTable']);
+            ->tag('doctrine.event_listener', ['event' => 'onSchemaCreateTable'])
+
+        ->set('messenger.transport.doctrine.pg_notify_on_idle_listener', PostgreSqlNotifyOnIdleListener::class)
+            ->args([
+                service('logger'),
+                service('clock')->ignoreOnInvalid(),
+            ])
+            ->tag('kernel.event_subscriber');
 };

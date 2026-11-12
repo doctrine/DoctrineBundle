@@ -26,3 +26,20 @@ deprecated. You should stop using it as soon as you upgrade to Doctrine DBAL 4.
 
 This option is a no-op when using `doctrine/dbal` 4 and has been conditionally
 deprecated. You should stop using it as soon as you upgrade to Doctrine DBAL 4.
+
+ConnectionFactory::createConnection() signature change
+------------------------------------------------------
+
+The signature of `ConnectionFactory::createConnection()` will change with
+version 3.0 of the bundle.
+
+As soon as you upgrade to Doctrine DBAL 4, you should use stop passing an event
+manager argument.
+
+```diff
+- $connectionFactory->createConnection($params, $config, $eventManager, $mappingTypes)
++ $connectionFactory->createConnection($params, $config, $mappingTypes)
+```
+
+As a small breaking change, it is no longer fully possible to use named
+arguments with that method until 3.0.

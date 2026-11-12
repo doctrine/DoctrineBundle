@@ -46,7 +46,7 @@ final class RemoveLoggingMiddlewarePassTest extends TestCase
 
         $container->addCompilerPass(new RemoveLoggingMiddlewarePass());
         $container->addCompilerPass(new class implements CompilerPassInterface {
-            public function process(ContainerBuilder $container)
+            public function process(ContainerBuilder $container): void
             {
                 if (! $container->hasDefinition('doctrine.dbal.logging_middleware')) {
                     return;

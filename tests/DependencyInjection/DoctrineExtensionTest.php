@@ -5,53 +5,42 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection;
 
 use Closure;
+use Composer\InstalledVersions;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\CacheCompatibilityPass;
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityAutoDiscoveryPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalType;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\DbalTypeNoName;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EntityListener;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EventListener;
-use Doctrine\Bundle\DoctrineBundle\Tests\DeprecationFreeConfig;
-use Doctrine\Common\Cache\ApcCache;
-use Doctrine\Common\Cache\ArrayCache;
-use Doctrine\Common\Cache\Cache;
-use Doctrine\Common\Cache\MemcacheCache;
-use Doctrine\Common\Cache\XcacheCache;
 use Doctrine\DBAL\Connection;
 use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
-use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
-use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
-use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
-use Doctrine\ORM\Cache\Region\DefaultRegion;
-use Doctrine\ORM\Cache\Region\FileLockRegion;
-use Doctrine\ORM\Cache\RegionsConfiguration;
-use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
-use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
-use Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver;
 use Doctrine\ORM\Mapping\Embeddable;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\MappedSuperclass;
-use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
-use Generator;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\Attributes\RequiresMethod;
-use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionParameter;
+use ReflectionUnionType;
+use Symfony\Bridge\Doctrine\ArgumentResolver\Console\EntityValueResolver as ConsoleEntityValueResolver;
 use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Driver;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
@@ -62,6 +51,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\ExpressionLanguage\CompiledExpressionLanguage;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -74,8 +64,7 @@ use function is_dir;
 use function method_exists;
 use function sprintf;
 use function sys_get_temp_dir;
-
-use const PHP_VERSION_ID;
+use function version_compare;
 
 class DoctrineExtensionTest extends TestCase
 {
@@ -107,7 +96,7 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
-    public function testConnectionAutowiringAlias()
+    public function testConnectionAutowiringAlias(): void
     {
         $container = $this->getContainer();
         $extension = new DoctrineExtension();
@@ -137,7 +126,7 @@ class DoctrineExtensionTest extends TestCase
         }
     }
 
-    public function testEntityManagerAutowiringAlias()
+    public function testEntityManagerAutowiringAlias(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -269,6 +258,78 @@ class DoctrineExtensionTest extends TestCase
         $extension->load([['orm' => ['auto_mapping' => true]]], $this->getContainer());
     }
 
+    public function testAutoDiscoverEntities(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $extension = new DoctrineExtension();
+        $container = $this->getContainer();
+        $config    = [
+            'dbal' => [],
+            'orm' => ['auto_discover_entities' => true],
+        ];
+
+        if (! self::supportsAutoDiscovery()) {
+            $this->expectException(LogicException::class);
+            $this->expectExceptionMessage('The "auto_discover_entities" option requires');
+
+            $extension->load([$config], $container);
+
+            return;
+        }
+
+        $extension->load([$config], $container);
+
+        $locatorId = 'doctrine.orm.default_auto_discover_class_locator';
+        self::assertTrue($container->getDefinition($locatorId)->hasTag(EntityAutoDiscoveryPass::TAG));
+
+        $driverDef = $container->getDefinition('doctrine.orm.default_auto_discover_metadata_driver');
+        self::assertSame(AttributeDriver::class, $driverDef->getClass());
+        self::assertEquals([new Reference($locatorId)], $driverDef->getArguments());
+
+        self::assertContainsEquals(
+            ['setDefaultDriver', [new Reference('doctrine.orm.default_auto_discover_metadata_driver')]],
+            $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls(),
+        );
+    }
+
+    public function testAutoDiscoverEntitiesIsEnabledWhenNoMappingIsConfigured(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        (new DoctrineExtension())->load([['dbal' => [], 'orm' => []]], $container);
+
+        self::assertSame(self::supportsAutoDiscovery(), $container->hasDefinition('doctrine.orm.default_auto_discover_class_locator'));
+    }
+
+    /** @param array<string, mixed> $ormConfig */
+    #[TestWith([['auto_mapping' => true]])]
+    #[TestWith([['mappings' => ['XmlBundle' => null]]])]
+    #[TestWith([['auto_discover_entities' => false]])]
+    public function testAutoDiscoverEntitiesStaysOff(array $ormConfig): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer(['XmlBundle']);
+        (new DoctrineExtension())->load([['dbal' => [], 'orm' => $ormConfig]], $container);
+
+        self::assertFalse($container->hasDefinition('doctrine.orm.default_auto_discover_class_locator'));
+    }
+
+    private static function supportsAutoDiscovery(): bool
+    {
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        return method_exists(ContainerBuilder::class, 'findTaggedResourceIds')
+            && (new ReflectionParameter([AttributeDriver::class, '__construct'], 'paths'))->getType() instanceof ReflectionUnionType;
+    }
+
     /** @return mixed[][][][] */
     public static function getAutomappingConfigurations(): array
     {
@@ -322,7 +383,6 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load(
             [
-                DeprecationFreeConfig::get(),
                 [
                     'dbal' => [
                         'default_connection' => 'cn1',
@@ -417,44 +477,7 @@ class DoctrineExtensionTest extends TestCase
 
         $extension->load([$config], $container);
 
-        $this->assertFalse($container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
-        $this->assertEquals(Configuration::class, $container->getParameter('doctrine.orm.configuration.class'));
-        $this->assertEquals(EntityManager::class, $container->getParameter('doctrine.orm.entity_manager.class'));
-        $this->assertEquals('Proxies', $container->getParameter('doctrine.orm.proxy_namespace'));
-        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
-        /* @phpstan-ignore class.notFound */
-        $this->assertEquals(ArrayCache::class, $container->getParameter('doctrine.orm.cache.array.class'));
-        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
-        /* @phpstan-ignore class.notFound */
-        $this->assertEquals(ApcCache::class, $container->getParameter('doctrine.orm.cache.apc.class'));
-        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
-        /* @phpstan-ignore class.notFound */
-        $this->assertEquals(MemcacheCache::class, $container->getParameter('doctrine.orm.cache.memcache.class'));
-        $this->assertEquals('localhost', $container->getParameter('doctrine.orm.cache.memcache_host'));
-        $this->assertEquals('11211', $container->getParameter('doctrine.orm.cache.memcache_port'));
-        $this->assertEquals('Memcache', $container->getParameter('doctrine.orm.cache.memcache_instance.class'));
-        /** @psalm-suppress UndefinedClass Remove in doctrine/doctrine-bundle 3.0 */
-        /* @phpstan-ignore class.notFound */
-        $this->assertEquals(XcacheCache::class, $container->getParameter('doctrine.orm.cache.xcache.class'));
-        $this->assertEquals(MappingDriverChain::class, $container->getParameter('doctrine.orm.metadata.driver_chain.class'));
-        /* @phpstan-ignore class.notFound */
-        $this->assertEquals(AnnotationDriver::class, $container->getParameter('doctrine.orm.metadata.annotation.class'));
-        $this->assertEquals(SimplifiedXmlDriver::class, $container->getParameter('doctrine.orm.metadata.xml.class'));
-        /* @phpstan-ignore class.notFound */
-        $this->assertEquals(SimplifiedYamlDriver::class, $container->getParameter('doctrine.orm.metadata.yml.class'));
-
-        // second-level cache
-        $this->assertEquals(DefaultCacheFactory::class, $container->getParameter('doctrine.orm.second_level_cache.default_cache_factory.class'));
-        $this->assertEquals(DefaultRegion::class, $container->getParameter('doctrine.orm.second_level_cache.default_region.class'));
-        $this->assertEquals(FileLockRegion::class, $container->getParameter('doctrine.orm.second_level_cache.filelock_region.class'));
-        $this->assertEquals(CacheLoggerChain::class, $container->getParameter('doctrine.orm.second_level_cache.logger_chain.class'));
-        $this->assertEquals(StatisticsCacheLogger::class, $container->getParameter('doctrine.orm.second_level_cache.logger_statistics.class'));
-        $this->assertEquals(CacheConfiguration::class, $container->getParameter('doctrine.orm.second_level_cache.cache_configuration.class'));
-        $this->assertEquals(RegionsConfiguration::class, $container->getParameter('doctrine.orm.second_level_cache.regions_configuration.class'));
-
-        /** @phpstan-ignore function.alreadyNarrowedType */
-        $enableNativeLazyObjects = PHP_VERSION_ID >= 80400 && method_exists(Configuration::class, 'enableNativeLazyObjects');
-        $config                  = BundleConfigurationBuilder::createBuilder()
+        $config = BundleConfigurationBuilder::createBuilder()
             ->addBaseConnection()
             ->addEntityManager([
                 'default_entity_manager' => 'default',
@@ -463,10 +486,7 @@ class DoctrineExtensionTest extends TestCase
                         'mappings' => ['XmlBundle' => []],
                     ],
                 ],
-            ] + ($enableNativeLazyObjects ? [] : [
-                'auto_generate_proxy_classes' => true,
-                'proxy_namespace' => 'MyProxies',
-            ]))
+            ])
             ->build();
 
         $container = $this->getContainer();
@@ -480,18 +500,15 @@ class DoctrineExtensionTest extends TestCase
         $this->assertEquals('localhost', $args[0]['host']);
         $this->assertEquals('root', $args[0]['user']);
         $this->assertEquals('doctrine.dbal.default_connection.configuration', (string) $args[1]);
-        if (method_exists(Connection::class, 'getEventManager')) {
-            $this->assertEquals('doctrine.dbal.default_connection.event_manager', (string) $args[2]);
-        }
-
         $this->assertCount(0, $definition->getMethodCalls());
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        $this->assertEquals(EntityManager::class, $definition->getClass());
 
         $this->assertNull($definition->getFactory());
 
         $this->assertEquals(['default' => 'doctrine.orm.default_entity_manager'], $container->getParameter('doctrine.entity_managers'), 'Set of the existing EntityManagers names is incorrect.');
+        $this->assertEquals(['default' => 'default'], $container->getParameter('doctrine.entity_manager_connections'), 'Set of the connections used by the EntityManagers is incorrect.');
         $this->assertEquals('%doctrine.entity_managers%', $container->getDefinition('doctrine')->getArgument(2), 'Set of the existing EntityManagers names is incorrect.');
 
         $arguments = $definition->getArguments();
@@ -547,100 +564,6 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame(ArrayAdapter::class, $definition->getClass());
     }
 
-    #[IgnoreDeprecations]
-    public function testUseSavePointsAddMethodCallToAddSavepointsToTheConnection(): void
-    {
-        $container = $this->getContainer();
-        $extension = new DoctrineExtension();
-
-        $extension->load([
-            [
-                'dbal' => [
-                    'connections' => [
-                        'default' => ['password' => 'foo', 'use_savepoints' => true],
-                    ],
-                ],
-            ],
-        ], $container);
-
-        $isUsingDBAL3 = method_exists(Connection::class, 'getEventManager');
-
-        $calls = $container->getDefinition('doctrine.dbal.default_connection')->getMethodCalls();
-        $this->assertCount((int) $isUsingDBAL3, $calls);
-        if (! $isUsingDBAL3) {
-            return;
-        }
-
-        $this->assertEquals('setNestTransactionsWithSavepoints', $calls[0][0]);
-        $this->assertTrue($calls[0][1][0]);
-    }
-
-    /** @param array<string, mixed> $settings */
-    #[IgnoreDeprecations]
-    #[RequiresPhp('>=8.4.0')]
-    #[RequiresMethod(Configuration::class, 'enableNativeLazyObjects')]
-    #[DataProvider('proxySettingsProvider')]
-    public function testProxySettingsAreConditionallyDeprecated(array $settings): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $container = $this->getContainer();
-        $extension = new DoctrineExtension();
-
-        $this->expectDeprecationWithIdentifier('https://github.com/doctrine/DoctrineBundle/issues/2107');
-
-        $config = BundleConfigurationBuilder::createBuilder()
-            ->addBaseConnection()
-            ->addEntityManager([
-                'default_entity_manager' => 'default',
-                'entity_managers' => [
-                    'default' => [],
-                ],
-            ] + $settings)
-            ->build();
-
-        $extension->load([$config], $container);
-    }
-
-    /** @return Generator<string, array{array<string, mixed>}> */
-    public static function proxySettingsProvider(): Generator
-    {
-        yield 'auto_generate_proxy_classes' => [['auto_generate_proxy_classes' => true]];
-        yield 'proxy_namespace' => [['proxy_namespace' => 'MyProxies']];
-        yield 'proxy_dir' => [['proxy_dir' => sys_get_temp_dir()]];
-    }
-
-    #[IgnoreDeprecations]
-    public function testAutoGenerateProxyClasses(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $container = $this->getContainer();
-        $extension = new DoctrineExtension();
-
-        $config = BundleConfigurationBuilder::createBuilder()
-            ->addBaseConnection()
-            ->addEntityManager([
-                'proxy_namespace' => 'MyProxies',
-                'auto_generate_proxy_classes' => 'eval',
-                'default_entity_manager' => 'default',
-                'entity_managers' => [
-                    'default' => [
-                        'mappings' => ['XmlBundle' => []],
-                    ],
-                ],
-            ])
-            ->build();
-
-        $extension->load([$config], $container);
-
-        $this->assertEquals(3 /* \Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_EVAL */, $container->getParameter('doctrine.orm.auto_generate_proxy_classes'));
-    }
-
     public function testSingleEntityManagerWithDefaultConfiguration(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -656,7 +579,7 @@ class DoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        $this->assertEquals(EntityManager::class, $definition->getClass());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -665,6 +588,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
     }
 
+    /** @param array<mixed>|null $ormConfiguration */
     #[TestWith([[]])]
     #[TestWith([null])]
     public function testSingleEntityManagerWithEmptyConfiguration(array|null $ormConfiguration): void
@@ -677,7 +601,6 @@ class DoctrineExtensionTest extends TestCase
         $extension = new DoctrineExtension();
 
         $extension->load([
-            DeprecationFreeConfig::get(),
             [
                 'dbal' => [],
                 'orm' => $ormConfiguration,
@@ -704,7 +627,7 @@ class DoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        $this->assertEquals(EntityManager::class, $definition->getClass());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -713,7 +636,7 @@ class DoctrineExtensionTest extends TestCase
         ]);
 
         $slcDefinition = $container->getDefinition('doctrine.orm.default_second_level_cache.default_cache_factory');
-        $this->assertEquals('%doctrine.orm.second_level_cache.default_cache_factory.class%', $slcDefinition->getClass());
+        $this->assertEquals(DefaultCacheFactory::class, $slcDefinition->getClass());
     }
 
     #[IgnoreDeprecations]
@@ -740,7 +663,7 @@ class DoctrineExtensionTest extends TestCase
         $this->compileContainer($container);
 
         $definition = $container->getDefinition('doctrine.orm.default_entity_manager');
-        $this->assertEquals('%doctrine.orm.entity_manager.class%', $definition->getClass());
+        $this->assertEquals(EntityManager::class, $definition->getClass());
 
         $this->assertDICConstructorArguments($definition, [
             new Reference('doctrine.dbal.default_connection'),
@@ -765,7 +688,7 @@ class DoctrineExtensionTest extends TestCase
              ->addBaseConnection()
              ->build();
         $config['orm'] = ['default_entity_manager' => 'default', 'entity_managers' => ['default' => ['mappings' => ['XmlBundle' => []]]]];
-        $extension->load([DeprecationFreeConfig::get(), $config], $container);
+        $extension->load([$config], $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce(
@@ -788,7 +711,9 @@ class DoctrineExtensionTest extends TestCase
              ->addBaseConnection()
              ->build();
         $config['orm'] = ['default_entity_manager' => 'default', 'entity_managers' => ['default' => ['mappings' => ['XmlBundle' => ['alias' => 'xml']]]]];
-        $extension->load([DeprecationFreeConfig::get(), $config], $container);
+
+        $this->expectUserDeprecationMessage('Since doctrine/doctrine-bundle 3.4: The "doctrine.orm.entity_managers.default.mappings.XmlBundle.alias" option is deprecated and will be removed in DoctrineBundle 4.0, as Doctrine ORM no longer supports entity namespace aliases.');
+        $extension->load([$config], $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $this->assertDICDefinitionMethodCallOnce(
@@ -808,43 +733,11 @@ class DoctrineExtensionTest extends TestCase
         $extension = new DoctrineExtension();
 
         $extension->load([
-            DeprecationFreeConfig::get(),
             ['dbal' => [], 'orm' => ['default_entity_manager' => 'app', 'entity_managers' => ['app' => ['mappings' => ['XmlBundle' => ['alias' => 'xml']]]]]],
             ['orm' => ['metadata_cache_driver' => ['type' => 'pool', 'pool' => 'doctrine.system_cache_pool']]],
         ], $container);
 
         $this->assertEquals('app', $container->getParameter('doctrine.default_entity_manager'));
-    }
-
-    public function testYamlBundleMappingDetection(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $container = $this->getContainer(['YamlBundle']);
-        $extension = new DoctrineExtension();
-
-        $config = BundleConfigurationBuilder::createBuilder()
-            ->addBaseConnection()
-            ->addEntityManager([
-                'default_entity_manager' => 'default',
-                'entity_managers' => [
-                    'default' => [
-                        'mappings' => [
-                            'YamlBundle' => [],
-                        ],
-                    ],
-                ],
-            ])
-            ->build();
-        $extension->load([$config], $container);
-
-        $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
-        $this->assertDICDefinitionMethodCallOnce($definition, 'addDriver', [
-            new Reference('doctrine.orm.default_yml_metadata_driver'),
-            'Fixtures\Bundles\YamlBundle\Entity',
-        ]);
     }
 
     public function testXmlBundleMappingDetection(): void
@@ -896,7 +789,7 @@ class DoctrineExtensionTest extends TestCase
                         'mappings' => [
                             'AttributesBundle' => ['type' => 'attribute'],
                         ],
-                    ] + (class_exists(AnnotationDriver::class) ? ['report_fields_where_declared' => true] : []),
+                    ],
                 ],
             ])
             ->build();
@@ -923,7 +816,7 @@ class DoctrineExtensionTest extends TestCase
 
         $config1 = BundleConfigurationBuilder::createBuilder()
             ->addBaseConnection()
-            ->addEntityManager(config: [
+            ->addEntityManager([
                 'default_entity_manager' => 'default',
                 'entity_managers' => [
                     'default' => [
@@ -958,54 +851,27 @@ class DoctrineExtensionTest extends TestCase
             new Reference('doctrine.orm.default_xml_metadata_driver'),
             'Fixtures\Bundles\XmlBundle\Entity',
         ]);
-
-        $configDef = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($configDef, 'setEagerFetchBatchSize');
-
-        $calls = $configDef->getMethodCalls();
-        foreach ($calls as $call) {
-            if ($call[0] === 'setEagerFetchBatchSize') {
-                $this->assertEquals(
-                    42,
-                    $call[1][0],
-                    'The second config must override the first one.',
-                );
-
-                break;
-            }
-        }
     }
 
-    public function testAnnotationsBundleMappingDetectionWithVendorNamespace(): void
+    public function testUseSchemaEditorApiIsNotSetByDefault(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->getContainer(['AnnotationsBundle'], 'Vendor');
+        $container = $this->getContainer();
         $extension = new DoctrineExtension();
 
         $config = BundleConfigurationBuilder::createBuilder()
             ->addBaseConnection()
-            ->addEntityManager([
-                'default_entity_manager' => 'default',
-                'entity_managers' => [
-                    'default' => [
-                        'mappings' => [
-                            'AnnotationsBundle' => [],
-                        ],
-                    ],
-                ],
-            ])
+            ->addBaseEntityManager()
             ->build();
         $extension->load([$config], $container);
 
-        $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
-        $this->assertEquals(
-            sprintf('doctrine.orm.default_%s_metadata_driver', 'attribute'),
-            (string) $calls[0][1][0],
-        );
-        $this->assertEquals('Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
+        $definition  = $container->getDefinition('doctrine.orm.default_configuration');
+        $methodCalls = array_map(static fn (array $call) => $call[0], $definition->getMethodCalls());
+
+        self::assertNotContains('setUseSchemaEditorApi', $methodCalls);
     }
 
     public function testMessengerIntegration(): void
@@ -1026,6 +892,23 @@ class DoctrineExtensionTest extends TestCase
         $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_ping_connection')->getArguments());
         $this->assertCount(1, $container->getDefinition('messenger.middleware.doctrine_close_connection')->getArguments());
         $this->assertCount(1, $container->getDefinition('doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager')->getArguments());
+
+        $dbalMiddlewares = [
+            'messenger.middleware.doctrine_dbal_transaction' => 1,
+            'messenger.middleware.doctrine_dbal_ping_connection' => 1,
+            'messenger.middleware.doctrine_dbal_close_connection' => 1,
+            'messenger.middleware.doctrine_dbal_open_transaction_logger' => 2,
+        ];
+
+        $hasDbalMiddlewares = version_compare((string) InstalledVersions::getVersion('symfony/doctrine-bridge'), '8.2', '>=');
+
+        foreach ($dbalMiddlewares as $middlewareId => $argumentCount) {
+            if ($hasDbalMiddlewares) {
+                $this->assertCount($argumentCount, $container->getDefinition($middlewareId)->getArguments());
+            } else {
+                $this->assertFalse($container->hasDefinition($middlewareId));
+            }
+        }
     }
 
     public function testMessengerIntegrationWithDoctrineTransport(): void
@@ -1050,8 +933,9 @@ class DoctrineExtensionTest extends TestCase
 
         $messengerTransportDoctrineFactory = $container->getDefinition('messenger.transport.doctrine.factory');
 
-        $this->assertCount(1, $messengerTransportDoctrineFactory->getArguments());
+        $this->assertCount(2, $messengerTransportDoctrineFactory->getArguments());
         $this->assertSame('doctrine', (string) $messengerTransportDoctrineFactory->getArgument(0));
+        $this->assertSame('messenger.transport.doctrine.pg_notify_on_idle_listener', (string) $messengerTransportDoctrineFactory->getArgument(1));
 
         $this->assertSame(DoctrineTransportFactory::class, $messengerTransportDoctrineFactory->getClass());
 
@@ -1188,6 +1072,46 @@ class DoctrineExtensionTest extends TestCase
         ];
     }
 
+    /** @param class-string $typeClassname */
+    #[DataProvider('provideDbalTypeAttribute')]
+    public function testAsDbalTypeAttribute(string $typeClassname, string $expectedTypeName): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->build();
+
+        $extension->load([$config], $container);
+
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        $attributes = method_exists($container, 'getAttributeAutoconfigurators')
+            ? array_map(static fn (array $arr) => $arr[0], $container->getAttributeAutoconfigurators())
+            /** @phpstan-ignore method.notFound */
+            : $container->getAutoconfiguredAttributes();
+        $this->assertInstanceOf(Closure::class, $attributes[AsDbalType::class]);
+
+        $reflector  = new ReflectionClass($typeClassname);
+        $definition = new ChildDefinition('');
+        $attribute  = $reflector->getAttributes(AsDbalType::class)[0]->newInstance();
+
+        $attributes[AsDbalType::class]($definition, $attribute, $reflector);
+
+        $expected = ['type_name' => $expectedTypeName, 'connection' => null];
+        $this->assertSame([$expected], $definition->getTag('doctrine.dbal.type'));
+        $this->assertSame([], $definition->getTag('container.excluded'), 'The type is a service, not excluded');
+    }
+
+    /** @return array<array{0: class-string, 1: string}> */
+    public static function provideDbalTypeAttribute(): array
+    {
+        return [
+            'with type name' => [DbalType::class, 'dbal_type'],
+            'without type name' => [DbalTypeNoName::class, DbalTypeNoName::class],
+        ];
+    }
+
     /** @return array<array{0: class-string}> */
     public static function provideAttributeExcludedFromContainer(): array
     {
@@ -1199,7 +1123,7 @@ class DoctrineExtensionTest extends TestCase
     }
 
     #[DataProvider('provideAttributeExcludedFromContainer')]
-    public function testEntityAttributeExcludesFromContainer(string $class)
+    public function testEntityAttributeExcludesFromContainer(string $class): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -1218,6 +1142,7 @@ class DoctrineExtensionTest extends TestCase
         /** @phpstan-ignore function.alreadyNarrowedType */
         $attributes = method_exists($container, 'getAttributeAutoconfigurators')
             ? array_map(static fn (array $arr) => $arr[0], $container->getAttributeAutoconfigurators())
+            /** @phpstan-ignore method.notFound */
             : $container->getAutoconfiguredAttributes();
         $this->assertInstanceOf(Closure::class, $attributes[$class]);
 
@@ -1228,7 +1153,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue($definition->isAbstract());
     }
 
-    public function testAsEntityListenerAttribute()
+    public function testAsEntityListenerAttribute(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -1247,6 +1172,7 @@ class DoctrineExtensionTest extends TestCase
         /** @phpstan-ignore function.alreadyNarrowedType */
         $attributes = method_exists($container, 'getAttributeAutoconfigurators')
             ? array_map(static fn (array $arr) => $arr[0], $container->getAttributeAutoconfigurators())
+            /** @phpstan-ignore method.notFound */
             : $container->getAutoconfiguredAttributes();
         $this->assertInstanceOf(Closure::class, $attributes[AsEntityListener::class]);
 
@@ -1267,7 +1193,7 @@ class DoctrineExtensionTest extends TestCase
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
     }
 
-    public function testAsDoctrineListenerAttribute()
+    public function testAsDoctrineListenerAttribute(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
@@ -1286,6 +1212,7 @@ class DoctrineExtensionTest extends TestCase
         /** @phpstan-ignore function.alreadyNarrowedType */
         $attributes = method_exists($container, 'getAttributeAutoconfigurators')
             ? array_map(static fn (array $arr) => $arr[0], $container->getAttributeAutoconfigurators())
+            /** @phpstan-ignore method.notFound */
             : $container->getAutoconfiguredAttributes();
         $this->assertInstanceOf(Closure::class, $attributes[AsDoctrineListener::class]);
 
@@ -1293,12 +1220,35 @@ class DoctrineExtensionTest extends TestCase
         $definition = new ChildDefinition('');
         $attribute  = $reflector->getAttributes(AsDoctrineListener::class)[0]->newInstance();
 
-        $attributes[AsDoctrineListener::class]($definition, $attribute);
+        $attributes[AsDoctrineListener::class]($definition, $attribute, $reflector);
 
         $expected = [
             'event'      => Events::postFlush,
             'priority'   => null,
             'connection' => null,
+            'before'     => null,
+            'after'      => null,
+        ];
+        $this->assertSame([$expected], $definition->getTag('doctrine.event_listener'));
+
+        $definition = new ChildDefinition('');
+        $attribute  = new AsDoctrineListener(Events::postFlush, before: 'app.indexer', after: ['app.audit', 'App\Listener']);
+
+        // Query::ranOnPrimary() exists since symfony/doctrine-bridge 8.2, like the "before" and "after" options of the tag
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        if (! method_exists(Query::class, 'ranOnPrimary')) {
+            $this->expectException(LogicException::class);
+            $this->expectExceptionMessage(sprintf('Using "before" or "after" in #[AsDoctrineListener] on "%s" requires symfony/doctrine-bridge 8.2 or higher.', Php8EventListener::class));
+        }
+
+        $attributes[AsDoctrineListener::class]($definition, $attribute, $reflector);
+
+        $expected = [
+            'event'      => Events::postFlush,
+            'priority'   => null,
+            'connection' => null,
+            'before'     => 'app.indexer',
+            'after'      => ['app.audit', 'App\Listener'],
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.event_listener'));
     }
@@ -1499,6 +1449,27 @@ class DoctrineExtensionTest extends TestCase
         $this->assertTrue(in_array(['connection' => 'conn2', 'priority' => 10], $idleConnectionMiddlewareTagAttributes, true), 'Tag with connection conn2 found for doctrine.dbal.idle_connection_middleware');
     }
 
+    public function testEntityValueResolverExpressionLanguageIsCompiled(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer();
+        (new DoctrineExtension())->load([BundleConfigurationBuilder::createBuilderWithBaseValues()->build()], $container);
+
+        $expressionLanguage = $container->getDefinition('doctrine.orm.entity_value_resolver.expression_language');
+
+        // CompiledExpressionLanguage exists since symfony/expression-language 8.2
+        if (! class_exists(CompiledExpressionLanguage::class)) {
+            $this->assertFalse($expressionLanguage->hasTag('expression_language.compiled'));
+
+            return;
+        }
+
+        $this->assertSame([['string_expressions' => [MapEntity::class => ['expr']]]], $expressionLanguage->getTag('expression_language.compiled'));
+    }
+
     #[IgnoreDeprecations]
     #[RequiresMethod(EntityValueResolver::class, '__construct')]
     #[TestWith([true])]
@@ -1517,10 +1488,9 @@ class DoctrineExtensionTest extends TestCase
             $config['orm'] = [];
         }
 
-        $config['orm']['controller_resolver']     = ['auto_mapping' => true];
         $config['orm']['resolve_target_entities'] = ['Throwable' => 'stdClass'];
 
-        $extension->load([DeprecationFreeConfig::get(), $config], $container);
+        $extension->load([$config], $container);
 
         $controllerResolver = $container->getDefinition('doctrine.orm.entity_value_resolver');
 
@@ -1528,15 +1498,8 @@ class DoctrineExtensionTest extends TestCase
             0 => new Reference('doctrine'),
             1 => new Reference('doctrine.orm.entity_value_resolver.expression_language', $container::IGNORE_ON_INVALID_REFERENCE),
             2 => (new Definition(MapEntity::class))->setArguments([
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
+                '$evictCache' => null,
+                '$disabled' => false,
             ]),
             3 => ['Throwable' => 'stdClass'],
         ], $controllerResolver->getArguments());
@@ -1545,80 +1508,61 @@ class DoctrineExtensionTest extends TestCase
 
         $config['orm']['controller_resolver'] = [
             'enabled' => false,
-            'auto_mapping' => false,
             'evict_cache' => true,
         ];
         $extension->load([$config], $container);
 
-        $container->setDefinition('controller_resolver_defaults', $container->getDefinition('doctrine.orm.entity_value_resolver')->getArgument(2))->setPublic(true);
-        $container->compile();
-        $this->assertEquals(new MapEntity(null, null, null, [], null, null, null, true, true), $container->get('controller_resolver_defaults'));
+        $this->assertEquals((new Definition(MapEntity::class))->setArguments([
+            '$evictCache' => true,
+            '$disabled' => true,
+        ]), $container->getDefinition('doctrine.orm.entity_value_resolver')->getArgument(2));
     }
 
-    #[TestWith(['AnnotationsBundle', 'attribute', 'Vendor'], 'Bundle without anything')]
-    #[TestWith(['AttributesBundle', 'attribute'], 'Bundle with attributes')]
-    #[TestWith(['RepositoryServiceBundle', 'attribute'], 'Bundle with both')]
-    #[TestWith(['AnnotationsBundle', 'annotation'], 'Bundle with annotations')]
-    #[TestWith(['MappedSuperclassBundle', 'annotation'], 'Bundle with annotations containing only MappedSuperclass')]
-    #[TestWith(['AttributesWithPackageBundle', 'attribute'], 'Bundle with attributes and @package')]
-    public function testDetectMappingType(string $bundle, string $expectedType, string $vendor = '')
+    #[RequiresMethod(ConsoleEntityValueResolver::class, '__construct')]
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testConsoleCommandResolver(bool $simpleEntityManagerConfig): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
             self::markTestSkipped('This test requires ORM');
         }
 
-        $container = $this->getContainer([$bundle], $vendor);
+        $container = $this->getContainer();
         $extension = new DoctrineExtension();
+        $config    = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
 
-        $config = BundleConfigurationBuilder::createBuilder()
-            ->addBaseConnection()
-            ->addEntityManager([
-                'default_entity_manager' => 'default',
-                'entity_managers' => [
-                    'default' => [
-                        'mappings' => [
-                            $bundle => [],
-                        ],
-                    ],
-                ],
-            ])
-            ->build();
-
-        if (! class_exists(AnnotationDriver::class) && $expectedType === 'annotation') {
-            $this->expectException(LogicException::class);
-            $this->expectExceptionMessage('The annotation driver is only available in doctrine/orm v2.');
+        if ($simpleEntityManagerConfig) {
+            $config['orm'] = [];
         }
+
+        $config['orm']['resolve_target_entities'] = ['Throwable' => 'stdClass'];
 
         $extension->load([$config], $container);
 
-        $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
-        $this->assertEquals(
-            sprintf('doctrine.orm.default_%s_metadata_driver', $expectedType),
-            (string) $calls[0][1][0],
-        );
-    }
+        $consoleResolver = $container->getDefinition('doctrine.orm.entity_value_resolver.console');
 
-    #[TestWith([' * @Mapping\\Entity', true], 'Using the namespace without alias')]
-    #[TestWith([' * @ORM\\Entity', true], 'Using the namespace with alias')]
-    #[TestWith([' * @\\Doctrine\\ORM\\Mapping\\Entity', true], 'Complete namespace with starting slash')]
-    #[TestWith([' * @Doctrine\\ORM\\Mapping\\Entity', true], 'Complete namespace without starting slash')]
-    #[TestWith([' * @Entity', true], 'Use of the class')]
-    #[TestWith([' * @Entity()', true], 'With parentheses')]
-    #[TestWith(['/** @Entity */', true], 'Comment start')]
-    #[TestWith(["/**\n * @Entity\n */", true], 'Multiline phpdoc')]
-    #[TestWith([' * @orm\\Entity', true], 'namespace can start with lowercase')]
-    #[TestWith([' * @_ORM\\Entity', true], 'namespace can start with underscore')]
-    #[TestWith([" * @\x80ORM\\Entity", true], 'namespace can start with char from x80-Xff')]
-    #[TestWith([" * @orm0_\x80\\Entity", true], 'namespace can contain number, underscore and char from x80-Xff')]
-    #[TestWith([' * @ORMEntity', false], 'Use of the class with prefix')]
-    #[TestWith([' * @EntityORM', false], 'Use of the class with suffix')]
-    #[TestWith([' * @package testEntity', false], 'Annotation with Entity as value')]
-    #[TestWith([' * @entity', false], 'Lowercase use of the class')]
-    #[TestWith([' * @1ORMEntity', false], 'namespace can\'t start with number')]
-    #[TestWith([' * @extend<Entity>', false], 'The Entity is used inside < and >')]
-    public function testTextContainsAnnotation(string $input, bool $expected): void
-    {
-        self::assertEquals($expected, DoctrineExtension::textContainsAnnotation('Entity', $input));
+        $this->assertEquals([
+            0 => new Reference('doctrine'),
+            1 => new Reference('doctrine.orm.entity_value_resolver.expression_language', $container::IGNORE_ON_INVALID_REFERENCE),
+            2 => (new Definition(MapEntity::class))->setArguments([
+                '$evictCache' => null,
+                '$disabled' => false,
+            ]),
+            3 => ['Throwable' => 'stdClass'],
+        ], $consoleResolver->getArguments());
+
+        $container = $this->getContainer();
+
+        $config['orm']['controller_resolver'] = [
+            'enabled' => false,
+            'evict_cache' => true,
+        ];
+        $extension->load([$config], $container);
+
+        $this->assertEquals((new Definition(MapEntity::class))->setArguments([
+            '$evictCache' => true,
+            '$disabled' => true,
+        ]), $container->getDefinition('doctrine.orm.entity_value_resolver.console')->getArgument(2));
     }
 
     /** @param list<string> $bundles */
@@ -1658,10 +1602,6 @@ class DoctrineExtensionTest extends TestCase
         $container->setDefinition('cache.system', (new Definition(ArrayAdapter::class))->setPublic(true));
         $container->setDefinition('cache.app', (new Definition(ArrayAdapter::class))->setPublic(true));
         $container->setDefinition('my_pool', (new Definition(ArrayAdapter::class))->setPublic(true));
-        $container->setDefinition('my_cache', (new Definition(Cache::class))->setPublic(true));
-        $container->setDefinition('service_target_metadata', (new Definition(Cache::class))->setPublic(true));
-        $container->setDefinition('service_target_query', (new Definition(Cache::class))->setPublic(true));
-        $container->setDefinition('service_target_result', (new Definition(Cache::class))->setPublic(true));
         $container->setDefinition('service_target_metadata_psr6', (new Definition(ArrayAdapter::class))->setPublic(true));
 
         return $container;
@@ -1725,7 +1665,6 @@ class DoctrineExtensionTest extends TestCase
     {
         $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);
-        $container->addCompilerPass(new CacheCompatibilityPass());
         $container->compile();
     }
 }

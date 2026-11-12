@@ -32,17 +32,19 @@ class ProfilerController
     /**
      * Renders the profiler panel for the given token.
      *
-     * @param string $token          The profiler token
-     * @param string $connectionName
-     * @param int    $query
+     * @param string $token The profiler token
      *
      * @return Response A Response instance
      */
-    public function explainAction($token, $connectionName, $query)
+    public function explainAction(string $token, string $connectionName, int $query): Response
     {
         $this->profiler->disable();
 
-        $profile   = $this->profiler->loadProfile($token);
+        $profile = $this->profiler->loadProfile($token);
+        if ($profile === null) {
+            return new Response('Profile not found.', 404);
+        }
+
         $collector = $profile->getCollector('db');
 
         assert($collector instanceof DoctrineDataCollector);

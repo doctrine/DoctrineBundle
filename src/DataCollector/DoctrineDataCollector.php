@@ -9,12 +9,16 @@ use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Doctrine\Persistence\ManagerRegistry;
+use ReflectionClass;
 use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector as BaseCollector;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
+use Symfony\Component\VarExporter\LazyObjectInterface;
 use Throwable;
 
 use function array_map;
@@ -22,17 +26,10 @@ use function array_sum;
 use function arsort;
 use function assert;
 use function count;
+use function in_array;
 use function usort;
 
 /**
- * @phpstan-type QueryType = array{
- *    executionMS: float,
- *    explainable: bool,
- *    sql: string,
- *    params: ?array<array-key, mixed>,
- *    runnable: bool,
- *    types: ?array<array-key, Type|int|string|null>,
- * }
  * @phpstan-type DataType = array{
  *    caches: array{
  *       enabled: bool,
@@ -44,29 +41,53 @@ use function usort;
  *    entities: array<string, array<class-string, array{class: class-string, file: false|string, line: false|int}>>,
  *    errors: array<string, array<class-string, list<string>>>,
  *    managers: list<string>,
- *    queries: array<string, list<QueryType>>,
+ *    queries: array<string, list<array{
+ *       executionMS: float,
+ *       explainable: bool,
+ *       sql: string,
+ *       params: ?array<array-key, mixed>,
+ *       runnable: bool,
+ *       types: ?array<array-key, Type|int|string|null>
+ *    }>>,
  *    entityCounts: array<string, array<class-string, int>>
  * }
- * @psalm-property DataType $data
+ * @phpstan-type GroupedQueryItemType = array{
+ *    executionMS: float,
+ *    explainable: bool,
+ *    sql: string,
+ *    params: ?array<array-key, mixed>,
+ *    runnable: bool,
+ *    types: ?array<array-key, Type|int|string|null>,
+ *    count: int,
+ *    index: int,
+ *    executionPercent?: float
+ * }
+ * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
+ * @phpstan-property DataType $data
  */
-class DoctrineDataCollector extends BaseCollector
+class DoctrineDataCollector extends BaseCollector implements LateDataCollectorInterface
 {
     private int|null $invalidEntityCount = null;
 
     private int|null $managedEntityCount = null;
 
-    /**
-     * @var mixed[][]|null
-     * @phpstan-var ?array<string, list<QueryType&array{count: int, index: int, executionPercent?: float}>>
-     * @phpstan-ignore property.unusedType
-     */
+    /** @var GroupedQueriesType|null */
     private array|null $groupedQueries = null;
 
+    /** @var array<string, array{EntityManagerInterface, list<ClassMetadata<object>>}> */
+    private array $classesToValidate = [];
+
+    /** @param list<string> $secondLevelCacheManagers The names of the managers that have the second level cache enabled */
     public function __construct(
         private readonly ManagerRegistry $registry,
         private readonly bool $shouldValidateSchema = true,
         DebugDataHolder|null $debugDataHolder = null,
+        private readonly array $secondLevelCacheManagers = [],
     ) {
+        if ($debugDataHolder === null) {
+            $debugDataHolder = new DebugDataHolder();
+        }
+
         parent::__construct($registry, $debugDataHolder);
     }
 
@@ -74,10 +95,10 @@ class DoctrineDataCollector extends BaseCollector
     {
         parent::collect($request, $response, $exception);
 
-        $errors       = [];
-        $entities     = [];
-        $entityCounts = [];
-        $caches       = [
+        $entities                = [];
+        $entityCounts            = [];
+        $this->classesToValidate = [];
+        $caches                  = [
             'enabled' => false,
             'log_enabled' => false,
             'counts' => [
@@ -96,32 +117,40 @@ class DoctrineDataCollector extends BaseCollector
             assert($em instanceof EntityManagerInterface);
             if ($this->shouldValidateSchema) {
                 $entities[$name] = [];
+            }
 
-                $factory   = $em->getMetadataFactory();
-                $validator = new SchemaValidator($em);
+            $entityCounts[$name] = [];
+
+            // A manager that was not used during the request has nothing to report
+            if (self::isUninitializedLazyObject($em)) {
+                if (in_array($name, $this->secondLevelCacheManagers, true)) {
+                    $caches['enabled'] = true;
+                }
+
+                continue;
+            }
+
+            if ($this->shouldValidateSchema) {
+                $factory = $em->getMetadataFactory();
+                $classes = [];
 
                 foreach ($factory->getLoadedMetadata() as $class) {
                     if (isset($entities[$name][$class->getName()])) {
                         continue;
                     }
 
-                    $classErrors                        = $validator->validateClass($class);
+                    $classes[]                          = $class;
                     $r                                  = $class->getReflectionClass();
                     $entities[$name][$class->getName()] = [
                         'class' => $class->getName(),
                         'file' => $r->getFileName(),
                         'line' => $r->getStartLine(),
                     ];
-
-                    if (empty($classErrors)) {
-                        continue;
-                    }
-
-                    $errors[$name][$class->getName()] = $classErrors;
                 }
+
+                $this->classesToValidate[$name] = [$em, $classes];
             }
 
-            $entityCounts[$name] = [];
             foreach ($em->getUnitOfWork()->getIdentityMap() as $className => $entityList) {
                 $entityCounts[$name][$className] = count($entityList);
             }
@@ -181,44 +210,75 @@ class DoctrineDataCollector extends BaseCollector
         }
 
         $this->data['entities']     = $entities;
-        $this->data['errors']       = $errors;
+        $this->data['errors']       = [];
         $this->data['caches']       = $caches;
         $this->data['entityCounts'] = $entityCounts;
         $this->groupedQueries       = null;
     }
 
+    public function lateCollect(): void
+    {
+        $errors = [];
+
+        foreach ($this->classesToValidate as $name => [$em, $classes]) {
+            $validator = new SchemaValidator($em);
+
+            foreach ($classes as $class) {
+                try {
+                    $classErrors = $validator->validateClass($class);
+                } catch (Throwable $e) {
+                    // Profiles are saved on kernel.terminate: report the error instead of losing the profile
+                    $classErrors = [$e->getMessage()];
+                }
+
+                if (empty($classErrors)) {
+                    continue;
+                }
+
+                $errors[$name][$class->getName()] = $classErrors;
+            }
+        }
+
+        $this->classesToValidate  = [];
+        $this->data['errors']     = $errors;
+        $this->invalidEntityCount = null;
+    }
+
+    public function reset(): void
+    {
+        parent::reset();
+
+        $this->classesToValidate = [];
+    }
+
     /** @return array<string, array<class-string, array{class: class-string, file: false|string, line: false|int}>> */
-    public function getEntities()
+    public function getEntities(): array
     {
         return $this->data['entities'];
     }
 
     /** @return array<string, array<string, list<string>>> */
-    public function getMappingErrors()
+    public function getMappingErrors(): array
     {
         return $this->data['errors'];
     }
 
-    /** @return int */
-    public function getCacheHitsCount()
+    public function getCacheHitsCount(): int
     {
         return $this->data['caches']['counts']['hits'];
     }
 
-    /** @return int */
-    public function getCachePutsCount()
+    public function getCachePutsCount(): int
     {
         return $this->data['caches']['counts']['puts'];
     }
 
-    /** @return int */
-    public function getCacheMissesCount()
+    public function getCacheMissesCount(): int
     {
         return $this->data['caches']['counts']['misses'];
     }
 
-    /** @return bool */
-    public function getCacheEnabled()
+    public function getCacheEnabled(): bool
     {
         return $this->data['caches']['enabled'];
     }
@@ -227,19 +287,18 @@ class DoctrineDataCollector extends BaseCollector
      * @return array<string, array<string, int>>
      * @phpstan-return array<"puts"|"hits"|"misses", array<string, int>>
      */
-    public function getCacheRegions()
+    public function getCacheRegions(): array
     {
         return $this->data['caches']['regions'];
     }
 
     /** @return array<string, int> */
-    public function getCacheCounts()
+    public function getCacheCounts(): array
     {
         return $this->data['caches']['counts'];
     }
 
-    /** @return int */
-    public function getInvalidEntityCount()
+    public function getInvalidEntityCount(): int
     {
         return $this->invalidEntityCount ??= array_sum(array_map('count', $this->data['errors']));
     }
@@ -266,9 +325,9 @@ class DoctrineDataCollector extends BaseCollector
 
     /**
      * @return string[][]
-     * @phpstan-return array<string, list<QueryType&array{count: int, index: int, executionPercent?: float}>>
+     * @phpstan-return GroupedQueriesType
      */
-    public function getGroupedQueries()
+    public function getGroupedQueries(): array
     {
         if ($this->groupedQueries !== null) {
             return $this->groupedQueries;
@@ -302,10 +361,9 @@ class DoctrineDataCollector extends BaseCollector
             $this->groupedQueries[$connection] = $connectionGroupedQueries;
         }
 
-        foreach ($this->groupedQueries as $connection => $queries) {
-            foreach ($queries as $i => $query) {
-                $this->groupedQueries[$connection][$i]['executionPercent'] =
-                    $this->executionTimePercentage($query['executionMS'], $totalExecutionMS);
+        foreach ($this->groupedQueries as &$queries) {
+            foreach ($queries as &$query) {
+                $query['executionPercent'] = $this->executionTimePercentage($query['executionMS'], $totalExecutionMS);
             }
         }
 
@@ -321,8 +379,7 @@ class DoctrineDataCollector extends BaseCollector
         return $executionTimeMS / $totalExecutionTimeMS * 100;
     }
 
-    /** @return int */
-    public function getGroupedQueryCount()
+    public function getGroupedQueryCount(): int
     {
         $count = 0;
         foreach ($this->getGroupedQueries() as $connectionGroupedQueries) {
@@ -330,5 +387,14 @@ class DoctrineDataCollector extends BaseCollector
         }
 
         return $count;
+    }
+
+    private static function isUninitializedLazyObject(object $object): bool
+    {
+        if ($object instanceof LazyObjectInterface) {
+            return ! $object->isLazyObjectInitialized();
+        }
+
+        return (new ReflectionClass($object))->isUninitializedLazyObject($object);
     }
 }

@@ -2,46 +2,27 @@ Entity Listeners
 ================
 
 Entity listeners that are services must be registered with the entity listener
-resolver. On top of the annotation/attribute in the entity class, you have to tag the
+resolver. On top of the attribute in the entity class, you have to tag the
 service with ``doctrine.orm.entity_listener`` for it to be automatically added
 to the resolver. Use the (optional) ``entity_manager`` attribute to specify
 which entity manager it should be registered with.
 
 Full example:
 
-.. configuration-block::
+.. code-block:: php
 
-    .. code-block:: php-annotations
+    <?php
+    // User.php
 
-        <?php
-        // User.php
+    use Doctrine\ORM\Mapping as ORM;
+    use App\UserListener;
 
-        use Doctrine\ORM\Mapping as ORM;
-        use App\UserListener;
-
-        /**
-         * @ORM\Entity
-         * @ORM\EntityListeners({UserListener::class})
-         */
-        class User
-        {
-            // ....
-        }
-    
-    .. code-block:: php-attributes
-
-        <?php
-        // User.php
-
-        use Doctrine\ORM\Mapping as ORM;
-        use App\UserListener;
-
-        #[ORM\Entity]
-        #[ORM\EntityListeners([UserListener::class])]
-        class User
-        {
-            // ....
-        }
+    #[ORM\Entity]
+    #[ORM\EntityListeners([UserListener::class])]
+    class User
+    {
+        // ....
+    }
 
 .. configuration-block::
 
@@ -55,20 +36,26 @@ Full example:
                     # Or, optionally, you can give the entity manager name as below
                     #- { name: doctrine.orm.entity_listener, entity_manager: custom }
 
-    .. code-block:: xml
+    .. code-block:: php
 
-        <?xml version="1.0" ?>
+        // config/services.php
+        namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-        <container xmlns="http://symfony.com/schema/dic/services"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        use App\UserListener;
 
-            <services>
-                <service id="App\UserListener">
-                    <!-- entity_manager attribute is optional -->
-                    <tag name="doctrine.orm.entity_listener" entity_manager="custom" />
-                </service>
-            </services>
-        </container>
+        return static function (ContainerConfigurator $configurator) {
+            $services = $configurator->services();
+
+            // Minimal configuration below
+            $services->set(UserListener::class)
+                ->tag('doctrine.orm.entity_listener')
+            ;
+
+            // Or, optionally, you can give the entity manager name as below
+            // $services->set(UserListener::class)
+            //     ->tag('doctrine.orm.entity_listener', ['entity_manager' => 'custom'])
+            // ;
+        };
 
 Starting with doctrine/orm 2.5 and Doctrine bundle 1.5.2, instead of registering
 the entity listener on the entity, you can declare all options from the service
@@ -90,27 +77,27 @@ definition:
                         # method attribute is optional
                         method: validateEmail
 
-    .. code-block:: xml
+    .. code-block:: php
 
-        <?xml version="1.0" ?>
+        // config/services.php
+        namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-        <container xmlns="http://symfony.com/schema/dic/services"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        use App\UserListener;
 
-            <services>
-                <service id="App\UserListener">
-                    <!-- entity_manager attribute is optional -->
-                    <!-- method attribute is optional -->
-                    <tag
-                        name="doctrine.orm.entity_listener" 
-                        event="preUpdate"
-                        entity="App\Entity\User"
-                        entity_manager="custom"
-                        method="validateEmail"
-                    />
-                </service>
-            </services>
-        </container>
+        return static function (ContainerConfigurator $configurator) {
+            $services = $configurator->services();
+
+            $services->set(UserListener::class)
+                ->tag('doctrine.orm.entity_listener', [
+                    'event' => 'preUpdate',
+                    'entity' => 'App\Entity\User',
+                    // entity_manager attribute is optional
+                    'entity_manager' => 'custom',
+                    // method attribute is optional
+                    'method' => 'validateEmail',
+                ])
+            ;
+        };
 
 The ``event`` attribute is required if the entity listener is not registered on
 the entity. If you don't specify the ``method`` attribute, it falls back on the

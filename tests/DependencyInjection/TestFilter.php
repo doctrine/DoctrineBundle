@@ -13,6 +13,8 @@ class TestFilter extends SQLFilter
      * Gets the SQL query part to add to a query.
      *
      * {@inheritDoc}
+     *
+     * @param string $targetTableAlias
      */
     public function addFilterConstraint(ClassMetadata $targetEntity, $targetTableAlias): string
     {

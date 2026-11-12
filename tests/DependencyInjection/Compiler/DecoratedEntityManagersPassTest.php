@@ -26,7 +26,7 @@ final class DecoratedEntityManagersPassTest extends TestCase
         $this->assertTrue($container->getDefinition('app.decorator.inner')->isPublic());
         $this->assertSame(
             ['doctrine.orm.default_entity_manager' => 'app.decorator.inner'],
-            $container->getDefinition('doctrine')->getArgument(5),
+            $container->getDefinition('doctrine')->getArgument(6),
         );
     }
 
@@ -42,7 +42,7 @@ final class DecoratedEntityManagersPassTest extends TestCase
         $this->assertTrue($container->getDefinition('app.original_entity_manager')->isPublic());
         $this->assertSame(
             ['doctrine.orm.default_entity_manager' => 'app.original_entity_manager'],
-            $container->getDefinition('doctrine')->getArgument(5),
+            $container->getDefinition('doctrine')->getArgument(6),
         );
     }
 
@@ -59,7 +59,7 @@ final class DecoratedEntityManagersPassTest extends TestCase
         $this->assertFalse($container->getDefinition('app.inner_decorator')->isPublic());
         $this->assertSame(
             ['doctrine.orm.default_entity_manager' => 'app.inner_decorator.inner'],
-            $container->getDefinition('doctrine')->getArgument(5),
+            $container->getDefinition('doctrine')->getArgument(6),
         );
     }
 
@@ -76,7 +76,7 @@ final class DecoratedEntityManagersPassTest extends TestCase
         $this->assertFalse($container->getDefinition('app.decorator_decorator.inner')->isPublic());
         $this->assertSame(
             ['doctrine.orm.default_entity_manager' => 'app.decorator.inner'],
-            $container->getDefinition('doctrine')->getArgument(5),
+            $container->getDefinition('doctrine')->getArgument(6),
         );
     }
 
@@ -93,7 +93,7 @@ final class DecoratedEntityManagersPassTest extends TestCase
         $this->assertFalse($container->getDefinition('app.inner_decorator')->isPublic());
         $this->assertSame(
             ['doctrine.orm.default_entity_manager' => 'app.inner_decorator.inner'],
-            $container->getDefinition('doctrine')->getArgument(5),
+            $container->getDefinition('doctrine')->getArgument(6),
         );
     }
 
@@ -107,7 +107,7 @@ final class DecoratedEntityManagersPassTest extends TestCase
 
         $this->assertSame(
             ['doctrine.orm.default_entity_manager' => 'app.decorator.inner'],
-            $container->getDefinition('doctrine')->getArgument(5),
+            $container->getDefinition('doctrine')->getArgument(6),
         );
     }
 
@@ -122,7 +122,7 @@ final class DecoratedEntityManagersPassTest extends TestCase
         $this->process($container);
 
         $this->assertFalse($container->getDefinition('app.decorator.inner')->isPublic());
-        $this->assertCount(5, $container->getDefinition('doctrine')->getArguments());
+        $this->assertCount(6, $container->getDefinition('doctrine')->getArguments());
     }
 
     public function testNothingIsDoneWithoutEntityManagers(): void
@@ -134,7 +134,7 @@ final class DecoratedEntityManagersPassTest extends TestCase
         $this->process($container);
 
         $this->assertFalse($container->getDefinition('app.decorator.inner')->isPublic());
-        $this->assertCount(5, $container->getDefinition('doctrine')->getArguments());
+        $this->assertCount(6, $container->getDefinition('doctrine')->getArguments());
     }
 
     public function testNothingIsDoneWithoutRegistry(): void
@@ -158,7 +158,7 @@ final class DecoratedEntityManagersPassTest extends TestCase
 
         $container->register('doctrine', Registry::class)
             ->setPublic(true)
-            ->setArguments([new Reference('service_container'), [], '%doctrine.entity_managers%', 'default', 'default']);
+            ->setArguments([new Reference('service_container'), [], '%doctrine.entity_managers%', 'default', 'default', null]);
 
         $container->register('doctrine.orm.default_entity_manager', EntityManager::class)->setPublic(true);
         $container->register('doctrine.orm.other_entity_manager', EntityManager::class)->setPublic(true);

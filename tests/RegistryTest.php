@@ -6,31 +6,34 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Closure;
 use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\CustomClassMetadataFactory;
+use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestDefaultRepoEntityProxy;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestEntityManagerDecorator;
 use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
+use Fixtures\Bundles\AttributesBundle\Entity\TestClass;
+use Fixtures\Bundles\AttributesBundle\Entity\TestCustomIdGeneratorEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestCustomClassRepoEntity;
+use Fixtures\Bundles\RepositoryServiceBundle\Entity\TestDefaultRepoEntity;
 use Fixtures\Bundles\RepositoryServiceBundle\Repository\TestCustomClassRepoRepository;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use ProxyManager\Proxy\ProxyInterface;
 use ReflectionClass;
+use stdClass;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 
 use function assert;
 use function interface_exists;
 use function restore_exception_handler;
-
-use const PHP_VERSION_ID;
 
 class RegistryTest extends TestCase
 {
@@ -130,58 +133,6 @@ class RegistryTest extends TestCase
         $registry->resetManager('default');
     }
 
-    #[IgnoreDeprecations]
-    #[RequiresPhp('<8.4.0')]
-    public function testReset(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $noProxyManager = $this->getMockBuilder(EntityManagerInterface::class)->getMock();
-        $noProxyManager->expects($this->once())
-            ->method('clear');
-
-        $proxyManager = $this->createMock(LazyLoadingEntityManagerInterface::class);
-        $proxyManager->expects($this->once())
-            ->method('setProxyInitializer')
-            ->with($this->isInstanceOf(Closure::class));
-
-        $container = new Container();
-        $container->set('doctrine.orm.noproxy_entity_manager', $noProxyManager);
-        $container->set('doctrine.orm.proxy_entity_manager', $proxyManager);
-
-        $entityManagers = [
-            'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
-            'noproxy' => 'doctrine.orm.noproxy_entity_manager',
-            'proxy' => 'doctrine.orm.proxy_entity_manager',
-        ];
-
-        $registry = new Registry($container, [], $entityManagers, 'default', 'default');
-        $registry->reset();
-    }
-
-    #[RequiresPhp('>= 8.4.0')]
-    public function testResetLazyObject(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class) || ! interface_exists(LazyObjectInterface::class)) {
-            self::markTestSkipped('This test requires ORM and VarExporter 6.2+');
-        }
-
-        $ghostManager = $this->createMock(LazyObjectEntityManagerInterface::class);
-        $ghostManager->expects($this->once())->method('resetLazyObject')->willReturn(true);
-
-        $container = new Container();
-        $container->set('doctrine.orm.ghost_entity_manager', $ghostManager);
-
-        $entityManagers = [
-            'uninitialized' => 'doctrine.orm.uninitialized_entity_manager',
-            'ghost' => 'doctrine.orm.ghost_entity_manager',
-        ];
-
-        (new Registry($container, [], $entityManagers, 'default', 'default'))->reset();
-    }
-
     public function testIdentityMapsStayConsistentAfterReset(): void
     {
         if (! interface_exists(EntityManagerInterface::class)) {
@@ -194,13 +145,6 @@ class RegistryTest extends TestCase
         $container     = $kernel->getContainer();
         $registry      = $container->get('doctrine');
         $entityManager = $container->get('doctrine.orm.default_entity_manager');
-
-        if (PHP_VERSION_ID < 80400) {
-            $this->assertInstanceOf(interface_exists(LazyObjectInterface::class) ? LazyObjectInterface::class : ProxyInterface::class, $entityManager);
-        }
-
-        assert($entityManager instanceof EntityManagerInterface);
-        assert($registry instanceof Registry);
 
         $repository = $entityManager->getRepository(TestCustomClassRepoEntity::class);
         assert($repository instanceof TestCustomClassRepoRepository);
@@ -221,6 +165,83 @@ class RegistryTest extends TestCase
         restore_exception_handler();
     }
 
+    public function testGetManagerForClassDoesNotInitializeManagersThatDoNotMapTheClass(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = self::bootKernel([]);
+        $registry  = $container->get('doctrine');
+        $em        = $container->get('doctrine.orm.default_entity_manager');
+
+        $this->assertNull($registry->getManagerForClass(TestCustomClassRepoRepository::class));
+        $this->assertTrue(self::isUninitialized($em));
+
+        $this->assertSame($em, $registry->getManagerForClass(TestCustomClassRepoEntity::class));
+        $this->assertSame($em, $registry->getManagerForClass(TestDefaultRepoEntityProxy::class));
+
+        restore_exception_handler();
+    }
+
+    public function testGetManagerForClassWithSeveralManagers(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = self::bootKernel([
+            'entity_managers' => [
+                'other' => [
+                    'mappings' => [
+                        'AttributesBundle' => [
+                            'type' => 'attribute',
+                            'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/AttributesBundle/Entity',
+                            'prefix' => 'Fixtures\Bundles\AttributesBundle\Entity',
+                        ],
+                        'RepositoryServiceBundle' => [
+                            'type' => 'attribute',
+                            'dir' => __DIR__ . '/DependencyInjection/Fixtures/Bundles/RepositoryServiceBundle/Entity',
+                            'prefix' => 'Fixtures\Bundles\RepositoryServiceBundle\Entity',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $registry = $container->get('doctrine');
+        $default  = $container->get('doctrine.orm.default_entity_manager');
+        $other    = $container->get('doctrine.orm.other_entity_manager');
+
+        $this->assertSame($other, $registry->getManagerForClass(TestCustomIdGeneratorEntity::class));
+        $this->assertSame($default, $registry->getManagerForClass(TestDefaultRepoEntity::class));
+        $this->assertNull($registry->getManagerForClass(TestClass::class));
+        $this->assertTrue(self::isUninitialized($default));
+        $this->assertTrue(self::isUninitialized($other));
+
+        $registry->getManager('other')->getMetadataFactory();
+
+        $this->assertSame($other, $registry->getManagerForClass(TestCustomIdGeneratorEntity::class));
+        $this->assertSame($default, $registry->getManagerForClass(TestDefaultRepoEntity::class));
+        $this->assertNull($registry->getManagerForClass(TestClass::class));
+        $this->assertTrue(self::isUninitialized($default));
+
+        restore_exception_handler();
+    }
+
+    public function testGetManagerForClassUsesCustomMetadataFactories(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = self::bootKernel(['class_metadata_factory_name' => CustomClassMetadataFactory::class]);
+
+        $this->assertSame($container->get('doctrine.orm.default_entity_manager'), $container->get('doctrine')->getManagerForClass(stdClass::class));
+
+        restore_exception_handler();
+    }
+
     /** @param Closure(Registry): ObjectManager $reset */
     #[DataProvider('resetProvider')]
     public function testResetClosedDecoratedEntityManager(Closure $reset): void
@@ -233,7 +254,6 @@ class RegistryTest extends TestCase
         $kernel->boot();
 
         $registry = $kernel->getContainer()->get('doctrine');
-        assert($registry instanceof Registry);
 
         $entityManager = $registry->getManager();
         $this->assertInstanceOf(TestEntityManagerDecorator::class, $entityManager);
@@ -280,7 +300,7 @@ class RegistryTest extends TestCase
         $container->set('doctrine.orm.default_entity_manager', $decorator);
         $container->set('decorator.inner', $innerManager);
 
-        $registry = new Registry($container, [], ['default' => 'doctrine.orm.default_entity_manager'], 'default', 'default', ['doctrine.orm.default_entity_manager' => 'decorator.inner']);
+        $registry = new Registry($container, [], ['default' => 'doctrine.orm.default_entity_manager'], 'default', 'default', null, ['doctrine.orm.default_entity_manager' => 'decorator.inner']);
         $registry->reset();
     }
 
@@ -298,5 +318,38 @@ class RegistryTest extends TestCase
                 });
             }
         };
+    }
+
+    /** @param array<string, mixed> $orm */
+    private static function bootKernel(array $orm): ContainerInterface
+    {
+        $kernel = new class ($orm) extends TestKernel {
+            /** @param array<string, mixed> $orm */
+            public function __construct(private array $orm)
+            {
+                parent::__construct();
+            }
+
+            public function registerContainerConfiguration(LoaderInterface $loader): void
+            {
+                parent::registerContainerConfiguration($loader);
+
+                $loader->load(function (ContainerBuilder $container): void {
+                    $container->loadFromExtension('doctrine', ['orm' => $this->orm]);
+                });
+            }
+        };
+        $kernel->boot();
+
+        return $kernel->getContainer();
+    }
+
+    private static function isUninitialized(object $manager): bool
+    {
+        if ($manager instanceof LazyObjectInterface) {
+            return ! $manager->isLazyObjectInitialized();
+        }
+
+        return (new ReflectionClass($manager))->isUninitializedLazyObject($manager);
     }
 }

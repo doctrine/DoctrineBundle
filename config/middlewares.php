@@ -33,6 +33,7 @@ return static function (ContainerConfigurator $container): void {
             ->args([
                 service('doctrine.debug_data_holder'),
                 service('debug.stopwatch')->nullOnInvalid(),
+                service('doctrine'),
             ])
 
         ->set('doctrine.dbal.idle_connection_middleware', IdleConnectionMiddleware::class)

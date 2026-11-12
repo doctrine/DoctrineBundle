@@ -7,31 +7,26 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Bundle\DoctrineBundle\Tests\Repository\Fixtures\Article;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\LockMode;
+use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
-use PHPUnit\Framework\Attributes\RequiresMethod;
-use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\VarExporter\LazyGhostTrait;
-use Symfony\Component\VarExporter\LazyObjectInterface;
-use Symfony\Component\VarExporter\ProxyHelper;
 
 use function interface_exists;
-use function method_exists;
 use function property_exists;
-use function sys_get_temp_dir;
-
-use const PHP_VERSION_ID;
 
 class ServiceEntityRepositoryTest extends TestCase
 {
+    use VerifyDeprecations;
+
     public static function setUpBeforeClass(): void
     {
         if (interface_exists(EntityManagerInterface::class)) {
@@ -53,18 +48,39 @@ EXCEPTION);
         $repo->getClassName();
     }
 
-    #[IgnoreDeprecations]
-    #[RequiresMethod(ProxyHelper::class, 'generateLazyGhost')]
-    #[RequiresPhp('>= 8.4.0')]
-    public function testConstructInitializesWhenImplementingLazyObjectInterface(): void
+    public function testFindTriggersDeprecationWhenPassingNullAsLockMode(): void
     {
-        $registry = $this->createStub(ManagerRegistry::class);
-        $this->expectException(LogicException::class);
+        $this->expectDeprecationWithIdentifier('https://github.com/doctrine/DoctrineBundle/pull/2284');
 
-        /* @phpstan-ignore class.notFound, expr.resultUnused */
-        new class ($registry, TestEntity::class) extends ServiceEntityRepository implements LazyObjectInterface {
-            use LazyGhostTrait;
-        };
+        /* @phpstan-ignore class.notFound */
+        $repo = new ServiceEntityRepository($this->createRegistry(), TestEntity::class);
+
+        self::assertNull($repo->find(1, null));
+    }
+
+    public function testFindDoesNotTriggerDeprecationWhenOmittingLockMode(): void
+    {
+        $this->expectNoDeprecationWithIdentifier('https://github.com/doctrine/DoctrineBundle/pull/2284');
+
+        /* @phpstan-ignore class.notFound */
+        $repo = new ServiceEntityRepository($this->createRegistry(), TestEntity::class);
+
+        self::assertNull($repo->find(1));
+        self::assertNull($repo->find(1, LockMode::NONE));
+    }
+
+    private function createRegistry(): ManagerRegistry
+    {
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('getClassMetadata')
+            /* @phpstan-ignore class.notFound */
+            ->willReturn(new ClassMetadata(TestEntity::class));
+
+        $registry = $this->createStub(ManagerRegistry::class);
+        $registry->method('getManagerForClass')
+            ->willReturn($em);
+
+        return $registry;
     }
 
     public function testFindDoesNotRefreshAManagedEntity(): void
@@ -75,14 +91,7 @@ EXCEPTION);
 
         $config = new Configuration();
         $config->setMetadataDriverImpl(new AttributeDriver([__DIR__ . '/Fixtures']));
-
-        /** @phpstan-ignore function.alreadyNarrowedType */
-        if (PHP_VERSION_ID >= 80400 && method_exists($config, 'enableNativeLazyObjects')) {
-            $config->enableNativeLazyObjects(true);
-        } else {
-            $config->setProxyDir(sys_get_temp_dir());
-            $config->setProxyNamespace('Proxies');
-        }
+        $config->enableNativeLazyObjects(true);
 
         $em = new EntityManager(DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true], $config), $config);
         (new SchemaTool($em))->createSchema([$em->getClassMetadata(Article::class)]);

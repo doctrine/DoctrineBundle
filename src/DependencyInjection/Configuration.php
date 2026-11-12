@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
-use Doctrine\Deprecations\Deprecation;
-use Doctrine\ORM\Configuration as OrmConfiguration;
+use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
-use Doctrine\ORM\Proxy\ProxyFactory;
 use InvalidArgumentException;
-use ReflectionClass;
+use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -30,23 +25,15 @@ use function array_pop;
 use function class_exists;
 use function constant;
 use function count;
-use function defined;
 use function implode;
 use function in_array;
 use function is_array;
-use function is_bool;
-use function is_int;
 use function is_string;
 use function key;
 use function method_exists;
 use function reset;
 use function sprintf;
-use function strlen;
-use function strpos;
 use function strtoupper;
-use function substr;
-
-use const PHP_VERSION_ID;
 
 /**
  * This class contains the configuration information for the bundle
@@ -54,9 +41,9 @@ use const PHP_VERSION_ID;
  * This information is solely responsible for how the different configuration
  * sections are normalized, and merged.
  *
- * @final since 2.9
+ * @internal
  */
-class Configuration implements ConfigurationInterface
+final class Configuration implements ConfigurationInterface
 {
     /** @param bool $debug Whether to use the debug mode */
     public function __construct(private bool $debug)
@@ -128,13 +115,6 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
-                                ->booleanNode('commented')
-                                    ->setDeprecated(
-                                        'doctrine/doctrine-bundle',
-                                        '2.0',
-                                        'The doctrine-bundle type commenting features were removed; the corresponding config parameter was deprecated in 2.0 and will be dropped in 3.0.',
-                                    )
-                                ->end()
                             ->end()
                         ->end()
                     ->end()
@@ -181,6 +161,12 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('connections');
         $node        = $treeBuilder->getRootNode();
 
+        // a single connection given directly under "dbal" is the one named by "default_connection"
+        // requires symfony/config 8.2
+        if (method_exists($node, 'acceptElementsAtParentLevel')) {
+            $node->acceptElementsAtParentLevel();
+        }
+
         $connectionNode = $node
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
@@ -188,25 +174,13 @@ class Configuration implements ConfigurationInterface
 
         $this->configureDbalDriverNode($connectionNode);
 
-        $collationKey = defined('Doctrine\DBAL\Connection::PARAM_ASCII_STR_ARRAY')
-            ? 'collate'
-            : 'collation';
-
         $connectionNode
             ->fixXmlConfig('option')
             ->fixXmlConfig('mapping_type')
-            ->fixXmlConfig('slave')
             ->fixXmlConfig('replica')
             ->fixXmlConfig('default_table_option')
             ->children()
                 ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
-                ->scalarNode('platform_service')
-                    ->setDeprecated(
-                        'doctrine/doctrine-bundle',
-                        '2.9',
-                        'The "platform_service" configuration key is deprecated since doctrine-bundle 2.9. DBAL 4 will not support setting a custom platform via connection params anymore.',
-                    )
-                ->end()
                 ->booleanNode('auto_commit')->end()
                 ->scalarNode('schema_filter')->end()
                 ->booleanNode('logging')->defaultValue($this->debug)->end()
@@ -219,31 +193,10 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue(true)
                     ->info('Enables collecting schema errors when profiling is enabled')
                 ->end()
-                ->booleanNode('disable_type_comments')
-                    ->beforeNormalization()
-                        ->ifTrue(static fn ($v): bool => isset($v) && ! method_exists(Connection::class, 'getEventManager'))
-                        ->then(static function ($v) {
-                            Deprecation::trigger(
-                                'doctrine/doctrine-bundle',
-                                'https://github.com/doctrine/DoctrineBundle/pull/2048',
-                                'The "disable_type_comments" configuration key is deprecated when using DBAL 4 and will be removed in DoctrineBundle 3.0.',
-                            );
-
-                            return $v;
-                        })
-                    ->end()
-                ->end()
                 ->scalarNode('server_version')->end()
                 ->integerNode('idle_connection_ttl')->defaultValue(600)->end()
                 ->scalarNode('driver_class')->end()
                 ->scalarNode('wrapper_class')->end()
-                ->booleanNode('keep_slave')
-                    ->setDeprecated(
-                        'doctrine/doctrine-bundle',
-                        '2.2',
-                        'The "keep_slave" configuration key is deprecated since doctrine-bundle 2.2. Use the "keep_replica" configuration key instead.',
-                    )
-                ->end()
                 ->booleanNode('keep_replica')->end()
                 ->arrayNode('options')
                     ->useAttributeAsKey('key')
@@ -254,34 +207,19 @@ class Configuration implements ConfigurationInterface
                     ->prototype('scalar')->end()
                 ->end()
                 ->arrayNode('default_table_options')
-                ->info(sprintf(
-                    "This option is used by the schema-tool and affects generated SQL. Possible keys include 'charset','%s', and 'engine'.",
-                    $collationKey,
-                ))
+                ->info(
+                    "This option is used by the schema-tool and affects generated SQL. Possible keys include 'charset','collation', and 'engine'.",
+                )
                     ->useAttributeAsKey('name')
                     ->prototype('scalar')->end()
                 ->end()
                 ->scalarNode('schema_manager_factory')
                     ->cannotBeEmpty()
-                    ->defaultValue($this->getDefaultSchemaManagerFactory())
+                    ->defaultValue('doctrine.dbal.default_schema_manager_factory')
                 ->end()
                 ->scalarNode('result_cache')->end()
             ->end();
 
-        // dbal < 2.11
-        $slaveNode = $connectionNode
-            ->children()
-                ->arrayNode('slaves')
-                    ->setDeprecated(
-                        'doctrine/doctrine-bundle',
-                        '2.2',
-                        'The "slaves" configuration key will be renamed to "replicas" in doctrine-bundle 3.0. "slaves" is deprecated since doctrine-bundle 2.2.',
-                    )
-                    ->useAttributeAsKey('name')
-                    ->prototype('array');
-        $this->configureDbalDriverNode($slaveNode);
-
-        // dbal >= 2.11
         $replicaNode = $connectionNode
             ->children()
                 ->arrayNode('replicas')
@@ -311,13 +249,12 @@ class Configuration implements ConfigurationInterface
 
                 if ($urlConflictingValues) {
                     $tail = count($urlConflictingValues) > 1 ? sprintf('or "%s" options', array_pop($urlConflictingValues)) : 'option';
-                    Deprecation::trigger(
-                        'doctrine/doctrine-bundle',
-                        'https://github.com/doctrine/DoctrineBundle/pull/1342',
-                        'Setting the "doctrine.dbal.%s" %s while the "url" one is defined is deprecated',
+
+                    throw new RuntimeException(sprintf(
+                        'Setting the "doctrine.dbal.%s" %s while the "url" one is defined is not allowed.',
                         implode('", "', $urlConflictingValues),
                         $tail,
-                    );
+                    ));
                 }
 
                 return $values;
@@ -330,11 +267,6 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('port')->info('Defaults to null at runtime.')->end()
                 ->scalarNode('user')->info('Defaults to "root" at runtime.')->end()
                 ->scalarNode('password')->info('Defaults to null at runtime.')->end()
-                ->booleanNode('override_url')->setDeprecated(
-                    'doctrine/doctrine-bundle',
-                    '2.4',
-                    'The "doctrine.dbal.override_url" configuration key is deprecated.',
-                )->end()
                 ->scalarNode('dbname_suffix')->info('Adds the given suffix to the configured database name, this option has no effects for the SQLite platform')->end()
                 ->scalarNode('application_name')->end()
                 ->scalarNode('charset')->end()
@@ -392,21 +324,6 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->booleanNode('pooled')->info('True to use a pooled server with the oci8/pdo_oracle driver')->end()
                 ->booleanNode('MultipleActiveResultSets')->info('Configuring MultipleActiveResultSets for the pdo_sqlsrv driver')->end()
-                ->booleanNode('use_savepoints')
-                    ->info('Use savepoints for nested transactions')
-                    ->beforeNormalization()
-                        ->ifTrue(static fn ($v): bool => isset($v) && ! method_exists(Connection::class, 'getEventManager'))
-                        ->then(static function ($v) {
-                            Deprecation::trigger(
-                                'doctrine/doctrine-bundle',
-                                'https://github.com/doctrine/DoctrineBundle/pull/2055',
-                                'The "use_savepoints" configuration key is deprecated when using DBAL 4 and will be removed in DoctrineBundle 3.0.',
-                            );
-
-                            return $v;
-                        })
-                    ->end()
-                ->end()
                 ->scalarNode('instancename')
                 ->info(
                     'Optional parameter, complete whether to add the INSTANCE_NAME parameter in the connection.' .
@@ -451,11 +368,7 @@ class Configuration implements ConfigurationInterface
         // Key that should not be rewritten to the entity-manager config
         $excludedKeys = [
             'default_entity_manager' => true,
-            'auto_generate_proxy_classes' => true,
-            'enable_lazy_ghost_objects' => true,
             'enable_native_lazy_objects' => true,
-            'proxy_dir' => true,
-            'proxy_namespace' => true,
             'resolve_target_entities' => true,
             'resolve_target_entity' => true,
             'controller_resolver' => true,
@@ -499,96 +412,33 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->children()
                         ->scalarNode('default_entity_manager')->end()
-                        ->scalarNode('auto_generate_proxy_classes')->defaultValue(false)
-                            ->info('Auto generate mode possible values are: "NEVER", "ALWAYS", "FILE_NOT_EXISTS", "EVAL", "FILE_NOT_EXISTS_OR_CHANGED", this option is ignored when the "enable_native_lazy_objects" option is true')
-                            ->validate()
-                                ->ifTrue(function ($v) {
-                                    /** @phpstan-ignore function.alreadyNarrowedType */
-                                    if (PHP_VERSION_ID >= 80400 && method_exists(OrmConfiguration::class, 'enableNativeLazyObjects')) {
-                                        Deprecation::trigger(
-                                            'doctrine/doctrine-bundle',
-                                            'https://github.com/doctrine/DoctrineBundle/issues/2107',
-                                            'Not using native lazy objects with PHP 8.4+ and ORM 3.4+ is deprecated. In this case, the "auto_generate_proxy_classes" configuration key is deprecated as well.',
-                                        );
-                                    }
-
-                                    $generationModes = $this->getAutoGenerateModes();
-
-                                    if (is_int($v) && in_array($v, $generationModes['values']/*array(0, 1, 2, 3)*/)) {
-                                        return false;
-                                    }
-
-                                    if (is_bool($v)) {
-                                        return false;
-                                    }
-
-                                    if (is_string($v)) {
-                                        if (in_array(strtoupper($v), $generationModes['names']/*array('NEVER', 'ALWAYS', 'FILE_NOT_EXISTS', 'EVAL', 'FILE_NOT_EXISTS_OR_CHANGED')*/)) {
-                                            return false;
-                                        }
-                                    }
-
-                                    return true;
-                                })
-                                ->thenInvalid('Invalid auto generate mode value %s')
-                            ->end()
-                            ->validate()
-                                ->ifString()
-                                ->then(static fn (string $v) => constant('Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_' . strtoupper($v)))
-                            ->end()
-                        ->end()
-                        ->booleanNode('enable_lazy_ghost_objects')
-                            ->defaultValue(! method_exists(ProxyFactory::class, 'resetUninitializedProxy'))
-                            ->info('Enables the new implementation of proxies based on lazy ghosts instead of using the legacy implementation')
-                        ->end()
                         ->booleanNode('enable_native_lazy_objects')
-                            ->defaultFalse()
-                            ->info('Enables the new native implementation of PHP lazy objects instead of generated proxies')
-                        ->end()
-                        ->scalarNode('proxy_dir')
-                            ->defaultValue('%kernel.build_dir%/doctrine/orm/Proxies')
-                            ->info('Configures the path where generated proxy classes are saved when using non-native lazy objects, this option is ignored when the "enable_native_lazy_objects" option is true')
-                            ->beforeNormalization()
-                                ->ifTrue(static fn ($v): bool => true)
-                                ->then(static function ($v) {
-                                    /** @phpstan-ignore function.alreadyNarrowedType */
-                                    if (PHP_VERSION_ID >= 80400 && method_exists(OrmConfiguration::class, 'enableNativeLazyObjects')) {
-                                        Deprecation::trigger(
-                                            'doctrine/doctrine-bundle',
-                                            'https://github.com/doctrine/DoctrineBundle/issues/2107',
-                                            'Not using native lazy objects with PHP 8.4+ and ORM 3.4+ is deprecated. In this case, the "proxy_dir" configuration key is deprecated as well.',
-                                        );
-                                    }
-
-                                    return $v;
-                                })
+                            ->defaultTrue()
+                            ->validate()
+                                ->ifTrue(static fn ($v) => $v === false)
+                                ->thenInvalid('The setting "enable_native_lazy_objects" can no longer be disabled and should not be set')
                             ->end()
-                        ->end()
-                        ->scalarNode('proxy_namespace')
-                            ->defaultValue('Proxies')
-                            ->info('Defines the root namespace for generated proxy classes when using non-native lazy objects, this option is ignored when the "enable_native_lazy_objects" option is true')
-                            ->beforeNormalization()
-                                ->ifTrue(static fn ($v): bool => true)
-                                ->then(static function ($v) {
-                                    /** @phpstan-ignore function.alreadyNarrowedType */
-                                    if (PHP_VERSION_ID >= 80400 && method_exists(OrmConfiguration::class, 'enableNativeLazyObjects')) {
-                                        Deprecation::trigger(
-                                            'doctrine/doctrine-bundle',
-                                            'https://github.com/doctrine/DoctrineBundle/issues/2107',
-                                            'Not using native lazy objects with PHP 8.4+ and ORM 3.4+ is deprecated. In this case, the "proxy_namespace" configuration key is deprecated as well.',
-                                        );
-                                    }
-
-                                    return $v;
-                                })
-                            ->end()
+                            ->setDeprecated(
+                                'doctrine/doctrine-bundle',
+                                '3.1',
+                                'The "%node%" option is deprecated and will be removed in DoctrineBundle 4.0, as native lazy objects are now always enabled.',
+                            )
                         ->end()
                         ->arrayNode('controller_resolver')
                             ->canBeDisabled()
                             ->children()
                                 ->booleanNode('auto_mapping')
-                                    ->defaultNull()
-                                    ->info('Set to false to disable using route placeholders as lookup criteria when the primary key doesn\'t match the argument name')
+                                    ->defaultFalse()
+                                    ->validate()
+                                        ->ifTrue(static fn ($v) => $v !== false)
+                                        ->thenInvalid('The setting "controller_resolver.auto_mapping" can no longer be enabled and must be set to false')
+                                    ->end()
+                                    ->setDeprecated(
+                                        'doctrine/doctrine-bundle',
+                                        '3.1',
+                                        'The "%path%.%node%" option is deprecated and will be removed in DoctrineBundle 4.0, as it only accepts `false` since 3.0.',
+                                    )
+                                    ->info('Set to true to enable using route placeholders as lookup criteria when the primary key doesn\'t match the argument name')
                                 ->end()
                                 ->booleanNode('evict_cache')
                                     ->info('Set to true to fetch the entity from the database instead of using the cache, if any')
@@ -607,6 +457,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Return ORM target entity resolver node
+     *
+     * @return ArrayNodeDefinition<TreeBuilder<'array'>>
      */
     private function getOrmTargetEntityResolverNode(): NodeDefinition
     {
@@ -624,6 +476,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Return ORM entity listener node
+     *
+     * @return ArrayNodeDefinition<TreeBuilder<'array'>>
      */
     private function getOrmEntityListenersNode(): NodeDefinition
     {
@@ -712,6 +566,12 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('entity_managers');
         $node        = $treeBuilder->getRootNode();
 
+        // a single entity manager given directly under "orm" is the one named by "default_entity_manager"
+        // requires symfony/config 8.2
+        if (method_exists($node, 'acceptElementsAtParentLevel')) {
+            $node->acceptElementsAtParentLevel();
+        }
+
         $node
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
@@ -727,36 +587,25 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('class_metadata_factory_name')->defaultValue(ClassMetadataFactory::class)->end()
                     ->scalarNode('default_repository_class')->defaultValue(EntityRepository::class)->end()
                     ->scalarNode('auto_mapping')->defaultFalse()->end()
+                    ->booleanNode('auto_discover_entities')->defaultNull()->info('Registers all entity classes discovered by the container scan, removing the need for explicit "mappings". When not set, enabled if neither "mappings" nor "auto_mapping" is configured and Symfony 8.2 and doctrine/orm 3.6 are available.')->end()
                     ->scalarNode('naming_strategy')->defaultValue('doctrine.orm.naming_strategy.default')->end()
                     ->scalarNode('quote_strategy')->defaultValue('doctrine.orm.quote_strategy.default')->end()
                     ->scalarNode('typed_field_mapper')->defaultValue('doctrine.orm.typed_field_mapper.default')->end()
                     ->scalarNode('entity_listener_resolver')->defaultNull()->end()
                     ->scalarNode('fetch_mode_subselect_batch_size')->end()
+                    ->booleanNode('use_schema_editor_api')
+                        ->defaultNull()
+                        ->info('Set to "true" or "false" to explicitly opt in or out of the schema editor API for schema generation. Requires doctrine/dbal 4.5 or higher and doctrine/orm 3.8 or higher.')
+                        ->validate()
+                            ->ifTrue(static fn ($v) => $v !== null && ! method_exists(Schema::class, 'edit'))
+                            ->thenInvalid('The setting "use_schema_editor_api" requires doctrine/dbal 4.5 or higher.')
+                        ->end()
+                    ->end()
                     ->scalarNode('repository_factory')->defaultValue('doctrine.orm.container_repository_factory')->end()
                     ->arrayNode('schema_ignore_classes')
                         ->prototype('scalar')->end()
                     ->end()
-                    ->booleanNode('report_fields_where_declared')
-                        ->beforeNormalization()
-                            ->ifTrue(static fn ($v): bool => isset($v) && ! class_exists(AnnotationDriver::class))
-                            ->then(static function ($v) {
-                                Deprecation::trigger(
-                                    'doctrine/doctrine-bundle',
-                                    'https://github.com/doctrine/DoctrineBundle/pull/1962',
-                                    'The "report_fields_where_declared" configuration option is deprecated and will be removed in DoctrineBundle 3.0. When using ORM 3, report_fields_where_declared will always be true.',
-                                );
-
-                                return $v;
-                            })
-                        ->end()
-                        ->defaultValue(! class_exists(AnnotationDriver::class))
-                        ->info('Set to "true" to opt-in to the new mapping driver mode that was added in Doctrine ORM 2.16 and will be mandatory in ORM 3.0. See https://github.com/doctrine/orm/pull/10455.')
-                        ->validate()
-                            ->ifTrue(static fn (bool $v): bool => ! class_exists(AnnotationDriver::class) && ! $v)
-                            ->thenInvalid('The setting "report_fields_where_declared" cannot be disabled for ORM 3.')
-                        ->end()
-                    ->end()
-                    ->booleanNode('validate_xml_mapping')->defaultFalse()->info('Set to "true" to opt-in to the new mapping driver mode that was added in Doctrine ORM 2.14. See https://github.com/doctrine/orm/pull/6728.')->end()
+                    ->booleanNode('validate_xml_mapping')->defaultFalse()->info('Set to "true" to opt-in to the new mapping driver mode that was added in Doctrine ORM 2.14 and will be mandatory in ORM 3.0. See https://github.com/doctrine/orm/pull/6728.')->end()
                 ->end()
                 ->children()
                     ->arrayNode('second_level_cache')
@@ -778,7 +627,7 @@ class Configuration implements ConfigurationInterface
                                         ->scalarNode('lock_path')->defaultValue('%kernel.cache_dir%/doctrine/orm/slc/filelock')->end()
                                         ->scalarNode('lock_lifetime')->defaultValue(60)->end()
                                         ->scalarNode('type')->defaultValue('default')->end()
-                                        ->scalarNode('lifetime')->defaultValue(0)->end()
+                                        ->scalarNode('lifetime')->defaultNull()->end()
                                         ->scalarNode('service')->end()
                                         ->scalarNode('name')->end()
                                     ->end()
@@ -822,7 +671,13 @@ class Configuration implements ConfigurationInterface
                                 ->scalarNode('mapping')->defaultValue(true)->end()
                                 ->scalarNode('type')->end()
                                 ->scalarNode('dir')->end()
-                                ->scalarNode('alias')->end()
+                                ->scalarNode('alias')
+                                    ->setDeprecated(
+                                        'doctrine/doctrine-bundle',
+                                        '3.4',
+                                        'The "%path%.%node%" option is deprecated and will be removed in DoctrineBundle 4.0, as Doctrine ORM no longer supports entity namespace aliases.',
+                                    )
+                                ->end()
                                 ->scalarNode('prefix')->end()
                                 ->booleanNode('is_bundle')->end()
                             ->end()
@@ -922,43 +777,5 @@ class Configuration implements ConfigurationInterface
         }
 
         return $node;
-    }
-
-    /**
-     * Find proxy auto generate modes for their names and int values
-     *
-     * @return array{names: list<string>, values: list<int>}
-     */
-    private function getAutoGenerateModes(): array
-    {
-        $constPrefix = 'AUTOGENERATE_';
-        $prefixLen   = strlen($constPrefix);
-        $refClass    = new ReflectionClass(ProxyFactory::class);
-        $constsArray = $refClass->getConstants();
-        $namesArray  = [];
-        $valuesArray = [];
-
-        foreach ($constsArray as $key => $value) {
-            if (strpos($key, $constPrefix) !== 0) {
-                continue;
-            }
-
-            $namesArray[]  = substr($key, $prefixLen);
-            $valuesArray[] = (int) $value;
-        }
-
-        return [
-            'names' => $namesArray,
-            'values' => $valuesArray,
-        ];
-    }
-
-    private function getDefaultSchemaManagerFactory(): string
-    {
-        if (class_exists(LegacySchemaManagerFactory::class)) {
-            return 'doctrine.dbal.legacy_schema_manager_factory';
-        }
-
-        return 'doctrine.dbal.default_schema_manager_factory';
     }
 }

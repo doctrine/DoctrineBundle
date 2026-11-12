@@ -13,5 +13,5 @@ interface EntityListenerServiceResolver extends EntityListenerResolver
      * @param string $serviceId
      */
     // phpcs:ignore
-    public function registerService($className, $serviceId);
+    public function registerService($className, $serviceId): void;
 }

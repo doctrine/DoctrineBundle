@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler;
 
-use Doctrine\Bundle\DoctrineBundle\Controller\ProfilerController;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -17,6 +16,6 @@ final class RemoveProfilerControllerPass implements CompilerPassInterface
             return;
         }
 
-        $container->removeDefinition(ProfilerController::class);
+        $container->removeDefinition('doctrine.profiler_controller');
     }
 }
