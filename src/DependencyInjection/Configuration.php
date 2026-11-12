@@ -67,7 +67,7 @@ final class Configuration implements ConfigurationInterface
     private function addDbalSection(ArrayNodeDefinition $node): void
     {
         // Key that should not be rewritten to the connection config
-        $excludedKeys = ['default_connection' => true, 'driver_schemes' => true, 'driver_scheme' => true, 'types' => true, 'type' => true];
+        $excludedKeys = ['default_connection' => true, 'driver_schemes' => true, 'types' => true];
 
         $node
             ->children()
@@ -78,7 +78,7 @@ final class Configuration implements ConfigurationInterface
                             return false;
                         }
 
-                        if (array_key_exists('connections', $v) || array_key_exists('connection', $v)) {
+                        if (array_key_exists('connections', $v)) {
                             return false;
                         }
 
@@ -104,7 +104,6 @@ final class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('default_connection')->end()
                 ->end()
-                ->fixXmlConfig('type')
                 ->children()
                     ->arrayNode('types')
                         ->useAttributeAsKey('name')
@@ -119,7 +118,6 @@ final class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-                ->fixXmlConfig('driver_scheme')
                 ->children()
                     ->arrayNode('driver_schemes')
                         ->useAttributeAsKey('scheme')
@@ -148,7 +146,6 @@ final class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-                ->fixXmlConfig('connection')
                 ->append($this->getDbalConnectionsNode())
             ->end();
     }
@@ -175,10 +172,6 @@ final class Configuration implements ConfigurationInterface
         $this->configureDbalDriverNode($connectionNode);
 
         $connectionNode
-            ->fixXmlConfig('option')
-            ->fixXmlConfig('mapping_type')
-            ->fixXmlConfig('replica')
-            ->fixXmlConfig('default_table_option')
             ->children()
                 ->scalarNode('driver')->defaultValue('pdo_mysql')->end()
                 ->booleanNode('auto_commit')->end()
@@ -369,7 +362,6 @@ final class Configuration implements ConfigurationInterface
         $excludedKeys = [
             'default_entity_manager' => true,
             'resolve_target_entities' => true,
-            'resolve_target_entity' => true,
             'controller_resolver' => true,
         ];
 
@@ -386,7 +378,7 @@ final class Configuration implements ConfigurationInterface
                                 return false;
                             }
 
-                            if (array_key_exists('entity_managers', $v) || array_key_exists('entity_manager', $v)) {
+                            if (array_key_exists('entity_managers', $v)) {
                                 return false;
                             }
 
@@ -421,9 +413,7 @@ final class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
-                    ->fixXmlConfig('entity_manager')
                     ->append($this->getOrmEntityManagersNode())
-                    ->fixXmlConfig('resolve_target_entity', 'resolve_target_entities')
                     ->append($this->getOrmTargetEntityResolverNode())
                 ->end()
             ->end();
@@ -482,13 +472,13 @@ final class Configuration implements ConfigurationInterface
 
                     $listeners[] = [
                         'class' => $listenerClass,
-                        'event' => $events,
+                        'events' => $events,
                     ];
                 }
 
                 $entities[] = [
                     'class' => $entityClass,
-                    'listener' => $listeners,
+                    'listeners' => $listeners,
                 ];
             }
 
@@ -501,17 +491,14 @@ final class Configuration implements ConfigurationInterface
                 ->ifTrue(static fn ($v) => is_array(reset($v)) && is_string(key(reset($v))))
                 ->then($normalizer)
             ->end()
-            ->fixXmlConfig('entity', 'entities')
             ->children()
                 ->arrayNode('entities')
                     ->useAttributeAsKey('class')
                     ->prototype('array')
-                        ->fixXmlConfig('listener')
                         ->children()
                             ->arrayNode('listeners')
                                 ->useAttributeAsKey('class')
                                 ->prototype('array')
-                                    ->fixXmlConfig('event')
                                     ->children()
                                         ->arrayNode('events')
                                             ->prototype('array')
@@ -555,7 +542,6 @@ final class Configuration implements ConfigurationInterface
                 ->append($this->getOrmCacheDriverNode('metadata_cache_driver'))
                 ->append($this->getOrmCacheDriverNode('result_cache_driver'))
                 ->append($this->getOrmEntityListenersNode())
-                ->fixXmlConfig('schema_ignore_class', 'schema_ignore_classes')
                 ->children()
                     ->scalarNode('connection')->end()
                     ->scalarNode('class_metadata_factory_name')->defaultValue(ClassMetadataFactory::class)->end()
@@ -591,7 +577,6 @@ final class Configuration implements ConfigurationInterface
                             ->booleanNode('enabled')->defaultValue(true)->end()
                             ->scalarNode('factory')->end()
                         ->end()
-                        ->fixXmlConfig('region')
                         ->children()
                             ->arrayNode('regions')
                                 ->useAttributeAsKey('name')
@@ -608,7 +593,6 @@ final class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->fixXmlConfig('logger')
                         ->children()
                             ->arrayNode('loggers')
                                 ->useAttributeAsKey('name')
@@ -622,14 +606,12 @@ final class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-                ->fixXmlConfig('hydrator')
                 ->children()
                     ->arrayNode('hydrators')
                         ->useAttributeAsKey('name')
                         ->prototype('scalar')->end()
                     ->end()
                 ->end()
-                ->fixXmlConfig('mapping')
                 ->children()
                     ->arrayNode('mappings')
                         ->useAttributeAsKey('name')
@@ -658,9 +640,6 @@ final class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->arrayNode('dql')
-                        ->fixXmlConfig('string_function')
-                        ->fixXmlConfig('numeric_function')
-                        ->fixXmlConfig('datetime_function')
                         ->children()
                             ->arrayNode('string_functions')
                                 ->useAttributeAsKey('name')
@@ -677,7 +656,6 @@ final class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-                ->fixXmlConfig('filter')
                 ->children()
                     ->arrayNode('filters')
                         ->info('Register SQL Filters in the entity manager')
@@ -687,17 +665,6 @@ final class Configuration implements ConfigurationInterface
                                 ->ifString()
                                 ->then(static fn ($v) => ['class' => $v])
                             ->end()
-                            ->beforeNormalization()
-                                // The content of the XML node is returned as the "value" key so we need to rename it
-                                ->ifTrue(static fn ($v) => is_array($v) && isset($v['value']))
-                                ->then(static function ($v) {
-                                    $v['class'] = $v['value'];
-                                    unset($v['value']);
-
-                                    return $v;
-                                })
-                            ->end()
-                            ->fixXmlConfig('parameter')
                             ->children()
                                 ->scalarNode('class')->isRequired()->end()
                                 ->booleanNode('enabled')->defaultFalse()->end()
@@ -709,7 +676,6 @@ final class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-                ->fixXmlConfig('identity_generation_preference')
                 ->children()
                     ->arrayNode('identity_generation_preferences')
                         ->info('Configures the preferences for identity generation when using the AUTO strategy. Valid values are "SEQUENCE" or "IDENTITY".')

@@ -1516,16 +1516,6 @@ final class DoctrineExtension extends Extension
         $validatorLoaderDefinition->addTag('validator.auto_mapper', ['priority' => -100]);
     }
 
-    public function getXsdValidationBasePath(): string
-    {
-        return __DIR__ . '/../../config/schema';
-    }
-
-    public function getNamespace(): string
-    {
-        return 'http://symfony.com/schema/dic/doctrine';
-    }
-
     /**
      * {@inheritDoc}
      *

@@ -66,7 +66,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
 {
     abstract protected function loadFromFile(ContainerBuilder $container, string $file): void;
 
-    public function testDbalLoadFromXmlMultipleConnections(): void
+    public function testDbalLoadMultipleConnections(): void
     {
         $container = $this->loadContainer('dbal_service_multiple_connections');
 
@@ -135,7 +135,7 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $this->assertSame('utf8', $config['charset']);
     }
 
-    public function testDbalLoadFromXmlSingleConnections(): void
+    public function testDbalLoadSingleConnections(): void
     {
         $container = $this->loadContainer('dbal_service_single_connection');
         $config    = $container->getDefinition('doctrine.dbal.default_connection')->getArgument(0);
