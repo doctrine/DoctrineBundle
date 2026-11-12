@@ -1245,28 +1245,6 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         );
     }
 
-    public function testNativeLazyObjectsWithConfigTrue(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $this->assertTrue(
-            $this->loadContainer('orm_native_lazy_objects_enable')->get('doctrine.orm.entity_manager')
-            ->getConfiguration()->isNativeLazyObjectsEnabled(),
-        );
-    }
-
-    public function testNativeLazyObjectsWithConfigFalse(): void
-    {
-        if (! interface_exists(EntityManagerInterface::class)) {
-            self::markTestSkipped('This test requires ORM');
-        }
-
-        $this->expectException(InvalidConfigurationException::class);
-        $this->loadContainer('orm_native_lazy_objects_disable');
-    }
-
     /** @param list<string> $bundles */
     private function loadContainer(
         string $fixture,

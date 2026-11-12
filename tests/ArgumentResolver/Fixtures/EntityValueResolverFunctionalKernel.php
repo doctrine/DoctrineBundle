@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\ArgumentResolver\Fixtures;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
-use Doctrine\ORM\Configuration;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -15,12 +14,9 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 use function md5;
-use function method_exists;
 use function mt_rand;
 use function sys_get_temp_dir;
 use function version_compare;
-
-use const PHP_VERSION_ID;
 
 class EntityValueResolverFunctionalKernel extends Kernel
 {
@@ -61,9 +57,6 @@ class EntityValueResolverFunctionalKernel extends Kernel
                 'schema_manager_factory' => 'doctrine.dbal.default_schema_manager_factory',
             ],
             'orm' => [
-                'controller_resolver' => ['auto_mapping' => false],
-                /** @phpstan-ignore function.alreadyNarrowedType,greaterOrEqual.alwaysTrue */
-                'enable_native_lazy_objects' => PHP_VERSION_ID >= 80400 && method_exists(Configuration::class, 'enableNativeLazyObjects'),
                 'mappings' => [
                     'PostFixtures' => [
                         'type' => 'attribute',

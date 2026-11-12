@@ -231,9 +231,6 @@ Configuration Reference
             orm:
                 default_entity_manager: ~ # The first defined is used if not set
 
-                # No-op, deprecated, will be removed in the future
-                enable_native_lazy_objects:   true
-
                 controller_resolver:
                     # Whether the controller resolver is enabled
                     enabled:              true
@@ -645,9 +642,6 @@ Configuration Reference
 
                 'orm' => [
                     'default_entity_manager' => null, // The first defined is used if not set
-
-                    // No-op, deprecated, will be removed in the future
-                    'enable_native_lazy_objects' => true,
 
                     'controller_resolver' => [
                         // Whether the controller resolver is enabled
