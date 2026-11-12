@@ -139,6 +139,7 @@ class ConnectionFactory
                 } catch (InvalidPlatformVersion $e) {
                     // Since DBAL 4.1, the PostgreSQL driver refuses an empty version.
                     // Without a configured version, the platform is detected on the first connection.
+                    // The class does not exist in DBAL 3, where this catch is inert.
                     if ($serverVersion !== '') {
                         throw $e;
                     }

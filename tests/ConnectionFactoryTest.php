@@ -7,12 +7,16 @@ namespace Doctrine\Bundle\DoctrineBundle\Tests;
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Connection\StaticServerVersionProvider;
 use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Platforms\Exception\InvalidPlatformVersion;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 
 use function array_intersect_key;
+use function class_exists;
 
 class ConnectionFactoryTest extends TestCase
 {
@@ -53,6 +57,30 @@ class ConnectionFactoryTest extends TestCase
         /** @var array{charset: string} $params */
         $params = $connection->getParams();
         $this->assertSame('utf8', $params['charset']);
+    }
+
+    public function testInvalidConfiguredServerVersionForPostgreSqlStillThrows(): void
+    {
+        if (! class_exists(StaticServerVersionProvider::class)) {
+            $this->markTestSkipped('The driver does not accept a server version on DBAL < 4.');
+        }
+
+        $params = ['driver' => 'pdo_pgsql', 'dbname' => 'main', 'serverVersion' => 'not-a-version'];
+        $driver = DriverManager::getConnection($params)->getDriver();
+
+        $platformVersionValidated = false;
+        try {
+            $driver->getDatabasePlatform(new StaticServerVersionProvider('not-a-version'));
+        } catch (InvalidPlatformVersion) {
+            $platformVersionValidated = true;
+        }
+
+        if (! $platformVersionValidated) {
+            $this->markTestSkipped('The installed DBAL does not reject an invalid platform version.');
+        }
+
+        $this->expectException(InvalidPlatformVersion::class);
+        (new ConnectionFactory([]))->createConnection($params, $this->configuration);
     }
 
     public function testDefaultCharsetMySql(): void
