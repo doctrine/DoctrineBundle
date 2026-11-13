@@ -1,0 +1,13 @@
+doctrine:
+    dbal:
+        default_connection: guarded
+        connections:
+            guarded:
+                logging: false
+                profiling: false
+                n_plus_one_threshold: 20
+                n_plus_one_strict: true
+            unguarded:
+                logging: false
+                profiling: false
+                n_plus_one_threshold: 0
