@@ -59,6 +59,20 @@ class ConnectionFactoryTest extends TestCase
         $this->assertSame('utf8', $params['charset']);
     }
 
+    /** Since DBAL 4.1, an empty MySQL version triggers the deprecation of MySQL < 8. */
+    #[IgnoreDeprecations]
+    public function testDefaultCharsetMySqlWithoutServerVersion(): void
+    {
+        $connection = (new ConnectionFactory([]))->createConnection(
+            ['driver' => 'pdo_mysql', 'dbname' => 'main'],
+            $this->configuration,
+        );
+
+        /** @var array{charset: string} $params */
+        $params = $connection->getParams();
+        $this->assertSame('utf8mb4', $params['charset']);
+    }
+
     public function testInvalidConfiguredServerVersionForPostgreSqlStillThrows(): void
     {
         if (! class_exists(StaticServerVersionProvider::class)) {
