@@ -17,6 +17,7 @@ use Doctrine\DBAL\Exception\InvalidWrapperClass;
 use Doctrine\DBAL\Exception\MalformedDsnException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\Exception\InvalidPlatformVersion;
 use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\Deprecations\Deprecation;
@@ -125,13 +126,26 @@ class ConnectionFactory
             $driver     = $connection->getDriver();
 
             if (! isset($params['charset'])) {
-                /** @phpstan-ignore arguments.count (DBAL < 4.x doesn't accept an argument) */
-                $platform = $driver->getDatabasePlatform(
-                    ...(class_exists(StaticServerVersionProvider::class)
-                        ? [new StaticServerVersionProvider($params['serverVersion'] ?? $params['primary']['serverVersion'] ?? '')]
-                        : []
-                    ),
-                );
+                $serverVersion = $params['serverVersion'] ?? $params['primary']['serverVersion'] ?? '';
+
+                try {
+                    /** @phpstan-ignore arguments.count (DBAL < 4.x doesn't accept an argument) */
+                    $platform = $driver->getDatabasePlatform(
+                        ...(class_exists(StaticServerVersionProvider::class)
+                            ? [new StaticServerVersionProvider($serverVersion)]
+                            : []
+                        ),
+                    );
+                } catch (InvalidPlatformVersion $e) {
+                    // Since DBAL 4.1, the PostgreSQL driver refuses an empty version.
+                    // Without a configured version, the platform is detected on the first connection.
+                    // The class does not exist in DBAL 3, where this catch is inert.
+                    if ($serverVersion !== '') {
+                        throw $e;
+                    }
+
+                    $platform = null;
+                }
 
                 if ($platform instanceof AbstractMySQLPlatform) {
                     $params['charset'] = 'utf8mb4';
