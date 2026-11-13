@@ -17,9 +17,7 @@ doctrine:
                 mappings:
                     XmlBundle:
                         dir: Resources/config/doctrine
-                        alias: xml
                     manual:
                         type: xml
                         prefix: Fixtures\Bundles\XmlBundle
                         dir: "%kernel.root_dir%/tests/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine"
-                        alias: TestAlias
