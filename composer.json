@@ -45,7 +45,7 @@
     },
     "require-dev": {
         "doctrine/coding-standard": "^14",
-        "doctrine/orm": "^3.4.4",
+        "doctrine/orm": "^3.4.4 || dev-feature/custom-collections-delegation as 3.9.x-dev",
         "phpstan/phpstan": "^2.1.13",
         "phpstan/phpstan-phpunit": "2.0.3",
         "phpstan/phpstan-strict-rules": "^2",
@@ -79,6 +79,13 @@
         "symfony/security-bundle": "To use the current_user(), is_granted() and other security functions in #[MapEntity] expressions.",
         "symfony/web-profiler-bundle": "To use the data collector."
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/nikophil/orm",
+            "canonical": false
+        }
+    ],
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
