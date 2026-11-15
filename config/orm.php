@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
+use Doctrine\Bundle\DoctrineBundle\Collection\ContainerDelegateCollectionFactory;
 use Doctrine\Bundle\DoctrineBundle\ManagerConfigurator;
 use Doctrine\Bundle\DoctrineBundle\Orm\ManagerRegistryAwareEntityManagerProvider;
 use Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory;
@@ -74,6 +75,13 @@ return static function (ContainerConfigurator $container): void {
             ->lazy()
 
         ->set('doctrine.orm.container_repository_factory', ContainerRepositoryFactory::class)
+            ->args([
+                inline_service(ServiceLocator::class)->args([
+                    [],
+                ]),
+            ])
+
+        ->set('doctrine.orm.container_delegate_collection_factory', ContainerDelegateCollectionFactory::class)
             ->args([
                 inline_service(ServiceLocator::class)->args([
                     [],

@@ -21,6 +21,8 @@ use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\Php8EventL
 use Doctrine\DBAL\Connection;
 use Doctrine\Deprecations\PHPUnit\VerifyDeprecations;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
+use Doctrine\ORM\Collection\DelegateCollection;
+use Doctrine\ORM\Collection\DelegateCollectionFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
@@ -1210,6 +1212,74 @@ class DoctrineExtensionTest extends TestCase
             'priority'       => null,
         ];
         $this->assertSame([$expected], $definition->getTag('doctrine.orm.entity_listener'));
+    }
+
+    public function testDelegateCollectionsAreAutoconfigured(): void
+    {
+        if (! interface_exists(DelegateCollectionFactory::class)) {
+            self::markTestSkipped('This test requires ORM 3.9');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+
+        $extension->load([$config], $container);
+
+        $this->assertSame(
+            ['doctrine.orm.delegate_collection' => [[]]],
+            $container->getAutoconfiguredInstanceof()[DelegateCollection::class]->getTags(),
+        );
+    }
+
+    public function testDelegateCollectionsAreNotWiredBeforeOrm39(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        if (interface_exists(DelegateCollectionFactory::class)) {
+            self::markTestSkipped('This test covers ORM before 3.9, which has no custom collections.');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilderWithBaseValues()->build();
+
+        $extension->load([$config], $container);
+
+        $definition  = $container->getDefinition('doctrine.orm.default_configuration');
+        $methodCalls = array_map(static fn (array $call) => $call[0], $definition->getMethodCalls());
+
+        self::assertNotContains('setDelegateCollectionFactory', $methodCalls);
+        self::assertFalse($container->hasDefinition('doctrine.orm.container_delegate_collection_factory'));
+        self::assertArrayNotHasKey(DelegateCollection::class, $container->getAutoconfiguredInstanceof());
+    }
+
+    public function testDelegateCollectionFactoryRequiresOrm39(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        if (interface_exists(DelegateCollectionFactory::class)) {
+            self::markTestSkipped('This test covers ORM before 3.9, which has no custom collections.');
+        }
+
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addBaseConnection()
+            ->addEntityManager(['delegate_collection_factory' => 'delegate_collection_factory'])
+            ->build();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The "delegate_collection_factory" option requires doctrine/orm 3.9 or higher.');
+
+        $extension->load([$config], $container);
     }
 
     public function testAsDoctrineListenerAttribute(): void

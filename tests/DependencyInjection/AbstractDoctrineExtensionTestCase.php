@@ -1218,6 +1218,18 @@ abstract class AbstractDoctrineExtensionTestCase extends TestCase
         $this->assertDICDefinitionMethodCallOnce($definition, 'setRepositoryFactory', ['repository_factory']);
     }
 
+    #[RequiresMethod(OrmConfiguration::class, 'setDelegateCollectionFactory')]
+    public function testDelegateCollectionFactory(): void
+    {
+        $container = $this->loadContainer('orm_delegate_collection_factory');
+
+        $def1 = $container->getDefinition('doctrine.orm.em1_configuration');
+        $def2 = $container->getDefinition('doctrine.orm.em2_configuration');
+
+        $this->assertDICDefinitionMethodCallOnce($def1, 'setDelegateCollectionFactory', ['doctrine.orm.container_delegate_collection_factory']);
+        $this->assertDICDefinitionMethodCallOnce($def2, 'setDelegateCollectionFactory', ['delegate_collection_factory']);
+    }
+
     public function testDisableSchemaValidation(): void
     {
         $container           = $this->loadContainer('dbal_collect_schema_errors_enable');

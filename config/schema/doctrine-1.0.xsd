@@ -227,6 +227,7 @@
         <xsd:attribute name="typed-field-mapper" type="xsd:string" />
         <xsd:attribute name="entity-listener-resolver" type="xsd:string" />
         <xsd:attribute name="repository-factory" type="xsd:string" />
+        <xsd:attribute name="delegate-collection-factory" type="xsd:string" />
         <xsd:attribute name="validate-xml-mapping" type="xsd:boolean" />
     </xsd:attributeGroup>
 
