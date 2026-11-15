@@ -1038,12 +1038,15 @@ class RegisterDbalTypePassTestKernel extends Kernel
                 'php_errors' => ['log' => true],
                 'handle_all_throwables' => true,
             ]);
-            $container->loadFromExtension('doctrine', [
+            $doctrineConfig = [
                 'dbal' => [
                     'driver' => 'pdo_sqlite',
                     'types' => ['kernel_type' => ['class' => RegisterDbalTypePassUuidType::class]],
                 ],
-                'orm' => [
+            ];
+
+            if (interface_exists(EntityManagerInterface::class)) {
+                $doctrineConfig['orm'] = [
                     'mappings' => [
                         'Fixtures' => [
                             'type' => 'attribute',
@@ -1052,8 +1055,10 @@ class RegisterDbalTypePassTestKernel extends Kernel
                             'is_bundle' => false,
                         ],
                     ],
-                ],
-            ]);
+                ];
+            }
+
+            $container->loadFromExtension('doctrine', $doctrineConfig);
             $container->register(MoneyTypeFixture::class)
                 ->setAutoconfigured(true);
             $container->register('logger', NullLogger::class);

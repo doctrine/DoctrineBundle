@@ -43,7 +43,8 @@ return static function (ContainerConfigurator $container): void {
 
         ->set('doctrine.dbal.connection_factory', ConnectionFactory::class)
             ->args([
-                abstract_arg('types to register in the global type registry'),
+                // Filled by RegisterDbalTypePass when types are declared, null otherwise.
+                null,
                 service('doctrine.dbal.connection_factory.dsn_parser'),
             ])
 
