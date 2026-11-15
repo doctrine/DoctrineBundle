@@ -10,6 +10,7 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer;
+use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\EntityAutoDiscoveryPass;
 use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\Bundle\DoctrineBundle\Tests\Builder\BundleConfigurationBuilder;
@@ -69,6 +70,24 @@ use function version_compare;
 class DoctrineExtensionTest extends TestCase
 {
     use VerifyDeprecations;
+
+    /**
+     * The extension can be loaded without building the bundle, for instance in the tests of a
+     * package that depends on DoctrineBundle. The types argument of the connection factory must
+     * not leave the container in a state that fails when the factory is created.
+     */
+    public function testConnectionFactoryWithoutTheDbalTypePass(): void
+    {
+        $container = self::getContainer();
+        $extension = new DoctrineExtension();
+
+        $extension->load([BundleConfigurationBuilder::createBuilderWithBaseValues()->build()], $container);
+
+        $container->getDefinition('doctrine.dbal.connection_factory')->setPublic(true);
+        $this->compileContainer($container);
+
+        self::assertInstanceOf(ConnectionFactory::class, $container->get('doctrine.dbal.connection_factory'));
+    }
 
     public function testAutowiringAlias(): void
     {
