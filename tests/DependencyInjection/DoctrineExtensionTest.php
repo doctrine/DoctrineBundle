@@ -81,7 +81,7 @@ class DoctrineExtensionTest extends TestCase
         $container = self::getContainer();
         $extension = new DoctrineExtension();
 
-        $extension->load([BundleConfigurationBuilder::createBuilderWithBaseValues()->build()], $container);
+        $extension->load([BundleConfigurationBuilder::createBuilder()->addBaseConnection()->build()], $container);
 
         $container->getDefinition('doctrine.dbal.connection_factory')->setPublic(true);
         $this->compileContainer($container);
