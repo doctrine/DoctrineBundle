@@ -573,7 +573,6 @@ final class DoctrineExtension extends Extension
             $this->loadDbalConnection($name, $connection, $container);
         }
 
-        /** @phpstan-ignore argument.type (Needed for the $reflector parameter) */
         $container->registerAttributeForAutoconfiguration(AsDbalType::class, RegisterDbalTypePass::autoconfigureFromAttribute(...));
 
         $container->registerForAutoconfiguration(MiddlewareInterface::class)->addTag('doctrine.middleware');
@@ -943,7 +942,6 @@ final class DoctrineExtension extends Extension
         /** @phpstan-ignore function.alreadyNarrowedType */
         $bridgeOrdersListeners = method_exists(Query::class, 'ranOnPrimary');
 
-        /** @phpstan-ignore argument.type (Needed for the $reflector parameter) */
         $container->registerAttributeForAutoconfiguration(AsDoctrineListener::class, static function (ChildDefinition $definition, AsDoctrineListener $attribute, ReflectionClass $reflector) use ($bridgeOrdersListeners): void {
             if (! $bridgeOrdersListeners && ($attribute->before !== null || $attribute->after !== null)) {
                 throw new LogicException(sprintf('Using "before" or "after" in #[AsDoctrineListener] on "%s" requires symfony/doctrine-bridge 8.2 or higher.', $reflector->getName()));
