@@ -312,6 +312,9 @@ Configuration Reference
                         # Service id of the repository factory
                         repository_factory:           ~
 
+                        # Service id of the factory creating the custom collections (requires doctrine/orm 3.9)
+                        delegate_collection_factory:  doctrine.orm.container_delegate_collection_factory
+
                         # Second level cache configuration
                         second_level_cache:
                             enabled:              true
@@ -732,6 +735,9 @@ Configuration Reference
 
                             // Service id of the repository factory
                             'repository_factory' => null,
+
+                            // Service id of the factory creating the custom collections (requires doctrine/orm 3.9)
+                            'delegate_collection_factory' => 'doctrine.orm.container_delegate_collection_factory',
 
                             // Second level cache configuration
                             'second_level_cache' => [
