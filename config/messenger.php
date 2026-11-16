@@ -17,7 +17,18 @@ use Symfony\Bridge\Doctrine\SchemaListener\MessengerTransportDoctrineSchemaListe
 use Symfony\Component\Messenger\Bridge\Doctrine\EventListener\PostgreSqlNotifyOnIdleListener;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 
+use function class_exists;
+
 return static function (ContainerConfigurator $container): void {
+    // symfony/doctrine-bridge 8.2 deprecates the non-DBAL classes, so the legacy service ids use the DBAL ones when they exist
+    $pingMiddleware                  = class_exists(DoctrineDbalPingConnectionMiddleware::class) ? DoctrineDbalPingConnectionMiddleware::class : DoctrinePingConnectionMiddleware::class;
+    $closeMiddleware                 = class_exists(DoctrineDbalCloseConnectionMiddleware::class) ? DoctrineDbalCloseConnectionMiddleware::class : DoctrineCloseConnectionMiddleware::class;
+    $openTransactionLoggerMiddleware = class_exists(DoctrineDbalOpenTransactionLoggerMiddleware::class) ? DoctrineDbalOpenTransactionLoggerMiddleware::class : DoctrineOpenTransactionLoggerMiddleware::class;
+    // The deprecated class takes the entity manager name as second argument, the DBAL one does not
+    $openTransactionLoggerArgs = $openTransactionLoggerMiddleware === DoctrineDbalOpenTransactionLoggerMiddleware::class
+        ? [service('doctrine'), service('logger')]
+        : [service('doctrine'), null, service('logger')];
+
     $container->services()
 
         ->set('messenger.middleware.doctrine_transaction', DoctrineTransactionMiddleware::class)
@@ -32,7 +43,7 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
             ])
 
-        ->set('messenger.middleware.doctrine_ping_connection', DoctrinePingConnectionMiddleware::class)
+        ->set('messenger.middleware.doctrine_ping_connection', $pingMiddleware)
             ->abstract()
             ->args([
                 service('doctrine'),
@@ -44,7 +55,7 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
             ])
 
-        ->set('messenger.middleware.doctrine_close_connection', DoctrineCloseConnectionMiddleware::class)
+        ->set('messenger.middleware.doctrine_close_connection', $closeMiddleware)
             ->abstract()
             ->args([
                 service('doctrine'),
@@ -56,13 +67,9 @@ return static function (ContainerConfigurator $container): void {
                 service('doctrine'),
             ])
 
-        ->set('messenger.middleware.doctrine_open_transaction_logger', DoctrineOpenTransactionLoggerMiddleware::class)
+        ->set('messenger.middleware.doctrine_open_transaction_logger', $openTransactionLoggerMiddleware)
             ->abstract()
-            ->args([
-                service('doctrine'),
-                null,
-                service('logger'),
-            ])
+            ->args($openTransactionLoggerArgs)
 
         ->set('messenger.middleware.doctrine_dbal_open_transaction_logger', DoctrineDbalOpenTransactionLoggerMiddleware::class)
             ->abstract()
