@@ -92,6 +92,7 @@ use function array_replace;
 use function array_values;
 use function assert;
 use function class_exists;
+use function count;
 use function dirname;
 use function glob;
 use function in_array;
@@ -881,11 +882,12 @@ final class DoctrineExtension extends Extension
         $bundles                   = $container->getParameter('kernel.bundles');
         $config['entity_managers'] = $this->fixManagersAutoMappings($config['entity_managers'], $bundles);
 
-        $metadataDrivers = [];
+        $metadataDrivers     = [];
+        $singleEntityManager = count($config['entity_managers']) === 1;
 
         foreach ($config['entity_managers'] as $name => $entityManager) {
             $entityManager['name'] = $name;
-            $this->loadOrmEntityManager($entityManager, $container);
+            $this->loadOrmEntityManager($entityManager, $container, $singleEntityManager);
 
             // A custom metadata factory might not use the metadata driver to decide which classes are transient
             if (in_array($entityManager['class_metadata_factory_name'], [ORMClassMetadataFactory::class, ClassMetadataFactory::class], true)) {
@@ -976,15 +978,16 @@ final class DoctrineExtension extends Extension
     /**
      * Loads a configured ORM entity manager.
      *
-     * @param array<string, mixed> $entityManager A configured ORM entity manager.
-     * @param ContainerBuilder     $container     A ContainerBuilder instance
+     * @param array<string, mixed> $entityManager       A configured ORM entity manager.
+     * @param ContainerBuilder     $container           A ContainerBuilder instance
+     * @param bool                 $singleEntityManager Whether it is the only configured entity manager
      */
-    private function loadOrmEntityManager(array $entityManager, ContainerBuilder $container): void
+    private function loadOrmEntityManager(array $entityManager, ContainerBuilder $container, bool $singleEntityManager): void
     {
         $ormConfigDef = $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), new ChildDefinition('doctrine.orm.configuration'));
         $ormConfigDef->addTag(IdGeneratorPass::CONFIGURATION_TAG);
 
-        $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container);
+        $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container, $singleEntityManager);
         $this->loadOrmCacheDrivers($entityManager, $container);
 
         if (isset($entityManager['entity_listener_resolver']) && $entityManager['entity_listener_resolver']) {
@@ -1165,7 +1168,7 @@ final class DoctrineExtension extends Extension
      * In the case of bundles everything is really optional (which leads to autodetection for this bundle) but
      * in the mappings key everything except alias is a required argument.
      */
-    private function loadOrmEntityManagerMappingInformation(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container): void
+    private function loadOrmEntityManagerMappingInformation(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container, bool $singleEntityManager): void
     {
         // reset state of drivers and alias map. They are only used by this methods and children.
         $this->drivers  = [];
@@ -1175,7 +1178,7 @@ final class DoctrineExtension extends Extension
         $this->registerMappingDrivers($entityManager, $container);
 
         $autoDiscoverEntities = $entityManager['auto_discover_entities']
-            ?? ($entityManager['mappings'] === [] && ! $entityManager['auto_mapping'] && self::missingEntityAutoDiscoveryRequirement() === null);
+            ?? ($singleEntityManager && $entityManager['mappings'] === [] && ! $entityManager['auto_mapping'] && self::missingEntityAutoDiscoveryRequirement() === null);
 
         if ($autoDiscoverEntities) {
             $this->registerEntityAutoDiscoveryDriver($entityManager, $container);

@@ -56,6 +56,7 @@ use Symfony\Component\ExpressionLanguage\CompiledExpressionLanguage;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+use function array_keys;
 use function array_map;
 use function array_values;
 use function class_exists;
@@ -340,6 +341,65 @@ class DoctrineExtensionTest extends TestCase
         (new DoctrineExtension())->load([['dbal' => [], 'orm' => $ormConfig]], $container);
 
         self::assertFalse($container->hasDefinition('doctrine.orm.default_auto_discover_class_locator'));
+    }
+
+    /** @param array<string, array<string, mixed>> $entityManagers */
+    #[TestWith([['default' => [], 'other' => ['mappings' => ['XmlBundle' => null]]]], 'mapping-less manager listed first')]
+    #[TestWith([['default' => ['mappings' => ['XmlBundle' => null]], 'other' => []]], 'mapping-less manager listed second')]
+    #[TestWith([['default' => [], 'other' => []]], 'two mapping-less managers')]
+    #[TestWith([['default' => ['auto_discover_entities' => false], 'other' => ['mappings' => ['XmlBundle' => null]]]], 'explicitly disabled')]
+    public function testAutoDiscoverEntitiesStaysOffWithSeveralEntityManagers(array $entityManagers): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        $container = $this->getContainer(['XmlBundle']);
+        (new DoctrineExtension())->load([
+            [
+                'dbal' => [],
+                'orm' => [
+                    'default_entity_manager' => 'default',
+                    'entity_managers' => $entityManagers,
+                ],
+            ],
+        ], $container);
+
+        foreach (array_keys($entityManagers) as $name) {
+            self::assertFalse($container->hasDefinition(sprintf('doctrine.orm.%s_auto_discover_class_locator', $name)));
+
+            foreach ($container->getDefinition(sprintf('doctrine.orm.%s_metadata_driver', $name))->getMethodCalls() as [$method]) {
+                self::assertNotSame('setDefaultDriver', $method);
+            }
+        }
+    }
+
+    public function testAutoDiscoverEntitiesCanBeEnabledWithSeveralEntityManagers(): void
+    {
+        if (! interface_exists(EntityManagerInterface::class)) {
+            self::markTestSkipped('This test requires ORM');
+        }
+
+        if (! self::supportsAutoDiscovery()) {
+            self::markTestSkipped('This test requires ContainerBuilder::findTaggedResourceIds() (symfony/dependency-injection 7.3) and doctrine/orm 3.6');
+        }
+
+        $container = $this->getContainer(['XmlBundle']);
+        (new DoctrineExtension())->load([
+            [
+                'dbal' => [],
+                'orm' => [
+                    'default_entity_manager' => 'default',
+                    'entity_managers' => [
+                        'default' => ['auto_discover_entities' => true],
+                        'other' => ['mappings' => ['XmlBundle' => null]],
+                    ],
+                ],
+            ],
+        ], $container);
+
+        self::assertTrue($container->hasDefinition('doctrine.orm.default_auto_discover_class_locator'));
+        self::assertFalse($container->hasDefinition('doctrine.orm.other_auto_discover_class_locator'));
     }
 
     private static function supportsAutoDiscovery(): bool
