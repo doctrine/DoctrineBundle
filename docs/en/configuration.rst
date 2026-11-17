@@ -290,9 +290,9 @@ Configuration Reference
                         # Automatically map the entities of all bundles
                         auto_mapping:                 false
                         # Registers all classes tagged with "doctrine.orm.entity" by the container scan,
-                        # removing the need for explicit "mappings". When not set, enabled if neither
-                        # "mappings" nor "auto_mapping" is configured and Symfony 8.2 and doctrine/orm 3.6
-                        # are available.
+                        # removing the need for explicit "mappings". When not set, enabled if it is the
+                        # only entity manager, neither "mappings" nor "auto_mapping" is configured and
+                        # Symfony 8.2 and doctrine/orm 3.6 are available.
                         auto_discover_entities:       ~
                         # 0pt-in to the new mapping driver mode as of Doctrine ORM 2.14. See https://github.com/doctrine/orm/pull/6728.
                         validate_xml_mapping: false
@@ -938,10 +938,19 @@ discovered classes only feed the metadata driver chain's default driver.
 
 Discovery relies on ``ContainerBuilder::findTaggedResourceIds()`` (Symfony
 8.2) and on the ORM's ``AttributeDriver`` accepting a ``ClassLocator`` (doctrine/orm
-3.6). When the option is not set, discovery is enabled automatically for entity
-managers that configure neither ``mappings`` nor ``auto_mapping``, provided both
-requirements are met. Set it to ``false`` to opt out, or to ``true`` to require
-it: a ``LogicException`` naming the missing requirement is then thrown.
+3.6). When the option is not set, discovery is enabled automatically when a
+single entity manager is configured and it configures neither ``mappings`` nor
+``auto_mapping``, provided both requirements are met. Set it to ``false`` to opt
+out, or to ``true`` to require it: a ``LogicException`` naming the missing
+requirement is then thrown.
+
+.. warning::
+
+    With several entity managers, discovery is only enabled where it is set to
+    ``true``. The discovered classes are not partitioned between managers, and
+    a manager using discovery reports every entity class with the
+    ``#[Entity]`` attribute as its own, so it can take precedence over the
+    manager that maps it explicitly in ``ManagerRegistry::getManagerForClass()``.
 
 .. warning::
 

@@ -66,3 +66,33 @@ namespace aliases. Remove it from your configuration.
                  prefix: 'App\Entity'
 -                alias: App
 ```
+
+Entity auto-discovery
+---------------------
+
+The `auto_discover_entities` option of an entity manager registers the entity
+classes found by the service container scan, removing the need for a `mappings`
+block. When the option is not set, discovery is only enabled if a single entity
+manager is configured and it configures neither `mappings` nor `auto_mapping`.
+DoctrineBundle 3.4.0 to 3.4.2 also enabled it on such managers when several
+entity managers were configured.
+
+With several entity managers, set the option to `true` to enable discovery on a
+manager. The discovered classes are not partitioned between managers: a manager
+using discovery reports every class with the `#[Entity]` attribute as its own,
+so it can take precedence over the manager that maps the class explicitly in
+`ManagerRegistry::getManagerForClass()`.
+
+```diff
+ doctrine:
+     orm:
+         entity_managers:
+             default:
++                auto_discover_entities: true
+             tenant:
+                 mappings:
+                     Tenant:
+                         type: attribute
+                         dir: '%kernel.project_dir%/src/Tenant'
+                         prefix: 'App\Tenant'
+```
