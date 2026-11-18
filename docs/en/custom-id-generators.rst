@@ -36,5 +36,5 @@ are provided: ``doctrine.ulid_generator`` to generate ULIDs, and
     }
 
 See also
-https://www.doctrine-project.org/projects/doctrine-orm/en/3.3/reference/attributes-reference.html#attrref_customidgenerator
+https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/attributes-reference.html#attrref_customidgenerator
 for more info about custom ID generators.
