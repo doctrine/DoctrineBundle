@@ -1042,4 +1042,4 @@ For example, to inject a connection with the name ``purchase_logs`` use this:
             $this->connection = $purchaseLogsConnection;
         }
 
-.. _DBAL documentation: https://www.doctrine-project.org/projects/doctrine-dbal/en/2.10/index.html
+.. _DBAL documentation: https://www.doctrine-project.org/projects/doctrine-dbal/en/current/index.html
