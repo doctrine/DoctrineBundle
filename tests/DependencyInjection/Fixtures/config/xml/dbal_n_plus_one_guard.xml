@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+
+<srv:container xmlns="http://symfony.com/schema/dic/doctrine"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:srv="http://symfony.com/schema/dic/services"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
+                        http://symfony.com/schema/dic/doctrine http://symfony.com/schema/dic/doctrine/doctrine-1.0.xsd">
+
+    <config>
+        <dbal default-connection="guarded">
+            <connection
+                name="guarded"
+                logging="false"
+                profiling="false"
+                n-plus-one-threshold="20"
+                n-plus-one-strict="true" />
+            <connection
+                name="unguarded"
+                logging="false"
+                profiling="false"
+                n-plus-one-threshold="0" />
+        </dbal>
+    </config>
+</srv:container>
