@@ -18,6 +18,7 @@ use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
+use Symfony\Component\VarDumper\Cloner\Data;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Throwable;
 
@@ -26,7 +27,12 @@ use function array_sum;
 use function arsort;
 use function assert;
 use function count;
+use function hash;
 use function in_array;
+use function preg_match;
+use function preg_replace;
+use function serialize;
+use function strncasecmp;
 use function usort;
 
 /**
@@ -60,6 +66,8 @@ use function usort;
  *    types: ?array<array-key, Type|int|string|null>,
  *    count: int,
  *    index: int,
+ *    paramSetCount: int,
+ *    suspectedNPlusOne: bool,
  *    executionPercent?: float
  * }
  * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
@@ -67,6 +75,14 @@ use function usort;
  */
 class DoctrineDataCollector extends BaseCollector implements LateDataCollectorInterface
 {
+    /**
+     * How many different parameter sets one SELECT has to be replayed with
+     * before it is worth pointing at. Two is the shape of an N+1, but it is
+     * also the shape of two unrelated lookups, so it would flag ordinary
+     * pages.
+     */
+    private const int SUSPECTED_N_PLUS_ONE_THRESHOLD = 5;
+
     private int|null $invalidEntityCount = null;
 
     private int|null $managedEntityCount = null;
@@ -337,6 +353,7 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         $totalExecutionMS     = 0;
         foreach ($this->data['queries'] as $connection => $queries) {
             $connectionGroupedQueries = [];
+            $paramSets                = [];
             foreach ($queries as $i => $query) {
                 $key = $query['sql'];
                 if (! isset($connectionGroupedQueries[$key])) {
@@ -349,6 +366,16 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
                 $connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
                 $connectionGroupedQueries[$key]['count']++;
                 $totalExecutionMS += $query['executionMS'];
+
+                $paramSets[$key][$this->hashParams($query['params'] ?? [])] = true;
+            }
+
+            foreach ($connectionGroupedQueries as $key => $groupedQuery) {
+                $paramSetCount = count($paramSets[$key]);
+
+                $connectionGroupedQueries[$key]['paramSetCount']     = $paramSetCount;
+                $connectionGroupedQueries[$key]['suspectedNPlusOne'] = $paramSetCount >= self::SUSPECTED_N_PLUS_ONE_THRESHOLD
+                    && self::readsRows($groupedQuery['sql']);
             }
 
             usort($connectionGroupedQueries, static function ($a, $b) {
@@ -370,6 +397,52 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         return $this->groupedQueries;
     }
 
+    /**
+     * A write replayed with varying parameters is a batch, not an N+1: one
+     * flush() inserting 50 rows is the same statement with 50 different
+     * parameter sets, and no amount of eager fetching changes that.
+     *
+     * Statements do not always start with their verb, though: a CTE opens with
+     * WITH, a compound select can be parenthesised, and tracing middlewares
+     * prepend a comment. Step over all of that before looking.
+     */
+    private static function readsRows(string $sql): bool
+    {
+        $sql = preg_replace('{^(?:\s|/\*.*?\*/|(?:--|\#)[^\n]*(?:\n|$)|\()+}s', '', $sql) ?? $sql;
+
+        if (strncasecmp($sql, 'SELECT', 6) === 0) {
+            return true;
+        }
+
+        // A common table expression modifies rows when its body does, which on
+        // PostgreSQL it may. Nothing short of parsing says where that body
+        // ends, so a WITH carrying any of those words is left alone.
+        return strncasecmp($sql, 'WITH', 4) === 0
+            && preg_match('{\b(?:INSERT|UPDATE|DELETE|MERGE)\b}i', $sql) === 0;
+    }
+
+    /**
+     * Returns a fixed-size identity for a set of query parameters.
+     *
+     * Counting the distinct identities of a group tells apart the same
+     * statement repeated as is from the same statement replayed with varying
+     * parameters, which is the typical signature of N+1 queries caused by ORM
+     * lazy loading.
+     *
+     * Parameters are read after sanitization, where an object that has no
+     * string form is rendered as a notice rather than a value. Such objects
+     * are indistinguishable from each other here, so a statement bound with
+     * one counts as a single parameter set and goes unreported.
+     */
+    private function hashParams(mixed $params): string
+    {
+        if ($params instanceof Data) {
+            $params = $params->getValue(true);
+        }
+
+        return hash('xxh128', serialize($params));
+    }
+
     private function executionTimePercentage(float $executionTimeMS, float $totalExecutionTimeMS): float
     {
         if (! $totalExecutionTimeMS) {
@@ -387,6 +460,27 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         }
 
         return $count;
+    }
+
+    /**
+     * Whether any group looks like an N+1.
+     *
+     * The flag lives on the grouped statements, and the panel only groups by
+     * itself past a hundred queries, so without this a page with thirty
+     * queries -- twenty of them one lazy-loaded association -- would hide the
+     * very thing worth seeing until someone thought to group it by hand.
+     */
+    public function hasSuspectedNPlusOne(): bool
+    {
+        foreach ($this->getGroupedQueries() as $connectionGroupedQueries) {
+            foreach ($connectionGroupedQueries as $groupedQuery) {
+                if ($groupedQuery['suspectedNPlusOne']) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static function isUninitializedLazyObject(object $object): bool

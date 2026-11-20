@@ -39,6 +39,8 @@ use function method_exists;
  *    types: ?array<array-key, Type|int|string|null>,
  *    count: int,
  *    index: int,
+ *    paramSetCount: int,
+ *    suspectedNPlusOne: bool,
  *    executionPercent?: float
  * }
  * @phpstan-type GroupedQueriesType = array<string, array<int, GroupedQueryItemType>>
@@ -315,6 +317,255 @@ class DoctrineDataCollectorTest extends TestCase
         $secondItem = $groupedQueries['default'][1];
         $this->assertEqualsWithDelta(33.333, $secondItem['executionPercent'] ?? null, 0.001);
         $this->assertSame('SELECT * FROM foo', $secondItem['sql']);
+    }
+
+    public function testGetGroupedQueriesCountsDistinctParameterSets(): void
+    {
+        $debugDataHolder = $this->createStub(DebugDataHolder::class);
+
+        $queries = [
+            'default' => [
+                [
+                    'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                    'params' => [':id' => 1],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+                [
+                    'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                    'params' => [':id' => 2],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+                [
+                    'sql' => 'SELECT * FROM author WHERE id = :id',
+                    'params' => [':id' => 1],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+                [
+                    'sql' => 'SELECT * FROM author WHERE id = :id',
+                    'params' => [':id' => 1],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ],
+            ],
+        ];
+
+        $debugDataHolder->method('getData')
+            ->willReturnCallback(static function () use (&$queries) {
+                return $queries;
+            });
+
+        $collector = $this->createCollector([], true, $debugDataHolder);
+        $collector->collect(new Request(), new Response());
+
+        $groupedQueries = $collector->getGroupedQueries();
+
+        $this->assertSame('SELECT * FROM post WHERE author_id = :id', $groupedQueries['default'][0]['sql']);
+        $this->assertSame(2, $groupedQueries['default'][0]['count']);
+        $this->assertSame(2, $groupedQueries['default'][0]['paramSetCount']);
+
+        $this->assertSame('SELECT * FROM author WHERE id = :id', $groupedQueries['default'][1]['sql']);
+        $this->assertSame(2, $groupedQueries['default'][1]['count']);
+        $this->assertSame(1, $groupedQueries['default'][1]['paramSetCount']);
+
+        // Two lookups on different ids are not yet worth pointing at.
+        $this->assertFalse($groupedQueries['default'][0]['suspectedNPlusOne']);
+        $this->assertFalse($groupedQueries['default'][1]['suspectedNPlusOne']);
+    }
+
+    public function testGetGroupedQueriesFlagsASelectReplayedWithManyParameterSets(): void
+    {
+        $queries = [];
+        foreach ([1, 2, 3, 4, 5] as $authorId) {
+            $queries[] = [
+                'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                'params' => [':id' => $authorId],
+                'types' => null,
+                'executionMS' => 1.0,
+            ];
+        }
+
+        $groupedQueries = $this->collectGroupedQueries($queries);
+
+        $this->assertSame(5, $groupedQueries['default'][0]['paramSetCount']);
+        $this->assertTrue($groupedQueries['default'][0]['suspectedNPlusOne']);
+    }
+
+    public function testGetGroupedQueriesFlagsReadsThatDoNotStartWithSelect(): void
+    {
+        $reads = [
+            'WITH recent AS (SELECT * FROM post) SELECT * FROM recent WHERE author_id = :id',
+            '(SELECT * FROM post WHERE author_id = :id) UNION (SELECT * FROM draft)',
+            '/* app:PostRepository */ SELECT * FROM post WHERE author_id = :id',
+            "# app:PostRepository\nSELECT * FROM post WHERE author_id = :id",
+        ];
+
+        foreach ($reads as $sql) {
+            $queries = [];
+            foreach ([1, 2, 3, 4, 5] as $authorId) {
+                $queries[] = [
+                    'sql' => $sql,
+                    'params' => [':id' => $authorId],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ];
+            }
+
+            $groupedQueries = $this->collectGroupedQueries($queries);
+
+            $this->assertTrue($groupedQueries['default'][0]['suspectedNPlusOne'], $sql);
+        }
+    }
+
+    public function testGetGroupedQueriesDoesNotFlagACommonTableExpressionThatModifiesRows(): void
+    {
+        $writes = [
+            'WITH moved AS (DELETE FROM post WHERE id = :id RETURNING *) INSERT INTO archive SELECT * FROM moved',
+            'WITH touched AS (UPDATE post SET seen = true WHERE id = :id RETURNING id) SELECT count(*) FROM touched',
+        ];
+
+        foreach ($writes as $sql) {
+            $queries = [];
+            foreach ([1, 2, 3, 4, 5] as $postId) {
+                $queries[] = [
+                    'sql' => $sql,
+                    'params' => [':id' => $postId],
+                    'types' => null,
+                    'executionMS' => 1.0,
+                ];
+            }
+
+            $groupedQueries = $this->collectGroupedQueries($queries);
+
+            $this->assertFalse($groupedQueries['default'][0]['suspectedNPlusOne'], $sql);
+        }
+    }
+
+    public function testGetGroupedQueriesDoesNotFlagAWriteBehindAComment(): void
+    {
+        $queries = [];
+        foreach ([1, 2, 3, 4, 5] as $postId) {
+            $queries[] = [
+                'sql' => '/* app:PostRepository */ INSERT INTO post (id) VALUES (:id)',
+                'params' => [':id' => $postId],
+                'types' => null,
+                'executionMS' => 1.0,
+            ];
+        }
+
+        $groupedQueries = $this->collectGroupedQueries($queries);
+
+        $this->assertSame(5, $groupedQueries['default'][0]['paramSetCount']);
+        $this->assertFalse($groupedQueries['default'][0]['suspectedNPlusOne']);
+    }
+
+    public function testGetGroupedQueriesDoesNotFlagWritesReplayedInABatch(): void
+    {
+        $queries = [];
+        foreach ([1, 2, 3, 4, 5, 6] as $postId) {
+            $queries[] = [
+                'sql' => 'INSERT INTO post (id) VALUES (:id)',
+                'params' => [':id' => $postId],
+                'types' => null,
+                'executionMS' => 1.0,
+            ];
+        }
+
+        $groupedQueries = $this->collectGroupedQueries($queries);
+
+        $this->assertSame(6, $groupedQueries['default'][0]['paramSetCount']);
+        $this->assertFalse($groupedQueries['default'][0]['suspectedNPlusOne']);
+    }
+
+    public function testGetGroupedQueriesWithParametersThatHaveNoStringForm(): void
+    {
+        $queries = [];
+        foreach ([1, 2] as $authorId) {
+            $queries[] = [
+                'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                'params' => [':id' => $authorId, ':at' => static fn () => null],
+                'types' => null,
+                'executionMS' => 1.0,
+            ];
+        }
+
+        $groupedQueries = $this->collectGroupedQueries($queries);
+
+        // The closure is rendered as a notice, so only :id tells the two apart.
+        $this->assertSame(2, $groupedQueries['default'][0]['count']);
+        $this->assertSame(2, $groupedQueries['default'][0]['paramSetCount']);
+    }
+
+    public function testGetGroupedQueriesWithObjectParametersCountsThemAsOneSet(): void
+    {
+        $queries = [];
+        foreach ([new stdClass(), new stdClass()] as $object) {
+            $queries[] = [
+                'sql' => 'SELECT * FROM post WHERE author = :author',
+                'params' => [':author' => $object],
+                'types' => null,
+                'executionMS' => 1.0,
+            ];
+        }
+
+        $groupedQueries = $this->collectGroupedQueries($queries);
+
+        // Parameters are read after sanitization: an object with no string form
+        // is rendered as a notice, which is the same for every instance. Hashing
+        // the sanitized value rather than the dump keeps that stable instead of
+        // turning each instance into a parameter set of its own.
+        $this->assertSame(2, $groupedQueries['default'][0]['count']);
+        $this->assertSame(1, $groupedQueries['default'][0]['paramSetCount']);
+    }
+
+    public function testHasSuspectedNPlusOne(): void
+    {
+        $repeated = [];
+        foreach ([1, 2, 3, 4, 5] as $authorId) {
+            $repeated[] = [
+                'sql' => 'SELECT * FROM post WHERE author_id = :id',
+                'params' => [':id' => $authorId],
+                'types' => null,
+                'executionMS' => 1.0,
+            ];
+        }
+
+        $this->assertTrue($this->createCollectorFor($repeated)->hasSuspectedNPlusOne());
+
+        $plain = [
+            [
+                'sql' => 'SELECT * FROM post',
+                'params' => [],
+                'types' => null,
+                'executionMS' => 1.0,
+            ],
+        ];
+
+        $this->assertFalse($this->createCollectorFor($plain)->hasSuspectedNPlusOne());
+    }
+
+    /**
+     * @param list<array<string, mixed>> $queries
+     *
+     * @return array<string, array<int, array<string, mixed>>>
+     */
+    private function collectGroupedQueries(array $queries): array
+    {
+        return $this->createCollectorFor($queries)->getGroupedQueries();
+    }
+
+    /** @param list<array<string, mixed>> $queries */
+    private function createCollectorFor(array $queries): DoctrineDataCollector
+    {
+        $debugDataHolder = $this->createStub(DebugDataHolder::class);
+        $debugDataHolder->method('getData')->willReturn(['default' => $queries]);
+
+        $collector = $this->createCollector([], true, $debugDataHolder);
+        $collector->collect(new Request(), new Response());
+
+        return $collector;
     }
 
     /**

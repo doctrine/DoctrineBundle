@@ -174,7 +174,7 @@
 
     <div class="sf-tabs" style="margin-top: 20px;">
         <div class="tab {{ collector.queries is empty ? 'disabled' }}">
-            {% set group_queries = request.query.getBoolean('group', collector.querycount > 100) %}
+            {% set group_queries = request.query.getBoolean('group', collector.querycount > 100 or collector.hasSuspectedNPlusOne) %}
             <h3 class="tab-title">
                 {% if group_queries %}
                     Grouped Statements
@@ -230,7 +230,13 @@
                                                 <span class="time-bar" style="width:{{ '%0.2f'|format(query.executionPercent) }}%"></span>
                                                 <span class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms<br />({{ '%0.2f'|format(query.executionPercent) }}%)</span>
                                             </td>
-                                            <td class="nowrap">{{ query.count }}</td>
+                                            <td class="nowrap">
+                                                {{ query.count }}
+                                                {% if query.suspectedNPlusOne|default(false) %}
+                                                    <br />
+                                                    <span class="badge badge-warning" title="Same statement replayed with different parameters">N+1?</span>
+                                                {% endif %}
+                                            </td>
                                         {% else %}
                                             <td class="nowrap">{{ loop.index }}</td>
                                             <td>
@@ -247,6 +253,12 @@
                                             <div>
                                                 <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(query.params, 2) }}
                                             </div>
+
+                                            {% if query.suspectedNPlusOne|default(false) %}
+                                                <div class="text-small font-normal">
+                                                    Ran {{ query.count }} times with {{ query.paramSetCount }} different parameter sets. If these come from lazy loading, fetch the association together with its parent &mdash; <code>JOIN FETCH</code> in DQL, or a join plus <code>addSelect()</code> on the joined alias with the query builder.
+                                                </div>
+                                            {% endif %}
 
                                             <div class="text-small font-normal">
                                                 <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#formatted-query-{{ i }}-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
