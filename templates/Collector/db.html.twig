@@ -48,6 +48,10 @@
                 <b>Managed entities</b>
                 <span class="sf-toolbar-status">{{ collector.managedEntityCount }}</span>
             </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Lazy loaded entities</b>
+                <span class="sf-toolbar-status{{ collector.lazyLoadCount > 50 ? ' sf-toolbar-status-yellow' : '' }}">{{ collector.lazyLoadCount }}</span>
+            </div>
             {% if collector.cacheEnabled %}
                 <div class="sf-toolbar-info-piece">
                     <b>Cache hits</b>
@@ -112,6 +116,7 @@
         .time-bar { display: block; position: absolute; top: 0; left: 0; bottom: 0; background: var(--query-time-bar-color); }
         .sql-runnable.sf-toggle-content.sf-toggle-visible { display: flex; flex-direction: column; }
         .sql-runnable button { align-self: end; }
+        .lazy-load-query-highlight td { background-color: var(--highlight-selected-line); }
         {% if profiler_markup_version >= 3 %}
         .highlight .keyword   { color: var(--highlight-keyword); font-weight: bold; }
         .highlight .word      { color: var(--color-text); }
@@ -152,6 +157,11 @@
                 <span class="value">{{ collector.managedEntityCount }}</span>
                 <span class="label">Managed entities</span>
             </div>
+
+            <div class="metric">
+                <span class="value">{{ collector.lazyLoadCount }}</span>
+                <span class="label">Lazy loaded entities</span>
+            </div>
         </div>
 
         {% if collector.cacheEnabled %}
@@ -173,7 +183,7 @@
     </div>
 
     <div class="sf-tabs" style="margin-top: 20px;">
-        <div class="tab {{ collector.queries is empty ? 'disabled' }}">
+        <div class="tab {{ collector.queries is empty ? 'disabled' }}" data-tab="queries">
             {% set group_queries = request.query.getBoolean('group', collector.querycount > 100) %}
             <h3 class="tab-title">
                 {% if group_queries %}
@@ -421,6 +431,61 @@
             </div>
         </div>
 
+        <div class="tab {{ not collector.lazyLoads ? 'disabled' }}">
+            <h3 class="tab-title">Lazy Loads</h3>
+            <div class="tab-content">
+                {% if not collector.lazyLoads %}
+                    <div class="empty">
+                        <p>No entity was loaded by lazy loading.</p>
+                    </div>
+                {% else %}
+                    <p>
+                        Each row is one lazy load. The entities hydrated by the same load are
+                        grouped, with their count. Fetching the association with a join can
+                        reduce the number of lazily loaded entities.
+                    </p>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Entities</th>
+                            <th scope="col">Class</th>
+                            <th scope="col" style="width: 100%;">Query</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for lazyLoad in collector.lazyLoads %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><span class="badge">{{ lazyLoad.kind }}</span></td>
+                                <td>{{ lazyLoad.entities }}</td>
+                                <td>{{ lazyLoad.classes|keys|join(', ') }}</td>
+                                <td>
+                                    {% if lazyLoad.query is not null and lazyLoad.connection %}
+                                        {% set connection_position = 0 %}
+                                        {% for connection, connection_queries in collector.queries %}
+                                            {% if connection == lazyLoad.connection %}
+                                                {% set connection_position = loop.index %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if connection_position %}
+                                            <a class="lazy-load-query" href="{{ path('_profiler', { panel: 'db', token: token }) }}#queryNo-{{ lazyLoad.query }}-{{ connection_position }}">#{{ lazyLoad.query + 1 }}</a>
+                                        {% else %}
+                                            Unknown
+                                        {% endif %}
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+
         <div class="tab {{ not collector.entities ? 'disabled' }}">
             <h3 class="tab-title">Entities Mapping</h3>
             <div class="tab-content">
@@ -546,6 +611,50 @@
                 })
             });
         }
+
+        function openLazyLoadQuery(hash, tabGroup) {
+            "use strict";
+
+            if (!hash || 0 !== hash.indexOf('#queryNo-')) {
+                return false;
+            }
+
+            if (tabGroup) {
+                var queriesTab = tabGroup.querySelector('[data-tab="queries"]');
+                var control = queriesTab && document.querySelector('.tab-control[data-tab-id="' + queriesTab.id + '"]');
+
+                if (control) {
+                    control.click();
+                }
+            }
+
+            var row = document.getElementById(hash.substring(1));
+            if (row) {
+                row.classList.add('lazy-load-query-highlight');
+                row.scrollIntoView({block: 'center'});
+                window.setTimeout(function () {
+                    row.classList.remove('lazy-load-query-highlight');
+                }, 2000);
+            }
+
+            return true;
+        }
+
+        document.addEventListener('click', function (event) {
+            var link = event.target.closest('a.lazy-load-query');
+            if (!link) {
+                return;
+            }
+
+            if (openLazyLoadQuery(link.hash, link.closest('.sf-tabs'))) {
+                event.preventDefault();
+                history.replaceState(null, '', link.hash);
+            }
+        });
+
+        window.addEventListener('load', function () {
+            openLazyLoadQuery(window.location.hash, document.querySelector('.sf-tabs'));
+        });
 
         //]]></script>
 {% endblock %}

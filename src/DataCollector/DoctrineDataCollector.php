@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Bundle\DoctrineBundle\DataCollector;
 
+use Doctrine\Bundle\DoctrineBundle\Profiling\LazyLoadDataHolder;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\Logging\CacheLoggerChain;
@@ -21,6 +22,7 @@ use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Throwable;
 
+use function array_column;
 use function array_map;
 use function array_sum;
 use function arsort;
@@ -40,6 +42,7 @@ use function usort;
  *    connections: list<string>,
  *    entities: array<string, array<class-string, array{class: class-string, file: false|string, line: false|int}>>,
  *    errors: array<string, array<class-string, list<string>>>,
+ *    lazy_loads: list<array{kind: 'single'|'collection', classes: array<string, int>, entities: int, connection: string|null, query: int|null}>,
  *    managers: list<string>,
  *    queries: array<string, list<array{
  *       executionMS: float,
@@ -83,6 +86,7 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         private readonly bool $shouldValidateSchema = true,
         DebugDataHolder|null $debugDataHolder = null,
         private readonly array $secondLevelCacheManagers = [],
+        private readonly LazyLoadDataHolder|null $lazyLoadDataHolder = null,
     ) {
         if ($debugDataHolder === null) {
             $debugDataHolder = new DebugDataHolder();
@@ -213,6 +217,7 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         $this->data['errors']       = [];
         $this->data['caches']       = $caches;
         $this->data['entityCounts'] = $entityCounts;
+        $this->data['lazy_loads']   = $this->lazyLoadDataHolder?->getLazyLoads() ?? [];
         $this->groupedQueries       = null;
     }
 
@@ -241,6 +246,7 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
 
         $this->classesToValidate  = [];
         $this->data['errors']     = $errors;
+        $this->data['lazy_loads'] = $this->lazyLoadDataHolder?->getLazyLoads() ?? [];
         $this->invalidEntityCount = null;
     }
 
@@ -249,6 +255,7 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         parent::reset();
 
         $this->classesToValidate = [];
+        $this->lazyLoadDataHolder?->reset();
     }
 
     /** @return array<string, array<class-string, array{class: class-string, file: false|string, line: false|int}>> */
@@ -321,6 +328,18 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
     public function getManagedEntityCountByClass(): array
     {
         return $this->data['entityCounts'];
+    }
+
+    /** @return list<array{kind: 'single'|'collection', classes: array<string, int>, entities: int, connection: string|null, query: int|null}> */
+    public function getLazyLoads(): array
+    {
+        /** @phpstan-ignore nullCoalesce.offset (the data is empty before collect()) */
+        return $this->data['lazy_loads'] ?? [];
+    }
+
+    public function getLazyLoadCount(): int
+    {
+        return array_sum(array_column($this->getLazyLoads(), 'entities'));
     }
 
     /**

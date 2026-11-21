@@ -11,6 +11,7 @@ use Doctrine\Bundle\DoctrineBundle\Controller\ProfilerController;
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\Bundle\DoctrineBundle\Dbal\ManagerRegistryAwareConnectionProvider;
 use Doctrine\Bundle\DoctrineBundle\Dbal\SchemaAssetsFilterManager;
+use Doctrine\Bundle\DoctrineBundle\Profiling\LazyLoadDataHolder;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
 use Doctrine\DBAL\Configuration;
@@ -32,12 +33,16 @@ return static function (ContainerConfigurator $container): void {
         ->alias(Connection::class, 'database_connection')
         ->alias(ManagerRegistry::class, 'doctrine')
 
+        ->set('doctrine.lazy_load_data_holder', LazyLoadDataHolder::class)
+            ->tag('kernel.reset', ['method' => 'reset'])
+
         ->set('data_collector.doctrine', DoctrineDataCollector::class)
             ->args([
                 service('doctrine'),
                 true,
                 service('doctrine.debug_data_holder')->nullOnInvalid(),
                 [],
+                service('doctrine.lazy_load_data_holder'),
             ])
             ->tag('data_collector', ['template' => '@Doctrine/Collector/db.html.twig', 'id' => 'db', 'priority' => 250])
 

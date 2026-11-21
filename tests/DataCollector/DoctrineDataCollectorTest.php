@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests\DataCollector;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
+use Doctrine\Bundle\DoctrineBundle\Profiling\LazyLoadDataHolder;
+use Doctrine\Bundle\DoctrineBundle\Profiling\LazyLoadDetector;
 use Doctrine\Bundle\DoctrineBundle\Tests\TestCase;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection;
@@ -148,6 +150,41 @@ class DoctrineDataCollectorTest extends TestCase
         $this->assertSame([], $collector->getMappingErrors());
         $this->assertSame(['default' => []], $collector->getManagedEntityCountByClass());
         $this->assertFalse($collector->getCacheEnabled());
+    }
+
+    public function testCollectsTheLazyLoadsRecordedByTheListener(): void
+    {
+        $collection = new stdClass();
+        $holder     = new LazyLoadDataHolder();
+        $holder->record(self::FIRST_ENTITY, LazyLoadDetector::COLLECTION, $collection, 'default', 2);
+        $holder->record(self::FIRST_ENTITY, LazyLoadDetector::COLLECTION, $collection, 'default', 2);
+        $holder->record(self::SECOND_ENTITY, LazyLoadDetector::SINGLE, null, 'default', 3);
+
+        $collector = $this->createCollector([], true, null, [], $holder);
+        $collector->collect(new Request(), new Response());
+
+        $this->assertSame([
+            [
+                'kind' => LazyLoadDetector::COLLECTION,
+                'classes' => [self::FIRST_ENTITY => 2],
+                'entities' => 2,
+                'connection' => 'default',
+                'query' => 2,
+            ],
+            [
+                'kind' => LazyLoadDetector::SINGLE,
+                'classes' => [self::SECOND_ENTITY => 1],
+                'entities' => 1,
+                'connection' => 'default',
+                'query' => 3,
+            ],
+        ], $collector->getLazyLoads());
+        $this->assertSame(3, $collector->getLazyLoadCount());
+
+        $collector->reset();
+
+        $this->assertSame([], $collector->getLazyLoads());
+        $this->assertSame(0, $holder->getCount());
     }
 
     public function testCollectReportsSecondLevelCacheOfUnusedLazyManagers(): void
@@ -342,6 +379,7 @@ class DoctrineDataCollectorTest extends TestCase
         bool $shouldValidateSchema = true,
         DebugDataHolder|null $debugDataHolder = null,
         array $secondLevelCacheManagers = [],
+        LazyLoadDataHolder|null $lazyLoadDataHolder = null,
     ): DoctrineDataCollector {
         $registry = $this->createStub(ManagerRegistry::class);
         $registry->method('getConnectionNames')
@@ -350,7 +388,7 @@ class DoctrineDataCollectorTest extends TestCase
             ->willReturn(['default' => 'doctrine.orm.default_entity_manager']);
         $registry->method('getManagers')->willReturn($managers);
 
-        return new DoctrineDataCollector($registry, $shouldValidateSchema, $debugDataHolder, $secondLevelCacheManagers);
+        return new DoctrineDataCollector($registry, $shouldValidateSchema, $debugDataHolder, $secondLevelCacheManagers, $lazyLoadDataHolder);
     }
 
     private static function isUninitializedLazyObject(object $object): bool

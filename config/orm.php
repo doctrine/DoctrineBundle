@@ -6,6 +6,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Doctrine\Bundle\DoctrineBundle\ManagerConfigurator;
 use Doctrine\Bundle\DoctrineBundle\Orm\ManagerRegistryAwareEntityManagerProvider;
+use Doctrine\Bundle\DoctrineBundle\Profiling\LazyLoadListener;
 use Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
@@ -109,6 +110,12 @@ return static function (ContainerConfigurator $container): void {
             ->abstract()
             ->args([
                 service('doctrine'),
+            ])
+
+        ->set('doctrine.orm.listeners.lazy_load', LazyLoadListener::class)
+            ->args([
+                service('doctrine.lazy_load_data_holder'),
+                service('doctrine.debug_data_holder'),
             ])
 
         ->set('doctrine.orm.listeners.resolve_target_entity', ResolveTargetEntityListener::class)
