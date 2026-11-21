@@ -45,7 +45,7 @@
     },
     "require-dev": {
         "doctrine/coding-standard": "^14",
-        "doctrine/orm": "^3.4.4",
+        "doctrine/orm": "3.7.x-dev#5e9e57c49ccb36b7591e348cdffde3816558dd9a as 3.7.0",
         "phpstan/phpstan": "^2.1.13",
         "phpstan/phpstan-phpunit": "2.0.3",
         "phpstan/phpstan-strict-rules": "^2",

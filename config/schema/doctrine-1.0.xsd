@@ -131,6 +131,7 @@
         <xsd:attribute name="alias" type="xsd:string" />
         <xsd:attribute name="prefix" type="xsd:string" />
         <xsd:attribute name="is-bundle" type="xsd:string" />
+        <xsd:attribute name="infer-nullability-from-php-type" type="xsd:boolean" />
     </xsd:complexType>
 
     <xsd:complexType name="orm">
