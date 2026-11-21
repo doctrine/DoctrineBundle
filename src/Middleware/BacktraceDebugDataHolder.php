@@ -12,16 +12,21 @@ use function debug_backtrace;
 use function in_array;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
+use const DEBUG_BACKTRACE_PROVIDE_OBJECT;
 
 class BacktraceDebugDataHolder extends DebugDataHolder
 {
     /** @var array<string, array<int|string, mixed>[]> */
     private array $backtraces = [];
 
+    private readonly TwigBacktraceMapper $twigMapper;
+
     /** @param string[] $connWithBacktraces */
     public function __construct(
         private readonly array $connWithBacktraces,
+        TwigBacktraceMapper|null $twigMapper = null,
     ) {
+        $this->twigMapper = $twigMapper ?? new TwigBacktraceMapper();
     }
 
     public function reset(): void
@@ -39,8 +44,11 @@ class BacktraceDebugDataHolder extends DebugDataHolder
             return;
         }
 
-        // array_slice to skip middleware calls in the trace
-        $this->backtraces[$connectionName][] = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2);
+        // array_slice to skip middleware calls in the trace. Objects are
+        // needed to map a compiled Twig template back to its source.
+        $this->backtraces[$connectionName][] = $this->twigMapper->map(
+            array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS | DEBUG_BACKTRACE_PROVIDE_OBJECT), 2),
+        );
     }
 
     /** @return array<string, array<string, mixed>[]> */
