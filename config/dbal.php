@@ -21,6 +21,7 @@ use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\ContainerAwareEventManager;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
+use Symfony\Bridge\Doctrine\WorkerWarmer\ConnectionWarmer;
 
 return static function (ContainerConfigurator $container): void {
     $container->parameters()
@@ -120,6 +121,14 @@ return static function (ContainerConfigurator $container): void {
                 service('service_container'),
             ])
             ->tag('kernel.event_subscriber')
+
+        ->set('doctrine.dbal.connection_warmer', ConnectionWarmer::class)
+            ->args([
+                abstract_arg('connections to open, indexed by name'),
+                service('logger')->nullOnInvalid(),
+            ])
+            ->tag('kernel.worker_warmer')
+            ->tag('monolog.logger', ['channel' => 'doctrine'])
 
         ->set('doctrine.dbal.default_schema_manager_factory', DefaultSchemaManagerFactory::class);
 };

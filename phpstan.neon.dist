@@ -9,6 +9,11 @@ parameters:
          message: '~^Class Symfony\\Bridge\\Doctrine\\Messenger\\DoctrineDbal\w+Middleware not found\.$~'
          identifier: class.notFound
          reportUnmatched: false
+      # The worker warmer for DBAL connections exists since symfony/doctrine-bridge 8.3, which is not released yet
+      -
+         message: '~^Class Symfony\\Bridge\\Doctrine\\WorkerWarmer\\ConnectionWarmer not found\.$~'
+         identifier: class.notFound
+         reportUnmatched: false
       # The method_exists() check is always true when symfony/config provides the method, and the
       # method is added in Symfony 8.2. The entry is unmatched with a version that does not have it.
       -

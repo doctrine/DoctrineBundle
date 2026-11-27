@@ -60,12 +60,14 @@ use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Listener;
 use Symfony\Bridge\Doctrine\Validator\Constraints\EntityExistsValidator;
 use Symfony\Bridge\Doctrine\Validator\DoctrineLoader;
+use Symfony\Bridge\Doctrine\WorkerWarmer\ConnectionWarmer;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\ArgumentResolver\ValueResolver\ValueResolverInterface;
 use Symfony\Component\DependencyInjection\Alias;
+use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -113,7 +115,7 @@ use const GLOB_NOSORT;
  * @internal
  *
  * @phpstan-type DBALConfig = array{
- *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, idle_connection_ttl: int}>,
+ *      connections: array<string, array{logging: bool, profiling: bool, profiling_collect_backtrace: bool, idle_connection_ttl: int, preconnect: bool}>,
  *      driver_schemes: array<string, string>,
  *      default_connection: string,
  *      types: array<string, string>,
@@ -552,6 +554,7 @@ final class DoctrineExtension extends Extension
         $connWithProfiling = [];
         $connWithBacktrace = [];
         $ttlByConnection   = [];
+        $preconnected      = [];
 
         foreach ($config['connections'] as $name => $connection) {
             if ($connection['logging']) {
@@ -568,6 +571,10 @@ final class DoctrineExtension extends Extension
 
             if ($connection['idle_connection_ttl'] > 0) {
                 $ttlByConnection[$name] = $connection['idle_connection_ttl'];
+            }
+
+            if ($connection['preconnect']) {
+                $preconnected[$name] = new Reference(sprintf('doctrine.dbal.%s_connection', $name));
             }
 
             $this->loadDbalConnection($name, $connection, $container);
@@ -595,6 +602,14 @@ final class DoctrineExtension extends Extension
 
         $container->getDefinition('doctrine.dbal.idle_connection_middleware')->setArgument(1, $ttlByConnection);
 
+        if ($preconnected === []) {
+            $container->removeDefinition('doctrine.dbal.connection_warmer');
+        } elseif (! class_exists(ConnectionWarmer::class)) {
+            throw new LogicException('The "preconnect" option of DBAL connections requires symfony/doctrine-bridge 8.3 or higher.');
+        } else {
+            $container->getDefinition('doctrine.dbal.connection_warmer')->setArgument(0, new IteratorArgument($preconnected));
+        }
+
         if (class_exists(Listener::class)) {
             return;
         }
@@ -613,7 +628,7 @@ final class DoctrineExtension extends Extension
     private function loadDbalConnection(string $name, array $connection, ContainerBuilder $container): void
     {
         $configuration = $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $name), new ChildDefinition('doctrine.dbal.connection.configuration'));
-        unset($connection['logging']);
+        unset($connection['logging'], $connection['preconnect']);
 
         $dataCollectorDefinition = $container->getDefinition('data_collector.doctrine');
         $dataCollectorDefinition->replaceArgument(1, $connection['profiling_collect_schema_errors']);

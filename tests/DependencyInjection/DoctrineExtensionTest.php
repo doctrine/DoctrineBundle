@@ -43,9 +43,11 @@ use Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
 use Symfony\Bridge\Doctrine\Middleware\IdleConnection\Driver;
+use Symfony\Bridge\Doctrine\WorkerWarmer\ConnectionWarmer;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -1466,6 +1468,42 @@ class DoctrineExtensionTest extends TestCase
 
         $this->assertTrue(in_array(['connection' => 'conn1', 'priority' => 10], $idleConnectionMiddlewareTagAttributes, true), 'Tag with connection conn1 not found for doctrine.dbal.idle_connection_middleware');
         $this->assertTrue(in_array(['connection' => 'conn2', 'priority' => 10], $idleConnectionMiddlewareTagAttributes, true), 'Tag with connection conn2 found for doctrine.dbal.idle_connection_middleware');
+    }
+
+    #[RequiresMethod(ConnectionWarmer::class, '__invoke')]
+    public function testPreconnect(): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection([
+                'connections' => [
+                    'conn1' => ['password' => 'foo', 'preconnect' => true],
+                    'conn2' => ['password' => 'bar'],
+                ],
+            ])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $warmer = $container->getDefinition('doctrine.dbal.connection_warmer');
+        $this->assertEquals(new IteratorArgument(['conn1' => new Reference('doctrine.dbal.conn1_connection')]), $warmer->getArgument(0));
+        $this->assertTrue($warmer->hasTag('kernel.worker_warmer'));
+    }
+
+    public function testNoConnectionWarmerWithoutPreconnect(): void
+    {
+        $container = $this->getContainer();
+        $extension = new DoctrineExtension();
+
+        $config = BundleConfigurationBuilder::createBuilder()
+            ->addConnection(['connections' => ['conn1' => ['password' => 'foo']]])
+            ->build();
+
+        $extension->load([$config], $container);
+
+        $this->assertFalse($container->hasDefinition('doctrine.dbal.connection_warmer'));
     }
 
     public function testEntityValueResolverExpressionLanguageIsCompiled(): void
