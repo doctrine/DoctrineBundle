@@ -129,6 +129,8 @@ Configuration Reference
                         server_version:       ~
                         # Time in seconds before an idle connection is closed, 0 to disable
                         idle_connection_ttl:  600
+                        # Opens the connection before a long-running worker handles its first request
+                        preconnect:           false
                         # Class name of a custom DBAL driver
                         driver_class:         ~
                         # Allows to specify a custom wrapper implementation to use.
@@ -536,6 +538,8 @@ Configuration Reference
                             'server_version' => null,
                             // Time in seconds before an idle connection is closed, 0 to disable
                             'idle_connection_ttl' => 600,
+                            // Opens the connection before a long-running worker handles its first request
+                            'preconnect' => false,
                             // Class name of a custom DBAL driver
                             'driver_class' => null,
                             // Allows to specify a custom wrapper implementation to use.

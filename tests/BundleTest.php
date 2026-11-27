@@ -12,15 +12,18 @@ use Doctrine\Bundle\DoctrineBundle\Tests\DependencyInjection\Fixtures\TestKernel
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
+use Symfony\Bridge\Doctrine\WorkerWarmer\ConnectionWarmer;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ServicesResetterInterface;
 
 use function assert;
 use function interface_exists;
 use function is_a;
+use function method_exists;
 use function restore_exception_handler;
 
 class BundleTest extends TestCase
@@ -73,6 +76,31 @@ class BundleTest extends TestCase
 
         $this->assertFalse($connection->isConnected());
         $this->assertFalse($container->initialized('doctrine.dbal.unused_connection'));
+    }
+
+    #[RequiresMethod(ConnectionWarmer::class, '__invoke')]
+    public function testWorkerWarmerOpensPreconnectedConnections(): void
+    {
+        $kernel = new DbalTestKernel([
+            'connections' => [
+                'default' => ['driver' => 'pdo_sqlite', 'memory' => true, 'preconnect' => true],
+                'lazy' => ['driver' => 'pdo_sqlite', 'memory' => true],
+            ],
+        ]);
+        $kernel->boot();
+        restore_exception_handler();
+
+        $container = $kernel->getContainer();
+        $this->assertFalse($container->initialized('doctrine.dbal.default_connection'));
+
+        $warmer = $container->get('worker_warmer');
+        $this->assertTrue(method_exists($warmer, 'warmUp'));
+        $warmer->warmUp();
+
+        $this->assertTrue($container->get('doctrine.dbal.default_connection')->isConnected());
+        $this->assertFalse($container->initialized('doctrine.dbal.lazy_connection'));
+
+        $kernel->shutdown();
     }
 
     public function testResetKeepsConnectionsUsable(): void

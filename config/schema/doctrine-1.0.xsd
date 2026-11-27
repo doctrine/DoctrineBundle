@@ -36,6 +36,7 @@
         <xsd:attribute name="profiling-collect-backtrace" type="xsd:string" default="false" />
         <xsd:attribute name="profiling-collect-schema-errors" type="xsd:string" default="true" />
         <xsd:attribute name="server-version" type="xsd:string" />
+        <xsd:attribute name="preconnect" type="xsd:string" default="false" />
         <xsd:attribute name="schema-manager-factory" type="xsd:string" />
         <xsd:attribute name="result-cache" type="xsd:string" />
         <xsd:attributeGroup ref="driver-config" />
