@@ -21,6 +21,7 @@ use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Throwable;
 
+use function array_column;
 use function array_map;
 use function array_sum;
 use function arsort;
@@ -30,6 +31,7 @@ use function in_array;
 use function usort;
 
 /**
+ * @phpstan-import-type HydrationStats from HydrationProfiler
  * @phpstan-type DataType = array{
  *    caches: array{
  *       enabled: bool,
@@ -40,6 +42,7 @@ use function usort;
  *    connections: list<string>,
  *    entities: array<string, array<class-string, array{class: class-string, file: false|string, line: false|int}>>,
  *    errors: array<string, array<class-string, list<string>>>,
+ *    hydrations?: list<HydrationStats>,
  *    managers: list<string>,
  *    queries: array<string, list<array{
  *       executionMS: float,
@@ -83,6 +86,7 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         private readonly bool $shouldValidateSchema = true,
         DebugDataHolder|null $debugDataHolder = null,
         private readonly array $secondLevelCacheManagers = [],
+        private readonly HydrationProfiler|null $hydrationProfiler = null,
     ) {
         if ($debugDataHolder === null) {
             $debugDataHolder = new DebugDataHolder();
@@ -94,6 +98,8 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
     public function collect(Request $request, Response $response, Throwable|null $exception = null): void
     {
         parent::collect($request, $response, $exception);
+
+        $this->data['hydrations'] = $this->hydrationProfiler?->getHydrations() ?? [];
 
         $entities                = [];
         $entityCounts            = [];
@@ -249,6 +255,21 @@ class DoctrineDataCollector extends BaseCollector implements LateDataCollectorIn
         parent::reset();
 
         $this->classesToValidate = [];
+    }
+
+    /**
+     * Returns an empty list for profiles saved before hydration profiling.
+     *
+     * @return list<HydrationStats>
+     */
+    public function getHydrations(): array
+    {
+        return $this->data['hydrations'] ?? [];
+    }
+
+    public function getHydrationTime(): float
+    {
+        return array_sum(array_column($this->getHydrations(), 'time'));
     }
 
     /** @return array<string, array<class-string, array{class: class-string, file: false|string, line: false|int}>> */

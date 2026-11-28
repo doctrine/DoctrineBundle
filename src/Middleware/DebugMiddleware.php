@@ -29,6 +29,8 @@ class DebugMiddleware implements Middleware, ConnectionNameAwareInterface
 
     public function wrap(DriverInterface $driver): DriverInterface
     {
-        return new Driver($driver, $this->debugDataHolder, $this->stopwatch, $this->connectionName, $this->connectionRegistry);
+        $stopwatch = $this->stopwatch === null ? null : new QueryStopwatch($this->stopwatch);
+
+        return new Driver($driver, $this->debugDataHolder, $stopwatch, $this->connectionName, $this->connectionRegistry);
     }
 }

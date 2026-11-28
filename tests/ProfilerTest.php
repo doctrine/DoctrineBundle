@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Doctrine\Bundle\DoctrineBundle\Tests;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
+use Doctrine\Bundle\DoctrineBundle\DataCollector\HydrationProfiler;
 use Doctrine\Bundle\DoctrineBundle\Twig\DoctrineExtension;
+use Doctrine\ORM\HydrationObserver;
+use Doctrine\ORM\Internal\Hydration\ScalarHydrator;
 use Doctrine\Persistence\ManagerRegistry;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Query;
@@ -30,24 +34,20 @@ use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 use function class_exists;
 use function html_entity_decode;
+use function interface_exists;
 use function preg_match;
 use function preg_quote;
+use function str_contains;
 use function str_replace;
 
 class ProfilerTest extends BaseTestCase
 {
     private DebugDataHolder $debugDataHolder;
     private Environment $twig;
-    private DoctrineDataCollector $collector;
 
     public function setUp(): void
     {
         $this->debugDataHolder = new DebugDataHolder();
-        $registry              = $this->createStub(ManagerRegistry::class);
-        $registry->method('getConnectionNames')->willReturn([]);
-        $registry->method('getManagerNames')->willReturn([]);
-        $registry->method('getManagers')->willReturn([]);
-        $this->collector = new DoctrineDataCollector($registry, true, $this->debugDataHolder);
 
         $twigLoaderFilesystem = new FilesystemLoader(__DIR__ . '/../templates/Collector');
         $twigLoaderFilesystem->addPath(__DIR__ . '/../vendor/symfony/web-profiler-bundle/Resources/views', 'WebProfiler');
@@ -79,11 +79,31 @@ class ProfilerTest extends BaseTestCase
         ]));
     }
 
-    public function testRender(): void
+    #[TestWith([false])]
+    #[TestWith([true])]
+    public function testRender(bool $withHydration): void
     {
+        if ($withHydration && ! interface_exists(HydrationObserver::class)) {
+            self::markTestSkipped('This test requires the ORM hydration observer');
+        }
+
+        $hydrationProfiler = null;
+
+        if ($withHydration) {
+            $hydrationProfiler = new HydrationProfiler();
+            $hydrationProfiler->start(ScalarHydrator::class, []);
+            $hydrationProfiler->end(0);
+        }
+
+        $registry = $this->createStub(ManagerRegistry::class);
+        $registry->method('getConnectionNames')->willReturn([]);
+        $registry->method('getManagerNames')->willReturn([]);
+        $registry->method('getManagers')->willReturn([]);
+        $collector = new DoctrineDataCollector($registry, true, $this->debugDataHolder, hydrationProfiler: $hydrationProfiler);
+
         $this->debugDataHolder->addQuery('foo', new Query('SELECT * FROM foo WHERE bar IN (?, ?) AND "" >= ""'));
 
-        $this->collector->collect($request = new Request(['group' => '0']), new Response());
+        $collector->collect($request = new Request(['group' => '0']), new Response());
 
         $profile = new Profile('foo');
         $profile->setMethod('GET');
@@ -101,7 +121,7 @@ class ProfilerTest extends BaseTestCase
             'token' => 'foo',
             'page' => 'foo',
             'profile' => $profile,
-            'collector' => $this->collector,
+            'collector' => $collector,
             'queries' => $this->debugDataHolder->getData(),
             'profiler_markup_version' => 3,
             'profile_type' => 'request',
@@ -123,5 +143,7 @@ class ProfilerTest extends BaseTestCase
 
         $this->assertStringContainsString('Managed entities', $output);
         $this->assertStringContainsString('No managed entities.', $output);
+        $this->assertSame($withHydration, str_contains($output, 'Hydration time'));
+        $this->assertSame($withHydration, str_contains($output, ScalarHydrator::class));
     }
 }
